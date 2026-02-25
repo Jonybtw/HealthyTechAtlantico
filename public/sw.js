@@ -1,5 +1,5 @@
-﻿const CACHE = "atlanticofit-v2";
-const SHELL = ["/", "/index.html", "/styles.css", "/app.js", "/manifest.json"];
+const CACHE = "atlanticofit-v3";
+const SHELL = ["/", "/index.html", "/styles.css", "/app.js", "/auth-template.js", "/manifest.json"];
 
 self.addEventListener("install", (event) => {
   event.waitUntil(
@@ -30,6 +30,26 @@ self.addEventListener("fetch", (event) => {
             headers: { "Content-Type": "application/json" },
           })
       )
+    );
+    return;
+  }
+
+  const isShellAsset =
+    url.origin === self.location.origin &&
+    ["/", "/index.html", "/styles.css", "/app.js", "/auth-template.js"].includes(url.pathname);
+
+  // Keep app shell fresh to avoid stale UI after deployments.
+  if (isShellAsset) {
+    event.respondWith(
+      fetch(event.request)
+        .then((response) => {
+          if (response && response.status === 200 && response.type === "basic") {
+            const clone = response.clone();
+            caches.open(CACHE).then((cache) => cache.put(event.request, clone));
+          }
+          return response;
+        })
+        .catch(() => caches.match(event.request))
     );
     return;
   }

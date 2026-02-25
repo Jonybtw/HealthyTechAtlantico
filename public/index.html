@@ -22,57 +22,16 @@
   <body>
 
     <!-- ═══ ECRÃ DE LOGIN ══════════════════════════════════════════════════════ -->
-    <div id="loginScreen" class="login-screen">
-      <div class="login-card">
-        <div class="login-logo">
-          <div class="login-logo__badge">Colégio Atlântico</div>
-          <h1>AtlanticoFit</h1>
-          <p class="login-logo__sub">Plataforma de Educação Física</p>
-        </div>
-        <label class="field">
-          Perfil
-          <select id="roleSelect">
-            <option value="aluno">Aluno</option>
-            <option value="professor">Professor</option>
-            <option value="psicologo">Psicólogo</option>
-            <option value="pais">Pais / E.E.</option>
-          </select>
-        </label>
-        <label class="field">
-          Email
-          <input id="userEmail" type="email" placeholder="nome@colegio.pt" autocomplete="email" />
-        </label>
-        <label class="field">
-          Palavra-passe
-          <input id="userPassword" type="password" placeholder="Mínimo 8 caracteres" autocomplete="current-password" />
-        </label>
-        <div class="login-actions">
-          <button class="btn" id="loginUser">Entrar</button>
-          <button class="btn btn--ghost" id="showRegister">Criar conta</button>
-        </div>
-        <div id="registerFields" class="register-fields hidden">
-          <label class="field field--inline">
-            <input id="consentRgpd" type="checkbox" />
-            Aceito o tratamento de dados (RGPD)
-          </label>
-          <label class="field field--inline">
-            <input id="consentShare" type="checkbox" />
-            Autorizo envio de relatórios por email
-          </label>
-          <button class="btn" id="registerUser" style="width:100%;margin-top:8px">Registar</button>
-        </div>
-        <p class="helper login-status" id="accessStatus"></p>
-      </div>
-    </div>
+        <div id="loginScreenMount"></div>
 
     <!-- ═══ APP SHELL (visível após login) ════════════════════════════════════ -->
     <div id="appShell" class="app-shell hidden">
 
       <header class="topbar">
         <span class="topbar__logo">AtlanticoFit</span>
-        <div class="topbar__stats">
-          <span class="topstat"><span id="statStudents">0</span> alunos</span>
-          <span class="topstat sos-count"><span id="statAlerts">0</span> SOS</span>
+        <div class="topbar__stats" id="topbarStats">
+          <span class="topstat" id="statStudentsWrap"><span id="statStudents">0</span> alunos</span>
+          <span class="topstat sos-count" id="statAlertsWrap"><span id="statAlerts">0</span> SOS</span>
         </div>
         <div class="topbar__right">
           <span class="topbar__user" id="topbarUser"></span>
@@ -89,7 +48,7 @@
             <p class="section-label">Dados do aluno</p>
             <div class="two-col">
               <label class="field">Nome<input id="studentName" type="text" placeholder="Nome completo" /></label>
-              <label class="field">Sexo<select id="studentSex"><option value="F">Feminino</option><option value="M">Masculino</option></select></label>
+              <label class="field">Sexo<select id="studentSex"><option value="">Selecionar</option><option value="F">Feminino</option><option value="M">Masculino</option></select></label>
               <label class="field">Idade<input id="studentAge" type="number" min="9" max="18" placeholder="9–18" /></label>
               <label class="field">Ano letivo<input id="schoolYear" type="text" placeholder="2025/2026" /></label>
             </div>
@@ -134,48 +93,149 @@
 
         <!-- Questionários -->
         <section class="tab-panel hidden" id="tab-quest" data-tab="quest">
-          <div class="page-header"><h2>Questionários</h2><p class="helper">Obrigatório — máx. 3 adiamentos permitidos</p></div>
-          <div class="card questionnaire">
-            <h3>Questionário inicial</h3>
-            <div class="two-col">
-              <label class="field">Nível de atividade física semanal (0–5)<input id="qActivity" type="number" min="0" max="5" /></label>
-              <label class="field">Horas de sono (média)<input id="qSleep" type="number" min="0" max="12" /></label>
-              <label class="field">Prática desportiva extraescolar<input id="qSport" type="text" placeholder="Ex: futsal, dança" /></label>
+          <div class="page-header">
+            <h2>Questionários</h2>
+            <p class="helper">Fluxo orientado, com progresso e validação antes de submeter</p>
+          </div>
+          <div class="card questionnaire questionnaire--summary">
+            <div>
+              <p class="section-label">Estado</p>
+              <h3>Preenchimento dos questionários</h3>
             </div>
-            <div class="questionnaire__actions">
-              <button class="btn" id="submitInitial">Submeter</button>
-              <button class="btn btn--ghost" id="deferInitial">Adiar</button>
+            <div class="progress">
+              <div class="progress__bar" id="questProgressBar"></div>
             </div>
+            <p class="helper" id="questProgressLabel">0% concluído</p>
             <p class="note" id="deferStatus">0 adiamentos usados.</p>
           </div>
-          <div class="card questionnaire" style="margin-top:16px">
-            <h3>Questionário de rotina</h3>
+          <div class="card questionnaire">
+            <p class="section-label">Passo 1</p>
+            <h3>Questionário inicial</h3>
             <div class="two-col">
-              <label class="field">Stress percebido (0–10)<input id="qStress" type="number" min="0" max="10" /></label>
-              <label class="field">Alimentação equilibrada esta semana
-                <select id="qFood"><option value="sim">Sim</option><option value="parcial">Parcialmente</option><option value="nao">Não</option></select>
+              <label class="field">Nível de atividade semanal
+                <select id="qActivity">
+                  <option value="">Selecionar</option>
+                  <option value="0">0 — Sedentário</option>
+                  <option value="1">1 — Muito baixo</option>
+                  <option value="2">2 — Baixo</option>
+                  <option value="3">3 — Moderado</option>
+                  <option value="4">4 — Bom</option>
+                  <option value="5">5 — Muito bom</option>
+                </select>
+              </label>
+              <label class="field">Horas de sono (média/noite)
+                <select id="qSleep">
+                  <option value="">Selecionar</option>
+                  <option value="lt6">&lt; 6h</option>
+                  <option value="6-7">6h a 7h</option>
+                  <option value="7-8">7h a 8h</option>
+                  <option value="8-9">8h a 9h</option>
+                  <option value="gt9">&gt; 9h</option>
+                </select>
+              </label>
+              <label class="field">Prática desportiva extraescolar
+                <input id="qSport" type="text" placeholder="Ex: futsal, dança, natação" />
+              </label>
+            </div>
+            <div class="questionnaire__actions">
+              <button class="btn" id="submitInitial">Submeter inicial</button>
+              <button class="btn btn--ghost" id="deferInitial">Adiar</button>
+            </div>
+            <p class="helper" id="questInitialStatus"></p>
+          </div>
+          <div class="card questionnaire">
+            <p class="section-label">Passo 2</p>
+            <h3>Questionário de rotina semanal</h3>
+            <div class="two-col">
+              <label class="field">Stress percebido (0-10)
+                <input id="qStress" type="number" min="0" max="10" />
+              </label>
+              <label class="field">Alimentação equilibrada
+                <select id="qFood">
+                  <option value="">Selecionar</option>
+                  <option value="sim">Sim</option>
+                  <option value="parcial">Parcialmente</option>
+                  <option value="nao">Não</option>
+                </select>
+              </label>
+              <label class="field">Humor geral (1-5)
+                <select id="qMood">
+                  <option value="">Selecionar</option>
+                  <option value="1">1 — Muito baixo</option>
+                  <option value="2">2 — Baixo</option>
+                  <option value="3">3 — Estável</option>
+                  <option value="4">4 — Bom</option>
+                  <option value="5">5 — Muito bom</option>
+                </select>
+              </label>
+              <label class="field">Energia geral (1-5)
+                <select id="qEnergy">
+                  <option value="">Selecionar</option>
+                  <option value="1">1 — Muito baixa</option>
+                  <option value="2">2 — Baixa</option>
+                  <option value="3">3 — Média</option>
+                  <option value="4">4 — Boa</option>
+                  <option value="5">5 — Muito boa</option>
+                </select>
+              </label>
+              <label class="field">Tempo de ecrã em dias úteis
+                <select id="qScreen">
+                  <option value="">Selecionar</option>
+                  <option value="lt2">&lt; 2h/dia</option>
+                  <option value="2-4">2h a 4h/dia</option>
+                  <option value="4-6">4h a 6h/dia</option>
+                  <option value="gt6">&gt; 6h/dia</option>
+                </select>
+              </label>
+              <label class="field">Hidratação diária
+                <select id="qHydration">
+                  <option value="">Selecionar</option>
+                  <option value="baixo">Baixa</option>
+                  <option value="medio">Média</option>
+                  <option value="boa">Boa</option>
+                </select>
               </label>
             </div>
             <button class="btn" id="submitRoutine">Submeter rotina</button>
+            <p class="helper" id="questRoutineStatus"></p>
           </div>
         </section>
-
         <!-- SOS -->
         <section class="tab-panel hidden" id="tab-sos" data-tab="sos">
-          <div class="page-header"><h2>SOS Saúde Mental</h2><p class="helper">Alerta discreto e imediato para psicólogo e professor de confiança</p></div>
+          <div class="page-header">
+            <h2>SOS Saúde Mental</h2>
+            <p class="helper">Alerta discreto e imediato para psicólogo e professor de confiança</p>
+          </div>
+
+          <div class="sos-info">
+            <p>Ao ativar o botão SOS, é enviado um alerta <strong>confidencial</strong> por email ao psicólogo e professor indicados abaixo. <strong>Ninguém saberá que foste tu.</strong></p>
+          </div>
+
           <div class="card">
-            <div class="sos-info">
-              <p>Ao ativar o botão SOS, é enviado um alerta confidencial por email ao psicólogo e professor indicados abaixo. Ninguém sabrá que foste tu.</p>
-            </div>
-            <hr class="card-divider" />
             <p class="section-label">Contactos de emergência</p>
             <div class="two-col">
-              <label class="field">Psicólogo responsável<input id="sosPsych" type="text" placeholder="Nome do psicólogo" /></label>
-              <label class="field">Email do psicólogo<input id="sosPsychEmail" type="email" placeholder="psicologo@colegio.pt" /></label>
-              <label class="field">Professor de confiança<input id="sosTeacher" type="text" placeholder="Nome do professor" /></label>
-              <label class="field">Email do professor<input id="sosTeacherEmail" type="email" placeholder="professor@colegio.pt" /></label>
+              <label class="field">
+                Psicólogo responsável
+                <input id="sosPsych" type="text" placeholder="Nome do psicólogo" />
+              </label>
+              <label class="field">
+                Email do psicólogo
+                <input id="sosPsychEmail" type="email" placeholder="psicologo@colegio.pt" />
+              </label>
+              <label class="field">
+                Professor de confiança
+                <input id="sosTeacher" type="text" placeholder="Nome do professor" />
+              </label>
+              <label class="field">
+                Email do professor
+                <input id="sosTeacherEmail" type="email" placeholder="professor@colegio.pt" />
+              </label>
             </div>
-            <hr class="card-divider" />
+          </div>
+
+          <div class="card sos-action-card">
+            <p class="section-label">Acionar alerta</p>
+            <p class="helper">O envio é anónimo e imediato. Os contactos acima serão notificados por email.</p>
             <button class="btn btn--alert btn--sos" id="triggerSos">⚠️ Ativar SOS</button>
             <div class="result" id="sosResult">Nenhum alerta ativo.</div>
           </div>
@@ -373,6 +433,7 @@
 
 
 
+    <script src="auth-template.js"></script>
     <script src="app.js"></script>
     <script>
       if ('serviceWorker' in navigator) {
@@ -381,3 +442,4 @@
     </script>
   </body>
 </html>
+

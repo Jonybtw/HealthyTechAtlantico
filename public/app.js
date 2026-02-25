@@ -1,4 +1,23 @@
-﻿const API_BASE = window.location.origin + "/api";
+const mountAuthTemplate = () => {
+  const mount = document.getElementById("loginScreenMount");
+  if (!mount) return;
+  if (typeof window.AUTH_TEMPLATE !== "string" || !window.AUTH_TEMPLATE.trim()) {
+    console.error("Auth template missing: public/auth-template.js");
+    mount.innerHTML = `
+      <div id="loginScreen" class="login-screen">
+        <div class="login-card">
+          <h1>AtlanticoFit</h1>
+          <p class="helper">Falha ao carregar o ecrã de autenticação. Recarrega a página.</p>
+        </div>
+      </div>
+    `;
+    return;
+  }
+  mount.outerHTML = window.AUTH_TEMPLATE;
+};
+
+mountAuthTemplate();
+const API_BASE = window.location.origin + "/api";
 
 const state = {
   profiles: JSON.parse(localStorage.getItem("af_profiles")) || [],
@@ -276,19 +295,22 @@ const testTable = {
 };
 
 const testOptions = [
-  { id: "vai", label: "Vai e Vem", unit: "percursos", better: "high", category: "Capacidade Aeróbia" },
-  { id: "cooper", label: "Cooper", unit: "voltas", better: "high", category: "Capacidade Aeróbia" },
-  { id: "milha", label: "Milha 1609m", unit: "mm:ss", better: "low", category: "Capacidade Aeróbia" },
+  { id: "vai", label: "Vai e Vem", unit: "percursos", better: "high", category: "Capacidade Aer�bia" },
+  { id: "cooper", label: "Cooper", unit: "voltas", better: "high", category: "Capacidade Aer�bia" },
+  { id: "milha", label: "Milha 1609m", unit: "mm:ss", better: "low", category: "Capacidade Aer�bia" },
   { id: "velocidade", label: "Velocidade 40m", unit: "s", better: "low", category: "Velocidade e Agilidade" },
   { id: "agilidade", label: "Agilidade 4x10m", unit: "s", better: "low", category: "Velocidade e Agilidade" },
-  { id: "abd", label: "Abdominais", unit: "reps", better: "high", category: "Força Muscular" },
-  { id: "bracos", label: "Extensoes de bracos", unit: "reps", better: "high", category: "Força Muscular" },
+  { id: "abd", label: "Abdominais", unit: "reps", better: "high", category: "For�a Muscular" },
+  { id: "bracos", label: "Extensoes de bracos", unit: "reps", better: "high", category: "For�a Muscular" },
   { id: "senta", label: "Senta e alcanca", unit: "cm", better: "high", category: "Flexibilidade" },
 ];
 
 const elements = {
+  topbarStats: document.getElementById("topbarStats"),
+  statStudentsWrap: document.getElementById("statStudentsWrap"),
   statStudents: document.getElementById("statStudents"),
   statRecords: document.getElementById("statRecords"),
+  statAlertsWrap: document.getElementById("statAlertsWrap"),
   statAlerts: document.getElementById("statAlerts"),
   roleSelect: document.getElementById("roleSelect"),
   userEmail: document.getElementById("userEmail"),
@@ -326,6 +348,19 @@ const elements = {
   addYear: document.getElementById("addYear"),
   chartYear: document.getElementById("chartYear"),
   chartClassImc: document.getElementById("chartClassImc"),
+  qActivity: document.getElementById("qActivity"),
+  qSleep: document.getElementById("qSleep"),
+  qSport: document.getElementById("qSport"),
+  qStress: document.getElementById("qStress"),
+  qFood: document.getElementById("qFood"),
+  qMood: document.getElementById("qMood"),
+  qEnergy: document.getElementById("qEnergy"),
+  qScreen: document.getElementById("qScreen"),
+  qHydration: document.getElementById("qHydration"),
+  questProgressBar: document.getElementById("questProgressBar"),
+  questProgressLabel: document.getElementById("questProgressLabel"),
+  questInitialStatus: document.getElementById("questInitialStatus"),
+  questRoutineStatus: document.getElementById("questRoutineStatus"),
   submitInitial: document.getElementById("submitInitial"),
   deferInitial: document.getElementById("deferInitial"),
   deferStatus: document.getElementById("deferStatus"),
@@ -396,7 +431,7 @@ const apiFetch = async (path, options = {}) => {
   return response.json();
 };
 
-// ─── Toast ──────────────────────────────────────────────────────────────────
+// --- Toast ------------------------------------------------------------------
 let _toastTimer = null;
 const toast = (msg, type = "") => {
   const el = elements.toastEl;
@@ -430,8 +465,12 @@ const calculateImc = () => {
   const sex = elements.studentSex.value;
   const ageKey = getAgeKey(age);
 
-  if (!ageKey || !height || !weight) {
-    elements.imcNote.textContent = "Preencha idade, altura e peso.";
+  if (!ageKey || !height || !weight || !sex) {
+    elements.imcNote.textContent = "Preencha idade, sexo, altura e peso.";
+    return;
+  }
+  if (!bmiTable[sex]?.[ageKey]) {
+    elements.imcNote.textContent = "Sexo ou idade sem referência de avaliação.";
     return;
   }
 
@@ -593,9 +632,84 @@ const saveTests = () => {
 };
 
 const updateStats = () => {
-  elements.statStudents.textContent = state.profiles.length;
   elements.statRecords.textContent = state.tests.length;
-  elements.statAlerts.textContent = state.alerts.length;
+};
+
+const hasPermission = (permission) => {
+  return Array.isArray(state.user?.permissions) && state.user.permissions.includes(permission);
+};
+
+const setTopbarVisibility = ({ students, alerts }) => {
+  if (elements.statStudentsWrap) elements.statStudentsWrap.classList.toggle("hidden", !students);
+  if (elements.statAlertsWrap) elements.statAlertsWrap.classList.toggle("hidden", !alerts);
+  if (elements.topbarStats) elements.topbarStats.classList.toggle("hidden", !students && !alerts);
+};
+
+const setTopbarStats = ({ students, alerts }) => {
+  if (elements.statStudents) elements.statStudents.textContent = String(students ?? 0);
+  if (elements.statAlerts) elements.statAlerts.textContent = String(alerts ?? 0);
+};
+
+const hydrateSessionUser = async () => {
+  if (!state.token) return;
+  try {
+    const me = await apiFetch("/users/me");
+    if (!me) return;
+    state.user = me;
+    localStorage.setItem("af_user", JSON.stringify(me));
+    if (elements.topbarUser) elements.topbarUser.textContent = me.email || "";
+  } catch (_) {}
+};
+
+const refreshTopbarStats = async () => {
+  if (!state.token || !state.user) {
+    setTopbarVisibility({ students: false, alerts: false });
+    setTopbarStats({ students: 0, alerts: 0 });
+    return;
+  }
+
+  const canListStudents = hasPermission("list_students");
+  const canReadSos = hasPermission("read_sos");
+  setTopbarVisibility({ students: canListStudents, alerts: canReadSos });
+
+  if (!canListStudents) {
+    setTopbarStats({ students: 0, alerts: 0 });
+    return;
+  }
+
+  try {
+    const students = await apiFetch("/students");
+    const studentCount = Array.isArray(students) ? students.length : 0;
+
+    if (!canReadSos) {
+      setTopbarStats({ students: studentCount, alerts: 0 });
+      return;
+    }
+
+    if (studentCount === 0) {
+      setTopbarStats({ students: 0, alerts: 0 });
+      return;
+    }
+
+    const sosResponses = await Promise.all(
+      students.map((student) =>
+        apiFetch(`/students/${student.id}/sos`)
+          .then((alerts) => (Array.isArray(alerts) ? alerts.length : 0))
+          .catch((error) => {
+            if (/forbidden/i.test(error.message)) return null;
+            return 0;
+          })
+      )
+    );
+
+    const totalAlerts = sosResponses.filter((value) => Number.isInteger(value)).reduce((sum, value) => sum + value, 0);
+    setTopbarStats({
+      students: studentCount,
+      alerts: totalAlerts,
+    });
+  } catch (_) {
+    setTopbarStats({ students: 0, alerts: 0 });
+  }
 };
 
 const saveProfile = () => {
@@ -605,7 +719,7 @@ const saveProfile = () => {
     consent_share: elements.consentShare.checked,
   };
   if (!state.token) {
-    updateAccessStatus("Sem sessao ativa. Faz login primeiro.");
+    updateAccessStatus("Sem sess\u00e3o ativa. Faz login primeiro.");
     return;
   }
   apiFetch("/users/me", {
@@ -626,6 +740,10 @@ const registerUser = () => {
   const role = elements.roleSelect.value;
   if (!email || !password) {
     toast("Email e palavra-passe s\u00e3o obrigat\u00f3rios.", "error");
+    return;
+  }
+  if (!role) {
+    toast("Seleciona o perfil da conta para registo.", "error");
     return;
   }
   apiFetch("/auth/register", {
@@ -661,6 +779,12 @@ const loginUser = () => {
     body: JSON.stringify({ email, password }),
   })
     .then((data) => {
+      const registerFields = document.getElementById("registerFields");
+      const showRegisterBtn = document.getElementById("showRegister");
+      if (registerFields) registerFields.classList.add("hidden");
+      if (showRegisterBtn) showRegisterBtn.textContent = "Criar conta";
+      if (elements.roleSelect) elements.roleSelect.value = "";
+
       state.token = data.token;
       state.user = data.user;
       localStorage.setItem("af_token", state.token);
@@ -683,7 +807,7 @@ const logoutUser = () => {
 
 const saveStudent = () => {
   if (!state.token) {
-    updateAccessStatus("Sem sessao ativa. Faz login primeiro.");
+    updateAccessStatus("Sem sessão ativa. Faz login primeiro.");
     return;
   }
   const name = elements.studentName.value.trim();
@@ -702,6 +826,7 @@ const saveStudent = () => {
       state.currentStudentId = student.id;
       localStorage.setItem("af_student_id", String(student.id));
       updateAccessStatus(`Aluno guardado: ${student.name}`);
+      refreshTopbarStats();
     })
     .catch((err) => updateAccessStatus(err.message));
 };
@@ -727,7 +852,7 @@ const saveBiometrics = () => {
 const updateReport = () => {
   const name = elements.studentName.value || "Aluno";
   const age = elements.studentAge.value || "-";
-  const sex = elements.studentSex.value === "F" ? "Feminino" : "Masculino";
+  const sex = elements.studentSex.value === "F" ? "Feminino" : elements.studentSex.value === "M" ? "Masculino" : "Não definido";
   const year = elements.schoolYear.value || "-";
   const imc = elements.imcValue.textContent || "-";
   const imcZone = elements.imcZone.textContent || "-";
@@ -775,7 +900,7 @@ Aluno: ${name}
 Idade: ${age} anos  |  Sexo: ${sex}  |  Ano letivo: ${year}
 
 --- COMPOSIÇÃO CORPORAL ---
-IMC: ${imc} kg/m²  →  ${imcZone}
+IMC: ${imc} kg/m²  —  ${imcZone}
 Perímetro da cintura: ${waistVal}
 
 --- BATERIA DE TESTES FÍSICOS ---
@@ -797,7 +922,7 @@ const sendReport = () => {
   updateReport();
   const email = elements.reportEmail.value.trim() || elements.userEmail.value.trim() || "";
   if (!email) {
-    updateAccessStatus("Insere o email do destinatario no campo Email do relatorio.");
+    updateAccessStatus("Insere o email do destinatário no campo Email do relatório.");
     return;
   }
   if (state.token && state.currentStudentId) {
@@ -805,10 +930,10 @@ const sendReport = () => {
       method: "POST",
       body: JSON.stringify({ content: elements.reportText.value, email }),
     })
-      .then(() => updateAccessStatus("Relatorio enviado por email."))
+      .then(() => updateAccessStatus("Relatório enviado por email."))
       .catch((err) => updateAccessStatus("Erro: " + err.message));
   } else {
-    const subject = encodeURIComponent("Relatorio AtlanticoFit");
+    const subject = encodeURIComponent("Relatório AtlanticoFit");
     const body = encodeURIComponent(elements.reportText.value);
     window.location.href = `mailto:${email}?subject=${subject}&body=${body}`;
   }
@@ -877,11 +1002,81 @@ const addYear = () => {
   updateCharts();
 };
 
+const QUESTIONNAIRE_DRAFT_KEY = "af_questionnaire_draft";
+const initialQuestionFields = ["qActivity", "qSleep", "qSport"];
+const routineQuestionFields = ["qStress", "qFood", "qMood", "qEnergy", "qScreen", "qHydration"];
+
+const loadQuestionnaireDraft = () => {
+  const draftRaw = localStorage.getItem(QUESTIONNAIRE_DRAFT_KEY);
+  if (!draftRaw) return;
+  try {
+    const draft = JSON.parse(draftRaw);
+    [...initialQuestionFields, ...routineQuestionFields].forEach((fieldId) => {
+      const input = elements[fieldId];
+      if (!input) return;
+      if (typeof draft[fieldId] === "string" || typeof draft[fieldId] === "number") {
+        input.value = String(draft[fieldId]);
+      }
+    });
+  } catch (_) {}
+};
+
+const saveQuestionnaireDraft = () => {
+  const draft = {};
+  [...initialQuestionFields, ...routineQuestionFields].forEach((fieldId) => {
+    draft[fieldId] = elements[fieldId]?.value || "";
+  });
+  localStorage.setItem(QUESTIONNAIRE_DRAFT_KEY, JSON.stringify(draft));
+};
+
+const countFilledFields = (fieldIds) => {
+  return fieldIds.reduce((count, fieldId) => {
+    const value = elements[fieldId]?.value;
+    return count + (value !== undefined && String(value).trim() !== "" ? 1 : 0);
+  }, 0);
+};
+
+const updateQuestionnaireProgress = () => {
+  const totalFields = initialQuestionFields.length + routineQuestionFields.length;
+  if (!totalFields) return;
+  const completed = countFilledFields(initialQuestionFields) + countFilledFields(routineQuestionFields);
+  const percent = Math.round((completed / totalFields) * 100);
+
+  if (elements.questProgressBar) {
+    elements.questProgressBar.style.width = `${percent}%`;
+  }
+  if (elements.questProgressLabel) {
+    elements.questProgressLabel.textContent = `${percent}% conclu\u00eddo (${completed}/${totalFields})`;
+  }
+};
+
+const validateQuestionnaireStep = (fieldIds, statusElement, missingText) => {
+  const missing = fieldIds.filter((id) => {
+    const value = elements[id]?.value;
+    return value === undefined || String(value).trim() === "";
+  });
+  if (missing.length > 0) {
+    if (statusElement) statusElement.textContent = missingText;
+    return false;
+  }
+  if (statusElement) statusElement.textContent = "";
+  return true;
+};
+
 const submitInitial = () => {
-  const activity = elements.qActivity?.value;
-  if (activity === "") return;
+  const valid = validateQuestionnaireStep(
+    initialQuestionFields,
+    elements.questInitialStatus,
+    "Preenche os 3 campos do questionário inicial."
+  );
+  if (!valid) return;
   localStorage.setItem("af_initial", "done");
-  elements.deferStatus.textContent = "Questionario inicial completo.";
+  elements.deferStatus.textContent = `Questionário inicial completo. ${state.defers} adiamentos usados.`;
+  if (elements.questInitialStatus) {
+    elements.questInitialStatus.textContent = "Questionário inicial submetido com sucesso.";
+  }
+  saveQuestionnaireDraft();
+  updateQuestionnaireProgress();
   if (state.token && state.currentStudentId) {
     apiFetch(`/students/${state.currentStudentId}/questionnaires`, {
       method: "POST",
@@ -909,7 +1104,18 @@ const deferInitial = () => {
 };
 
 const submitRoutine = () => {
+  const valid = validateQuestionnaireStep(
+    routineQuestionFields,
+    elements.questRoutineStatus,
+    "Completa o questionário de rotina antes de submeter."
+  );
+  if (!valid) return;
   localStorage.setItem("af_routine", new Date().toISOString());
+  if (elements.questRoutineStatus) {
+    elements.questRoutineStatus.textContent = "Questionário de rotina submetido com sucesso.";
+  }
+  saveQuestionnaireDraft();
+  updateQuestionnaireProgress();
   if (state.token && state.currentStudentId) {
     apiFetch(`/students/${state.currentStudentId}/questionnaires`, {
       method: "POST",
@@ -918,6 +1124,10 @@ const submitRoutine = () => {
         payload: {
           stress: elements.qStress.value,
           food: elements.qFood.value,
+          mood: elements.qMood.value,
+          energy: elements.qEnergy.value,
+          screen: elements.qScreen.value,
+          hydration: elements.qHydration.value,
         },
         deferredCount: state.defers,
       }),
@@ -937,8 +1147,9 @@ const triggerSos = () => {
   const alertEntry = { psych, teacher, at: new Date().toISOString() };
   state.alerts.push(alertEntry);
   localStorage.setItem("af_alerts", JSON.stringify(state.alerts));
-  elements.sosResult.innerHTML = `<strong>⚠ SOS ativo.</strong> Psicólogo: ${psych}, Professor: ${teacher}.<br><span style="color:#4a5f68;font-size:0.85rem">Notificação enviada${psychEmail || teacherEmail ? " por email" : ""}.</span>`;
+  elements.sosResult.innerHTML = `<strong>SOS ativo.</strong> Psicólogo: ${psych}, Professor: ${teacher}.<br><span style="color:#4a5f68;font-size:0.85rem">Notificação enviada${psychEmail || teacherEmail ? " por email" : ""}.</span>`;
   updateStats();
+  refreshTopbarStats();
   if (state.token && state.currentStudentId) {
     apiFetch(`/students/${state.currentStudentId}/sos`, {
       method: "POST",
@@ -946,7 +1157,7 @@ const triggerSos = () => {
     })
       .then((data) => {
         if (data.emailsSent?.length > 0) {
-          elements.sosResult.innerHTML += `<br><span style="color:#0a7040;font-size:0.82rem">✓ Email enviado para: ${data.emailsSent.join(", ")}</span>`;
+          elements.sosResult.innerHTML += `<br><span style="color:#0a7040;font-size:0.82rem">Email enviado para: ${data.emailsSent.join(", ")}</span>`;
         }
       })
       .catch((err) => updateAccessStatus(err.message));
@@ -961,7 +1172,7 @@ const populateDispensaStudents = async () => {
     const students = await apiFetch("/students");
     select.innerHTML = students.length
       ? students.map((s) => `<option value="${s.id}">${s.name}${s.school_year ? " — " + s.school_year : ""}</option>`).join("")
-      : `<option value="">— Sem alunos registados —</option>`;
+      : `<option value="">� Sem alunos registados �</option>`;
   } catch (_) {}
 };
 
@@ -977,7 +1188,7 @@ const registerDispensa = async () => {
     return;
   }
   if (!state.token) {
-    elements.dispensaStatus.textContent = "Erro: Não autenticado.";
+    elements.dispensaStatus.textContent = "Erro: N�o autenticado.";
     return;
   }
   try {
@@ -997,13 +1208,13 @@ const registerDispensa = async () => {
   }
 };
 
-// ─── Turma (class) view ───────────────────────────────────────────────────
+// --- Turma (class) view ---------------------------------------------------
 let turmaChart = null;
 
 const loadTurmaView = async () => {
   const year = elements.turmaYear?.value.trim();
   if (!year) { if (elements.turmaStatus) elements.turmaStatus.textContent = "Introduz o ano letivo."; return; }
-  if (!state.token) { if (elements.turmaStatus) elements.turmaStatus.textContent = "Sem sessão ativa."; return; }
+  if (!state.token) { if (elements.turmaStatus) elements.turmaStatus.textContent = "Sem sess�o ativa."; return; }
   try {
     if (elements.turmaStatus) elements.turmaStatus.textContent = "A carregar...";
     const students = await apiFetch(`/classes/${encodeURIComponent(year)}/report`);
@@ -1023,8 +1234,8 @@ const renderTurmaTable = (students) => {
   }
   let html = `<div class="table"><div class="table__row table__header turma-header"><span>Nome</span><span>Sexo</span><span>Idade</span><span>IMC</span><span>ZAF IMC</span><span>Cintura ZAF</span><span>Testes</span></div>`;
   students.forEach((s) => {
-    const imcOk = s.imc_zone === "Zona Saudavel" || s.imc_zone === "Zona Saudável";
-    const waistOk = s.waist_zone === "Zona Saudavel" || s.waist_zone === "Zona Saudável";
+    const imcOk = s.imc_zone === "Zona Saudavel" || s.imc_zone === "Zona Saud�vel";
+    const waistOk = s.waist_zone === "Zona Saudavel" || s.waist_zone === "Zona Saud�vel";
     html += `<div class="table__row turma-row">
       <span>${s.name}</span>
       <span>${s.sex === "F" ? "Feminino" : "Masculino"}</span>
@@ -1042,21 +1253,21 @@ const renderTurmaTable = (students) => {
 const renderTurmaChart = (students) => {
   const canvas = document.getElementById("turmaChart");
   if (!canvas) return;
-  const saudavel = students.filter((s) => s.imc_zone === "Zona Saudavel" || s.imc_zone === "Zona Saudável").length;
-  const melhoria = students.filter((s) => s.imc_zone && s.imc_zone !== "Zona Saudavel" && s.imc_zone !== "Zona Saudável").length;
+  const saudavel = students.filter((s) => s.imc_zone === "Zona Saudavel" || s.imc_zone === "Zona Saud�vel").length;
+  const melhoria = students.filter((s) => s.imc_zone && s.imc_zone !== "Zona Saudavel" && s.imc_zone !== "Zona Saud�vel").length;
   const semDados = students.length - saudavel - melhoria;
   if (turmaChart) turmaChart.destroy();
   turmaChart = new Chart(canvas, {
     type: "doughnut",
     data: {
-      labels: ["Zona Saudável", "Zona de Melhoria", "Sem dados"],
+      labels: ["Zona Saud�vel", "Zona de Melhoria", "Sem dados"],
       datasets: [{ data: [saudavel, melhoria, semDados], backgroundColor: ["rgba(15,160,80,0.75)", "rgba(242,108,79,0.75)", "rgba(74,95,104,0.3)"] }],
     },
     options: { responsive: true, plugins: { legend: { position: "bottom" }, title: { display: true, text: "Distribuição ZAF IMC — Turma" } } },
   });
 };
 
-// ─── Navigation ──────────────────────────────────────────────────────────────
+// --- Navigation --------------------------------------------------------------
 const NAV_TABS = {
   aluno:     ["bio", "tests", "quest", "sos", "reports", "protocols"],
   professor: ["bio", "tests", "turma", "dispensas", "reports", "charts", "protocols"],
@@ -1102,6 +1313,8 @@ const buildBottomNav = (role) => {
 const showLogin = () => {
   if (elements.loginScreen) elements.loginScreen.classList.remove("hidden");
   if (elements.appShell) elements.appShell.classList.add("hidden");
+  setTopbarVisibility({ students: false, alerts: false });
+  setTopbarStats({ students: 0, alerts: 0 });
 };
 
 const showApp = (user) => {
@@ -1112,9 +1325,11 @@ const showApp = (user) => {
   const firstTab = (NAV_TABS[user?.role || "aluno"] || NAV_TABS.aluno)[0];
   showTab(firstTab);
   updateStats();
-  apiFetch("/students").then((students) => {
-    elements.statStudents.textContent = students.length;
-  }).catch(() => {});
+  hydrateSessionUser().finally(() => {
+    const role = state.user?.role || user?.role || "aluno";
+    buildBottomNav(role);
+    refreshTopbarStats();
+  });
 };
 
 const applyRoleVisibility = () => {}; // replaced by tab navigation
@@ -1133,6 +1348,9 @@ const initModals = () => {
     showRegisterBtn.addEventListener("click", () => {
       registerFields.classList.toggle("hidden");
       showRegisterBtn.textContent = registerFields.classList.contains("hidden") ? "Criar conta" : "J\u00e1 tenho conta";
+      if (!registerFields.classList.contains("hidden") && elements.roleSelect) {
+        elements.roleSelect.value = "";
+      }
     });
   }
   // Enter on password
@@ -1144,8 +1362,29 @@ const initModals = () => {
 const init = () => {
   initModals();
   renderTests();
+  loadQuestionnaireDraft();
+  if (elements.deferStatus) {
+    const isInitialDone = localStorage.getItem("af_initial") === "done";
+    elements.deferStatus.textContent = isInitialDone
+      ? `Questionario inicial completo. ${state.defers} adiamentos usados.`
+      : `${state.defers} adiamentos usados.`;
+  }
+  updateQuestionnaireProgress();
 
-  // ── Wire up all interactive elements ────────────────────────────────────────
+  [...initialQuestionFields, ...routineQuestionFields].forEach((fieldId) => {
+    const input = elements[fieldId];
+    if (!input) return;
+    input.addEventListener("input", () => {
+      saveQuestionnaireDraft();
+      updateQuestionnaireProgress();
+    });
+    input.addEventListener("change", () => {
+      saveQuestionnaireDraft();
+      updateQuestionnaireProgress();
+    });
+  });
+
+  // -- Wire up all interactive elements ----------------------------------------
   elements.calcImc?.addEventListener("click", calculateImc);
   elements.saveStudent?.addEventListener("click", saveStudent);
   elements.saveBiometrics?.addEventListener("click", saveBiometrics);
@@ -1167,7 +1406,7 @@ const init = () => {
   elements.registerDispensa?.addEventListener("click", registerDispensa);
   elements.loadTurma?.addEventListener("click", loadTurmaView);
 
-  // ── Show login or app based on saved session ─────────────────────────────────
+  // -- Show login or app based on saved session ---------------------------------
   if (state.token && state.user) {
     showApp(state.user);
   } else {
@@ -1176,3 +1415,5 @@ const init = () => {
 };
 
 init();
+
+

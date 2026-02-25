@@ -17,7 +17,7 @@ const PERMISSIONS = {
   READ_LINKED_STUDENTS: "read_linked_students",
 };
 
-const ROLE_PERMISSIONS = {
+const DEFAULT_ROLE_PERMISSIONS = {
   aluno: new Set([
     PERMISSIONS.CREATE_STUDENT,
     PERMISSIONS.LIST_STUDENTS,
@@ -44,10 +44,71 @@ const ROLE_PERMISSIONS = {
   ]),
 };
 
+const cloneRolePermissions = (source) => {
+  const clone = {};
+  Object.entries(source).forEach(([role, permissions]) => {
+    clone[role] = new Set(Array.from(permissions));
+  });
+  return clone;
+};
+
+let rolePermissionsCache = cloneRolePermissions(DEFAULT_ROLE_PERMISSIONS);
+let rbacSource = "code";
+let rbacLastLoadedAt = null;
+
 const canRole = (role, permission) => {
-  const permissions = ROLE_PERMISSIONS[role];
+  const permissions = rolePermissionsCache[role];
   if (!permissions) return false;
   return permissions.has(permission);
+};
+
+const getRolePermissions = (role) => {
+  const permissions = rolePermissionsCache[role];
+  if (!permissions) return [];
+  return Array.from(permissions);
+};
+
+const isKnownRole = (role) => Boolean(rolePermissionsCache[role]);
+
+const getRbacState = () => ({
+  source: rbacSource,
+  lastLoadedAt: rbacLastLoadedAt,
+  roles: Object.keys(rolePermissionsCache),
+});
+
+const initRbac = async (pool) => {
+  try {
+    const result = await pool.query(
+      `SELECT r.role_key, p.permission_key
+       FROM roles r
+       LEFT JOIN role_permissions rp ON rp.role_key = r.role_key
+       LEFT JOIN permissions p ON p.permission_key = rp.permission_key
+       ORDER BY r.role_key ASC`
+    );
+
+    if (!result.rows.length) return getRbacState();
+
+    const dbRolePermissions = {};
+    const validPermissionKeys = new Set(Object.values(PERMISSIONS));
+    result.rows.forEach(({ role_key, permission_key }) => {
+      if (!dbRolePermissions[role_key]) dbRolePermissions[role_key] = new Set();
+      if (permission_key && validPermissionKeys.has(permission_key)) {
+        dbRolePermissions[role_key].add(permission_key);
+      }
+    });
+
+    if (Object.keys(dbRolePermissions).length > 0) {
+      rolePermissionsCache = dbRolePermissions;
+      rbacSource = "database";
+      rbacLastLoadedAt = new Date().toISOString();
+    }
+  } catch (_) {
+    rolePermissionsCache = cloneRolePermissions(DEFAULT_ROLE_PERMISSIONS);
+    rbacSource = "code";
+    rbacLastLoadedAt = new Date().toISOString();
+  }
+
+  return getRbacState();
 };
 
 const canAccessStudentByRole = ({ role, permission, isOwner, isGuardian }) => {
@@ -66,5 +127,9 @@ const canAccessStudentByRole = ({ role, permission, isOwner, isGuardian }) => {
 module.exports = {
   PERMISSIONS,
   canRole,
+  getRolePermissions,
+  isKnownRole,
   canAccessStudentByRole,
+  initRbac,
+  getRbacState,
 };

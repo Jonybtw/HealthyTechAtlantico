@@ -4,9 +4,9 @@ const jwt = require("jsonwebtoken");
 const pool = require("../db");
 const { JWT_SECRET } = require("../config/env");
 const { asyncHandler } = require("../utils/async-handler");
+const { getRolePermissions, isKnownRole } = require("../utils/rbac");
 
 const router = express.Router();
-const ROLES = new Set(["aluno", "professor", "psicologo", "pais"]);
 
 router.post(
   "/register",
@@ -15,7 +15,7 @@ router.post(
     if (!email || !password || !role) {
       return res.status(400).json({ error: "Missing fields" });
     }
-    if (!ROLES.has(role)) {
+    if (!isKnownRole(role)) {
       return res.status(400).json({ error: "Perfil inválido" });
     }
 
@@ -29,7 +29,7 @@ router.post(
       const token = jwt.sign({ id: user.id, email: user.email, role: user.role }, JWT_SECRET, {
         expiresIn: "7d",
       });
-      return res.json({ token, user });
+      return res.json({ token, user: { ...user, permissions: getRolePermissions(user.role) } });
     } catch (err) {
       if (err.code === "23505") {
         return res.status(400).json({ error: "Email já registado. Faz login." });
@@ -66,6 +66,7 @@ router.post(
         role: user.role,
         consent_rgpd: user.consent_rgpd,
         consent_share: user.consent_share,
+        permissions: getRolePermissions(user.role),
       },
     });
   })
