@@ -1,0 +1,383 @@
+<!doctype html>
+<html lang="pt">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>AtlanticoFit</title>
+    <!-- PWA -->
+    <link rel="manifest" href="manifest.json" />
+    <meta name="theme-color" content="#0f6c78" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="AtlanticoFit" />
+    <link rel="apple-touch-icon" href="icon-192.png" />
+    <!-- Description -->
+    <meta name="description" content="Plataforma escolar de avaliação física, acompanhamento longitudinal e bem-estar. Colégio Atlântico." />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Literata:wght@400;600&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="styles.css" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  </head>
+  <body>
+
+    <!-- ═══ ECRÃ DE LOGIN ══════════════════════════════════════════════════════ -->
+    <div id="loginScreen" class="login-screen">
+      <div class="login-card">
+        <div class="login-logo">
+          <div class="login-logo__badge">Colégio Atlântico</div>
+          <h1>AtlanticoFit</h1>
+          <p class="login-logo__sub">Plataforma de Educação Física</p>
+        </div>
+        <label class="field">
+          Perfil
+          <select id="roleSelect">
+            <option value="aluno">Aluno</option>
+            <option value="professor">Professor</option>
+            <option value="psicologo">Psicólogo</option>
+            <option value="pais">Pais / E.E.</option>
+          </select>
+        </label>
+        <label class="field">
+          Email
+          <input id="userEmail" type="email" placeholder="nome@colegio.pt" autocomplete="email" />
+        </label>
+        <label class="field">
+          Palavra-passe
+          <input id="userPassword" type="password" placeholder="Mínimo 8 caracteres" autocomplete="current-password" />
+        </label>
+        <div class="login-actions">
+          <button class="btn" id="loginUser">Entrar</button>
+          <button class="btn btn--ghost" id="showRegister">Criar conta</button>
+        </div>
+        <div id="registerFields" class="register-fields hidden">
+          <label class="field field--inline">
+            <input id="consentRgpd" type="checkbox" />
+            Aceito o tratamento de dados (RGPD)
+          </label>
+          <label class="field field--inline">
+            <input id="consentShare" type="checkbox" />
+            Autorizo envio de relatórios por email
+          </label>
+          <button class="btn" id="registerUser" style="width:100%;margin-top:8px">Registar</button>
+        </div>
+        <p class="helper login-status" id="accessStatus"></p>
+      </div>
+    </div>
+
+    <!-- ═══ APP SHELL (visível após login) ════════════════════════════════════ -->
+    <div id="appShell" class="app-shell hidden">
+
+      <header class="topbar">
+        <span class="topbar__logo">AtlanticoFit</span>
+        <div class="topbar__stats">
+          <span class="topstat"><span id="statStudents">0</span> alunos</span>
+          <span class="topstat sos-count"><span id="statAlerts">0</span> SOS</span>
+        </div>
+        <div class="topbar__right">
+          <span class="topbar__user" id="topbarUser"></span>
+          <button class="btn btn--ghost btn--sm" id="logoutUser">Sair</button>
+        </div>
+      </header>
+
+      <main class="shell-main" id="shellMain">
+
+        <!-- Biometria -->
+        <section class="tab-panel hidden" id="tab-bio" data-tab="bio">
+          <div class="page-header"><h2>Registo Biométrico</h2><p class="helper">Dados do aluno e composição corporal</p></div>
+          <div class="card">
+            <p class="section-label">Dados do aluno</p>
+            <div class="two-col">
+              <label class="field">Nome<input id="studentName" type="text" placeholder="Nome completo" /></label>
+              <label class="field">Sexo<select id="studentSex"><option value="F">Feminino</option><option value="M">Masculino</option></select></label>
+              <label class="field">Idade<input id="studentAge" type="number" min="9" max="18" placeholder="9–18" /></label>
+              <label class="field">Ano letivo<input id="schoolYear" type="text" placeholder="2025/2026" /></label>
+            </div>
+            <hr class="card-divider" />
+            <p class="section-label">Composição corporal</p>
+            <div class="two-col">
+              <label class="field">Altura (m)<input id="studentHeight" type="number" step="0.01" placeholder="1.62" /></label>
+              <label class="field">Peso (kg)<input id="studentWeight" type="number" step="0.1" placeholder="54.5" /></label>
+              <label class="field">Massa gorda (%)<input id="studentFat" type="number" step="0.1" placeholder="Opcional" /></label>
+              <label class="field">Perímetro da cintura (cm)<input id="studentWaist" type="number" step="0.1" placeholder="72" /></label>
+            </div>
+            <button class="btn" id="calcImc">Calcular IMC e ZAF</button>
+            <div class="result" id="imcResult">
+              <div><strong>IMC</strong> <span id="imcValue">—</span></div>
+              <div><strong>Zona IMC</strong> <span id="imcZone">—</span></div>
+              <p class="note" id="imcNote">Preencha os dados para avaliar.</p>
+              <div><strong>Cintura</strong> <span id="waistZone">—</span></div>
+              <p class="note" id="waistNote"></p>
+            </div>
+            <hr class="card-divider" />
+            <div class="actions">
+              <button class="btn" id="saveStudent">Guardar aluno</button>
+              <button class="btn btn--ghost" id="saveBiometrics">Guardar biometria</button>
+            </div>
+            <p class="helper" id="bioStatus"></p>
+          </div>
+        </section>
+
+        <!-- Testes -->
+        <section class="tab-panel hidden" id="tab-tests" data-tab="tests">
+          <div class="page-header"><h2>Bateria de Testes Físicos</h2><p class="helper">Classificação automática (ZAF) por idade e sexo — guarda o aluno primeiro</p></div>
+          <div class="card">
+            <div class="table" id="testsTable">
+              <div class="table__row table__header"><span>Teste</span><span>Resultado</span><span>Unidade</span><span>ZAF</span></div>
+            </div>
+            <div class="actions">
+              <button class="btn btn--ghost" id="addTestRow">+ Adicionar teste</button>
+              <button class="btn" id="saveTests">Guardar testes</button>
+            </div>
+          </div>
+        </section>
+
+        <!-- Questionários -->
+        <section class="tab-panel hidden" id="tab-quest" data-tab="quest">
+          <div class="page-header"><h2>Questionários</h2><p class="helper">Obrigatório — máx. 3 adiamentos permitidos</p></div>
+          <div class="card questionnaire">
+            <h3>Questionário inicial</h3>
+            <div class="two-col">
+              <label class="field">Nível de atividade física semanal (0–5)<input id="qActivity" type="number" min="0" max="5" /></label>
+              <label class="field">Horas de sono (média)<input id="qSleep" type="number" min="0" max="12" /></label>
+              <label class="field">Prática desportiva extraescolar<input id="qSport" type="text" placeholder="Ex: futsal, dança" /></label>
+            </div>
+            <div class="questionnaire__actions">
+              <button class="btn" id="submitInitial">Submeter</button>
+              <button class="btn btn--ghost" id="deferInitial">Adiar</button>
+            </div>
+            <p class="note" id="deferStatus">0 adiamentos usados.</p>
+          </div>
+          <div class="card questionnaire" style="margin-top:16px">
+            <h3>Questionário de rotina</h3>
+            <div class="two-col">
+              <label class="field">Stress percebido (0–10)<input id="qStress" type="number" min="0" max="10" /></label>
+              <label class="field">Alimentação equilibrada esta semana
+                <select id="qFood"><option value="sim">Sim</option><option value="parcial">Parcialmente</option><option value="nao">Não</option></select>
+              </label>
+            </div>
+            <button class="btn" id="submitRoutine">Submeter rotina</button>
+          </div>
+        </section>
+
+        <!-- SOS -->
+        <section class="tab-panel hidden" id="tab-sos" data-tab="sos">
+          <div class="page-header"><h2>SOS Saúde Mental</h2><p class="helper">Alerta discreto e imediato para psicólogo e professor de confiança</p></div>
+          <div class="card">
+            <div class="sos-info">
+              <p>Ao ativar o botão SOS, é enviado um alerta confidencial por email ao psicólogo e professor indicados abaixo. Ninguém sabrá que foste tu.</p>
+            </div>
+            <hr class="card-divider" />
+            <p class="section-label">Contactos de emergência</p>
+            <div class="two-col">
+              <label class="field">Psicólogo responsável<input id="sosPsych" type="text" placeholder="Nome do psicólogo" /></label>
+              <label class="field">Email do psicólogo<input id="sosPsychEmail" type="email" placeholder="psicologo@colegio.pt" /></label>
+              <label class="field">Professor de confiança<input id="sosTeacher" type="text" placeholder="Nome do professor" /></label>
+              <label class="field">Email do professor<input id="sosTeacherEmail" type="email" placeholder="professor@colegio.pt" /></label>
+            </div>
+            <hr class="card-divider" />
+            <button class="btn btn--alert btn--sos" id="triggerSos">⚠️ Ativar SOS</button>
+            <div class="result" id="sosResult">Nenhum alerta ativo.</div>
+          </div>
+        </section>
+
+        <!-- Relatórios -->
+        <section class="tab-panel hidden" id="tab-reports" data-tab="reports">
+          <div class="page-header"><h2>Relatórios</h2><p class="helper">Gerar e enviar ao Encarregado de Educação via Microsoft 365</p></div>
+          <div class="card">
+            <p class="section-label">Pré-visualização do relatório</p>
+            <button class="btn btn--ghost" id="generateReport">Gerar relatório</button>
+            <textarea id="reportText" rows="12" placeholder="Clica em 'Gerar relatório' para preencher automaticamente..." readonly></textarea>
+            <hr class="card-divider" />
+            <p class="section-label">Enviar por email</p>
+            <label class="field">Email do destinatário<input id="reportEmail" type="email" placeholder="encarregado@exemplo.pt" /></label>
+            <button class="btn" id="sendReport">Enviar por email</button>
+          </div>
+        </section>
+
+        <!-- Análise -->
+        <section class="tab-panel hidden" id="tab-charts" data-tab="charts">
+          <div class="page-header"><h2>Análise Longitudinal</h2><p class="helper">Evolução por aluno e desempenho global da turma</p></div>
+          <div class="card">
+            <p class="section-label">Adicionar ano letivo</p>
+            <div class="two-col">
+              <label class="field">Ano letivo<input id="chartYear" type="text" placeholder="2025/2026" /></label>
+              <label class="field">IMC médio da turma<input id="chartClassImc" type="number" step="0.1" placeholder="20.4" /></label>
+            </div>
+            <button class="btn btn--ghost" id="addYear">Adicionar ano</button>
+            <hr class="card-divider" />
+            <p class="section-label">IMC do aluno ao longo dos anos</p>
+            <canvas id="studentChart" height="140"></canvas>
+            <hr class="card-divider" />
+            <p class="section-label">IMC médio da turma</p>
+            <canvas id="classChart" height="140"></canvas>
+          </div>
+        </section>
+
+        <!-- Turma -->
+        <section class="tab-panel hidden" id="tab-turma" data-tab="turma">
+          <div class="page-header"><h2>Vista de Turma</h2><p class="helper">Desempenho global e ZAF por turma</p></div>
+          <div class="card">
+            <p class="section-label">Filtrar por ano letivo</p>
+            <div class="actions">
+              <label class="field" style="margin:0;flex:1"><input id="turmaYear" type="text" placeholder="Ex: 2025/2026" /></label>
+              <button class="btn" id="loadTurma">Carregar turma</button>
+            </div>
+            <p class="helper" id="turmaStatus"></p>
+            <div id="turmaTable"></div>
+            <hr class="card-divider" />
+            <p class="section-label">Distribuição ZAF — IMC</p>
+            <canvas id="turmaChart" height="180"></canvas>
+          </div>
+        </section>
+
+        <!-- Dispensas -->
+        <section class="tab-panel hidden" id="tab-dispensas" data-tab="dispensas">
+          <div class="page-header"><h2>Atestados e Dispensas</h2><p class="helper">Registo de atestados médicos e dispensas de aula</p></div>
+          <div class="card">
+            <p class="section-label">Aluno e motivo</p>
+            <div class="two-col">
+              <label class="field">Aluno<select id="dispensaStudentId"><option value="">— Seleciona o aluno —</option></select></label>
+              <label class="field">Motivo<input id="dispensaReason" type="text" placeholder="Ex: Lesão, COVID" /></label>
+            </div>
+            <hr class="card-divider" />
+            <p class="section-label">Período</p>
+            <div class="two-col">
+              <label class="field">Data início<input id="dispensaStartDate" type="date" /></label>
+              <label class="field">Data fim<input id="dispensaEndDate" type="date" /></label>
+            </div>
+            <label class="field field--inline"><input id="dispensaMedical" type="checkbox" /> Tem atestado médico</label>
+            <hr class="card-divider" />
+            <button class="btn" id="registerDispensa">Registar dispensa</button>
+            <p class="helper" id="dispensaStatus"></p>
+          </div>
+        </section>
+
+        <!-- Protocolos -->
+        <section class="tab-panel hidden" id="tab-protocols" data-tab="protocols">
+          <div class="page-header"><h2>Área de Protocolos</h2><p class="helper">Normas e critérios de execução de cada teste de aptidão física</p></div>
+          <div class="card">
+            <div class="reference-block">
+              <h3>Tabelas de Referência ZAF</h3>
+              <p class="helper">IMC e perímetro da cintura por idade e sexo para classificação automática.</p>
+
+              <p class="section-label">Índice de Massa Corporal (kg/m²) — Zona Saudável</p>
+              <div class="table-scroll">
+                <table class="ref-table">
+                  <thead>
+                    <tr>
+                      <th>Idade</th>
+                      <th>Raparigas (&gt;)</th>
+                      <th>Raparigas (&lt;)</th>
+                      <th>Rapazes (&gt;)</th>
+                      <th>Rapazes (&lt;)</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr><td>9</td><td>13.3</td><td>18.7</td><td>13.6</td><td>18.2</td></tr>
+                    <tr><td>10</td><td>13.7</td><td>19.4</td><td>13.9</td><td>18.8</td></tr>
+                    <tr><td>11</td><td>14.1</td><td>20.3</td><td>14.2</td><td>19.5</td></tr>
+                    <tr><td>12</td><td>14.7</td><td>21.3</td><td>14.7</td><td>20.4</td></tr>
+                    <tr><td>13</td><td>15.2</td><td>22.3</td><td>15.2</td><td>21.3</td></tr>
+                    <tr><td>14</td><td>15.7</td><td>23.1</td><td>15.7</td><td>22.2</td></tr>
+                    <tr><td>15</td><td>16.0</td><td>23.8</td><td>16.3</td><td>23.1</td></tr>
+                    <tr><td>16</td><td>16.3</td><td>24.3</td><td>16.7</td><td>23.9</td></tr>
+                    <tr><td>17</td><td>16.4</td><td>24.6</td><td>17.1</td><td>24.6</td></tr>
+                    <tr><td>18+</td><td>18.5</td><td>25.0</td><td>18.5</td><td>25.0</td></tr>
+                  </tbody>
+                </table>
+              </div>
+              <p class="helper">Um IMC elevado está associado a um risco cardiovascular elevado, assim como a problemas metabólicos e osteoarticulares.</p>
+
+              <p class="section-label">Perímetro da Cintura (cm) — Zona Saudável (&lt;)</p>
+              <div class="table-scroll">
+                <table class="ref-table">
+                  <thead>
+                    <tr>
+                      <th>Idade</th>
+                      <th>Raparigas</th>
+                      <th>Rapazes</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr><td>9</td><td>66.8</td><td>77.1</td></tr>
+                    <tr><td>10</td><td>68.9</td><td>80.1</td></tr>
+                    <tr><td>11</td><td>70.8</td><td>82.6</td></tr>
+                    <tr><td>12</td><td>72.5</td><td>85.1</td></tr>
+                    <tr><td>13</td><td>74.2</td><td>87.0</td></tr>
+                    <tr><td>14</td><td>75.7</td><td>88.9</td></tr>
+                    <tr><td>15</td><td>76.8</td><td>90.5</td></tr>
+                    <tr><td>16</td><td>77.7</td><td>91.8</td></tr>
+                    <tr><td>17</td><td>78.5</td><td>92.7</td></tr>
+                    <tr><td>18+</td><td>79.2</td><td>93.4</td></tr>
+                  </tbody>
+                </table>
+              </div>
+              <p class="helper">O Perímetro da Cintura relaciona-se com a gordura abdominal (subcutânea e visceral) e com a gordura corporal total. Um Perímetro da Cintura elevado é considerado um fator de risco de doenças cardiometabólicas e respiratórias.</p>
+            </div>
+
+            <hr class="card-divider" />
+            <div class="protocols">
+              <details open>
+                <summary>Vai e Vem (20m Pacer)</summary>
+                <p>Teste de capacidade aeróbia com incrementos sonoros (beeps). O aluno percorre 20 metros de um lado ao outro, aumentando a velocidade progressivamente a cada nível. Regista o número total de percursos completados antes de não conseguir acompanhar o sinal sonoro por duas vezes consecutivas.</p>
+              </details>
+              <details>
+                <summary>Corrida da Milha (1609m)</summary>
+                <p>Registar o tempo final em formato MM:SS. O aluno deve correr sem paragens a um ritmo sustentado. Realizar em piso plano. Não é permitido o uso de calçado de pregos.</p>
+              </details>
+              <details>
+                <summary>Abdominais (curl-up)</summary>
+                <p>Contar o número de repetições em 60 segundos com técnica padrão: deitado de costas, joelhos a 140°, mãos nos lados das coxas, deslizar os dedos 7,5 cm à frente. Ritmo controlado por metrónomo (20 movimentos/min).</p>
+              </details>
+              <details>
+                <summary>Extensões de Braços (push-up)</summary>
+                <p>Flexões com alinhamento corporal reto, cotovelos a 90° no ponto baixo. Ritmo controlado. Contar o máximo de repetições sem limite de tempo ou com ritmo de metrónomo conforme protocolo da turma.</p>
+              </details>
+              <details>
+                <summary>Senta e Alcança (sit-and-reach)</summary>
+                <p>Sentar no chão, pernas estendidas contra a caixa de medição. Alcançar com as mãos sobrepostas a maior distância possível sem dobrar os joelhos. Registar o melhor de três tentativas em cm (valor positivo = além dos pés).</p>
+              </details>
+              <details>
+                <summary>Velocidade / Agilidade 4×10m</summary>
+                <p>O aluno parte de uma linha, corre 10m, toca na linha oposta, regressa — repete 4 vezes. Cronometrar em segundos (décimas). Importante: usar calçado com bom agarre.</p>
+              </details>
+              <details>
+                <summary>IMC e Perímetro da Cintura</summary>
+                <p>IMC = Peso (kg) ÷ Altura² (m). Perímetro da cintura: fita métrica a meia distância entre a última costela e a crista ilíaca, no final de uma expiração normal. Registar em cm.</p>
+              </details>
+            </div>
+          </div>
+        </section>
+
+      </main>
+
+      <!-- Navegação inferior (construída via JS) -->
+      <nav class="bottomnav" id="bottomnav"></nav>
+    </div>
+
+    <!-- Toast de feedback -->
+    <div class="toast hidden" id="toast"></div>
+
+    <!-- Elementos legados mantidos para compatibilidade JS -->
+    <div style="display:none" aria-hidden="true">
+      <div id="accessCard"></div>
+      <div id="bioCard"></div>
+      <div id="testsCard"></div>
+      <div id="sosCard"></div>
+      <div id="dispensasCard"></div>
+      <div id="turmaCard"></div>
+      <div id="chartsCard"></div>
+      <span id="statRecords">0</span>
+    </div>
+
+
+
+    <script src="app.js"></script>
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js').catch(() => {}));
+      }
+    </script>
+  </body>
+</html>
