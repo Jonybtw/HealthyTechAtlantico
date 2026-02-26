@@ -7,7 +7,8 @@
   "scripts": {
     "start": "node server/server.js",
     "dev": "nodemon server/server.js",
-    "test": "node tests/run.js"
+    "test": "node tests/run.js",
+    "db:init": "node -e \"require('./server/utils/init-db')().then(()=>process.exit(0)).catch(e=>{console.error(e);process.exit(1)})\""
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",

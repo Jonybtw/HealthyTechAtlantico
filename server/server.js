@@ -2,8 +2,10 @@ const app = require("./app");
 const pool = require("./db");
 const { PORT } = require("./config/env");
 const { initRbac, getRbacState } = require("./utils/rbac");
+const initDb = require("./utils/init-db");
 
 const start = async () => {
+  await initDb(pool);
   await initRbac(pool);
   const rbac = getRbacState();
 

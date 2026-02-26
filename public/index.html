@@ -44,8 +44,8 @@
           <span class="topstat sos-count" id="statAlertsWrap"><span id="statAlerts">0</span> SOS</span>
         </div>
         <div class="topbar__right">
-          <span class="topbar__user" id="topbarUser"></span>
-          <button class="btn btn--ghost btn--sm" id="logoutUser">Sair</button>
+          <span class="topbar__user" id="topbarEmail"></span>
+          <button class="btn--profile" id="profileBtn" aria-label="Perfil"><span id="topbarInitials">?</span></button>
         </div>
       </header>
 
@@ -70,7 +70,9 @@
               <label class="field"><span class="field__label"><i data-lucide="percent" class="field-icon"></i>Massa gorda (%)</span><input id="studentFat" type="number" step="0.1" placeholder="Opcional" /></label>
               <label class="field"><span class="field__label"><i data-lucide="move-horizontal" class="field-icon"></i>Perímetro da cintura (cm)</span><input id="studentWaist" type="number" step="0.1" placeholder="72" /></label>
             </div>
-            <button class="btn" id="calcImc"><i data-lucide="calculator" class="btn-icon"></i>Calcular IMC e ZAF</button>
+            <div class="actions">
+              <button class="btn" id="calcImc"><i data-lucide="calculator" class="btn-icon"></i>Calcular IMC e ZAF</button>
+            </div>
             <div class="result" id="imcResult">
               <div><strong>IMC</strong> <span id="imcValue">—</span></div>
               <div><strong>Zona IMC</strong> <span id="imcZone">—</span></div>
@@ -206,7 +208,9 @@
                 </select>
               </label>
             </div>
-            <button class="btn" id="submitRoutine"><i data-lucide="send" class="btn-icon"></i>Submeter rotina</button>
+            <div class="actions">
+              <button class="btn" id="submitRoutine"><i data-lucide="send" class="btn-icon"></i>Submeter rotina</button>
+            </div>
             <p class="helper" id="questRoutineStatus"></p>
           </div>
         </section>
@@ -225,15 +229,18 @@
             <p class="section-label">Contactos de emergência</p>
             <div class="two-col">
               <label class="field">
-                <span class="field__label"><i data-lucide="user" class="field-icon"></i>Psicólogo responsável</span>
+                <span class="field__label"><i data-lucide="brain" class="field-icon"></i>Psicólogo responsável</span>
                 <input id="sosPsych" type="text" placeholder="Nome do psicólogo" />
               </label>
               <label class="field">
                 <span class="field__label"><i data-lucide="mail" class="field-icon"></i>Email do psicólogo</span>
                 <input id="sosPsychEmail" type="email" placeholder="psicologo@colegio.pt" />
               </label>
+            </div>
+            <hr class="card-divider" />
+            <div class="two-col">
               <label class="field">
-                <span class="field__label"><i data-lucide="user" class="field-icon"></i>Professor de confiança</span>
+                <span class="field__label"><i data-lucide="shield" class="field-icon"></i>Professor de confiança</span>
                 <input id="sosTeacher" type="text" placeholder="Nome do professor" />
               </label>
               <label class="field">
@@ -246,7 +253,9 @@
           <div class="card sos-action-card">
             <p class="section-label">Acionar alerta</p>
             <p class="helper">O envio é anónimo e imediato. Os contactos acima serão notificados por email.</p>
-            <button class="btn btn--alert btn--sos" id="triggerSos"><i data-lucide="alert-triangle" class="btn-icon"></i>Ativar SOS</button>
+            <div class="actions">
+              <button class="btn btn--alert btn--sos" id="triggerSos"><i data-lucide="alert-triangle" class="btn-icon"></i>Ativar SOS</button>
+            </div>
             <div class="result" id="sosResult">Nenhum alerta ativo.</div>
           </div>
         </section>
@@ -256,12 +265,16 @@
           <div class="page-header"><h2>Relatórios</h2><p class="helper">Gera e envia o relatório ao Encarregado de Educação por email</p></div>
           <div class="card">
             <p class="section-label">Pré-visualização do relatório</p>
-            <button class="btn btn--ghost" id="generateReport"><i data-lucide="file-text" class="btn-icon"></i>Gerar relatório</button>
+            <div class="actions">
+              <button class="btn btn--ghost" id="generateReport"><i data-lucide="file-text" class="btn-icon"></i>Gerar relatório</button>
+            </div>
             <textarea id="reportText" rows="12" placeholder="Clica em 'Gerar relatório' para preencher automaticamente..." readonly></textarea>
             <hr class="card-divider" />
             <p class="section-label">Enviar por email</p>
             <label class="field"><span class="field__label"><i data-lucide="mail" class="field-icon"></i>Email do destinatário</span><input id="reportEmail" type="email" placeholder="encarregado@exemplo.pt" /></label>
-            <button class="btn" id="sendReport"><i data-lucide="send" class="btn-icon"></i>Enviar por email</button>
+            <div class="actions">
+              <button class="btn" id="sendReport"><i data-lucide="send" class="btn-icon"></i>Enviar por email</button>
+            </div>
           </div>
         </section>
 
@@ -416,6 +429,31 @@
                 <summary>IMC e Perímetro da Cintura</summary>
                 <p>IMC = Peso (kg) ÷ Altura² (m). Perímetro da cintura: fita métrica a meia distância entre a última costela e a crista ilíaca, no final de uma expiração normal. Registar em cm.</p>
               </details>
+            </div>
+          </div>
+        </section>
+
+        <!-- Perfil -->
+        <section class="tab-panel hidden" id="tab-perfil" data-tab="perfil">
+          <div class="page-header">
+            <h2>Perfil</h2>
+            <p class="helper">A tua conta AtlanticoFit</p>
+          </div>
+          <div class="card">
+            <p class="section-label">Conta</p>
+            <div class="profile-header">
+              <div class="profile-avatar" id="profileAvatar">?</div>
+              <div>
+                <p class="profile-email" id="profileEmail">—</p>
+                <span class="profile-role-badge" id="profileRoleBadge">—</span>
+              </div>
+            </div>
+          </div>
+          <div class="card">
+            <p class="section-label">Sessão</p>
+            <p class="helper">Terminar sessão neste dispositivo.</p>
+            <div class="actions">
+              <button class="btn btn--ghost" id="logoutUserBtn"><i data-lucide="log-out" class="btn-icon"></i>Terminar sessão</button>
             </div>
           </div>
         </section>

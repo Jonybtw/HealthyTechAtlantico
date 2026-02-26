@@ -320,7 +320,13 @@ const elements = {
   consentShare: document.getElementById("consentShare"),
   registerUser: document.getElementById("registerUser"),
   loginUser: document.getElementById("loginUser"),
-  logoutUser: document.getElementById("logoutUser"),
+  logoutUserBtn: document.getElementById("logoutUserBtn"),
+  profileBtn: document.getElementById("profileBtn"),
+  topbarInitials: document.getElementById("topbarInitials"),
+  topbarEmail: document.getElementById("topbarEmail"),
+  profileAvatar: document.getElementById("profileAvatar"),
+  profileEmail: document.getElementById("profileEmail"),
+  profileRoleBadge: document.getElementById("profileRoleBadge"),
   saveAccess: document.getElementById("saveAccess"),
   accessStatus: document.getElementById("accessStatus"),
   studentName: document.getElementById("studentName"),
@@ -659,7 +665,9 @@ const hydrateSessionUser = async () => {
     if (!me) return;
     state.user = me;
     localStorage.setItem("af_user", JSON.stringify(me));
-    if (elements.topbarUser) elements.topbarUser.textContent = me.email || "";
+    const initials = (me.email || "?").charAt(0).toUpperCase();
+    if (elements.topbarInitials) elements.topbarInitials.textContent = initials;
+    if (elements.topbarEmail) elements.topbarEmail.textContent = me.email || "";
   } catch (_) {}
 };
 
@@ -670,8 +678,9 @@ const refreshTopbarStats = async () => {
     return;
   }
 
-  const canListStudents = hasPermission("list_students");
-  const canReadSos = hasPermission("read_sos");
+  const role = state.user?.role;
+  const canListStudents = hasPermission("list_students") && role !== "aluno" && role !== "pais";
+  const canReadSos = hasPermission("read_sos") && (role === "professor" || role === "psicologo");
   setTopbarVisibility({ students: canListStudents, alerts: canReadSos });
 
   if (!canListStudents) {
@@ -801,6 +810,23 @@ const loginUser = () => {
       hideLoading();
       toast(err.message, "error");
     });
+};
+
+const ROLE_LABELS = { aluno: "Aluno", professor: "Professor", psicologo: "Psicólogo", pais: "Pais / E.E." };
+
+const populateProfileTab = () => {
+  const user = state.user;
+  if (!user) return;
+  const initials = (user.email || "?").charAt(0).toUpperCase();
+  const roleLabel = ROLE_LABELS[user.role] || user.role || "—";
+  if (elements.profileEmail) elements.profileEmail.textContent = user.email || "—";
+  if (elements.profileRoleBadge) {
+    elements.profileRoleBadge.textContent = roleLabel;
+    elements.profileRoleBadge.dataset.role = user.role || "";
+  }
+  if (elements.profileAvatar) elements.profileAvatar.textContent = initials;
+  if (elements.topbarInitials) elements.topbarInitials.textContent = initials;
+  if (elements.topbarEmail) elements.topbarEmail.textContent = user.email || "";
 };
 
 const logoutUser = () => {
@@ -1291,17 +1317,25 @@ const TAB_META = {
   turma:     { label: "Turma",        icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>` },
   dispensas: { label: "Dispensas",    icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>` },
   protocols: { label: "Protocolos",   icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>` },
+  perfil:    { label: "Perfil",        icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>` },
 };
 
 const showTab = (tabId) => {
   document.querySelectorAll(".tab-panel").forEach((p) => p.classList.add("hidden"));
   const panel = document.getElementById("tab-" + tabId);
-  if (panel) panel.classList.remove("hidden");
+  if (panel) {
+    panel.classList.remove("hidden");
+    // restart tab-in animation on every switch
+    panel.style.animation = "none";
+    void panel.offsetHeight; // reflow
+    panel.style.animation = "";
+  }
   document.querySelectorAll(".bottomnav__item").forEach((b) => {
     b.classList.toggle("active", b.dataset.tab === tabId);
   });
   if (tabId === "charts") updateCharts();
   if (tabId === "dispensas") populateDispensaStudents();
+  if (tabId === "perfil") populateProfileTab();
 };
 
 const buildBottomNav = (role) => {
@@ -1336,7 +1370,9 @@ const showApp = (user) => {
   hideLoading();
   if (elements.loginScreen) elements.loginScreen.classList.add("hidden");
   if (elements.appShell) elements.appShell.classList.remove("hidden");
-  if (elements.topbarUser) elements.topbarUser.textContent = user?.email || "";
+  const initials = (user?.email || "?").charAt(0).toUpperCase();
+  if (elements.topbarInitials) elements.topbarInitials.textContent = initials;
+  if (elements.topbarEmail) elements.topbarEmail.textContent = user?.email || "";
   buildBottomNav(user?.role || "aluno");
   const firstTab = (NAV_TABS[user?.role || "aluno"] || NAV_TABS.aluno)[0];
   showTab(firstTab);
@@ -1537,11 +1573,13 @@ const initNumericStepper = (inputId, { min, max, step = 1 } = {}) => {
     plusBtn.disabled = v >= max;
   };
 
-  minusBtn.addEventListener("click", () => {
+  minusBtn.addEventListener("click", (e) => {
+    e.stopPropagation();
     const cur = parseFloat(inp.value);
     update(isNaN(cur) ? max : cur - step);
   });
-  plusBtn.addEventListener("click", () => {
+  plusBtn.addEventListener("click", (e) => {
+    e.stopPropagation();
     const cur = parseFloat(inp.value);
     update(isNaN(cur) ? min : cur + step);
   });
@@ -1676,7 +1714,8 @@ const init = () => {
   elements.saveAccess?.addEventListener("click", saveProfile);
   elements.registerUser?.addEventListener("click", registerUser);
   elements.loginUser?.addEventListener("click", loginUser);
-  elements.logoutUser?.addEventListener("click", logoutUser);
+  elements.logoutUserBtn?.addEventListener("click", logoutUser);
+  elements.profileBtn?.addEventListener("click", () => showTab("perfil"));
   elements.sendReport?.addEventListener("click", sendReport);
   elements.generateReport?.addEventListener("click", updateReport);
   elements.addYear?.addEventListener("click", addYear);
