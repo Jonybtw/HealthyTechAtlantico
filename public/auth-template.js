@@ -3,7 +3,7 @@ window.AUTH_TEMPLATE = `
   <div class="login-card">
     <div class="login-logo">
       <div class="login-logo__badge">Colégio Atlântico</div>
-      <h1>AtlanticoFit</h1>
+      <h1 class="login-title">AtlanticoFit</h1>
       <p class="login-logo__sub">Plataforma de Educação Física &amp; Bem-Estar</p>
     </div>
     <label class="field">
@@ -12,7 +12,16 @@ window.AUTH_TEMPLATE = `
     </label>
     <label class="field">
       <span class="field__label"><i data-lucide="lock" class="field-icon"></i>Palavra-passe</span>
-      <input id="userPassword" type="password" placeholder="Mínimo 8 caracteres" autocomplete="current-password" />
+      <div class="field__password-wrap">
+        <input id="userPassword" type="password" placeholder="Mínimo 8 caracteres" autocomplete="current-password" />
+        <button type="button" class="btn--reveal-pw" id="togglePassword" aria-label="Mostrar palavra-passe">
+          <i data-lucide="eye" id="revealPwIcon"></i>
+        </button>
+      </div>
+    </label>
+    <label class="field field--inline field--remember">
+      <input id="rememberMe" type="checkbox" checked />
+      Lembrar-me neste dispositivo
     </label>
     <div class="login-actions">
       <button class="btn" id="loginUser"><i data-lucide="log-in" class="btn-icon"></i>Entrar</button>
@@ -40,6 +49,7 @@ window.AUTH_TEMPLATE = `
       <button class="btn" id="registerUser" style="width:100%;margin-top:6px"><i data-lucide="user-check" class="btn-icon"></i>Registar</button>
     </div>
     <p class="helper login-status" id="accessStatus"></p>
+    <p class="login-credit">Feito por João Rôlo &amp; Rafaela Carmo &middot; AtlanticoFit</p>
   </div>
 </div>
 `;

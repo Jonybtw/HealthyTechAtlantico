@@ -20,14 +20,26 @@ mountAuthTemplate();
 if (typeof lucide !== "undefined") lucide.createIcons();
 const API_BASE = window.location.origin + "/api";
 
+// Safe JSON.parse — returns fallback instead of throwing on corrupted storage
+const safeParse = (key, fallback = null) => {
+  try {
+    const raw = localStorage.getItem(key);
+    if (raw === null || raw === "undefined" || raw === "null") return fallback;
+    return JSON.parse(raw) ?? fallback;
+  } catch (_) {
+    localStorage.removeItem(key); // clear the corrupted entry
+    return fallback;
+  }
+};
+
 const state = {
-  profiles: JSON.parse(localStorage.getItem("af_profiles")) || [],
-  tests: JSON.parse(localStorage.getItem("af_tests")) || [],
-  years: JSON.parse(localStorage.getItem("af_years")) || [],
-  alerts: JSON.parse(localStorage.getItem("af_alerts")) || [],
-  defers: Number(localStorage.getItem("af_defers")) || 0,
-  token: localStorage.getItem("af_token") || "",
-  user: JSON.parse(localStorage.getItem("af_user")) || null,
+  profiles: safeParse("af_profiles", []),
+  tests:    safeParse("af_tests",    []),
+  years:    safeParse("af_years",    []),
+  alerts:   safeParse("af_alerts",   []),
+  defers:   Number(localStorage.getItem("af_defers")) || 0,
+  token:    localStorage.getItem("af_token") || sessionStorage.getItem("af_token") || "",
+  user:     safeParse("af_user", null) || (() => { try { const r = sessionStorage.getItem("af_user"); return r ? JSON.parse(r) : null; } catch { return null; } })(),
   currentStudentId: Number(localStorage.getItem("af_student_id")) || null,
   lastBiometrics: null,
   classStudents: [],
@@ -316,6 +328,8 @@ const elements = {
   roleSelect: document.getElementById("roleSelect"),
   userEmail: document.getElementById("userEmail"),
   userPassword: document.getElementById("userPassword"),
+  rememberMe: document.getElementById("rememberMe"),
+  togglePassword: document.getElementById("togglePassword"),
   consentRgpd: document.getElementById("consentRgpd"),
   consentShare: document.getElementById("consentShare"),
   registerUser: document.getElementById("registerUser"),
@@ -490,9 +504,13 @@ const calculateImc = () => {
   elements.imcValue.textContent = imc.toFixed(1);
   elements.imcZone.textContent = inZone ? "Zona Saudável" : "Zona de Melhoria";
   elements.imcZone.className = inZone ? "zone--ok" : "zone--needs";
-  elements.imcNote.textContent = inZone
+  if (elements.imcNote) elements.imcNote.textContent = inZone
     ? "IMC dentro da Zona Saudável."
     : `IMC fora da Zona Saudável (${min}–${max}). Risco cardiovascular aumentado.`;
+
+  // Reveal result card on first successful calculation
+  const resultEl = document.getElementById("imcResult");
+  if (resultEl) resultEl.classList.remove("hidden");
 
   if (waist) {
     const maxWaist = waistTable[sex][ageKey];
@@ -767,6 +785,11 @@ const registerUser = () => {
     }),
   })
     .then((data) => {
+      if (!data?.token || !data?.user) {
+        hideLoading();
+        toast("Resposta do servidor inválida. Tenta outra vez.", "error");
+        return;
+      }
       state.token = data.token;
       state.user = data.user;
       localStorage.setItem("af_token", state.token);
@@ -793,6 +816,11 @@ const loginUser = () => {
     body: JSON.stringify({ email, password }),
   })
     .then((data) => {
+      if (!data?.token || !data?.user) {
+        hideLoading();
+        toast("Resposta do servidor inválida. Tenta outra vez.", "error");
+        return;
+      }
       const registerFields = document.getElementById("registerFields");
       const showRegisterBtn = document.getElementById("showRegister");
       if (registerFields) registerFields.classList.add("hidden");
@@ -801,8 +829,13 @@ const loginUser = () => {
 
       state.token = data.token;
       state.user = data.user;
-      localStorage.setItem("af_token", state.token);
-      localStorage.setItem("af_user", JSON.stringify(state.user));
+      const remember = document.getElementById("rememberMe")?.checked ?? true;
+      const store = remember ? localStorage : sessionStorage;
+      const clearStore = remember ? sessionStorage : localStorage;
+      store.setItem("af_token", state.token);
+      store.setItem("af_user", JSON.stringify(state.user));
+      clearStore.removeItem("af_token");
+      clearStore.removeItem("af_user");
       showApp(state.user);
       toast(`Bem-vindo/a, ${data.user.email}`, "success");
     })
@@ -827,6 +860,46 @@ const populateProfileTab = () => {
   if (elements.profileAvatar) elements.profileAvatar.textContent = initials;
   if (elements.topbarInitials) elements.topbarInitials.textContent = initials;
   if (elements.topbarEmail) elements.topbarEmail.textContent = user.email || "";
+
+  // Stats card
+  const statsGrid = document.getElementById("profileStatsGrid");
+  if (statsGrid) {
+    const statStudents = state.classStudents?.length ?? Number(elements.statStudents?.textContent ?? 0);
+    const statAlerts = Number(elements.statAlerts?.textContent ?? 0);
+    const statRecordsVal = state.tests?.length ?? 0;
+    const items = [];
+    if (user.role === "professor") {
+      const classCount = state.classStudents?.length ?? 0;
+      items.push({ value: classCount > 0 ? String(classCount) : "—", label: "Turma (sessão)" });
+      items.push({ value: String(state.tests.length), label: "Testes registados" });
+    }
+    if (user.role === "psicologo") {
+      items.push({ value: "✓", label: "Sessão ativa" });
+    }
+    if (user.role === "aluno") {
+      items.push({ value: String(statRecordsVal), label: "Testes" });
+      items.push({ value: localStorage.getItem("af_initial") === "done" ? "✓" : "–", label: "Quest. Inicial" });
+    }
+    if (user.role === "pais") {
+      items.push({ value: "✓", label: "Ligado" });
+    }
+    items.push({ value: new Date().toLocaleDateString("pt-PT"), label: "Hoje" });
+    statsGrid.innerHTML = items.map(it =>
+      `<div class="profile-stat-item"><span class="profile-stat-item__value">${it.value}</span><span class="profile-stat-item__label">${it.label}</span></div>`
+    ).join("");
+  }
+
+  // Sync dark mode toggle
+  const dmToggle = document.getElementById("darkModeToggle");
+  if (dmToggle) {
+    const isDark = document.documentElement.getAttribute("data-theme") === "dark";
+    dmToggle.classList.toggle("on", isDark);
+  }
+  // Sync language pills
+  const langBtns = document.querySelectorAll("#langPillWrap .pill-select__btn");
+  langBtns.forEach(btn => {
+    btn.classList.toggle("active", btn.dataset.lang === currentLang);
+  });
 };
 
 const logoutUser = () => {
@@ -834,6 +907,8 @@ const logoutUser = () => {
   state.user = null;
   localStorage.removeItem("af_token");
   localStorage.removeItem("af_user");
+  sessionStorage.removeItem("af_token");
+  sessionStorage.removeItem("af_user");
   showLogin();
 };
 
@@ -1173,13 +1248,17 @@ const triggerSos = () => {
   const psychEmail = elements.sosPsychEmail?.value.trim() || "";
   const teacherEmail = elements.sosTeacherEmail?.value.trim() || "";
   if (!psych || !teacher) {
-    elements.sosResult.textContent = "Preencha psicólogo e professor.";
+    toast(i18n("sos_fill"), "error");
     return;
   }
   const alertEntry = { psych, teacher, at: new Date().toISOString() };
   state.alerts.push(alertEntry);
   localStorage.setItem("af_alerts", JSON.stringify(state.alerts));
-  elements.sosResult.innerHTML = `<strong>SOS ativo.</strong> Psicólogo: ${psych}, Professor: ${teacher}.<br><span style="color:#4a5f68;font-size:0.85rem">Notificação enviada${psychEmail || teacherEmail ? " por email" : ""}.</span>`;
+  // Use the uniform result box with consistent styling
+  if (elements.sosResult) {
+    elements.sosResult.innerHTML = `<span class="zone-badge zone-badge--ok">✓ SOS ativado</span> Psicólogo: <strong>${psych}</strong>, Professor: <strong>${teacher}</strong>.`;
+  }
+  toast(i18n("sos_sent"), "success");
   updateStats();
   refreshTopbarStats();
   if (state.token && state.currentStudentId) {
@@ -1189,10 +1268,10 @@ const triggerSos = () => {
     })
       .then((data) => {
         if (data.emailsSent?.length > 0) {
-          elements.sosResult.innerHTML += `<br><span style="color:#0a7040;font-size:0.82rem">Email enviado para: ${data.emailsSent.join(", ")}</span>`;
+          toast(`📧 Email enviado: ${data.emailsSent.join(", ")}`, "success");
         }
       })
-      .catch((err) => updateAccessStatus(err.message));
+      .catch((err) => toast(err.message, "error"));
   }
 };
 
@@ -1320,6 +1399,19 @@ const TAB_META = {
   perfil:    { label: "Perfil",        icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>` },
 };
 
+const updateNavIndicator = (tabId) => {
+  const indicator = document.getElementById("navIndicator");
+  if (!indicator) return;
+  const activeBtn = elements.bottomnav?.querySelector(`[data-tab="${tabId}"]`);
+  if (!activeBtn) return;
+  const btnRect = activeBtn.getBoundingClientRect();
+  const navRect = elements.bottomnav.getBoundingClientRect();
+  indicator.style.left = (btnRect.left - navRect.left) + "px";
+  indicator.style.width = btnRect.width + "px";
+  // SOS tab uses coral color
+  indicator.style.background = activeBtn.classList.contains("bottomnav__item--sos") ? "var(--coral)" : "var(--sea)";
+};
+
 const showTab = (tabId) => {
   document.querySelectorAll(".tab-panel").forEach((p) => p.classList.add("hidden"));
   const panel = document.getElementById("tab-" + tabId);
@@ -1333,18 +1425,88 @@ const showTab = (tabId) => {
   document.querySelectorAll(".bottomnav__item").forEach((b) => {
     b.classList.toggle("active", b.dataset.tab === tabId);
   });
+  // Animate sliding indicator (mobile)
+  requestAnimationFrame(() => updateNavIndicator(tabId));
   if (tabId === "charts") updateCharts();
   if (tabId === "dispensas") populateDispensaStudents();
   if (tabId === "perfil") populateProfileTab();
+  if (tabId === "sos") {
+    const role = state.user?.role;
+    const isStaff = role === "professor" || role === "psicologo";
+    document.getElementById("sosTriggerSection")?.classList.toggle("hidden", isStaff);
+    document.getElementById("sosStaffSection")?.classList.toggle("hidden", !isStaff);
+    if (isStaff) loadSosAlerts();
+  }
+};
+
+const loadSosAlerts = async () => {
+  const container = document.getElementById("sosAlertsList");
+  if (!container) return;
+  container.innerHTML = '<div class="card"><p class="helper">A carregar alertas...</p></div>';
+  try {
+    const students = await apiFetch("/students");
+    if (!Array.isArray(students) || students.length === 0) {
+      container.innerHTML = '<div class="card"><p class="helper">Nenhum alerta recebido.</p></div>';
+      return;
+    }
+    const grouped = await Promise.all(
+      students.map((s) =>
+        apiFetch(`/students/${s.id}/sos`)
+          .then((alerts) => (Array.isArray(alerts) ? alerts : []))
+          .catch(() => [])
+      )
+    );
+    const allAlerts = grouped.flat().sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+    if (allAlerts.length === 0) {
+      container.innerHTML = '<div class="card"><p class="helper">Nenhum alerta recebido.</p></div>';
+      return;
+    }
+    container.innerHTML = allAlerts.map((a) => `
+      <div class="card sos-alert-card${a.resolved ? " sos-alert-card--resolved" : ""}" data-alert-id="${a.id}">
+        <div class="sos-alert-card__header">
+          <span class="zone-badge ${a.resolved ? "zone-badge--ok" : "zone-badge--alert"}">${a.resolved ? "Resolvido" : "Ativo"}</span>
+          <span class="sos-alert-card__date">${new Date(a.created_at).toLocaleString("pt-PT", { dateStyle: "short", timeStyle: "short" })}</span>
+        </div>
+        <div class="sos-alert-card__body">
+          <p><strong>Psic&#x00f3;logo:</strong> ${a.psych || "\u2014"}</p>
+          <p><strong>Professor:</strong> ${a.teacher || "\u2014"}</p>
+        </div>
+        ${!a.resolved ? `<button class="btn btn--ghost btn--sm sos-resolve-btn" data-id="${a.id}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><polyline points="20 6 9 17 4 12"/></svg> Marcar como resolvido</button>` : ""}
+      </div>
+    `).join("");
+    container.querySelectorAll(".sos-resolve-btn").forEach((btn) => {
+      btn.addEventListener("click", async () => {
+        const id = btn.dataset.id;
+        btn.disabled = true;
+        try {
+          await apiFetch(`/students/sos/${id}`, { method: "PATCH" });
+          toast("Alerta marcado como resolvido.", "success");
+          loadSosAlerts();
+        } catch (err) {
+          toast(err.message, "error");
+          btn.disabled = false;
+        }
+      });
+    });
+  } catch (err) {
+    container.innerHTML = `<div class="card"><p class="helper">${err.message}</p></div>`;
+  }
 };
 
 const buildBottomNav = (role) => {
   if (!elements.bottomnav) return;
   const tabs = NAV_TABS[role] || NAV_TABS.aluno;
+  // Keep the indicator element
+  const indicatorEl = elements.bottomnav.querySelector(".bottomnav__indicator") || (() => {
+    const d = document.createElement("div"); d.className = "bottomnav__indicator"; d.id = "navIndicator"; return d;
+  })();
+  const footerEl = elements.bottomnav.querySelector(".app-footer");
   elements.bottomnav.innerHTML = tabs.map((id) => {
     const m = TAB_META[id];
     return `<button class="bottomnav__item ${m.cls || ""}" data-tab="${id}" aria-label="${m.label}">${m.icon}<span>${m.label}</span></button>`;
   }).join("");
+  elements.bottomnav.insertBefore(indicatorEl, elements.bottomnav.firstChild);
+  if (footerEl) elements.bottomnav.appendChild(footerEl);
   elements.bottomnav.querySelectorAll(".bottomnav__item").forEach((btn) => {
     btn.addEventListener("click", () => showTab(btn.dataset.tab));
   });
@@ -1676,6 +1838,218 @@ const initModals = () => {
   }
 };
 
+/* ═══════════════════════════════════════════════════
+   INTERNATIONALISATION (PT / EN)
+═══════════════════════════════════════════════════ */
+let currentLang = localStorage.getItem("af_lang") || "pt";
+
+const TRANSLATIONS = {
+  pt: {
+    students: "alunos", generate_report: "Gerar relatório", download_txt: "Descarregar .txt",
+    print_pdf: "Imprimir / PDF", profile: "Perfil", profile_sub: "A tua conta AtlanticoFit",
+    account: "Conta", stats: "Estatísticas", appearance: "Aparência", dark_mode: "Modo escuro",
+    dark_mode_desc: "Alterna entre tema claro e escuro", language: "Idioma",
+    change_password: "Alterar palavra-passe", current_pass: "Palavra-passe atual",
+    new_pass: "Nova palavra-passe", save_pass: "Guardar palavra-passe",
+    session: "Sessão", session_desc: "Terminar sessão neste dispositivo.", logout: "Terminar sessão",
+    sos_fill: "Preenche psicólogo e professor.", sos_sent: "Alerta SOS enviado.",
+    pwa_title: "Instala o AtlanticoFit", pwa_got_it: "Já está instalado!", pwa_skip: "Continuar no browser",
+    pwa_desc: "Para a melhor experiência, instala a app no teu dispositivo. É grátis e funciona offline.",
+  },
+  en: {
+    students: "students", generate_report: "Generate report", download_txt: "Download .txt",
+    print_pdf: "Print / PDF", profile: "Profile", profile_sub: "Your AtlanticoFit account",
+    account: "Account", stats: "Statistics", appearance: "Appearance", dark_mode: "Dark mode",
+    dark_mode_desc: "Toggle between light and dark theme", language: "Language",
+    change_password: "Change password", current_pass: "Current password",
+    new_pass: "New password", save_pass: "Save password",
+    session: "Session", session_desc: "Sign out from this device.", logout: "Sign out",
+    sos_fill: "Fill in psychologist and teacher.", sos_sent: "SOS alert sent.",
+    pwa_title: "Install AtlanticoFit", pwa_got_it: "Already installed!", pwa_skip: "Continue in browser",
+    pwa_desc: "For the best experience, install the app on your device. It's free and works offline.",
+  },
+};
+
+const i18n = (key) => TRANSLATIONS[currentLang]?.[key] ?? TRANSLATIONS.pt[key] ?? key;
+
+const applyTranslations = () => {
+  document.querySelectorAll("[data-i18n]").forEach((el) => {
+    const key = el.dataset.i18n;
+    const text = i18n(key);
+    if (text) el.textContent = text;
+  });
+  // Update lang toggle button
+  const lt = document.getElementById("langToggle");
+  if (lt) lt.textContent = currentLang.toUpperCase();
+  document.documentElement.lang = currentLang;
+};
+
+const setLang = (lang) => {
+  currentLang = lang;
+  localStorage.setItem("af_lang", lang);
+  applyTranslations();
+  // Sync profile lang pills
+  document.querySelectorAll("#langPillWrap .pill-select__btn").forEach(btn => {
+    btn.classList.toggle("active", btn.dataset.lang === lang);
+  });
+};
+
+/* ═══════════════════════════════════════════════════
+   DARK MODE
+═══════════════════════════════════════════════════ */
+const applyTheme = (dark) => {
+  document.documentElement.setAttribute("data-theme", dark ? "dark" : "light");
+  localStorage.setItem("af_theme", dark ? "dark" : "light");
+  // Sync all toggle buttons
+  const dmToggle = document.getElementById("darkModeToggle");
+  if (dmToggle) dmToggle.classList.toggle("on", dark);
+};
+
+const toggleTheme = () => {
+  const isDark = document.documentElement.getAttribute("data-theme") === "dark";
+  applyTheme(!isDark);
+};
+
+// Load saved theme
+const savedTheme = localStorage.getItem("af_theme");
+if (savedTheme === "dark" || (!savedTheme && window.matchMedia("(prefers-color-scheme: dark)").matches)) {
+  applyTheme(true);
+}
+
+/* ═══════════════════════════════════════════════════
+   PWA INSTALL TUTORIAL
+═══════════════════════════════════════════════════ */
+const isMobile = () =>
+  /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent) ||
+  (navigator.maxTouchPoints > 1 && window.innerWidth <= 1024);
+const isPWA = () =>
+  window.matchMedia("(display-mode: standalone)").matches ||
+  window.navigator.standalone === true ||
+  document.referrer.includes("android-app://");
+
+const getPWASteps = () => {
+  const ua = navigator.userAgent;
+  if (/iPhone|iPad|iPod/i.test(ua)) {
+    return [
+      "Toca no botão <strong>Partilhar</strong> (quadrado com seta) na barra do Safari",
+      "Desce e toca em <strong>\"Adicionar ao Ecrã Principal\"</strong>",
+      "Toca em <strong>Adicionar</strong> no canto superior direito",
+      "Abre o AtlanticoFit a partir do ícone no ecrã principal",
+    ];
+  }
+  if (/Android/i.test(ua)) {
+    return [
+      "Toca nos <strong>três pontos ⋮</strong> no canto superior direito do Chrome",
+      "Toca em <strong>\"Adicionar ao ecrã inicial\"</strong> ou <strong>\"Instalar aplicação\"</strong>",
+      "Confirma tocando em <strong>Adicionar</strong>",
+      "Abre o AtlanticoFit a partir do ícone no ecrã inicial",
+    ];
+  }
+  return [
+    "Clica no ícone de <strong>instalar</strong> na barra de endereço do browser",
+    "Confirma a instalação",
+    "Abre o AtlanticoFit a partir do ícone na área de trabalho",
+  ];
+};
+
+const initPWAInstall = () => {
+  const screen = document.getElementById("pwaInstallScreen");
+  if (!screen) return;
+  // Only show on mobile browsers that are not already in PWA mode
+  if (!isMobile() || isPWA()) {
+    screen.classList.add("hidden");
+    return;
+  }
+  // Check if user dismissed recently (expires after 7 days)
+  const dismissed = localStorage.getItem("af_pwa_dismissed");
+  if (dismissed) {
+    const age = Date.now() - parseInt(dismissed, 10);
+    if (age < 7 * 24 * 60 * 60 * 1000) {
+      screen.classList.add("hidden");
+      return;
+    }
+    localStorage.removeItem("af_pwa_dismissed");
+  }
+  // Build steps
+  const stepsEl = document.getElementById("pwaSteps");
+  if (stepsEl) {
+    stepsEl.innerHTML = getPWASteps().map((s, i) =>
+      `<li><span class="pwa-install__step-num">${i + 1}</span><span>${s}</span></li>`
+    ).join("");
+  }
+  screen.classList.remove("hidden");
+  document.getElementById("pwaGotIt")?.addEventListener("click", () => {
+    screen.classList.add("hidden");
+    localStorage.setItem("af_pwa_dismissed", Date.now().toString());
+  });
+  document.getElementById("pwaSkip")?.addEventListener("click", () => {
+    screen.classList.add("hidden");
+    localStorage.setItem("af_pwa_dismissed", Date.now().toString());
+  });
+};
+
+/* ═══════════════════════════════════════════════════
+   REPORT — DOWNLOAD & PRINT
+═══════════════════════════════════════════════════ */
+const downloadReportTxt = () => {
+  updateReport();
+  const content = elements.reportText?.value;
+  if (!content) { toast("Gera o relatório primeiro.", "error"); return; }
+  const name = (elements.studentName?.value || "aluno").replace(/\s+/g, "_");
+  const blob = new Blob([content], { type: "text/plain;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `AtlanticoFit_${name}_${new Date().toISOString().slice(0,10)}.txt`;
+  a.click();
+  URL.revokeObjectURL(url);
+  toast("Relatório descarregado.", "success");
+};
+
+const printReport = () => {
+  updateReport();
+  const content = elements.reportText?.value;
+  if (!content) { toast("Gera o relatório primeiro.", "error"); return; }
+  const win = window.open("", "_blank");
+  win.document.write(`<!DOCTYPE html><html><head><title>Relatório AtlanticoFit</title>
+    <style>body{font-family:monospace;font-size:12px;padding:20px;white-space:pre-wrap;color:#000;}</style>
+    </head><body>${content.replace(/</g,"&lt;").replace(/>/g,"&gt;")}</body></html>`);
+  win.document.close();
+  win.print();
+};
+
+/* ═══════════════════════════════════════════════════
+   CHANGE PASSWORD
+═══════════════════════════════════════════════════ */
+const changePassword = () => {
+  const current = document.getElementById("currentPassword")?.value.trim();
+  const next = document.getElementById("newPassword")?.value.trim();
+  const status = document.getElementById("changePasswordStatus");
+  if (!current || !next) {
+    if (status) status.textContent = "Preenche os dois campos.";
+    return;
+  }
+  if (next.length < 8) {
+    if (status) status.textContent = "A nova palavra-passe deve ter pelo menos 8 caracteres.";
+    return;
+  }
+  if (!state.token) { if (status) status.textContent = "Sem sessão ativa."; return; }
+  apiFetch("/users/me/password", {
+    method: "PUT",
+    body: JSON.stringify({ currentPassword: current, newPassword: next }),
+  })
+    .then(() => {
+      if (status) status.textContent = "";
+      toast("Palavra-passe alterada com sucesso.", "success");
+      document.getElementById("currentPassword").value = "";
+      document.getElementById("newPassword").value = "";
+    })
+    .catch((err) => {
+      if (status) status.textContent = err.message;
+      toast(err.message, "error");
+    });
+};
+
 const init = () => {
   initModals();
   renderTests();
@@ -1714,10 +2088,21 @@ const init = () => {
   elements.saveAccess?.addEventListener("click", saveProfile);
   elements.registerUser?.addEventListener("click", registerUser);
   elements.loginUser?.addEventListener("click", loginUser);
+
+  // Password reveal toggle
+  elements.togglePassword?.addEventListener("click", () => {
+    const input = elements.userPassword;
+    const icon = document.getElementById("revealPwIcon");
+    const isHidden = input.type === "password";
+    input.type = isHidden ? "text" : "password";
+    if (icon) { icon.setAttribute("data-lucide", isHidden ? "eye-off" : "eye"); lucide.createIcons(); }
+  });
   elements.logoutUserBtn?.addEventListener("click", logoutUser);
   elements.profileBtn?.addEventListener("click", () => showTab("perfil"));
   elements.sendReport?.addEventListener("click", sendReport);
   elements.generateReport?.addEventListener("click", updateReport);
+  document.getElementById("downloadReportTxt")?.addEventListener("click", downloadReportTxt);
+  document.getElementById("printReport")?.addEventListener("click", printReport);
   elements.addYear?.addEventListener("click", addYear);
   elements.submitInitial?.addEventListener("click", submitInitial);
   elements.deferInitial?.addEventListener("click", deferInitial);
@@ -1725,6 +2110,35 @@ const init = () => {
   elements.triggerSos?.addEventListener("click", triggerSos);
   elements.registerDispensa?.addEventListener("click", registerDispensa);
   elements.loadTurma?.addEventListener("click", loadTurmaView);
+  document.getElementById("changePasswordBtn")?.addEventListener("click", changePassword);
+
+  // Theme toggle (topbar button)
+  document.getElementById("themeToggle")?.addEventListener("click", toggleTheme);
+
+  // Dark mode toggle (profile page)
+  document.getElementById("darkModeToggle")?.addEventListener("click", toggleTheme);
+
+  // Language toggle (topbar)
+  document.getElementById("langToggle")?.addEventListener("click", () => {
+    setLang(currentLang === "pt" ? "en" : "pt");
+  });
+
+  // Language pills (profile page)
+  document.querySelectorAll("#langPillWrap .pill-select__btn").forEach(btn => {
+    btn.addEventListener("click", () => setLang(btn.dataset.lang));
+  });
+
+  // Apply initial translations
+  applyTranslations();
+
+  // PWA install check
+  initPWAInstall();
+
+  // Re-position nav indicator on resize
+  window.addEventListener("resize", () => {
+    const activeBtn = elements.bottomnav?.querySelector(".bottomnav__item.active");
+    if (activeBtn) requestAnimationFrame(() => updateNavIndicator(activeBtn.dataset.tab));
+  }, { passive: true });
 
   // -- Show login or app based on saved session ---------------------------------
   if (state.token && state.user) {

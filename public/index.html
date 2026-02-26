@@ -22,6 +22,20 @@
   </head>
   <body>
 
+    <!-- ═══ PWA INSTALL TUTORIAL ═════════════════════════════════════════════ -->
+    <div id="pwaInstallScreen" class="pwa-install-screen hidden">
+      <div class="pwa-install__card">
+        <div class="pwa-install__icon">📲</div>
+        <h2 class="pwa-install__title" data-i18n="pwa_title">Instala o AtlanticoFit</h2>
+        <p class="pwa-install__desc" data-i18n="pwa_desc">Para a melhor experiência, instala a app no teu dispositivo. É grátis e funciona sem internet.</p>
+        <ul class="pwa-install__steps" id="pwaSteps">
+          <!-- Steps injected by JS based on browser -->
+        </ul>
+        <button class="btn" id="pwaGotIt" data-i18n="pwa_got_it">Continuar na app</button>
+        <button class="pwa-install__skip" id="pwaSkip" data-i18n="pwa_skip">Continuar no browser</button>
+      </div>
+    </div>
+
     <!-- ═══ LOADING SCREEN ══════════════════════════════════════════════════ -->
     <div id="loadingScreen" class="loading-screen">
       <div class="loading-screen__inner">
@@ -40,10 +54,12 @@
         <span class="topbar__logo">AtlanticoFit</span>
         <span class="topbar__divider" aria-hidden="true"></span>
         <div class="topbar__stats" id="topbarStats">
-          <span class="topstat" id="statStudentsWrap"><span id="statStudents">0</span> alunos</span>
-          <span class="topstat sos-count" id="statAlertsWrap"><span id="statAlerts">0</span> SOS</span>
+          <span class="topstat hidden" id="statStudentsWrap"><span id="statStudents">0</span> <span data-i18n="students">alunos</span></span>
+          <span class="topstat sos-count hidden" id="statAlertsWrap"><span id="statAlerts">0</span> SOS</span>
         </div>
         <div class="topbar__right">
+          <button class="btn--lang" id="langToggle" aria-label="Idioma">PT</button>
+          <button class="btn--theme-toggle" id="themeToggle" aria-label="Alternar tema" title="Modo escuro"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg></button>
           <span class="topbar__user" id="topbarEmail"></span>
           <button class="btn--profile" id="profileBtn" aria-label="Perfil"><span id="topbarInitials">?</span></button>
         </div>
@@ -56,8 +72,8 @@
           <div class="page-header"><h2>Registo Biométrico</h2><p class="helper">Dados do aluno e composição corporal — guarda para aceder aos testes</p></div>
           <div class="card">
             <p class="section-label">Dados do aluno</p>
-            <div class="two-col">
-              <label class="field">Nome<input id="studentName" type="text" placeholder="Nome completo" /></label>
+            <div class="two-col two-col--student">
+              <label class="field"><span class="field__label"><i data-lucide="user" class="field-icon"></i>Nome</span><input id="studentName" type="text" placeholder="Nome completo" /></label>
               <label class="field"><span class="field__label"><i data-lucide="user" class="field-icon"></i>Sexo</span><select id="studentSex"><option value="">Selecionar</option><option value="F">Feminino</option><option value="M">Masculino</option></select></label>
               <label class="field"><span class="field__label"><i data-lucide="hash" class="field-icon"></i>Idade</span><input id="studentAge" type="number" min="9" max="18" placeholder="9–18" /></label>
               <label class="field"><span class="field__label"><i data-lucide="book-open" class="field-icon"></i>Ano letivo</span><select id="schoolYear"><option value="">-- Ano letivo --</option><option value="2020/2021">2020/2021</option><option value="2021/2022">2021/2022</option><option value="2022/2023">2022/2023</option><option value="2023/2024">2023/2024</option><option value="2024/2025">2024/2025</option><option value="2025/2026" selected>2025/2026</option><option value="2026/2027">2026/2027</option><option value="2027/2028">2027/2028</option><option value="2028/2029">2028/2029</option></select></label>
@@ -73,11 +89,22 @@
             <div class="actions">
               <button class="btn" id="calcImc"><i data-lucide="calculator" class="btn-icon"></i>Calcular IMC e ZAF</button>
             </div>
-            <div class="result" id="imcResult">
-              <div><strong>IMC</strong> <span id="imcValue">—</span></div>
-              <div><strong>Zona IMC</strong> <span id="imcZone">—</span></div>
-              <p class="note" id="imcNote">Preencha os dados para avaliar.</p>
-              <div><strong>Cintura</strong> <span id="waistZone">—</span></div>
+            <div class="result hidden" id="imcResult">
+              <div class="imc-result-grid">
+                <div class="imc-result-item">
+                  <span class="imc-result-item__label">IMC</span>
+                  <span class="imc-result-item__value" id="imcValue">—</span>
+                </div>
+                <div class="imc-result-item">
+                  <span class="imc-result-item__label">Zona IMC</span>
+                  <span class="imc-result-item__value" id="imcZone">—</span>
+                </div>
+                <div class="imc-result-item" id="waistResultItem">
+                  <span class="imc-result-item__label">Cintura</span>
+                  <span class="imc-result-item__value" id="waistZone">—</span>
+                </div>
+              </div>
+              <p class="note" id="imcNote"></p>
               <p class="note" id="waistNote"></p>
             </div>
             <hr class="card-divider" />
@@ -216,10 +243,22 @@
         </section>
         <!-- SOS -->
         <section class="tab-panel hidden" id="tab-sos" data-tab="sos">
-          <div class="page-header">
-            <h2>SOS Saúde Mental</h2>
-            <p class="helper">Alerta discreto e imediato para psicólogo e professor de confiança</p>
+
+          <!-- ── Staff view: professor / psicologo — incoming alerts ───── -->
+          <div id="sosStaffSection" class="hidden">
+            <div class="page-header">
+              <h2>Alertas SOS recebidos</h2>
+              <p class="helper">Alertas de saúde mental enviados anonimamente pelos alunos</p>
+            </div>
+            <div id="sosAlertsList"></div>
           </div>
+
+          <!-- ── Aluno view: trigger form ──────────────────────────────── -->
+          <div id="sosTriggerSection">
+            <div class="page-header">
+              <h2>SOS Saúde Mental</h2>
+              <p class="helper">Alerta discreto e imediato para psicólogo e professor de confiança</p>
+            </div>
 
           <div class="sos-info">
             <p>Ao ativar o botão SOS, é enviado um alerta <strong>confidencial</strong> por email ao psicólogo e professor indicados abaixo. <strong>Ninguém saberá que foste tu.</strong></p>
@@ -258,6 +297,7 @@
             </div>
             <div class="result" id="sosResult">Nenhum alerta ativo.</div>
           </div>
+          </div><!-- /#sosTriggerSection -->
         </section>
 
         <!-- Relatórios -->
@@ -266,7 +306,9 @@
           <div class="card">
             <p class="section-label">Pré-visualização do relatório</p>
             <div class="actions">
-              <button class="btn btn--ghost" id="generateReport"><i data-lucide="file-text" class="btn-icon"></i>Gerar relatório</button>
+              <button class="btn btn--ghost" id="generateReport"><i data-lucide="file-text" class="btn-icon"></i><span data-i18n="generate_report">Gerar relatório</span></button>
+              <button class="btn btn--ghost" id="downloadReportTxt"><i data-lucide="download" class="btn-icon"></i><span data-i18n="download_txt">Descarregar .txt</span></button>
+              <button class="btn btn--ghost" id="printReport"><i data-lucide="printer" class="btn-icon"></i><span data-i18n="print_pdf">Imprimir / PDF</span></button>
             </div>
             <textarea id="reportText" rows="12" placeholder="Clica em 'Gerar relatório' para preencher automaticamente..." readonly></textarea>
             <hr class="card-divider" />
@@ -436,11 +478,11 @@
         <!-- Perfil -->
         <section class="tab-panel hidden" id="tab-perfil" data-tab="perfil">
           <div class="page-header">
-            <h2>Perfil</h2>
-            <p class="helper">A tua conta AtlanticoFit</p>
+            <h2 data-i18n="profile">Perfil</h2>
+            <p class="helper" data-i18n="profile_sub">A tua conta AtlanticoFit</p>
           </div>
           <div class="card">
-            <p class="section-label">Conta</p>
+            <p class="section-label" data-i18n="account">Conta</p>
             <div class="profile-header">
               <div class="profile-avatar" id="profileAvatar">?</div>
               <div>
@@ -449,11 +491,53 @@
               </div>
             </div>
           </div>
+          <div class="card" id="profileStatsCard">
+            <p class="section-label" data-i18n="stats">Estatísticas</p>
+            <div class="profile-stats-grid" id="profileStatsGrid"></div>
+          </div>
           <div class="card">
-            <p class="section-label">Sessão</p>
-            <p class="helper">Terminar sessão neste dispositivo.</p>
+            <p class="section-label" data-i18n="appearance">Aparência</p>
+            <div class="profile-setting-row">
+              <div>
+                <span class="profile-setting__label" data-i18n="dark_mode">Modo escuro</span>
+                <p class="helper" data-i18n="dark_mode_desc">Alterna entre tema claro e escuro</p>
+              </div>
+              <button class="toggle-switch" id="darkModeToggle" aria-label="Modo escuro"><span class="toggle-switch__thumb"></span></button>
+            </div>
+            <hr class="card-divider" />
+            <div class="profile-setting-row">
+              <div>
+                <span class="profile-setting__label" data-i18n="language">Idioma</span>
+                <p class="helper">Português / English</p>
+              </div>
+              <div class="pill-select pill-select--toggle" id="langPillWrap">
+                <button class="pill-select__btn active" data-lang="pt">PT</button>
+                <button class="pill-select__btn" data-lang="en">EN</button>
+              </div>
+            </div>
+          </div>
+          <div class="card">
+            <p class="section-label" data-i18n="change_password">Alterar palavra-passe</p>
+            <div class="two-col">
+              <label class="field">
+                <span class="field__label"><i data-lucide="lock" class="field-icon"></i><span data-i18n="current_pass">Palavra-passe atual</span></span>
+                <input id="currentPassword" type="password" placeholder="••••••••" autocomplete="current-password" />
+              </label>
+              <label class="field">
+                <span class="field__label"><i data-lucide="lock" class="field-icon"></i><span data-i18n="new_pass">Nova palavra-passe</span></span>
+                <input id="newPassword" type="password" placeholder="Mínimo 8 caracteres" autocomplete="new-password" />
+              </label>
+            </div>
             <div class="actions">
-              <button class="btn btn--ghost" id="logoutUserBtn"><i data-lucide="log-out" class="btn-icon"></i>Terminar sessão</button>
+              <button class="btn" id="changePasswordBtn"><i data-lucide="key" class="btn-icon"></i><span data-i18n="save_pass">Guardar palavra-passe</span></button>
+            </div>
+            <p class="helper" id="changePasswordStatus"></p>
+          </div>
+          <div class="card">
+            <p class="section-label" data-i18n="session">Sessão</p>
+            <p class="helper" data-i18n="session_desc">Terminar sessão neste dispositivo.</p>
+            <div class="actions">
+              <button class="btn btn--ghost" id="logoutUserBtn"><i data-lucide="log-out" class="btn-icon"></i><span data-i18n="logout">Terminar sessão</span></button>
             </div>
           </div>
         </section>
@@ -461,7 +545,10 @@
       </main>
 
       <!-- Navegação inferior (construída via JS) -->
-      <nav class="bottomnav" id="bottomnav"></nav>
+      <nav class="bottomnav" id="bottomnav">
+        <div class="bottomnav__indicator" id="navIndicator"></div>
+        <div class="app-footer">Feito por João Rôlo &amp; Rafaela Carmo</div>
+      </nav>
     </div>
 
     <!-- Toast de feedback -->
