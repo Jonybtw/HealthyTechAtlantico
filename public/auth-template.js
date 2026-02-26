@@ -2,30 +2,30 @@ window.AUTH_TEMPLATE = `
 <div id="loginScreen" class="login-screen">
   <div class="login-card">
     <div class="login-logo">
-      <div class="login-logo__badge">Colegio Atlantico</div>
+      <div class="login-logo__badge">Colégio Atlântico</div>
       <h1>AtlanticoFit</h1>
-      <p class="login-logo__sub">Plataforma de Educacao Fisica</p>
+      <p class="login-logo__sub">Plataforma de Educação Física &amp; Bem-Estar</p>
     </div>
     <label class="field">
-      Email
+      <span class="field__label"><i data-lucide="mail" class="field-icon"></i>Email</span>
       <input id="userEmail" type="email" placeholder="nome@colegio.pt" autocomplete="email" />
     </label>
     <label class="field">
-      Palavra-passe
-      <input id="userPassword" type="password" placeholder="Minimo 8 caracteres" autocomplete="current-password" />
+      <span class="field__label"><i data-lucide="lock" class="field-icon"></i>Palavra-passe</span>
+      <input id="userPassword" type="password" placeholder="Mínimo 8 caracteres" autocomplete="current-password" />
     </label>
     <div class="login-actions">
-      <button class="btn" id="loginUser">Entrar</button>
-      <button class="btn btn--ghost" id="showRegister">Criar conta</button>
+      <button class="btn" id="loginUser"><i data-lucide="log-in" class="btn-icon"></i>Entrar</button>
+      <button class="btn btn--ghost" id="showRegister"><i data-lucide="user-plus" class="btn-icon"></i>Criar conta</button>
     </div>
     <div id="registerFields" class="register-fields hidden">
       <label class="field">
-        Perfil da conta
+        <span class="field__label"><i data-lucide="shield" class="field-icon"></i>Perfil da conta</span>
         <select id="roleSelect">
           <option value="">Selecionar perfil</option>
           <option value="aluno">Aluno</option>
           <option value="professor">Professor</option>
-          <option value="psicologo">Psicologo</option>
+          <option value="psicologo">Psicólogo</option>
           <option value="pais">Pais / E.E.</option>
         </select>
       </label>
@@ -35,9 +35,9 @@ window.AUTH_TEMPLATE = `
       </label>
       <label class="field field--inline">
         <input id="consentShare" type="checkbox" />
-        Autorizo envio de relatorios por email
+        Autorizo envio de relatórios por email
       </label>
-      <button class="btn" id="registerUser" style="width:100%;margin-top:8px">Registar</button>
+      <button class="btn" id="registerUser" style="width:100%;margin-top:6px"><i data-lucide="user-check" class="btn-icon"></i>Registar</button>
     </div>
     <p class="helper login-status" id="accessStatus"></p>
   </div>

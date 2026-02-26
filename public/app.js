@@ -17,6 +17,7 @@ const mountAuthTemplate = () => {
 };
 
 mountAuthTemplate();
+if (typeof lucide !== "undefined") lucide.createIcons();
 const API_BASE = window.location.origin + "/api";
 
 const state = {
@@ -295,14 +296,14 @@ const testTable = {
 };
 
 const testOptions = [
-  { id: "vai", label: "Vai e Vem", unit: "percursos", better: "high", category: "Capacidade Aer�bia" },
-  { id: "cooper", label: "Cooper", unit: "voltas", better: "high", category: "Capacidade Aer�bia" },
-  { id: "milha", label: "Milha 1609m", unit: "mm:ss", better: "low", category: "Capacidade Aer�bia" },
+  { id: "vai", label: "Vai e Vem", unit: "percursos", better: "high", category: "Capacidade Aeróbia" },
+  { id: "cooper", label: "Cooper", unit: "voltas", better: "high", category: "Capacidade Aeróbia" },
+  { id: "milha", label: "Milha 1609m", unit: "mm:ss", better: "low", category: "Capacidade Aeróbia" },
   { id: "velocidade", label: "Velocidade 40m", unit: "s", better: "low", category: "Velocidade e Agilidade" },
-  { id: "agilidade", label: "Agilidade 4x10m", unit: "s", better: "low", category: "Velocidade e Agilidade" },
-  { id: "abd", label: "Abdominais", unit: "reps", better: "high", category: "For�a Muscular" },
-  { id: "bracos", label: "Extensoes de bracos", unit: "reps", better: "high", category: "For�a Muscular" },
-  { id: "senta", label: "Senta e alcanca", unit: "cm", better: "high", category: "Flexibilidade" },
+  { id: "agilidade", label: "Agilidade 4×10m", unit: "s", better: "low", category: "Velocidade e Agilidade" },
+  { id: "abd", label: "Abdominais", unit: "reps", better: "high", category: "Força Muscular" },
+  { id: "bracos", label: "Extensões de braços", unit: "reps", better: "high", category: "Força Muscular" },
+  { id: "senta", label: "Senta e alcança", unit: "cm", better: "high", category: "Flexibilidade" },
 ];
 
 const elements = {
@@ -376,6 +377,7 @@ const elements = {
   closeProtocols: document.getElementById("closeProtocols"),
   startOnboarding: document.getElementById("startOnboarding"),
   // New shell elements
+  loadingScreen: document.getElementById("loadingScreen"),
   loginScreen: document.getElementById("loginScreen"),
   appShell: document.getElementById("appShell"),
   topbarUser: document.getElementById("topbarUser"),
@@ -746,6 +748,7 @@ const registerUser = () => {
     toast("Seleciona o perfil da conta para registo.", "error");
     return;
   }
+  showLoading();
   apiFetch("/auth/register", {
     method: "POST",
     body: JSON.stringify({
@@ -763,6 +766,7 @@ const registerUser = () => {
       toast(`Bem-vindo/a! Conta criada: ${data.user.email}`, "success");
     })
     .catch((err) => {
+      hideLoading();
       toast(err.message, "error");
     });
 };
@@ -774,6 +778,7 @@ const loginUser = () => {
     toast("Email e palavra-passe s\u00e3o obrigat\u00f3rios.", "error");
     return;
   }
+  showLoading();
   apiFetch("/auth/login", {
     method: "POST",
     body: JSON.stringify({ email, password }),
@@ -793,6 +798,7 @@ const loginUser = () => {
       toast(`Bem-vindo/a, ${data.user.email}`, "success");
     })
     .catch((err) => {
+      hideLoading();
       toast(err.message, "error");
     });
 };
@@ -1310,7 +1316,16 @@ const buildBottomNav = (role) => {
   });
 };
 
+const hideLoading = () => {
+  if (elements.loadingScreen) elements.loadingScreen.classList.add("hidden");
+};
+
+const showLoading = () => {
+  if (elements.loadingScreen) elements.loadingScreen.classList.remove("hidden");
+};
+
 const showLogin = () => {
+  hideLoading();
   if (elements.loginScreen) elements.loginScreen.classList.remove("hidden");
   if (elements.appShell) elements.appShell.classList.add("hidden");
   setTopbarVisibility({ students: false, alerts: false });
@@ -1318,6 +1333,7 @@ const showLogin = () => {
 };
 
 const showApp = (user) => {
+  hideLoading();
   if (elements.loginScreen) elements.loginScreen.classList.add("hidden");
   if (elements.appShell) elements.appShell.classList.remove("hidden");
   if (elements.topbarUser) elements.topbarUser.textContent = user?.email || "";
@@ -1334,6 +1350,263 @@ const showApp = (user) => {
 
 const applyRoleVisibility = () => {}; // replaced by tab navigation
 
+/* ═══════════════════════════════════════════════════
+   PICKERS — pill-select, range slider
+═══════════════════════════════════════════════════ */
+
+/**
+ * Replaces a <select> with pill buttons while keeping the original
+ * hidden select in sync (so all existing .value reads still work).
+ */
+const initPillSelect = (selectId, { compact = false } = {}) => {
+  const sel = document.getElementById(selectId);
+  if (!sel || sel.dataset.pillDone) return;
+  sel.dataset.pillDone = "1";
+
+  const opts = Array.from(sel.options).filter((o) => o.value !== "");
+  const isToggle = opts.length === 2;
+
+  const wrap = document.createElement("div");
+  wrap.className =
+    "pill-select" +
+    (isToggle ? " pill-select--toggle" : "") +
+    (compact ? " pill-select--compact" : "");
+  wrap.dataset.forSelect = selectId;
+
+  const syncActive = () => {
+    wrap.querySelectorAll(".pill-select__btn").forEach((b) => {
+      b.classList.toggle("active", b.dataset.value === sel.value);
+    });
+  };
+
+  opts.forEach((opt) => {
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "pill-select__btn";
+    btn.dataset.value = opt.value;
+    btn.textContent = opt.text;
+    if (sel.value === opt.value) btn.classList.add("active");
+
+    btn.addEventListener("click", () => {
+      wrap.querySelectorAll(".pill-select__btn").forEach((b) =>
+        b.classList.remove("active")
+      );
+      btn.classList.add("active");
+      sel.value = opt.value;
+      sel.dispatchEvent(new Event("change", { bubbles: true }));
+      sel.dispatchEvent(new Event("input", { bubbles: true }));
+    });
+
+    wrap.appendChild(btn);
+  });
+
+  // Observe external value changes (e.g., loadQuestionnaireDraft)
+  // Use a small polling-free approach: expose syncActive on element
+  sel._syncPills = syncActive;
+
+  sel.style.display = "none";
+  sel.after(wrap);
+};
+
+/**
+ * Replaces a number input with a styled range slider + numeric badge,
+ * keeping the original input in sync.
+ */
+const initRangeSlider = (inputId, { min = 0, max = 10 } = {}) => {
+  const inp = document.getElementById(inputId);
+  if (!inp || inp.dataset.rangeDone) return;
+  inp.dataset.rangeDone = "1";
+
+  const initialVal = inp.value !== "" ? Number(inp.value) : min;
+
+  const track = document.createElement("div");
+  track.className = "range-field__track";
+
+  const range = document.createElement("input");
+  range.type = "range";
+  range.min = String(min);
+  range.max = String(max);
+  range.step = "1";
+  range.value = String(initialVal);
+  range.className = "range-slider";
+
+  const badge = document.createElement("span");
+  badge.className = "range-field__value";
+  badge.textContent = String(initialVal);
+
+  const updateColor = (v) => {
+    const pct = ((v - min) / (max - min)) * 100;
+    // heat-map: low=sea, mid=sun, high=coral
+    let color;
+    if (pct <= 40) color = "var(--sea)";
+    else if (pct <= 70) color = "var(--sun)";
+    else color = "var(--coral)";
+    badge.style.background = `rgba(${pct <= 40 ? "14,104,117" : pct <= 70 ? "240,168,32" : "232,88,58"},0.12)`;
+    badge.style.color = color;
+    range.style.setProperty("--pct", `${pct}%`);
+    range.style.setProperty("--thumb-color", color);
+  };
+
+  updateColor(initialVal);
+
+  range.addEventListener("input", () => {
+    const v = Number(range.value);
+    badge.textContent = String(v);
+    inp.value = String(v);
+    updateColor(v);
+    inp.dispatchEvent(new Event("input", { bubbles: true }));
+    inp.dispatchEvent(new Event("change", { bubbles: true }));
+  });
+
+  inp.addEventListener("change", () => {
+    range.value = inp.value;
+    badge.textContent = inp.value;
+    updateColor(Number(inp.value));
+  });
+
+  track.appendChild(range);
+  track.appendChild(badge);
+
+  // labels below
+  const labels = document.createElement("div");
+  labels.className = "range-labels";
+  labels.innerHTML = `<span>${min} — sem stress</span><span>stress máximo — ${max}</span>`;
+
+  const container = document.createElement("div");
+  container.className = "range-field";
+  container.appendChild(track);
+  container.appendChild(labels);
+
+  inp.style.display = "none";
+  inp.after(container);
+};
+
+/**
+ * Sync pill selects after a draft is loaded externally.
+ */
+const syncAllPillSelects = () => {
+  document.querySelectorAll("[data-pill-done]").forEach((sel) => {
+    if (typeof sel._syncPills === "function") sel._syncPills();
+  });
+};
+
+/* ═══════════════════════════════════════════════════
+   NUMERIC STEPPER — ± UI replacing a number input
+═══════════════════════════════════════════════════ */
+const initNumericStepper = (inputId, { min, max, step = 1 } = {}) => {
+  const inp = document.getElementById(inputId);
+  if (!inp || inp.dataset.stepperDone) return;
+  inp.dataset.stepperDone = "1";
+  const decimals = (step.toString().split(".")[1] || "").length;
+
+  const wrap = document.createElement("div");
+  wrap.className = "num-stepper";
+
+  const minusBtn = document.createElement("button");
+  minusBtn.type = "button";
+  minusBtn.className = "num-stepper__btn";
+  minusBtn.setAttribute("aria-label", "Diminuir");
+  minusBtn.textContent = "−";
+
+  const divL = document.createElement("span");
+  divL.className = "num-stepper__divider";
+
+  const display = document.createElement("span");
+  display.className = "num-stepper__val";
+
+  const divR = document.createElement("span");
+  divR.className = "num-stepper__divider";
+
+  const plusBtn = document.createElement("button");
+  plusBtn.type = "button";
+  plusBtn.className = "num-stepper__btn";
+  plusBtn.setAttribute("aria-label", "Aumentar");
+  plusBtn.textContent = "+";
+
+  wrap.append(minusBtn, divL, display, divR, plusBtn);
+
+  const update = (raw) => {
+    if (isNaN(raw)) raw = min;
+    let v = Math.round(raw / step) * step;
+    v = Math.min(max, Math.max(min, parseFloat(v.toFixed(decimals))));
+    inp.value = v;
+    display.textContent = v;
+    inp.dispatchEvent(new Event("input", { bubbles: true }));
+    inp.dispatchEvent(new Event("change", { bubbles: true }));
+    minusBtn.disabled = v <= min;
+    plusBtn.disabled = v >= max;
+  };
+
+  minusBtn.addEventListener("click", () => {
+    const cur = parseFloat(inp.value);
+    update(isNaN(cur) ? max : cur - step);
+  });
+  plusBtn.addEventListener("click", () => {
+    const cur = parseFloat(inp.value);
+    update(isNaN(cur) ? min : cur + step);
+  });
+
+  if (inp.value !== "") {
+    update(parseFloat(inp.value));
+  } else {
+    display.textContent = "—";
+    minusBtn.disabled = true;
+  }
+
+  inp._syncStepper = () => {
+    if (inp.value !== "") update(parseFloat(inp.value));
+    else { display.textContent = "—"; minusBtn.disabled = true; }
+  };
+
+  inp.style.display = "none";
+  inp.after(wrap);
+};
+
+/* ═══════════════════════════════════════════════════
+   INPUT UNIT — appends unit badge inside the input
+═══════════════════════════════════════════════════ */
+const initInputUnit = (inputId, unit) => {
+  const inp = document.getElementById(inputId);
+  if (!inp || inp.dataset.unitDone) return;
+  inp.dataset.unitDone = "1";
+  const wrap = document.createElement("div");
+  wrap.className = "input-unit-wrap";
+  inp.replaceWith(wrap);
+  wrap.appendChild(inp);
+  const badge = document.createElement("span");
+  badge.className = "input-unit";
+  badge.textContent = unit;
+  wrap.appendChild(badge);
+};
+
+const initPickers = () => {
+  // Biometria — stepper for age, unit badges for measurements
+  initNumericStepper("studentAge", { min: 9, max: 18, step: 1 });
+  initInputUnit("studentHeight", "m");
+  initInputUnit("studentWeight", "kg");
+  initInputUnit("studentFat", "%");
+  initInputUnit("studentWaist", "cm");
+
+  // Biometria — sex toggle
+
+  initPillSelect("studentSex");
+
+  // Questionário inicial
+  initPillSelect("qActivity", { compact: true });
+  initPillSelect("qSleep", { compact: true });
+
+  // Questionário rotina
+  initRangeSlider("qStress", { min: 0, max: 10 });
+  initPillSelect("qFood", { compact: true });
+  initPillSelect("qMood", { compact: true });
+  initPillSelect("qEnergy", { compact: true });
+  initPillSelect("qScreen", { compact: true });
+  initPillSelect("qHydration", { compact: true });
+
+  // Login
+  initPillSelect("roleSelect");
+};
+
 const initModals = () => {
   // Modal close (legacy support)
   if (elements.closeProtocols) {
@@ -1346,6 +1619,12 @@ const initModals = () => {
   const registerFields = document.getElementById("registerFields");
   if (showRegisterBtn && registerFields) {
     showRegisterBtn.addEventListener("click", () => {
+      // Pop animation on the button
+      showRegisterBtn.classList.remove("btn--pop");
+      void showRegisterBtn.offsetWidth; // force reflow to restart animation
+      showRegisterBtn.classList.add("btn--pop");
+      showRegisterBtn.addEventListener("animationend", () => showRegisterBtn.classList.remove("btn--pop"), { once: true });
+
       registerFields.classList.toggle("hidden");
       showRegisterBtn.textContent = registerFields.classList.contains("hidden") ? "Criar conta" : "J\u00e1 tenho conta";
       if (!registerFields.classList.contains("hidden") && elements.roleSelect) {
@@ -1363,6 +1642,8 @@ const init = () => {
   initModals();
   renderTests();
   loadQuestionnaireDraft();
+  initPickers();
+  syncAllPillSelects(); // sync visual state after draft hydration
   if (elements.deferStatus) {
     const isInitialDone = localStorage.getItem("af_initial") === "done";
     elements.deferStatus.textContent = isInitialDone

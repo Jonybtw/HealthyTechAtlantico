@@ -6,7 +6,7 @@
     <title>AtlanticoFit</title>
     <!-- PWA -->
     <link rel="manifest" href="manifest.json" />
-    <meta name="theme-color" content="#0f6c78" />
+    <meta name="theme-color" content="#0e6875" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
     <meta name="apple-mobile-web-app-title" content="AtlanticoFit" />
@@ -15,11 +15,20 @@
     <meta name="description" content="Plataforma escolar de avaliação física, acompanhamento longitudinal e bem-estar. Colégio Atlântico." />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Literata:wght@400;600&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300..700&family=Literata:ital,opsz,wght@0,7..72,300..700;1,7..72,300..700&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="styles.css" />
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
   </head>
   <body>
+
+    <!-- ═══ LOADING SCREEN ══════════════════════════════════════════════════ -->
+    <div id="loadingScreen" class="loading-screen">
+      <div class="loading-screen__inner">
+        <div class="loading-screen__logo">AtlanticoFit</div>
+        <div class="loading-screen__spinner"></div>
+      </div>
+    </div>
 
     <!-- ═══ ECRÃ DE LOGIN ══════════════════════════════════════════════════════ -->
         <div id="loginScreenMount"></div>
@@ -29,6 +38,7 @@
 
       <header class="topbar">
         <span class="topbar__logo">AtlanticoFit</span>
+        <span class="topbar__divider" aria-hidden="true"></span>
         <div class="topbar__stats" id="topbarStats">
           <span class="topstat" id="statStudentsWrap"><span id="statStudents">0</span> alunos</span>
           <span class="topstat sos-count" id="statAlertsWrap"><span id="statAlerts">0</span> SOS</span>
@@ -43,24 +53,24 @@
 
         <!-- Biometria -->
         <section class="tab-panel hidden" id="tab-bio" data-tab="bio">
-          <div class="page-header"><h2>Registo Biométrico</h2><p class="helper">Dados do aluno e composição corporal</p></div>
+          <div class="page-header"><h2>Registo Biométrico</h2><p class="helper">Dados do aluno e composição corporal — guarda para aceder aos testes</p></div>
           <div class="card">
             <p class="section-label">Dados do aluno</p>
             <div class="two-col">
               <label class="field">Nome<input id="studentName" type="text" placeholder="Nome completo" /></label>
-              <label class="field">Sexo<select id="studentSex"><option value="">Selecionar</option><option value="F">Feminino</option><option value="M">Masculino</option></select></label>
-              <label class="field">Idade<input id="studentAge" type="number" min="9" max="18" placeholder="9–18" /></label>
-              <label class="field">Ano letivo<input id="schoolYear" type="text" placeholder="2025/2026" /></label>
+              <label class="field"><span class="field__label"><i data-lucide="user" class="field-icon"></i>Sexo</span><select id="studentSex"><option value="">Selecionar</option><option value="F">Feminino</option><option value="M">Masculino</option></select></label>
+              <label class="field"><span class="field__label"><i data-lucide="hash" class="field-icon"></i>Idade</span><input id="studentAge" type="number" min="9" max="18" placeholder="9–18" /></label>
+              <label class="field"><span class="field__label"><i data-lucide="book-open" class="field-icon"></i>Ano letivo</span><select id="schoolYear"><option value="">-- Ano letivo --</option><option value="2020/2021">2020/2021</option><option value="2021/2022">2021/2022</option><option value="2022/2023">2022/2023</option><option value="2023/2024">2023/2024</option><option value="2024/2025">2024/2025</option><option value="2025/2026" selected>2025/2026</option><option value="2026/2027">2026/2027</option><option value="2027/2028">2027/2028</option><option value="2028/2029">2028/2029</option></select></label>
             </div>
             <hr class="card-divider" />
             <p class="section-label">Composição corporal</p>
             <div class="two-col">
-              <label class="field">Altura (m)<input id="studentHeight" type="number" step="0.01" placeholder="1.62" /></label>
-              <label class="field">Peso (kg)<input id="studentWeight" type="number" step="0.1" placeholder="54.5" /></label>
-              <label class="field">Massa gorda (%)<input id="studentFat" type="number" step="0.1" placeholder="Opcional" /></label>
-              <label class="field">Perímetro da cintura (cm)<input id="studentWaist" type="number" step="0.1" placeholder="72" /></label>
+              <label class="field"><span class="field__label"><i data-lucide="ruler" class="field-icon"></i>Altura (m)</span><input id="studentHeight" type="number" step="0.01" placeholder="1.62" /></label>
+              <label class="field"><span class="field__label"><i data-lucide="scale" class="field-icon"></i>Peso (kg)</span><input id="studentWeight" type="number" step="0.1" placeholder="54.5" /></label>
+              <label class="field"><span class="field__label"><i data-lucide="percent" class="field-icon"></i>Massa gorda (%)</span><input id="studentFat" type="number" step="0.1" placeholder="Opcional" /></label>
+              <label class="field"><span class="field__label"><i data-lucide="move-horizontal" class="field-icon"></i>Perímetro da cintura (cm)</span><input id="studentWaist" type="number" step="0.1" placeholder="72" /></label>
             </div>
-            <button class="btn" id="calcImc">Calcular IMC e ZAF</button>
+            <button class="btn" id="calcImc"><i data-lucide="calculator" class="btn-icon"></i>Calcular IMC e ZAF</button>
             <div class="result" id="imcResult">
               <div><strong>IMC</strong> <span id="imcValue">—</span></div>
               <div><strong>Zona IMC</strong> <span id="imcZone">—</span></div>
@@ -70,8 +80,8 @@
             </div>
             <hr class="card-divider" />
             <div class="actions">
-              <button class="btn" id="saveStudent">Guardar aluno</button>
-              <button class="btn btn--ghost" id="saveBiometrics">Guardar biometria</button>
+              <button class="btn" id="saveStudent"><i data-lucide="user-check" class="btn-icon"></i>Guardar aluno</button>
+              <button class="btn btn--ghost" id="saveBiometrics"><i data-lucide="heart" class="btn-icon"></i>Guardar biometria</button>
             </div>
             <p class="helper" id="bioStatus"></p>
           </div>
@@ -79,14 +89,14 @@
 
         <!-- Testes -->
         <section class="tab-panel hidden" id="tab-tests" data-tab="tests">
-          <div class="page-header"><h2>Bateria de Testes Físicos</h2><p class="helper">Classificação automática (ZAF) por idade e sexo — guarda o aluno primeiro</p></div>
+          <div class="page-header"><h2>Bateria de Testes Físicos</h2><p class="helper">Classificação automática ZAF por idade e sexo — guarda o aluno primeiro</p></div>
           <div class="card">
             <div class="table" id="testsTable">
               <div class="table__row table__header"><span>Teste</span><span>Resultado</span><span>Unidade</span><span>ZAF</span></div>
             </div>
             <div class="actions">
-              <button class="btn btn--ghost" id="addTestRow">+ Adicionar teste</button>
-              <button class="btn" id="saveTests">Guardar testes</button>
+              <button class="btn btn--ghost" id="addTestRow"><i data-lucide="plus" class="btn-icon"></i>Adicionar teste</button>
+              <button class="btn" id="saveTests"><i data-lucide="save" class="btn-icon"></i>Guardar testes</button>
             </div>
           </div>
         </section>
@@ -112,7 +122,7 @@
             <p class="section-label">Passo 1</p>
             <h3>Questionário inicial</h3>
             <div class="two-col">
-              <label class="field">Nível de atividade semanal
+              <label class="field"><span class="field__label"><i data-lucide="activity" class="field-icon"></i>Nível de atividade semanal</span>
                 <select id="qActivity">
                   <option value="">Selecionar</option>
                   <option value="0">0 — Sedentário</option>
@@ -123,7 +133,7 @@
                   <option value="5">5 — Muito bom</option>
                 </select>
               </label>
-              <label class="field">Horas de sono (média/noite)
+              <label class="field"><span class="field__label"><i data-lucide="moon" class="field-icon"></i>Horas de sono (média/noite)</span>
                 <select id="qSleep">
                   <option value="">Selecionar</option>
                   <option value="lt6">&lt; 6h</option>
@@ -133,13 +143,13 @@
                   <option value="gt9">&gt; 9h</option>
                 </select>
               </label>
-              <label class="field">Prática desportiva extraescolar
+              <label class="field"><span class="field__label"><i data-lucide="trophy" class="field-icon"></i>Prática desportiva extraescolar</span>
                 <input id="qSport" type="text" placeholder="Ex: futsal, dança, natação" />
               </label>
             </div>
             <div class="questionnaire__actions">
-              <button class="btn" id="submitInitial">Submeter inicial</button>
-              <button class="btn btn--ghost" id="deferInitial">Adiar</button>
+              <button class="btn" id="submitInitial"><i data-lucide="send" class="btn-icon"></i>Submeter inicial</button>
+              <button class="btn btn--ghost" id="deferInitial"><i data-lucide="clock" class="btn-icon"></i>Adiar</button>
             </div>
             <p class="helper" id="questInitialStatus"></p>
           </div>
@@ -147,10 +157,10 @@
             <p class="section-label">Passo 2</p>
             <h3>Questionário de rotina semanal</h3>
             <div class="two-col">
-              <label class="field">Stress percebido (0-10)
+              <label class="field"><span class="field__label"><i data-lucide="brain" class="field-icon"></i>Stress percebido (0-10)</span>
                 <input id="qStress" type="number" min="0" max="10" />
               </label>
-              <label class="field">Alimentação equilibrada
+              <label class="field"><span class="field__label"><i data-lucide="apple" class="field-icon"></i>Alimentação equilibrada</span>
                 <select id="qFood">
                   <option value="">Selecionar</option>
                   <option value="sim">Sim</option>
@@ -158,7 +168,7 @@
                   <option value="nao">Não</option>
                 </select>
               </label>
-              <label class="field">Humor geral (1-5)
+              <label class="field"><span class="field__label"><i data-lucide="smile" class="field-icon"></i>Humor geral (1-5)</span>
                 <select id="qMood">
                   <option value="">Selecionar</option>
                   <option value="1">1 — Muito baixo</option>
@@ -168,7 +178,7 @@
                   <option value="5">5 — Muito bom</option>
                 </select>
               </label>
-              <label class="field">Energia geral (1-5)
+              <label class="field"><span class="field__label"><i data-lucide="zap" class="field-icon"></i>Energia geral (1-5)</span>
                 <select id="qEnergy">
                   <option value="">Selecionar</option>
                   <option value="1">1 — Muito baixa</option>
@@ -178,7 +188,7 @@
                   <option value="5">5 — Muito boa</option>
                 </select>
               </label>
-              <label class="field">Tempo de ecrã em dias úteis
+              <label class="field"><span class="field__label"><i data-lucide="monitor" class="field-icon"></i>Tempo de ecrã em dias úteis</span>
                 <select id="qScreen">
                   <option value="">Selecionar</option>
                   <option value="lt2">&lt; 2h/dia</option>
@@ -187,7 +197,7 @@
                   <option value="gt6">&gt; 6h/dia</option>
                 </select>
               </label>
-              <label class="field">Hidratação diária
+              <label class="field"><span class="field__label"><i data-lucide="droplets" class="field-icon"></i>Hidratação diária</span>
                 <select id="qHydration">
                   <option value="">Selecionar</option>
                   <option value="baixo">Baixa</option>
@@ -196,7 +206,7 @@
                 </select>
               </label>
             </div>
-            <button class="btn" id="submitRoutine">Submeter rotina</button>
+            <button class="btn" id="submitRoutine"><i data-lucide="send" class="btn-icon"></i>Submeter rotina</button>
             <p class="helper" id="questRoutineStatus"></p>
           </div>
         </section>
@@ -215,19 +225,19 @@
             <p class="section-label">Contactos de emergência</p>
             <div class="two-col">
               <label class="field">
-                Psicólogo responsável
+                <span class="field__label"><i data-lucide="user" class="field-icon"></i>Psicólogo responsável</span>
                 <input id="sosPsych" type="text" placeholder="Nome do psicólogo" />
               </label>
               <label class="field">
-                Email do psicólogo
+                <span class="field__label"><i data-lucide="mail" class="field-icon"></i>Email do psicólogo</span>
                 <input id="sosPsychEmail" type="email" placeholder="psicologo@colegio.pt" />
               </label>
               <label class="field">
-                Professor de confiança
+                <span class="field__label"><i data-lucide="user" class="field-icon"></i>Professor de confiança</span>
                 <input id="sosTeacher" type="text" placeholder="Nome do professor" />
               </label>
               <label class="field">
-                Email do professor
+                <span class="field__label"><i data-lucide="mail" class="field-icon"></i>Email do professor</span>
                 <input id="sosTeacherEmail" type="email" placeholder="professor@colegio.pt" />
               </label>
             </div>
@@ -236,35 +246,35 @@
           <div class="card sos-action-card">
             <p class="section-label">Acionar alerta</p>
             <p class="helper">O envio é anónimo e imediato. Os contactos acima serão notificados por email.</p>
-            <button class="btn btn--alert btn--sos" id="triggerSos">⚠️ Ativar SOS</button>
+            <button class="btn btn--alert btn--sos" id="triggerSos"><i data-lucide="alert-triangle" class="btn-icon"></i>Ativar SOS</button>
             <div class="result" id="sosResult">Nenhum alerta ativo.</div>
           </div>
         </section>
 
         <!-- Relatórios -->
         <section class="tab-panel hidden" id="tab-reports" data-tab="reports">
-          <div class="page-header"><h2>Relatórios</h2><p class="helper">Gerar e enviar ao Encarregado de Educação via Microsoft 365</p></div>
+          <div class="page-header"><h2>Relatórios</h2><p class="helper">Gera e envia o relatório ao Encarregado de Educação por email</p></div>
           <div class="card">
             <p class="section-label">Pré-visualização do relatório</p>
-            <button class="btn btn--ghost" id="generateReport">Gerar relatório</button>
+            <button class="btn btn--ghost" id="generateReport"><i data-lucide="file-text" class="btn-icon"></i>Gerar relatório</button>
             <textarea id="reportText" rows="12" placeholder="Clica em 'Gerar relatório' para preencher automaticamente..." readonly></textarea>
             <hr class="card-divider" />
             <p class="section-label">Enviar por email</p>
-            <label class="field">Email do destinatário<input id="reportEmail" type="email" placeholder="encarregado@exemplo.pt" /></label>
-            <button class="btn" id="sendReport">Enviar por email</button>
+            <label class="field"><span class="field__label"><i data-lucide="mail" class="field-icon"></i>Email do destinatário</span><input id="reportEmail" type="email" placeholder="encarregado@exemplo.pt" /></label>
+            <button class="btn" id="sendReport"><i data-lucide="send" class="btn-icon"></i>Enviar por email</button>
           </div>
         </section>
 
         <!-- Análise -->
         <section class="tab-panel hidden" id="tab-charts" data-tab="charts">
-          <div class="page-header"><h2>Análise Longitudinal</h2><p class="helper">Evolução por aluno e desempenho global da turma</p></div>
+          <div class="page-header"><h2>Análise Longitudinal</h2><p class="helper">Evolução individual e desempenho global da turma ao longo dos anos</p></div>
           <div class="card">
             <p class="section-label">Adicionar ano letivo</p>
             <div class="two-col">
-              <label class="field">Ano letivo<input id="chartYear" type="text" placeholder="2025/2026" /></label>
-              <label class="field">IMC médio da turma<input id="chartClassImc" type="number" step="0.1" placeholder="20.4" /></label>
+              <label class="field"><span class="field__label"><i data-lucide="calendar" class="field-icon"></i>Ano letivo</span><select id="chartYear"><option value="">-- Selecionar --</option><option value="2020/2021">2020/2021</option><option value="2021/2022">2021/2022</option><option value="2022/2023">2022/2023</option><option value="2023/2024">2023/2024</option><option value="2024/2025">2024/2025</option><option value="2025/2026">2025/2026</option><option value="2026/2027">2026/2027</option><option value="2027/2028">2027/2028</option><option value="2028/2029">2028/2029</option></select></label>
+              <label class="field"><span class="field__label"><i data-lucide="bar-chart-2" class="field-icon"></i>IMC médio da turma</span><input id="chartClassImc" type="number" step="0.1" placeholder="20.4" /></label>
             </div>
-            <button class="btn btn--ghost" id="addYear">Adicionar ano</button>
+            <button class="btn btn--ghost" id="addYear"><i data-lucide="plus-circle" class="btn-icon"></i>Adicionar ano</button>
             <hr class="card-divider" />
             <p class="section-label">IMC do aluno ao longo dos anos</p>
             <canvas id="studentChart" height="140"></canvas>
@@ -276,12 +286,12 @@
 
         <!-- Turma -->
         <section class="tab-panel hidden" id="tab-turma" data-tab="turma">
-          <div class="page-header"><h2>Vista de Turma</h2><p class="helper">Desempenho global e ZAF por turma</p></div>
+          <div class="page-header"><h2>Vista de Turma</h2><p class="helper">Consulta e filtra o desempenho físico global por ano letivo</p></div>
           <div class="card">
             <p class="section-label">Filtrar por ano letivo</p>
             <div class="actions">
-              <label class="field" style="margin:0;flex:1"><input id="turmaYear" type="text" placeholder="Ex: 2025/2026" /></label>
-              <button class="btn" id="loadTurma">Carregar turma</button>
+              <label class="field" style="margin:0;flex:1"><span class="field__label"><i data-lucide="calendar" class="field-icon"></i>Ano letivo</span><select id="turmaYear"><option value="">-- Todos os anos --</option><option value="2020/2021">2020/2021</option><option value="2021/2022">2021/2022</option><option value="2022/2023">2022/2023</option><option value="2023/2024">2023/2024</option><option value="2024/2025">2024/2025</option><option value="2025/2026">2025/2026</option><option value="2026/2027">2026/2027</option><option value="2027/2028">2027/2028</option><option value="2028/2029">2028/2029</option></select></label>
+              <button class="btn" id="loadTurma"><i data-lucide="search" class="btn-icon"></i>Carregar turma</button>
             </div>
             <p class="helper" id="turmaStatus"></p>
             <div id="turmaTable"></div>
@@ -293,29 +303,29 @@
 
         <!-- Dispensas -->
         <section class="tab-panel hidden" id="tab-dispensas" data-tab="dispensas">
-          <div class="page-header"><h2>Atestados e Dispensas</h2><p class="helper">Registo de atestados médicos e dispensas de aula</p></div>
+          <div class="page-header"><h2>Atestados e Dispensas</h2><p class="helper">Regista atestados médicos e períodos de dispensa de aula</p></div>
           <div class="card">
             <p class="section-label">Aluno e motivo</p>
             <div class="two-col">
-              <label class="field">Aluno<select id="dispensaStudentId"><option value="">— Seleciona o aluno —</option></select></label>
-              <label class="field">Motivo<input id="dispensaReason" type="text" placeholder="Ex: Lesão, COVID" /></label>
+              <label class="field"><span class="field__label"><i data-lucide="user" class="field-icon"></i>Aluno</span><select id="dispensaStudentId"><option value="">— Seleciona o aluno —</option></select></label>
+              <label class="field"><span class="field__label"><i data-lucide="file-text" class="field-icon"></i>Motivo</span><input id="dispensaReason" type="text" placeholder="Descreve o motivo da dispensa" /></label>
             </div>
             <hr class="card-divider" />
             <p class="section-label">Período</p>
             <div class="two-col">
-              <label class="field">Data início<input id="dispensaStartDate" type="date" /></label>
-              <label class="field">Data fim<input id="dispensaEndDate" type="date" /></label>
+              <label class="field"><span class="field__label"><i data-lucide="calendar" class="field-icon"></i>Data início</span><input id="dispensaStartDate" type="date" /></label>
+              <label class="field"><span class="field__label"><i data-lucide="calendar" class="field-icon"></i>Data fim</span><input id="dispensaEndDate" type="date" /></label>
             </div>
             <label class="field field--inline"><input id="dispensaMedical" type="checkbox" /> Tem atestado médico</label>
             <hr class="card-divider" />
-            <button class="btn" id="registerDispensa">Registar dispensa</button>
+            <button class="btn" id="registerDispensa"><i data-lucide="file-plus" class="btn-icon"></i>Registar dispensa</button>
             <p class="helper" id="dispensaStatus"></p>
           </div>
         </section>
 
         <!-- Protocolos -->
         <section class="tab-panel hidden" id="tab-protocols" data-tab="protocols">
-          <div class="page-header"><h2>Área de Protocolos</h2><p class="helper">Normas e critérios de execução de cada teste de aptidão física</p></div>
+          <div class="page-header"><h2>Área de Protocolos</h2><p class="helper">Normas, critérios e tabelas de referência ZAF para cada teste de aptidão física</p></div>
           <div class="card">
             <div class="reference-block">
               <h3>Tabelas de Referência ZAF</h3>
@@ -378,7 +388,7 @@
 
             <hr class="card-divider" />
             <div class="protocols">
-              <details open>
+              <details>
                 <summary>Vai e Vem (20m Pacer)</summary>
                 <p>Teste de capacidade aeróbia com incrementos sonoros (beeps). O aluno percorre 20 metros de um lado ao outro, aumentando a velocidade progressivamente a cada nível. Regista o número total de percursos completados antes de não conseguir acompanhar o sinal sonoro por duas vezes consecutivas.</p>
               </details>
