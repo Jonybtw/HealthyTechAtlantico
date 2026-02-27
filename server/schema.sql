@@ -5,7 +5,8 @@ CREATE TABLE IF NOT EXISTS users (
   role TEXT NOT NULL,
   consent_rgpd BOOLEAN DEFAULT FALSE,
   consent_share BOOLEAN DEFAULT FALSE,
-  created_at TIMESTAMP DEFAULT NOW()
+  created_at TIMESTAMP DEFAULT NOW(),
+  updated_at TIMESTAMP DEFAULT NOW()
 );
 
 CREATE TABLE IF NOT EXISTS roles (
@@ -24,26 +25,57 @@ CREATE TABLE IF NOT EXISTS role_permissions (
   PRIMARY KEY (role_key, permission_key)
 );
 
+-- ── Academic years ───────────────────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS academic_years (
+  id BIGSERIAL PRIMARY KEY,
+  label TEXT UNIQUE NOT NULL  -- e.g. '2025/2026'
+);
+
+-- ── School classes ────────────────────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS school_classes (
+  id BIGSERIAL PRIMARY KEY,
+  academic_year_id BIGINT NOT NULL REFERENCES academic_years(id) ON DELETE CASCADE,
+  name TEXT NOT NULL,       -- e.g. '8A'
+  UNIQUE(academic_year_id, name)
+);
+
 CREATE TABLE IF NOT EXISTS students (
   id BIGSERIAL PRIMARY KEY,
   user_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
   name TEXT NOT NULL,
-  sex TEXT NOT NULL,
-  age INT NOT NULL,
+  sex TEXT NOT NULL CHECK (sex IN ('M', 'F')),
+  -- birth_date replaces age INT: age is now calculated dynamically
+  birth_date DATE,
+  -- Legacy age column kept for backwards compatibility; prefer birth_date
+  age INT CHECK (age BETWEEN 5 AND 25),
   school_year TEXT,
   class_name TEXT,
+  created_at TIMESTAMP DEFAULT NOW(),
+  updated_at TIMESTAMP DEFAULT NOW()
+);
+
+-- ── Evaluation sessions ──────────────────────────────────────────────────────
+-- Groups a set of biometrics + tests into a named evaluation period
+CREATE TABLE IF NOT EXISTS evaluation_sessions (
+  id BIGSERIAL PRIMARY KEY,
+  student_id BIGINT NOT NULL REFERENCES students(id) ON DELETE CASCADE,
+  label TEXT NOT NULL DEFAULT 'Avaliação',  -- e.g. 'Diagnóstica Out/2025'
+  school_year TEXT,
+  created_by BIGINT REFERENCES users(id),
   created_at TIMESTAMP DEFAULT NOW()
 );
 
 CREATE TABLE IF NOT EXISTS biometrics (
   id BIGSERIAL PRIMARY KEY,
   student_id BIGINT NOT NULL REFERENCES students(id) ON DELETE CASCADE,
-  height_m NUMERIC(4,2) NOT NULL,
-  weight_kg NUMERIC(5,2) NOT NULL,
-  fat_pct NUMERIC(4,1),
-  waist_cm NUMERIC(5,1),
-  imc NUMERIC(4,1) NOT NULL,
+  session_id BIGINT REFERENCES evaluation_sessions(id) ON DELETE SET NULL,
+  height_m NUMERIC(4,2) NOT NULL CHECK (height_m BETWEEN 0.50 AND 2.50),
+  weight_kg NUMERIC(5,2) NOT NULL CHECK (weight_kg BETWEEN 5 AND 300),
+  fat_pct NUMERIC(4,1) CHECK (fat_pct BETWEEN 0 AND 70),
+  waist_cm NUMERIC(5,1) CHECK (waist_cm BETWEEN 30 AND 200),
+  imc NUMERIC(4,1) NOT NULL CHECK (imc BETWEEN 5 AND 70),
   imc_zone TEXT NOT NULL,
+  fat_zone TEXT,
   waist_zone TEXT,
   recorded_at TIMESTAMP DEFAULT NOW()
 );
@@ -51,8 +83,11 @@ CREATE TABLE IF NOT EXISTS biometrics (
 CREATE TABLE IF NOT EXISTS tests (
   id BIGSERIAL PRIMARY KEY,
   student_id BIGINT NOT NULL REFERENCES students(id) ON DELETE CASCADE,
+  session_id BIGINT REFERENCES evaluation_sessions(id) ON DELETE SET NULL,
   test_id TEXT NOT NULL,
-  value TEXT NOT NULL,
+  -- value stored as NUMERIC where possible; TEXT kept for time values (mm:ss)
+  value_num NUMERIC,
+  value_text TEXT NOT NULL,
   unit TEXT NOT NULL,
   zone TEXT NOT NULL,
   recorded_at TIMESTAMP DEFAULT NOW()
@@ -75,14 +110,19 @@ CREATE TABLE IF NOT EXISTS sos_alerts (
   psych_email TEXT,
   teacher_email TEXT,
   created_at TIMESTAMP DEFAULT NOW(),
-  resolved BOOLEAN DEFAULT FALSE
+  resolved BOOLEAN DEFAULT FALSE,
+  resolved_at TIMESTAMP,
+  resolved_by BIGINT REFERENCES users(id)
 );
 
 CREATE TABLE IF NOT EXISTS reports (
   id BIGSERIAL PRIMARY KEY,
   student_id BIGINT NOT NULL REFERENCES students(id) ON DELETE CASCADE,
-  content TEXT NOT NULL,
+  -- Store only metadata; full content is ephemeral and must not be persisted in plain text
+  title TEXT NOT NULL DEFAULT 'Relatório AtlanticoFit',
   emailed_to TEXT NOT NULL,
+  school_year TEXT,
+  created_by BIGINT REFERENCES users(id),
   created_at TIMESTAMP DEFAULT NOW()
 );
 
@@ -91,7 +131,7 @@ CREATE TABLE IF NOT EXISTS dispensas (
   student_id BIGINT NOT NULL REFERENCES students(id) ON DELETE CASCADE,
   reason TEXT NOT NULL,
   start_date DATE NOT NULL,
-  end_date DATE NOT NULL,
+  end_date DATE NOT NULL CHECK (end_date >= start_date),
   medical_certificate BOOLEAN DEFAULT FALSE,
   created_at TIMESTAMP DEFAULT NOW(),
   created_by BIGINT NOT NULL REFERENCES users(id)
@@ -107,8 +147,89 @@ CREATE TABLE IF NOT EXISTS student_guardians (
   UNIQUE(student_id, guardian_user_id)
 );
 
-CREATE INDEX IF NOT EXISTS idx_student_guardians_student_id ON student_guardians(student_id);
-CREATE INDEX IF NOT EXISTS idx_student_guardians_guardian_user_id ON student_guardians(guardian_user_id);
+-- ── Audit log (RGPD compliance) ──────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS audit_log (
+  id BIGSERIAL PRIMARY KEY,
+  user_id BIGINT REFERENCES users(id) ON DELETE SET NULL,
+  action TEXT NOT NULL,          -- e.g. 'read_biometrics', 'trigger_sos'
+  target_id BIGINT,              -- student_id or other entity
+  ip_address TEXT,
+  created_at TIMESTAMP DEFAULT NOW()
+);
+
+-- ── Safe idempotent migrations (run on every startup; all use IF NOT EXISTS) ──
+-- Adds new columns to existing tables without breaking a fresh install.
+
+ALTER TABLE users ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP DEFAULT NOW();
+
+ALTER TABLE students ADD COLUMN IF NOT EXISTS birth_date DATE;
+ALTER TABLE students ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP DEFAULT NOW();
+
+ALTER TABLE sos_alerts ADD COLUMN IF NOT EXISTS psych_email TEXT;
+ALTER TABLE sos_alerts ADD COLUMN IF NOT EXISTS teacher_email TEXT;
+ALTER TABLE sos_alerts ADD COLUMN IF NOT EXISTS resolved_at TIMESTAMP;
+ALTER TABLE sos_alerts ADD COLUMN IF NOT EXISTS resolved_by BIGINT REFERENCES users(id);
+
+ALTER TABLE biometrics ADD COLUMN IF NOT EXISTS session_id BIGINT REFERENCES evaluation_sessions(id) ON DELETE SET NULL;
+ALTER TABLE biometrics ADD COLUMN IF NOT EXISTS fat_zone TEXT;
+
+-- Rename tests.value → tests.value_text (only if 'value' column still exists)
+DO $$ BEGIN
+  IF EXISTS (
+    SELECT 1 FROM information_schema.columns
+    WHERE table_name = 'tests' AND column_name = 'value'
+  ) THEN
+    ALTER TABLE tests RENAME COLUMN value TO value_text;
+  END IF;
+END $$;
+
+ALTER TABLE tests ADD COLUMN IF NOT EXISTS session_id BIGINT REFERENCES evaluation_sessions(id) ON DELETE SET NULL;
+ALTER TABLE tests ADD COLUMN IF NOT EXISTS value_num NUMERIC;
+
+ALTER TABLE reports ADD COLUMN IF NOT EXISTS title TEXT;
+UPDATE reports SET title = 'Relatório AtlanticoFit' WHERE title IS NULL;
+ALTER TABLE reports ADD COLUMN IF NOT EXISTS school_year TEXT;
+ALTER TABLE reports ADD COLUMN IF NOT EXISTS created_by BIGINT REFERENCES users(id);
+-- Make legacy content column nullable so new inserts (without content) succeed
+DO $$ BEGIN
+  IF EXISTS (
+    SELECT 1 FROM information_schema.columns
+    WHERE table_name = 'reports' AND column_name = 'content'
+  ) THEN
+    ALTER TABLE reports ALTER COLUMN content DROP NOT NULL;
+  END IF;
+END $$;
+
+-- ── Indexes ───────────────────────────────────────────────────────────────────
+CREATE INDEX IF NOT EXISTS idx_student_guardians_student_id    ON student_guardians(student_id);
+CREATE INDEX IF NOT EXISTS idx_student_guardians_guardian_user ON student_guardians(guardian_user_id);
+CREATE INDEX IF NOT EXISTS idx_biometrics_student_recorded     ON biometrics(student_id, recorded_at DESC);
+CREATE INDEX IF NOT EXISTS idx_tests_student_recorded          ON tests(student_id, recorded_at DESC);
+CREATE INDEX IF NOT EXISTS idx_sos_student                     ON sos_alerts(student_id, resolved);
+CREATE INDEX IF NOT EXISTS idx_audit_log_user                  ON audit_log(user_id, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_students_school_year            ON students(school_year);
+CREATE INDEX IF NOT EXISTS idx_students_user_id                ON students(user_id);
+
+-- session_id indexes: only safe after the ALTER TABLE above has added the columns
+DO $$ BEGIN
+  IF EXISTS (
+    SELECT 1 FROM information_schema.columns
+    WHERE table_name = 'tests' AND column_name = 'session_id'
+  ) THEN
+    CREATE INDEX IF NOT EXISTS idx_tests_student_session
+      ON tests(student_id, session_id);
+  END IF;
+END $$;
+
+DO $$ BEGIN
+  IF EXISTS (
+    SELECT 1 FROM information_schema.columns
+    WHERE table_name = 'biometrics' AND column_name = 'session_id'
+  ) THEN
+    CREATE INDEX IF NOT EXISTS idx_biometrics_student_session
+      ON biometrics(student_id, session_id);
+  END IF;
+END $$;
 
 INSERT INTO roles (role_key, role_name)
 VALUES
@@ -182,15 +303,11 @@ VALUES
   ('pais', 'read_linked_students')
 ON CONFLICT (role_key, permission_key) DO NOTHING;
 
--- Migration: run these if upgrading an existing database
--- ALTER TABLE sos_alerts ADD COLUMN IF NOT EXISTS psych_email TEXT;
--- ALTER TABLE sos_alerts ADD COLUMN IF NOT EXISTS teacher_email TEXT;
--- ALTER TABLE students ADD COLUMN IF NOT EXISTS class_name TEXT;
--- CREATE TABLE IF NOT EXISTS student_guardians (...);
-
 -- ------------------------------------------------------------
--- Seed data (optional) for local testing
--- Password for all test users: Password123!
+-- Seed data for local development ONLY
+-- DO NOT run this in production.
+-- Staff accounts must be created via: POST /api/auth/admin/create-staff
+-- with the ADMIN_SECRET environment variable.
 -- ------------------------------------------------------------
 
 INSERT INTO users (email, password_hash, role, consent_rgpd, consent_share)
@@ -247,8 +364,8 @@ WHERE s.name = 'Maria Costa'
     WHERE b.student_id = s.id AND b.imc = 25.5
   );
 
-INSERT INTO tests (student_id, test_id, value, unit, zone)
-SELECT s.id, t.test_id, t.value, t.unit, t.zone
+INSERT INTO tests (student_id, test_id, value_text, unit, zone)
+SELECT s.id, t.test_id, t.val, t.unit, t.zone
 FROM students s
 JOIN (
   VALUES
@@ -256,11 +373,11 @@ JOIN (
     ('milha', '09:45', 'mm:ss', 'Zona Saudavel'),
     ('abd', '34', 'reps', 'Zona Saudavel'),
     ('senta', '26', 'cm', 'Zona Saudavel')
-) AS t(test_id, value, unit, zone) ON true
+) AS t(test_id, val, unit, zone) ON true
 WHERE s.name = 'Joao Silva'
   AND NOT EXISTS (
     SELECT 1 FROM tests x
-    WHERE x.student_id = s.id AND x.test_id = t.test_id AND x.value = t.value
+    WHERE x.student_id = s.id AND x.test_id = t.test_id AND x.value_text = t.val
   );
 
 INSERT INTO questionnaires (student_id, type, payload, deferred_count)

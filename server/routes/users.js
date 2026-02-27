@@ -65,7 +65,8 @@ router.put(
     const valid = await bcrypt.compare(currentPassword, user.password_hash);
     if (!valid) return res.status(401).json({ error: "Palavra-passe atual incorreta." });
 
-    const newHash = await bcrypt.hash(newPassword, 10);
+    const SALT_ROUNDS = 12; // must match auth.js
+    const newHash = await bcrypt.hash(newPassword, SALT_ROUNDS);
     await pool.query("UPDATE users SET password_hash = $1 WHERE id = $2", [newHash, req.user.id]);
 
     return res.json({ ok: true });

@@ -2,8 +2,10 @@ window.AUTH_TEMPLATE = `
 <div id="loginScreen" class="login-screen">
   <div class="login-card">
     <div class="login-logo">
+      <img src="/assets/logos/Logo1.jpg" alt="Colégio Atlântico" class="login-logo__img login-logo__img--light" />
+      <img src="/assets/logos/Logo12.jpg" alt="Colégio Atlântico" class="login-logo__img login-logo__img--dark" />
       <div class="login-logo__badge">Colégio Atlântico</div>
-      <h1 class="login-title">AtlanticoFit</h1>
+      <h1 class="login-title">HealthyTech Atlântico</h1>
       <p class="login-logo__sub">Plataforma de Educação Física &amp; Bem-Estar</p>
     </div>
     <label class="field">
@@ -15,7 +17,7 @@ window.AUTH_TEMPLATE = `
       <div class="field__password-wrap">
         <input id="userPassword" type="password" placeholder="Mínimo 8 caracteres" autocomplete="current-password" />
         <button type="button" class="btn--reveal-pw" id="togglePassword" aria-label="Mostrar palavra-passe">
-          <i data-lucide="eye" id="revealPwIcon"></i>
+          <i data-lucide="eye-off" id="revealPwIcon"></i>
         </button>
       </div>
     </label>
@@ -28,16 +30,15 @@ window.AUTH_TEMPLATE = `
       <button class="btn btn--ghost" id="showRegister"><i data-lucide="user-plus" class="btn-icon"></i>Criar conta</button>
     </div>
     <div id="registerFields" class="register-fields hidden">
-      <label class="field">
+      <div class="field">
         <span class="field__label"><i data-lucide="shield" class="field-icon"></i>Perfil da conta</span>
         <select id="roleSelect">
           <option value="">Selecionar perfil</option>
           <option value="aluno">Aluno</option>
-          <option value="professor">Professor</option>
-          <option value="psicologo">Psicólogo</option>
           <option value="pais">Pais / E.E.</option>
+          <!-- Professor e Psicólogo só podem ser criados pelo administrador -->
         </select>
-      </label>
+      </div>
       <label class="field field--inline">
         <input id="consentRgpd" type="checkbox" />
         Aceito o tratamento de dados (RGPD)
@@ -49,7 +50,7 @@ window.AUTH_TEMPLATE = `
       <button class="btn" id="registerUser" style="width:100%;margin-top:6px"><i data-lucide="user-check" class="btn-icon"></i>Registar</button>
     </div>
     <p class="helper login-status" id="accessStatus"></p>
-    <p class="login-credit">Feito por João Rôlo &amp; Rafaela Carmo &middot; AtlanticoFit</p>
+    <p class="login-credit">Feito por João Rôlo &amp; Rafaela Carmo &middot; HealthyTech Atlântico</p>
   </div>
 </div>
 `;

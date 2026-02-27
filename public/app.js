@@ -1,4 +1,4 @@
-const mountAuthTemplate = () => {
+﻿const mountAuthTemplate = () => {
   const mount = document.getElementById("loginScreenMount");
   if (!mount) return;
   if (typeof window.AUTH_TEMPLATE !== "string" || !window.AUTH_TEMPLATE.trim()) {
@@ -33,14 +33,15 @@ const safeParse = (key, fallback = null) => {
 };
 
 const state = {
-  profiles: safeParse("af_profiles", []),
-  tests:    safeParse("af_tests",    []),
-  years:    safeParse("af_years",    []),
-  alerts:   safeParse("af_alerts",   []),
-  defers:   Number(localStorage.getItem("af_defers")) || 0,
+  // UI-only ephemeral state — health data is NOT persisted to localStorage
+  profiles: [],
+  tests:    [],
+  years:    safeParse("af_years", []),  // anonymised chart data only
+  alerts:   [],
+  defers:   Number(sessionStorage.getItem("af_defers")) || 0,
   token:    localStorage.getItem("af_token") || sessionStorage.getItem("af_token") || "",
   user:     safeParse("af_user", null) || (() => { try { const r = sessionStorage.getItem("af_user"); return r ? JSON.parse(r) : null; } catch { return null; } })(),
-  currentStudentId: Number(localStorage.getItem("af_student_id")) || null,
+  currentStudentId: Number(sessionStorage.getItem("af_student_id")) || null, // session-only, not persisted cross-tab
   lastBiometrics: null,
   classStudents: [],
   dispensas: [],
@@ -239,70 +240,70 @@ const testTable = {
       cooper: [18, 22],
       velocidade: [6.7, 5.9],
       milha: ["10:30", "6:30"],
-      agilidade: [11.5, 10.25],
+      agilidade: [11.50, 10.25],
       abd: [10, 55],
       bracos: [10, 27],
       senta: [18.5, 33.0],
     },
     13: {
       vai: [47, 82],
-      cooper: [18, 22],
-      velocidade: [6.7, 5.9],
-      milha: ["10:30", "6:30"],
-      agilidade: [11.5, 10.25],
-      abd: [10, 55],
-      bracos: [10, 27],
+      cooper: [19, 23],
+      velocidade: [6.5, 5.7],
+      milha: ["10:00", "6:15"],
+      agilidade: [11.20, 10.00],
+      abd: [12, 55],
+      bracos: [12, 27],
       senta: [18.5, 33.0],
     },
     14: {
       vai: [47, 82],
-      cooper: [18, 22],
-      velocidade: [6.7, 5.9],
-      milha: ["10:30", "6:30"],
-      agilidade: [11.5, 10.25],
-      abd: [10, 55],
-      bracos: [10, 27],
-      senta: [18.5, 33.0],
+      cooper: [20, 24],
+      velocidade: [6.4, 5.6],
+      milha: ["9:30", "6:00"],
+      agilidade: [11.00, 9.80],
+      abd: [14, 55],
+      bracos: [14, 30],
+      senta: [16.5, 33.0],
     },
     15: {
       vai: [47, 82],
-      cooper: [18, 22],
-      velocidade: [6.7, 5.9],
-      milha: ["10:30", "6:30"],
-      agilidade: [11.5, 10.25],
-      abd: [10, 55],
-      bracos: [10, 27],
-      senta: [18.5, 33.0],
+      cooper: [20, 25],
+      velocidade: [6.3, 5.5],
+      milha: ["9:00", "5:45"],
+      agilidade: [10.90, 9.70],
+      abd: [16, 55],
+      bracos: [16, 35],
+      senta: [16.5, 33.0],
     },
     16: {
       vai: [47, 82],
-      cooper: [18, 22],
-      velocidade: [6.7, 5.9],
-      milha: ["10:30", "6:30"],
-      agilidade: [11.5, 10.25],
-      abd: [10, 55],
-      bracos: [10, 27],
-      senta: [18.5, 33.0],
+      cooper: [21, 25],
+      velocidade: [6.2, 5.4],
+      milha: ["9:00", "5:30"],
+      agilidade: [10.80, 9.60],
+      abd: [18, 55],
+      bracos: [18, 35],
+      senta: [15.0, 33.0],
     },
     17: {
       vai: [47, 82],
-      cooper: [18, 22],
-      velocidade: [6.7, 5.9],
-      milha: ["10:30", "6:30"],
-      agilidade: [11.5, 10.25],
-      abd: [10, 55],
-      bracos: [10, 27],
-      senta: [18.5, 33.0],
+      cooper: [21, 25],
+      velocidade: [6.1, 5.4],
+      milha: ["8:30", "5:30"],
+      agilidade: [10.70, 9.50],
+      abd: [18, 55],
+      bracos: [18, 35],
+      senta: [15.0, 33.0],
     },
     18: {
       vai: [47, 82],
-      cooper: [18, 22],
-      velocidade: [6.7, 5.9],
-      milha: ["10:30", "6:30"],
-      agilidade: [11.5, 10.25],
-      abd: [10, 55],
-      bracos: [10, 27],
-      senta: [18.5, 33.0],
+      cooper: [21, 25],
+      velocidade: [6.0, 5.3],
+      milha: ["8:30", "5:15"],
+      agilidade: [10.60, 9.40],
+      abd: [18, 55],
+      bracos: [18, 35],
+      senta: [14.0, 33.0],
     },
   },
 };
@@ -345,7 +346,7 @@ const elements = {
   accessStatus: document.getElementById("accessStatus"),
   studentName: document.getElementById("studentName"),
   studentSex: document.getElementById("studentSex"),
-  studentAge: document.getElementById("studentAge"),
+  studentBirthDate: document.getElementById("studentBirthDate"),
   studentHeight: document.getElementById("studentHeight"),
   studentWeight: document.getElementById("studentWeight"),
   studentFat: document.getElementById("studentFat"),
@@ -422,6 +423,18 @@ const elements = {
 let studentChart = null;
 let classChart = null;
 
+// Helper: calculate integer age from a YYYY-MM-DD birth date string
+const calcAgeFromBirthDate = (birthDateStr) => {
+  if (!birthDateStr) return null;
+  const birth = new Date(birthDateStr + "T00:00:00");
+  if (isNaN(birth)) return null;
+  const today = new Date();
+  let age = today.getFullYear() - birth.getFullYear();
+  const m = today.getMonth() - birth.getMonth();
+  if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) age--;
+  return age;
+};
+
 const toSeconds = (value) => {
   const parts = value.split(":");
   if (parts.length === 2) {
@@ -480,7 +493,7 @@ const getAgeKey = (age) => {
 };
 
 const calculateImc = () => {
-  const age = Number(elements.studentAge.value);
+  const age = calcAgeFromBirthDate(elements.studentBirthDate?.value);
   const height = Number(elements.studentHeight.value);
   const weight = Number(elements.studentWeight.value);
   const waist = Number(elements.studentWaist.value);
@@ -576,7 +589,7 @@ const buildTestRow = () => {
   row.appendChild(zoneSpan);
 
   const updateZone = () => {
-    const age = Number(elements.studentAge.value);
+    const age = calcAgeFromBirthDate(elements.studentBirthDate?.value);
     const sex = elements.studentSex.value;
     const ageKey = getAgeKey(age);
     const testId = testSelect.value;
@@ -647,7 +660,7 @@ const saveTests = () => {
     });
   });
   state.tests = collected;
-  localStorage.setItem("af_tests", JSON.stringify(state.tests));
+  // Health data is NOT persisted to localStorage — kept in memory only
   updateStats();
   if (state.token && state.currentStudentId && collected.length > 0) {
     apiFetch(`/students/${state.currentStudentId}/tests`, {
@@ -707,34 +720,11 @@ const refreshTopbarStats = async () => {
   }
 
   try {
-    const students = await apiFetch("/students");
-    const studentCount = Array.isArray(students) ? students.length : 0;
-
-    if (!canReadSos) {
-      setTopbarStats({ students: studentCount, alerts: 0 });
-      return;
-    }
-
-    if (studentCount === 0) {
-      setTopbarStats({ students: 0, alerts: 0 });
-      return;
-    }
-
-    const sosResponses = await Promise.all(
-      students.map((student) =>
-        apiFetch(`/students/${student.id}/sos`)
-          .then((alerts) => (Array.isArray(alerts) ? alerts.length : 0))
-          .catch((error) => {
-            if (/forbidden/i.test(error.message)) return null;
-            return 0;
-          })
-      )
-    );
-
-    const totalAlerts = sosResponses.filter((value) => Number.isInteger(value)).reduce((sum, value) => sum + value, 0);
+    // Single aggregated request — replaces the previous N+1 pattern
+    const summary = await apiFetch("/stats/summary");
     setTopbarStats({
-      students: studentCount,
-      alerts: totalAlerts,
+      students: summary.studentCount ?? 0,
+      alerts: summary.openSosCount ?? 0,
     });
   } catch (_) {
     setTopbarStats({ students: 0, alerts: 0 });
@@ -792,8 +782,12 @@ const registerUser = () => {
       }
       state.token = data.token;
       state.user = data.user;
-      localStorage.setItem("af_token", state.token);
-      localStorage.setItem("af_user", JSON.stringify(state.user));
+      // For new registrations always use sessionStorage — no persistent disk storage
+      // until the user explicitly logs in with "Lembrar-me" checked.
+      sessionStorage.setItem("af_token", state.token);
+      sessionStorage.setItem("af_user", JSON.stringify(state.user));
+      localStorage.removeItem("af_token");
+      localStorage.removeItem("af_user");
       showApp(state.user);
       toast(`Bem-vindo/a! Conta criada: ${data.user.email}`, "success");
     })
@@ -878,7 +872,7 @@ const populateProfileTab = () => {
     }
     if (user.role === "aluno") {
       items.push({ value: String(statRecordsVal), label: "Testes" });
-      items.push({ value: localStorage.getItem("af_initial") === "done" ? "✓" : "–", label: "Quest. Inicial" });
+      items.push({ value: sessionStorage.getItem("af_initial") === "done" ? "✓" : "–", label: "Quest. Inicial" });
     }
     if (user.role === "pais") {
       items.push({ value: "✓", label: "Ligado" });
@@ -919,19 +913,20 @@ const saveStudent = () => {
   }
   const name = elements.studentName.value.trim();
   const sex = elements.studentSex.value;
-  const age = Number(elements.studentAge.value);
+  const birthDate = elements.studentBirthDate?.value || null;
+  const age = calcAgeFromBirthDate(birthDate);
   const schoolYear = elements.schoolYear.value.trim();
-  if (!name || !sex || !age) {
-    updateAccessStatus("Preenche nome, sexo e idade do aluno.");
+  if (!name || !sex || (!birthDate && !age)) {
+    updateAccessStatus("Preenche nome, sexo e data de nascimento do aluno.");
     return;
   }
   apiFetch("/students", {
     method: "POST",
-    body: JSON.stringify({ name, sex, age, schoolYear }),
+    body: JSON.stringify({ name, sex, birthDate, age, schoolYear }),
   })
     .then((student) => {
       state.currentStudentId = student.id;
-      localStorage.setItem("af_student_id", String(student.id));
+      sessionStorage.setItem("af_student_id", String(student.id)); // session-only
       updateAccessStatus(`Aluno guardado: ${student.name}`);
       refreshTopbarStats();
     })
@@ -956,9 +951,11 @@ const saveBiometrics = () => {
     .catch((err) => updateAccessStatus(err.message));
 };
 
-const updateReport = () => {
+const buildTextReport = () => {
   const name = elements.studentName.value || "Aluno";
-  const age = elements.studentAge.value || "-";
+  const birthDate = elements.studentBirthDate?.value || null;
+  const birthLabel = birthDate ? new Date(birthDate + "T00:00:00").toLocaleDateString("pt-PT") : "-";
+  const age = calcAgeFromBirthDate(birthDate);
   const sex = elements.studentSex.value === "F" ? "Feminino" : elements.studentSex.value === "M" ? "Masculino" : "Não definido";
   const year = elements.schoolYear.value || "-";
   const imc = elements.imcValue.textContent || "-";
@@ -967,7 +964,6 @@ const updateReport = () => {
   const waistZoneText = elements.waistZone.textContent || "-";
   const waistVal = waistRaw ? `${waistRaw} cm — ${waistZoneText}` : "Não registado";
 
-  // Collect tests from table rows in DOM
   const rows = elements.testsTable.querySelectorAll(".table__row:not(.table__header)");
   const testsByCategory = {};
   rows.forEach((row) => {
@@ -981,30 +977,26 @@ const updateReport = () => {
     if (!testsByCategory[category]) testsByCategory[category] = [];
     testsByCategory[category].push(`  ${label}: ${inputs[0].value} ${inputs[1].value} — ${badge?.textContent || "-"}`);
   });
-  const testSections = Object.entries(testsByCategory).map(([category, lines]) => {
-    return `${category}\n${lines.join("\n")}`;
-  });
+  const testSections = Object.entries(testsByCategory).map(([category, lines]) => `${category}\n${lines.join("\n")}`);
 
-  // ZAF advisory messages (from official Colégio Atlântico guidelines)
   const imcAdvisory = imcZone === "Zona Saudável" || imcZone === "Zona Saudavel"
     ? "O IMC do seu educando encontra-se dentro da Zona Saudável para a sua idade e sexo."
     : "ATENÇÃO: Um IMC elevado está associado a um risco cardiovascular elevado, assim como a problemas metabólicos e osteoarticulares. Recomendamos uma consulta com o médico de família.";
-
   const waistAdvisory = !waistRaw ? ""
     : (waistZoneText === "Zona Saudável" || waistZoneText === "Zona Saudavel")
       ? "O perímetro da cintura encontra-se dentro dos valores de referência saudáveis."
-      : "ATENÇÃO: O Perímetro da Cintura relaciona-se com a gordura abdominal (subcutânea e visceral) e com a gordura corporal total. Um Perímetro da Cintura elevado é considerado um fator de risco de doenças cardiometabólicas e respiratórias.";
+      : "ATENÇÃO: O Perímetro da Cintura relaciona-se com a gordura abdominal. Um perímetro elevado é considerado um fator de risco de doenças cardiometabólicas e respiratórias.";
 
   const now = new Date().toLocaleDateString("pt-PT");
-  const text =
+  return (
 `===========================================
-RELATÓRIO ATLANTICOFIT — ${now}
+RELATÓRIO HEALTHYTECH ATLA’NTICO — ${now}
 Colégio Atlântico
 Educação Física — Avaliação Física
 ===========================================
 
 Aluno: ${name}
-Idade: ${age} anos  |  Sexo: ${sex}  |  Ano letivo: ${year}
+Data de Nasc.: ${birthLabel}  |  Sexo: ${sex}  |  Ano letivo: ${year}
 
 --- COMPOSIÇÃO CORPORAL ---
 IMC: ${imc} kg/m²  —  ${imcZone}
@@ -1020,13 +1012,14 @@ ${waistAdvisory ? "\n" + waistAdvisory : ""}
 Consulte o/a professor/a de Educação Física para mais informações.
 As Zonas de Aptidão Física (ZAF) são calculadas de acordo com os
 critérios de avaliação da aptidão física para a idade e sexo do(a) aluno(a).
-===========================================`;
-
-  elements.reportText.value = text;
+===========================================`);
 };
 
+const updateReport = () => buildTextReport(); // legacy shim — kept for compat
+
+
 const sendReport = () => {
-  updateReport();
+  const content = buildTextReport();
   const email = elements.reportEmail.value.trim() || elements.userEmail.value.trim() || "";
   if (!email) {
     updateAccessStatus("Insere o email do destinatário no campo Email do relatório.");
@@ -1035,20 +1028,288 @@ const sendReport = () => {
   if (state.token && state.currentStudentId) {
     apiFetch(`/students/${state.currentStudentId}/reports/email`, {
       method: "POST",
-      body: JSON.stringify({ content: elements.reportText.value, email }),
+      body: JSON.stringify({ content, email }),
     })
-      .then(() => updateAccessStatus("Relatório enviado por email."))
+      .then(() => {
+        updateAccessStatus("Relatório enviado por email.");
+        const s = document.getElementById("reportStatus");
+        if (s) { s.textContent = "Relatório enviado por email."; }
+      })
       .catch((err) => updateAccessStatus("Erro: " + err.message));
   } else {
-    const subject = encodeURIComponent("Relatório AtlanticoFit");
-    const body = encodeURIComponent(elements.reportText.value);
+    const subject = encodeURIComponent("Relatório HealthyTech Atlântico");
+    const body = encodeURIComponent(content);
     window.location.href = `mailto:${email}?subject=${subject}&body=${body}`;
   }
 };
 
-const updateCharts = () => {
-  const labels = state.years.map((y) => y.year);
-  const imcValues = state.years.map((y) => y.imc);
+/* ═══════════════════════════════════════════════════
+   GENERATE PDF — jsPDF branded report
+═══════════════════════════════════════════════════ */
+const generatePDF = () => {
+  if (!window.jspdf) {
+    toast("Biblioteca PDF não carregada. Atualiza a página.", "error");
+    return;
+  }
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
+
+  // ── Collect data ────────────────────────────────────────────────────────
+  const name = elements.studentName.value || "Aluno";
+  const birthDateStr = elements.studentBirthDate?.value || null;
+  const birthLabel = birthDateStr
+    ? new Date(birthDateStr + "T00:00:00").toLocaleDateString("pt-PT")
+    : "—";
+  const age = calcAgeFromBirthDate(birthDateStr);
+  const sex = elements.studentSex.value === "F" ? "Feminino"
+    : elements.studentSex.value === "M" ? "Masculino" : "—";
+  const year = elements.schoolYear.value || "—";
+  const imc = elements.imcValue.textContent || "—";
+  const imcZone = elements.imcZone.textContent || "—";
+  const waistRaw = elements.studentWaist.value;
+  const waistZoneText = elements.waistZone.textContent || "—";
+  const waistVal = waistRaw ? `${waistRaw} cm` : "Não registado";
+
+  const testRows = elements.testsTable.querySelectorAll(".table__row:not(.table__header)");
+  const tests = [];
+  testRows.forEach((row) => {
+    const sel = row.querySelector("select");
+    const inputs = row.querySelectorAll("input");
+    const badge = row.querySelector(".zone-badge");
+    if (!inputs[0]?.value) return;
+    const found = testOptions.find((t) => t.id === sel?.value);
+    tests.push({
+      label: (found?.label || sel?.value || "—").substring(0, 44),
+      result: inputs[0].value,
+      unit: inputs[1]?.value || "",
+      zone: badge?.textContent || "—",
+    });
+  });
+
+  const imcOk = imcZone === "Zona Saudável" || imcZone === "Zona Saudavel";
+  const imcAdvisory = imcOk
+    ? "O IMC do seu educando encontra-se dentro da Zona Saudável para a sua idade e sexo."
+    : "ATENÇÃO: Um IMC elevado está associado a um risco cardiovascular elevado, assim como a problemas metabólicos e osteoarticulares. Recomendamos uma consulta com o médico de família.";
+  const waistOk = waistZoneText === "Zona Saudável" || waistZoneText === "Zona Saudavel";
+  const waistAdvisory = !waistRaw ? null
+    : waistOk
+      ? "O perímetro da cintura encontra-se dentro dos valores de referência saudáveis."
+      : "ATENÇÃO: O Perímetro da Cintura elevado é considerado um fator de risco de doenças cardiometabólicas e respiratórias.";
+
+  const now = new Date().toLocaleDateString("pt-PT");
+  const W = 210, H = 297, M = 16;
+  const NAVY    = [20,  48,  76];   // #14304C
+  const NAVY2   = [26,  63, 99];    // #1a3f63
+  const GOLD    = [194, 151, 13];   // #c2970d
+  const GOLD_LT = [253, 244, 220];  // #fdf4dc
+  const INK   = [26, 47, 55];
+  const MUTED = [100, 120, 130];
+  const GREEN = [22, 160, 80];
+  const CORAL = [220, 80, 60];
+  const WHITE = [255, 255, 255];
+
+  // ── Helper: section header ───────────────────────────────────────────────
+  const sectionHeader = (label, y) => {
+    doc.setFillColor(...GOLD_LT);
+    doc.rect(M, y - 5, W - 2 * M, 9, "F");
+    doc.setFillColor(...GOLD);
+    doc.rect(M, y - 5, 3, 9, "F");
+    doc.setTextColor(...NAVY);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(9);
+    doc.text(label.toUpperCase(), M + 6, y + 1.5);
+    return y + 11;
+  };
+
+  // ── Helper: field pair ───────────────────────────────────────────────────
+  const field = (label, value, x, y) => {
+    doc.setTextColor(...MUTED);
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(7.5);
+    doc.text(label, x, y);
+    doc.setTextColor(...INK);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(10);
+    doc.text(String(value), x, y + 5.5);
+  };
+
+  // ── Helper: zone badge ───────────────────────────────────────────────────
+  const zoneBadge = (zone, x, y) => {
+    const ok = zone === "Zona Saudável" || zone === "Zona Saudavel" || zone.toLowerCase().includes("saud");
+    const col = ok ? GREEN : CORAL;
+    doc.setFillColor(...col);
+    const label = ok ? "Zona Saudável" : "Zona de Melhoria";
+    const tw = doc.getTextWidth(label) + 6;
+    doc.roundedRect(x, y - 3.5, tw, 6, 1.5, 1.5, "F");
+    doc.setTextColor(...WHITE);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(7.5);
+    doc.text(label, x + 3, y + 0.5);
+    return x + tw + 4;
+  };
+
+  // ── Helper: check page overflow (add new page if needed) ────────────────
+  const checkPage = (y, need = 20) => {
+    if (y + need > H - 20) {
+      doc.addPage();
+      return 20;
+    }
+    return y;
+  };
+
+  // ═══════════════════════════════════════════════════════════════════ HEADER
+  doc.setFillColor(...NAVY);
+  doc.rect(0, 0, W, 38, "F");
+
+  // Gold accent stripe
+  doc.setFillColor(...GOLD);
+  doc.rect(0, 30, W, 4, "F");
+  doc.setFillColor(...NAVY2);
+  doc.rect(0, 34, W, 4, "F");
+
+  // School logo (top-right)
+  if (_logoImg && _logoImg.complete && _logoImg.naturalWidth > 0) {
+    try {
+      doc.addImage(_logoImg, "JPEG", W - M - 26, 2, 26, 26, undefined, "FAST");
+    } catch (e) { /* skip if logo unavailable */ }
+  }
+
+  doc.setTextColor(...WHITE);
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(19);
+  doc.text("HealthyTech Atlântico", M, 14);
+
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(9);
+  doc.text("Colégio Atlântico  •  Educação Física  •  Avaliação Física", M, 22);
+
+  doc.setFont("helvetica", "italic");
+  doc.setFontSize(8);
+  doc.text(`Relatório emitido a ${now}`, M, 34);
+  doc.text(`Ano letivo: ${year}`, W - M, 34, { align: "right" });
+
+  let y = 48;
+
+  // ═══════════════════════════ DADOS DO ALUNO ═══════════════════════════════
+  y = sectionHeader("Dados do Aluno", y);
+  field("Nome", name, M, y);
+  field("Sexo", sex, M + 70, y);
+  field("Data de Nascimento", birthLabel, M + 115, y);
+  y += 14;
+  if (age) field("Idade", `${age} anos`, M, y);
+  y += 14;
+
+  // ════════════════════════ COMPOSIÇÃO CORPORAL ══════════════════════════════
+  y = checkPage(y, 28);
+  y = sectionHeader("Composição Corporal", y);
+
+  field("IMC", `${imc} kg/m²`, M, y);
+  if (imcZone !== "—") zoneBadge(imcZone, M + 38, y + 2);
+
+  if (waistRaw) {
+    field("Perímetro da Cintura", waistVal, M + 90, y);
+    if (waistZoneText !== "—") zoneBadge(waistZoneText, M + 130, y + 2);
+  }
+  y += 16;
+
+  // ════════════════════════ BATERIA DE TESTES ════════════════════════════════
+  if (tests.length > 0) {
+    y = checkPage(y, 30);
+    y = sectionHeader("Bateria de Testes Físicos", y);
+
+    // Table header row
+    doc.setFillColor(...NAVY);
+    doc.rect(M, y - 2, W - 2 * M, 8, "F");
+    doc.setTextColor(...WHITE);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(8);
+    doc.text("Teste", M + 2, y + 3.5);
+    doc.text("Resultado", M + 96, y + 3.5);
+    doc.text("Unidade", M + 126, y + 3.5);
+    doc.text("ZAF", M + 155, y + 3.5);
+    y += 10;
+
+    tests.forEach((t, i) => {
+      y = checkPage(y, 12);
+      if (i % 2 === 0) {
+        doc.setFillColor(248, 252, 253);
+        doc.rect(M, y - 3, W - 2 * M, 8, "F");
+      }
+      doc.setTextColor(...INK);
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(8.5);
+      doc.text(t.label, M + 2, y + 2);
+      doc.text(String(t.result), M + 96, y + 2);
+      doc.text(String(t.unit), M + 126, y + 2);
+
+      const zOk = t.zone === "Zona Saudável" || t.zone.includes("Saud");
+      doc.setFillColor(...(zOk ? GREEN : CORAL));
+      const zLabel = zOk ? "Saudável" : "Melhoria";
+      doc.roundedRect(M + 152, y - 2, 30, 6, 1.5, 1.5, "F");
+      doc.setTextColor(...WHITE);
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(7);
+      doc.text(zLabel, M + 153.5, y + 2.5);
+      y += 9;
+    });
+    y += 4;
+  }
+
+  // ══════════════════════ INFORMAÇÃO PARA EE ════════════════════════════════
+  y = checkPage(y, 24);
+  y = sectionHeader("Informação para o Encarregado de Educação", y);
+  doc.setTextColor(...INK);
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(9);
+  const advLines = doc.splitTextToSize(imcAdvisory, W - 2 * M - 4);
+  doc.text(advLines, M + 2, y + 1);
+  y += advLines.length * 5.5 + 4;
+
+  if (waistAdvisory) {
+    y = checkPage(y, 16);
+    const wLines = doc.splitTextToSize(waistAdvisory, W - 2 * M - 4);
+    doc.text(wLines, M + 2, y + 1);
+    y += wLines.length * 5.5 + 4;
+  }
+
+  // Disclaimer
+  y = checkPage(y, 14);
+  doc.setTextColor(...MUTED);
+  doc.setFont("helvetica", "italic");
+  doc.setFontSize(7.5);
+  const disc = "As Zonas de Aptidão Física (ZAF) são calculadas de acordo com os critérios de avaliação da aptidão física para a idade e sexo do(a) aluno(a). Consulte o(a) professor(a) de Educação Física para mais informações.";
+  const dLines = doc.splitTextToSize(disc, W - 2 * M);
+  doc.text(dLines, M, y + 2);
+
+  // ═══════════════════════════ FOOTER ══════════════════════════════════════
+  const pages = doc.internal.getNumberOfPages();
+  for (let p = 1; p <= pages; p++) {
+    doc.setPage(p);
+    doc.setFillColor(...NAVY);
+    doc.rect(0, H - 14, W, 14, "F");
+    doc.setFillColor(...GOLD);
+    doc.rect(0, H - 14, W, 2, "F");
+    doc.setTextColor(...WHITE);
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(7.5);
+    doc.text("HealthyTech Atlântico  •  Colégio Atlântico  •  Gerado automaticamente", M, H - 5);
+    doc.text(`${now}  |  Pág. ${p}/${pages}`, W - M, H - 5, { align: "right" });
+  }
+
+  // Download
+  const safeName = (name || "aluno").replace(/\s+/g, "_").toLowerCase();
+  doc.save(`relatorio_${safeName}_${now.replace(/\//g, "-")}.pdf`);
+};
+
+const updateCharts = (historyRows = null) => {
+  // Use API history if provided, otherwise fall back to manual state.years
+  const hasHistory = historyRows && historyRows.length > 0;
+  const labels = hasHistory
+    ? historyRows.map((r) => new Date(r.recorded_at).toLocaleDateString("pt-PT", { month: "short", year: "2-digit" }))
+    : state.years.map((y) => y.year);
+  const imcValues = hasHistory
+    ? historyRows.map((r) => Number(r.imc))
+    : state.years.map((y) => y.imc);
   const classImcValues = state.years.map((y) => y.classImc);
 
   if (studentChart) studentChart.destroy();
@@ -1069,6 +1330,8 @@ const updateCharts = () => {
           backgroundColor: "rgba(15, 108, 120, 0.15)",
           tension: 0.3,
           fill: true,
+          pointRadius: 5,
+          pointHoverRadius: 7,
         },
       ],
     },
@@ -1082,11 +1345,11 @@ const updateCharts = () => {
   classChart = new Chart(ctxClass, {
     type: "bar",
     data: {
-      labels,
+      labels: state.years.map((y) => y.year),
       datasets: [
         {
-          label: "IMC medio da turma",
-          data: classImcValues,
+          label: "IMC médio da turma",
+          data: state.years.map((y) => y.classImc),
           backgroundColor: "rgba(242, 108, 79, 0.6)",
         },
       ],
@@ -1096,6 +1359,27 @@ const updateCharts = () => {
       plugins: { legend: { display: true } },
     },
   });
+};
+
+const loadBiometricsHistory = async () => {
+  const studentId = state.currentStudentId;
+  if (!studentId || !state.token) {
+    updateCharts();
+    return;
+  }
+  try {
+    const rows = await apiFetch(`/students/${studentId}/biometrics`);
+    if (Array.isArray(rows) && rows.length > 0) {
+      // Show most-recent last for a chronological trend
+      updateCharts([...rows].reverse());
+      const statusEl = document.getElementById("chartHistoryStatus");
+      if (statusEl) statusEl.textContent = `${rows.length} registos biométricos carregados.`;
+    } else {
+      updateCharts();
+    }
+  } catch (_) {
+    updateCharts();
+  }
 };
 
 const addYear = () => {
@@ -1114,7 +1398,7 @@ const initialQuestionFields = ["qActivity", "qSleep", "qSport"];
 const routineQuestionFields = ["qStress", "qFood", "qMood", "qEnergy", "qScreen", "qHydration"];
 
 const loadQuestionnaireDraft = () => {
-  const draftRaw = localStorage.getItem(QUESTIONNAIRE_DRAFT_KEY);
+  const draftRaw = sessionStorage.getItem(QUESTIONNAIRE_DRAFT_KEY);
   if (!draftRaw) return;
   try {
     const draft = JSON.parse(draftRaw);
@@ -1133,7 +1417,7 @@ const saveQuestionnaireDraft = () => {
   [...initialQuestionFields, ...routineQuestionFields].forEach((fieldId) => {
     draft[fieldId] = elements[fieldId]?.value || "";
   });
-  localStorage.setItem(QUESTIONNAIRE_DRAFT_KEY, JSON.stringify(draft));
+  sessionStorage.setItem(QUESTIONNAIRE_DRAFT_KEY, JSON.stringify(draft));
 };
 
 const countFilledFields = (fieldIds) => {
@@ -1177,7 +1461,7 @@ const submitInitial = () => {
     "Preenche os 3 campos do questionário inicial."
   );
   if (!valid) return;
-  localStorage.setItem("af_initial", "done");
+  sessionStorage.setItem("af_initial", "done"); // session-only flag
   elements.deferStatus.textContent = `Questionário inicial completo. ${state.defers} adiamentos usados.`;
   if (elements.questInitialStatus) {
     elements.questInitialStatus.textContent = "Questionário inicial submetido com sucesso.";
@@ -1206,7 +1490,7 @@ const deferInitial = () => {
     return;
   }
   state.defers += 1;
-  localStorage.setItem("af_defers", state.defers.toString());
+  sessionStorage.setItem("af_defers", state.defers.toString());
   elements.deferStatus.textContent = `${state.defers} adiamentos usados.`;
 };
 
@@ -1217,7 +1501,7 @@ const submitRoutine = () => {
     "Completa o questionário de rotina antes de submeter."
   );
   if (!valid) return;
-  localStorage.setItem("af_routine", new Date().toISOString());
+  sessionStorage.setItem("af_routine", new Date().toISOString());
   if (elements.questRoutineStatus) {
     elements.questRoutineStatus.textContent = "Questionário de rotina submetido com sucesso.";
   }
@@ -1251,15 +1535,38 @@ const triggerSos = () => {
     toast(i18n("sos_fill"), "error");
     return;
   }
-  const alertEntry = { psych, teacher, at: new Date().toISOString() };
-  state.alerts.push(alertEntry);
-  localStorage.setItem("af_alerts", JSON.stringify(state.alerts));
-  // Use the uniform result box with consistent styling
+
+  // Show confirmation modal before sending — prevent accidental trigger
+  const modal = document.getElementById("sosConfirmModal");
+  const recipientsEl = document.getElementById("sosConfirmRecipients");
+  if (recipientsEl) {
+    recipientsEl.innerHTML = `<strong>Psicólogo:</strong> ${psych}${psychEmail ? ` (${psychEmail})` : ""}<br><strong>Professor:</strong> ${teacher}${teacherEmail ? ` (${teacherEmail})` : ""}`;
+  }
+  if (modal) modal.classList.remove("hidden");
+
+  const confirmBtn = document.getElementById("sosConfirmYes");
+  const cancelBtn = document.getElementById("sosConfirmNo");
+
+  const closeModal = () => {
+    if (modal) modal.classList.add("hidden");
+    confirmBtn?.removeEventListener("click", onConfirm);
+    cancelBtn?.removeEventListener("click", closeModal);
+  };
+
+  const onConfirm = () => {
+    closeModal();
+    _doTriggerSos({ psych, teacher, psychEmail, teacherEmail });
+  };
+
+  confirmBtn?.addEventListener("click", onConfirm, { once: true });
+  cancelBtn?.addEventListener("click", closeModal, { once: true });
+};
+
+const _doTriggerSos = ({ psych, teacher, psychEmail, teacherEmail }) => {
   if (elements.sosResult) {
     elements.sosResult.innerHTML = `<span class="zone-badge zone-badge--ok">✓ SOS ativado</span> Psicólogo: <strong>${psych}</strong>, Professor: <strong>${teacher}</strong>.`;
   }
   toast(i18n("sos_sent"), "success");
-  updateStats();
   refreshTopbarStats();
   if (state.token && state.currentStudentId) {
     apiFetch(`/students/${state.currentStudentId}/sos`, {
@@ -1280,10 +1587,13 @@ const populateDispensaStudents = async () => {
   if (!select || select.tagName !== "SELECT") return;
   if (!state.token) return;
   try {
-    const students = await apiFetch("/students");
+    const result = await apiFetch("/students?limit=200");
+    const students = result?.data ?? (Array.isArray(result) ? result : []);
     select.innerHTML = students.length
       ? students.map((s) => `<option value="${s.id}">${s.name}${s.school_year ? " — " + s.school_year : ""}</option>`).join("")
-      : `<option value="">� Sem alunos registados �</option>`;
+      : `<option value="">Sem alunos registados</option>`;
+    // Reinit/sync custom select UI after options change
+    initCustomSelect(select);
   } catch (_) {}
 };
 
@@ -1321,22 +1631,313 @@ const registerDispensa = async () => {
 
 // --- Turma (class) view ---------------------------------------------------
 let turmaChart = null;
+let _turmaStudents = []; // stored for CSV export
+let _logoImg = null; // preloaded school logo for PDF
 
-const loadTurmaView = async () => {
-  const year = elements.turmaYear?.value.trim();
-  if (!year) { if (elements.turmaStatus) elements.turmaStatus.textContent = "Introduz o ano letivo."; return; }
-  if (!state.token) { if (elements.turmaStatus) elements.turmaStatus.textContent = "Sem sess�o ativa."; return; }
+const preloadLogo = () => {
+  _logoImg = new Image();
+  _logoImg.crossOrigin = "anonymous";
+  _logoImg.src = "/assets/logos/Logo1.jpg";
+};
+
+/* ── R11: Turma KPI metrics ──────────────────────────────────────────────── */
+const renderTurmaMetrics = (students) => {
+  const el = document.getElementById("turmaMetrics");
+  if (!el) return;
+  if (!students.length) { el.classList.add("hidden"); return; }
+
+  const total = students.length;
+  const withImc = students.filter((s) => s.imc_zone);
+  const saudavel = withImc.filter((s) => s.imc_zone === "Zona Saudável" || s.imc_zone === "Zona Saudavel").length;
+  const pctSaud = withImc.length ? Math.round((saudavel / withImc.length) * 100) : null;
+  const imcValues = students.filter((s) => s.imc).map((s) => Number(s.imc));
+  const avgImc = imcValues.length
+    ? (imcValues.reduce((a, b) => a + b, 0) / imcValues.length).toFixed(1)
+    : null;
+  const withTests = students.filter((s) => Number(s.num_tests) > 0).length;
+  const pctTests = Math.round((withTests / total) * 100);
+
+  const saudClass = pctSaud !== null ? (pctSaud >= 60 ? "kpi-card--green" : "kpi-card--coral") : "";
+
+  el.innerHTML = `
+    <div class="turma-kpi-grid">
+      <div class="kpi-card">
+        <span class="kpi-card__value">${total}</span>
+        <span class="kpi-card__label">Alunos</span>
+      </div>
+      <div class="kpi-card ${saudClass}">
+        <span class="kpi-card__value">${pctSaud !== null ? pctSaud + "%" : "—"}</span>
+        <span class="kpi-card__label">Zona Saudável IMC</span>
+      </div>
+      <div class="kpi-card">
+        <span class="kpi-card__value">${avgImc ?? "—"}</span>
+        <span class="kpi-card__label">IMC médio</span>
+      </div>
+      <div class="kpi-card">
+        <span class="kpi-card__value">${pctTests}%</span>
+        <span class="kpi-card__label">Com testes</span>
+      </div>
+    </div>`;
+  el.classList.remove("hidden");
+};
+
+/* ── R14: CSV export ─────────────────────────────────────────────────────── */
+const exportTurmaCSV = () => {
+  if (!_turmaStudents.length) { toast("Carrega a turma primeiro.", "error"); return; }
+  const header = ["Nome", "Sexo", "Idade", "Ano Letivo", "IMC", "ZAF IMC", "Cintura (cm)", "ZAF Cintura", "N.º Testes"];
+  const rows = _turmaStudents.map((s) => [
+    `"${(s.name || "").replace(/"/g, '""')}"`,
+    s.sex === "F" ? "Feminino" : "Masculino",
+    s.age ?? "",
+    s.school_year ?? "",
+    s.imc ?? "",
+    s.imc_zone ?? "",
+    s.waist_cm ?? "",
+    s.waist_zone ?? "",
+    s.num_tests ?? 0,
+  ]);
+  const csv = [header.join(";"), ...rows.map((r) => r.join(";"))].join("\r\n");
+  const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  const safeName = (elements.turmaYear?.value || "turma").replace(/[/\\?%*:|"<>]/g, "-");
+  const today = new Date().toLocaleDateString("pt-PT").replace(/\//g, "-");
+  a.download = `turma_${safeName}_${today}.csv`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  toast("CSV exportado.", "success");
+};
+
+/* ── R13: School dashboard ───────────────────────────────────────────────── */
+const loadDashboard = async () => {
+  const status = document.getElementById("dashboardStatus");
+  const grid = document.getElementById("dashboardGrid");
+  if (!grid) return;
+  if (!state.token) { if (status) status.textContent = "Sem sessão ativa."; return; }
+
+  if (status) status.textContent = "A carregar anos letivos…";
+  grid.innerHTML = "";
+
   try {
-    if (elements.turmaStatus) elements.turmaStatus.textContent = "A carregar...";
-    const students = await apiFetch(`/classes/${encodeURIComponent(year)}/report`);
-    renderTurmaTable(students);
-    renderTurmaChart(students);
-    if (elements.turmaStatus) elements.turmaStatus.textContent = `${students.length} aluno(s) encontrado(s).`;
+    const years = await apiFetch("/classes");
+    if (!Array.isArray(years) || !years.length) {
+      if (status) status.textContent = "Nenhum dado disponível.";
+      return;
+    }
+
+    if (status) status.textContent = `A carregar ${years.length} ano(s) letivo(s)…`;
+
+    const results = await Promise.all(
+      years.map((year) =>
+        apiFetch(`/classes/report?year=${encodeURIComponent(year)}`)
+          .then((students) => ({ year, students: Array.isArray(students) ? students : [] }))
+          .catch(() => ({ year, students: [] }))
+      )
+    );
+
+    if (status) status.textContent = "";
+
+    grid.innerHTML = results.map(({ year, students }) => {
+      const total = students.length;
+      const withImc = students.filter((s) => s.imc_zone);
+      const saudavel = withImc.filter((s) => s.imc_zone === "Zona Saudável" || s.imc_zone === "Zona Saudavel").length;
+      const pctSaud = withImc.length ? Math.round((saudavel / withImc.length) * 100) : null;
+      const imcVals = students.filter((s) => s.imc).map((s) => Number(s.imc));
+      const avgImc = imcVals.length
+        ? (imcVals.reduce((a, b) => a + b, 0) / imcVals.length).toFixed(1)
+        : "—";
+      const withTests = students.filter((s) => Number(s.num_tests) > 0).length;
+      const badgeClass = pctSaud !== null ? (pctSaud >= 60 ? "zone-badge--ok" : "zone-badge--needs") : "zone-badge--na";
+      const badgeLabel = pctSaud !== null ? `${pctSaud}% saudável` : "Sem biometrias";
+
+      return `<div class="dashboard-year-card card">
+        <div class="dashboard-year-card__header">
+          <span class="dashboard-year-card__year">${year}</span>
+          <span class="zone-badge ${badgeClass}">${badgeLabel}</span>
+        </div>
+        <div class="dashboard-year-card__stats">
+          <div class="kpi-card kpi-card--sm">
+            <span class="kpi-card__value">${total}</span>
+            <span class="kpi-card__label">Alunos</span>
+          </div>
+          <div class="kpi-card kpi-card--sm">
+            <span class="kpi-card__value">${avgImc}</span>
+            <span class="kpi-card__label">IMC médio</span>
+          </div>
+          <div class="kpi-card kpi-card--sm">
+            <span class="kpi-card__value">${withTests}</span>
+            <span class="kpi-card__label">Com testes</span>
+          </div>
+        </div>
+        <button class="btn btn--ghost btn--sm" onclick="loadTurmaFromDashboard('${year.replace(/'/g, "\\'")}')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14" style="vertical-align:middle;margin-right:4px">
+            <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/>
+            <path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/>
+          </svg>Ver turma
+        </button>
+      </div>`;
+    }).join("");
   } catch (err) {
-    if (elements.turmaStatus) elements.turmaStatus.textContent = "Erro: " + err.message;
+    if (status) status.textContent = "Erro: " + err.message;
   }
 };
 
+// Exposed globally for inline onclick in dashboard cards
+window.loadTurmaFromDashboard = (year) => {
+  showTab("turma");
+  const sel = elements.turmaYear;
+  if (sel) {
+    sel.value = year;
+    // sync custom select trigger text
+    sel.nextElementSibling?._rebuildCustomSelect?.();
+  }
+  loadTurmaView();
+};
+
+/* ── R8: Student quick-select picker ─────────────────────────────────────── */
+let _pickerStudents = [];
+
+const initStudentPicker = () => {
+  const card = document.getElementById("studentPickerCard");
+  if (!card) return;
+  const role = state.user?.role;
+  // Only professors and psicólogos have the picker
+  if (role !== "professor" && role !== "psicologo") {
+    card.classList.add("hidden");
+    return;
+  }
+  card.classList.remove("hidden");
+
+  const toggleBtn = document.getElementById("toggleStudentPicker");
+  const searchInput = document.getElementById("studentPickerSearch");
+  toggleBtn?.addEventListener("click", () => {
+    const body = document.getElementById("studentPickerBody");
+    const isOpen = !body.classList.contains("hidden");
+    body.classList.toggle("hidden", isOpen);
+    card.classList.toggle("student-picker-card--open", !isOpen);
+    if (!isOpen) {
+      // Opened — load if not yet loaded
+      if (!_pickerStudents.length) loadStudentPicker();
+      else filterStudentPicker();
+      searchInput?.focus();
+    }
+  });
+
+  searchInput?.addEventListener("input", filterStudentPicker);
+  loadStudentPicker();
+};
+
+const loadStudentPicker = async () => {
+  try {
+    const res = await apiFetch("/students?limit=500");
+    _pickerStudents = res?.data ?? (Array.isArray(res) ? res : []);
+    filterStudentPicker();
+  } catch (_) {}
+};
+
+const filterStudentPicker = () => {
+  const q = (document.getElementById("studentPickerSearch")?.value || "").toLowerCase().trim();
+  const listEl = document.getElementById("studentPickerList");
+  if (!listEl) return;
+
+  const filtered = q
+    ? _pickerStudents.filter((s) => (s.name || "").toLowerCase().includes(q))
+    : _pickerStudents;
+
+  if (!filtered.length) {
+    listEl.innerHTML = `<p class="helper" style="padding:8px 0">${q ? "Nenhum resultado para \"" + q + "\"." : "Nenhum aluno registado."}</p>`;
+    return;
+  }
+
+  listEl.innerHTML = filtered.slice(0, 25).map((s) =>
+    `<button type="button" class="student-picker__item" data-id="${s.id}">
+      <span class="student-picker__item-name">${s.name}</span>
+      <span class="student-picker__item-meta">${s.sex === "F" ? "Feminino" : "Masculino"} · ${s.school_year || "—"}</span>
+    </button>`
+  ).join("");
+
+  listEl.querySelectorAll(".student-picker__item").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const student = _pickerStudents.find((s) => String(s.id) === btn.dataset.id);
+      if (student) loadStudentIntoForm(student);
+    });
+  });
+};
+
+const loadStudentIntoForm = (student) => {
+  if (elements.studentName) elements.studentName.value = student.name || "";
+
+  // Sync sex: set underlying select value + sync pill buttons
+  const sexSel = document.getElementById("studentSex");
+  if (sexSel) {
+    sexSel.value = student.sex || "";
+    sexSel._syncPills?.();
+  }
+
+  // Birth date
+  if (elements.studentBirthDate) {
+    elements.studentBirthDate.value = student.birth_date
+      ? student.birth_date.split("T")[0]
+      : "";
+  }
+
+  // School year select + sync custom select UI
+  const yearSel = document.getElementById("schoolYear");
+  if (yearSel) {
+    yearSel.value = student.school_year || "";
+    yearSel.nextElementSibling?._rebuildCustomSelect?.();
+  }
+
+  // Update state
+  state.currentStudentId = student.id;
+  sessionStorage.setItem("af_student_id", String(student.id));
+
+  // Close picker
+  const body = document.getElementById("studentPickerBody");
+  if (body) body.classList.add("hidden");
+  const card = document.getElementById("studentPickerCard");
+  if (card) card.classList.remove("student-picker-card--open");
+
+  updateAccessStatus(`Aluno carregado: ${student.name}`);
+
+  // Refresh IMC if biometrics are cached (reset to let user re-calculate)
+  const imcResult = document.getElementById("imcResult");
+  if (imcResult) imcResult.classList.add("hidden");
+};
+
+
+
+const loadTurmaView = async () => {
+  // native select value is always kept in sync by the custom-select component
+  const year = (elements.turmaYear?.value || "").trim();
+  if (!year) {
+    if (elements.turmaStatus) elements.turmaStatus.textContent = "Seleciona um ano letivo primeiro.";
+    toast("Seleciona um ano letivo.", "error");
+    return;
+  }
+  if (!state.token) {
+    if (elements.turmaStatus) elements.turmaStatus.textContent = "Sem sessao ativa.";
+    return;
+  }
+  try {
+    if (elements.turmaStatus) elements.turmaStatus.textContent = "A carregar...";
+    const students = await apiFetch("/classes/report?year=" + encodeURIComponent(year));
+    _turmaStudents = Array.isArray(students) ? students : [];
+    renderTurmaTable(_turmaStudents);
+    renderTurmaMetrics(_turmaStudents);
+    renderTurmaChart(_turmaStudents);
+    if (elements.turmaStatus) elements.turmaStatus.textContent = _turmaStudents.length + " aluno(s) encontrado(s).";
+    const exportRow = document.getElementById("turmaExportRow");
+    if (exportRow) exportRow.style.display = _turmaStudents.length ? "flex" : "none";
+    if (_turmaStudents.length > 0) toast("Turma carregada: " + _turmaStudents.length + " aluno(s).", "success");
+  } catch (err) {
+    if (elements.turmaStatus) elements.turmaStatus.textContent = "Erro: " + err.message;
+    toast("Erro ao carregar turma: " + err.message, "error");
+  }
+};
 const renderTurmaTable = (students) => {
   if (!elements.turmaTable) return;
   if (students.length === 0) {
@@ -1374,14 +1975,18 @@ const renderTurmaChart = (students) => {
       labels: ["Zona Saud�vel", "Zona de Melhoria", "Sem dados"],
       datasets: [{ data: [saudavel, melhoria, semDados], backgroundColor: ["rgba(15,160,80,0.75)", "rgba(242,108,79,0.75)", "rgba(74,95,104,0.3)"] }],
     },
-    options: { responsive: true, plugins: { legend: { position: "bottom" }, title: { display: true, text: "Distribuição ZAF IMC — Turma" } } },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { position: "bottom" }, title: { display: true, text: "Distribuição ZAF IMC — Turma" } },
+    },
   });
 };
 
 // --- Navigation --------------------------------------------------------------
 const NAV_TABS = {
   aluno:     ["bio", "tests", "quest", "sos", "reports", "protocols"],
-  professor: ["bio", "tests", "turma", "dispensas", "reports", "charts", "protocols"],
+  professor: ["bio", "tests", "turma", "dispensas", "reports", "charts", "dashboard", "protocols"],
   psicologo: ["sos", "reports", "protocols"],
   pais:      ["reports", "protocols"],
 };
@@ -1393,6 +1998,7 @@ const TAB_META = {
   sos:       { label: "SOS",          icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>`, cls: "bottomnav__item--sos" },
   reports:   { label: "Relatório",    icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>` },
   charts:    { label: "Análise",      icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>` },
+  dashboard: { label: "Dashboard",    icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg>` },
   turma:     { label: "Turma",        icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>` },
   dispensas: { label: "Dispensas",    icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>` },
   protocols: { label: "Protocolos",   icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>` },
@@ -1427,9 +2033,10 @@ const showTab = (tabId) => {
   });
   // Animate sliding indicator (mobile)
   requestAnimationFrame(() => updateNavIndicator(tabId));
-  if (tabId === "charts") updateCharts();
+  if (tabId === "charts") loadBiometricsHistory();
   if (tabId === "dispensas") populateDispensaStudents();
   if (tabId === "perfil") populateProfileTab();
+  if (tabId === "dashboard") loadDashboard();
   if (tabId === "sos") {
     const role = state.user?.role;
     const isStaff = role === "professor" || role === "psicologo";
@@ -1444,20 +2051,9 @@ const loadSosAlerts = async () => {
   if (!container) return;
   container.innerHTML = '<div class="card"><p class="helper">A carregar alertas...</p></div>';
   try {
-    const students = await apiFetch("/students");
-    if (!Array.isArray(students) || students.length === 0) {
-      container.innerHTML = '<div class="card"><p class="helper">Nenhum alerta recebido.</p></div>';
-      return;
-    }
-    const grouped = await Promise.all(
-      students.map((s) =>
-        apiFetch(`/students/${s.id}/sos`)
-          .then((alerts) => (Array.isArray(alerts) ? alerts : []))
-          .catch(() => [])
-      )
-    );
-    const allAlerts = grouped.flat().sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
-    if (allAlerts.length === 0) {
+    // Single query — no N+1
+    const allAlerts = await apiFetch("/stats/sos-alerts");
+    if (!Array.isArray(allAlerts) || allAlerts.length === 0) {
       container.innerHTML = '<div class="card"><p class="helper">Nenhum alerta recebido.</p></div>';
       return;
     }
@@ -1468,8 +2064,9 @@ const loadSosAlerts = async () => {
           <span class="sos-alert-card__date">${new Date(a.created_at).toLocaleString("pt-PT", { dateStyle: "short", timeStyle: "short" })}</span>
         </div>
         <div class="sos-alert-card__body">
-          <p><strong>Psic&#x00f3;logo:</strong> ${a.psych || "\u2014"}</p>
-          <p><strong>Professor:</strong> ${a.teacher || "\u2014"}</p>
+          ${a.student_name ? `<p><strong>Aluno:</strong> ${a.student_name}${a.class_name ? " — " + a.class_name : ""}</p>` : ""}
+          <p><strong>Psicólogo:</strong> ${a.psych || "—"}</p>
+          <p><strong>Professor:</strong> ${a.teacher || "—"}</p>
         </div>
         ${!a.resolved ? `<button class="btn btn--ghost btn--sm sos-resolve-btn" data-id="${a.id}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><polyline points="20 6 9 17 4 12"/></svg> Marcar como resolvido</button>` : ""}
       </div>
@@ -1482,6 +2079,7 @@ const loadSosAlerts = async () => {
           await apiFetch(`/students/sos/${id}`, { method: "PATCH" });
           toast("Alerta marcado como resolvido.", "success");
           loadSosAlerts();
+          refreshTopbarStats();
         } catch (err) {
           toast(err.message, "error");
           btn.disabled = false;
@@ -1539,6 +2137,8 @@ const showApp = (user) => {
   const firstTab = (NAV_TABS[user?.role || "aluno"] || NAV_TABS.aluno)[0];
   showTab(firstTab);
   updateStats();
+  initStudentPicker();
+  preloadLogo();
   hydrateSessionUser().finally(() => {
     const role = state.user?.role || user?.role || "aluno";
     buildBottomNav(role);
@@ -1779,9 +2379,147 @@ const initInputUnit = (inputId, unit) => {
   wrap.appendChild(badge);
 };
 
+/* ═══════════════════════════════════════════════════
+   CUSTOM SELECT COMPONENT
+═══════════════════════════════════════════════════ */
+const initCustomSelect = (selectEl) => {
+  if (!selectEl) return;
+
+  // Already initialized — just rebuild options list and sync display
+  if (selectEl.dataset.csInit === "1") {
+    const wrapper = selectEl.nextElementSibling;
+    if (wrapper?._rebuildCustomSelect) wrapper._rebuildCustomSelect();
+    return;
+  }
+
+  selectEl.dataset.csInit = "1";
+  selectEl.style.display = "none";
+
+  const wrapper = document.createElement("div");
+  wrapper.className = "custom-select";
+  wrapper.setAttribute("tabindex", "0");
+  wrapper.setAttribute("role", "combobox");
+  wrapper.setAttribute("aria-haspopup", "listbox");
+  selectEl.parentNode.insertBefore(wrapper, selectEl.nextSibling);
+
+  // Trigger row
+  const trigger = document.createElement("div");
+  trigger.className = "custom-select__trigger";
+
+  const triggerText = document.createElement("span");
+  triggerText.className = "custom-select__trigger-text placeholder";
+
+  const arrow = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+  arrow.setAttribute("class", "custom-select__arrow");
+  arrow.setAttribute("viewBox", "0 0 24 24");
+  arrow.setAttribute("width", "16");
+  arrow.setAttribute("height", "16");
+  const poly = document.createElementNS("http://www.w3.org/2000/svg", "polyline");
+  poly.setAttribute("points", "6 9 12 15 18 9");
+  arrow.appendChild(poly);
+
+  trigger.append(triggerText, arrow);
+  wrapper.appendChild(trigger);
+
+  // Dropdown list
+  const list = document.createElement("div");
+  list.className = "custom-select__list hidden";
+  list.setAttribute("role", "listbox");
+  wrapper.appendChild(list);
+
+  const syncUI = () => {
+    const opt = selectEl.options[selectEl.selectedIndex];
+    if (opt && opt.value) {
+      triggerText.textContent = opt.textContent;
+      triggerText.classList.remove("placeholder");
+    } else {
+      triggerText.textContent = opt ? opt.textContent : "Selecionar";
+      triggerText.classList.add("placeholder");
+    }
+    list.querySelectorAll(".custom-select__option").forEach((item) => {
+      item.classList.toggle("selected", item.dataset.value === selectEl.value);
+    });
+  };
+
+  const buildList = () => {
+    list.innerHTML = "";
+    Array.from(selectEl.options).forEach((opt) => {
+      const item = document.createElement("div");
+      item.className = "custom-select__option" + (!opt.value ? " disabled" : "");
+      item.dataset.value = opt.value;
+      item.textContent = opt.textContent;
+      item.setAttribute("role", "option");
+      item.addEventListener("click", () => {
+        selectEl.value = opt.value;
+        selectEl.dispatchEvent(new Event("change", { bubbles: true }));
+        syncUI();
+        list.classList.add("hidden");
+        wrapper.classList.remove("open");
+      });
+      list.appendChild(item);
+    });
+    syncUI();
+  };
+
+  const openList = () => {
+    list.classList.remove("hidden");
+    wrapper.classList.add("open");
+    document.querySelectorAll(".custom-select.open").forEach((other) => {
+      if (other !== wrapper) {
+        other.querySelector(".custom-select__list")?.classList.add("hidden");
+        other.classList.remove("open");
+      }
+    });
+    const sel = list.querySelector(".custom-select__option.selected");
+    if (sel) sel.scrollIntoView({ block: "nearest" });
+  };
+
+  const closeList = () => {
+    list.classList.add("hidden");
+    wrapper.classList.remove("open");
+  };
+
+  trigger.addEventListener("click", (e) => {
+    e.stopPropagation();
+    wrapper.classList.contains("open") ? closeList() : openList();
+  });
+
+  wrapper.addEventListener("keydown", (e) => {
+    if (e.key === "Enter" || e.key === " ") { e.preventDefault(); wrapper.classList.contains("open") ? closeList() : openList(); }
+    if (e.key === "Escape") closeList();
+    if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+      e.preventDefault();
+      const items = [...list.querySelectorAll(".custom-select__option:not(.disabled)")];
+      const cur = list.querySelector(".custom-select__option.selected");
+      const idx = items.indexOf(cur);
+      const next = items[e.key === "ArrowDown" ? Math.min(idx + 1, items.length - 1) : Math.max(idx - 1, 0)];
+      if (next) next.click();
+    }
+  });
+
+  document.addEventListener("click", (e) => { if (!wrapper.contains(e.target)) closeList(); });
+
+  wrapper._rebuildCustomSelect = buildList;
+  buildList();
+};
+
+const syncAllCustomSelects = () => {
+  document.querySelectorAll("select[data-cs-init='1']").forEach((sel) => {
+    sel.nextElementSibling?._rebuildCustomSelect?.();
+  });
+};
+
+const initAllCustomSelects = () => {
+  // Exclude elements already handled by initPillSelect (data-pill-done)
+  document.querySelectorAll(".field select:not([data-cs-init]):not([data-pill-done])").forEach((sel) => {
+    if (!sel.closest(".table__row") && !sel.closest(".pill-select")) {
+      initCustomSelect(sel);
+    }
+  });
+};
+
 const initPickers = () => {
-  // Biometria — stepper for age, unit badges for measurements
-  initNumericStepper("studentAge", { min: 9, max: 18, step: 1 });
+  // Biometria — unit badges for measurements (age is now a date picker, no stepper)
   initInputUnit("studentHeight", "m");
   initInputUnit("studentWeight", "kg");
   initInputUnit("studentFat", "%");
@@ -1805,6 +2543,16 @@ const initPickers = () => {
 
   // Login
   initPillSelect("roleSelect");
+
+  // Styled dropdown lists for all other .field selects
+  initAllCustomSelects();
+
+  // Custom date picker button — triggers native date picker on click
+  document.getElementById("birthDatePickerBtn")?.addEventListener("click", () => {
+    const inp = elements.studentBirthDate;
+    if (!inp) return;
+    try { inp.showPicker(); } catch { inp.click(); }
+  });
 };
 
 const initModals = () => {
@@ -1845,7 +2593,7 @@ let currentLang = localStorage.getItem("af_lang") || "pt";
 
 const TRANSLATIONS = {
   pt: {
-    students: "alunos", generate_report: "Gerar relatório", download_txt: "Descarregar .txt",
+    students: "alunos", generate_report: "Gerar relatório",
     print_pdf: "Imprimir / PDF", profile: "Perfil", profile_sub: "A tua conta AtlanticoFit",
     account: "Conta", stats: "Estatísticas", appearance: "Aparência", dark_mode: "Modo escuro",
     dark_mode_desc: "Alterna entre tema claro e escuro", language: "Idioma",
@@ -1857,7 +2605,7 @@ const TRANSLATIONS = {
     pwa_desc: "Para a melhor experiência, instala a app no teu dispositivo. É grátis e funciona offline.",
   },
   en: {
-    students: "students", generate_report: "Generate report", download_txt: "Download .txt",
+    students: "students", generate_report: "Generate report",
     print_pdf: "Print / PDF", profile: "Profile", profile_sub: "Your AtlanticoFit account",
     account: "Account", stats: "Statistics", appearance: "Appearance", dark_mode: "Dark mode",
     dark_mode_desc: "Toggle between light and dark theme", language: "Language",
@@ -1989,36 +2737,6 @@ const initPWAInstall = () => {
 };
 
 /* ═══════════════════════════════════════════════════
-   REPORT — DOWNLOAD & PRINT
-═══════════════════════════════════════════════════ */
-const downloadReportTxt = () => {
-  updateReport();
-  const content = elements.reportText?.value;
-  if (!content) { toast("Gera o relatório primeiro.", "error"); return; }
-  const name = (elements.studentName?.value || "aluno").replace(/\s+/g, "_");
-  const blob = new Blob([content], { type: "text/plain;charset=utf-8" });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = `AtlanticoFit_${name}_${new Date().toISOString().slice(0,10)}.txt`;
-  a.click();
-  URL.revokeObjectURL(url);
-  toast("Relatório descarregado.", "success");
-};
-
-const printReport = () => {
-  updateReport();
-  const content = elements.reportText?.value;
-  if (!content) { toast("Gera o relatório primeiro.", "error"); return; }
-  const win = window.open("", "_blank");
-  win.document.write(`<!DOCTYPE html><html><head><title>Relatório AtlanticoFit</title>
-    <style>body{font-family:monospace;font-size:12px;padding:20px;white-space:pre-wrap;color:#000;}</style>
-    </head><body>${content.replace(/</g,"&lt;").replace(/>/g,"&gt;")}</body></html>`);
-  win.document.close();
-  win.print();
-};
-
-/* ═══════════════════════════════════════════════════
    CHANGE PASSWORD
 ═══════════════════════════════════════════════════ */
 const changePassword = () => {
@@ -2057,7 +2775,7 @@ const init = () => {
   initPickers();
   syncAllPillSelects(); // sync visual state after draft hydration
   if (elements.deferStatus) {
-    const isInitialDone = localStorage.getItem("af_initial") === "done";
+    const isInitialDone = sessionStorage.getItem("af_initial") === "done";
     elements.deferStatus.textContent = isInitialDone
       ? `Questionario inicial completo. ${state.defers} adiamentos usados.`
       : `${state.defers} adiamentos usados.`;
@@ -2095,14 +2813,14 @@ const init = () => {
     const icon = document.getElementById("revealPwIcon");
     const isHidden = input.type === "password";
     input.type = isHidden ? "text" : "password";
-    if (icon) { icon.setAttribute("data-lucide", isHidden ? "eye-off" : "eye"); lucide.createIcons(); }
+    // eye = password revealed (you can see it); eye-off = password hidden (can't see it)
+    if (icon) { icon.setAttribute("data-lucide", isHidden ? "eye" : "eye-off"); lucide.createIcons(); }
   });
   elements.logoutUserBtn?.addEventListener("click", logoutUser);
   elements.profileBtn?.addEventListener("click", () => showTab("perfil"));
   elements.sendReport?.addEventListener("click", sendReport);
-  elements.generateReport?.addEventListener("click", updateReport);
-  document.getElementById("downloadReportTxt")?.addEventListener("click", downloadReportTxt);
-  document.getElementById("printReport")?.addEventListener("click", printReport);
+  elements.generateReport?.addEventListener("click", generatePDF);
+  // printReport removed — PDF is now via generatePDF
   elements.addYear?.addEventListener("click", addYear);
   elements.submitInitial?.addEventListener("click", submitInitial);
   elements.deferInitial?.addEventListener("click", deferInitial);
@@ -2110,20 +2828,13 @@ const init = () => {
   elements.triggerSos?.addEventListener("click", triggerSos);
   elements.registerDispensa?.addEventListener("click", registerDispensa);
   elements.loadTurma?.addEventListener("click", loadTurmaView);
+  document.getElementById("exportTurmaCSV")?.addEventListener("click", exportTurmaCSV);
   document.getElementById("changePasswordBtn")?.addEventListener("click", changePassword);
 
-  // Theme toggle (topbar button)
-  document.getElementById("themeToggle")?.addEventListener("click", toggleTheme);
-
-  // Dark mode toggle (profile page)
+  // Theme toggle is in the Profile tab (darkModeToggle)
   document.getElementById("darkModeToggle")?.addEventListener("click", toggleTheme);
 
-  // Language toggle (topbar)
-  document.getElementById("langToggle")?.addEventListener("click", () => {
-    setLang(currentLang === "pt" ? "en" : "pt");
-  });
-
-  // Language pills (profile page)
+  // Language toggle is in the Profile tab (langPillWrap)
   document.querySelectorAll("#langPillWrap .pill-select__btn").forEach(btn => {
     btn.addEventListener("click", () => setLang(btn.dataset.lang));
   });
@@ -2149,5 +2860,3 @@ const init = () => {
 };
 
 init();
-
-

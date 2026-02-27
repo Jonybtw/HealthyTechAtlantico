@@ -1,4 +1,4 @@
-const CACHE = "atlanticofit-v3";
+const CACHE = "healthytech-v1";
 const SHELL = ["/", "/index.html", "/styles.css", "/app.js", "/auth-template.js", "/manifest.json"];
 
 self.addEventListener("install", (event) => {

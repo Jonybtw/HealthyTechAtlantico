@@ -1,7 +1,7 @@
 ﻿{
-  "name": "AtlanticoFit",
-  "short_name": "AtlanticoFit",
-  "description": "Plataforma escolar de avaliacao fisica, acompanhamento longitudinal e bem-estar.",
+  "name": "HealthyTech Atlântico",
+  "short_name": "HealthyTech",
+  "description": "Plataforma escolar de avaliação física, acompanhamento longitudinal e bem-estar. Colégio Atlântico.",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",

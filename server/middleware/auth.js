@@ -9,7 +9,10 @@ const auth = async (req, res, next) => {
 
   try {
     const payload = jwt.verify(token, JWT_SECRET);
-    const result = await pool.query("SELECT id, email, role FROM users WHERE id = $1", [payload.id]);
+    const result = await pool.query(
+      "SELECT id, email, role, consent_rgpd FROM users WHERE id = $1",
+      [payload.id]
+    );
     const user = result.rows[0];
     if (!user) return res.status(401).json({ error: "Invalid token" });
     req.user = user;
@@ -29,4 +32,14 @@ const requireRole = (...roles) => (req, res, next) => {
 module.exports = {
   auth,
   requireRole,
+  // Middleware for routes that access sensitive health data.
+  // Requires the authenticated user to have given RGPD consent.
+  requireConsent: (req, res, next) => {
+    if (!req.user?.consent_rgpd) {
+      return res.status(403).json({
+        error: "Consentimento RGPD obrigatório para aceder a dados de saúde. Acede ao Perfil para aceitar.",
+      });
+    }
+    return next();
+  },
 };

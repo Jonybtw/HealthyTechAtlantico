@@ -1,7 +1,8 @@
 const express = require("express");
 const pool = require("../db");
-const { auth } = require("../middleware/auth");
+const { auth, requireConsent } = require("../middleware/auth");
 const { requirePermission } = require("../middleware/permissions");
+const { auditLog } = require("../middleware/audit");
 const { asyncHandler } = require("../utils/async-handler");
 const { PERMISSIONS, canAccessStudentByRole } = require("../utils/rbac");
 const { sendMail } = require("../services/mailer");
@@ -33,31 +34,47 @@ router.get(
   requirePermission(PERMISSIONS.LIST_STUDENTS),
   asyncHandler(async (req, res) => {
     const { role, id } = req.user;
+    // Pagination
+    const limit = Math.min(Number(req.query.limit) || 50, 200);
+    const offset = Number(req.query.offset) || 0;
+    const search = req.query.search ? `%${req.query.search}%` : null;
+    const yearFilter = req.query.year || null;
+
     let rows;
     if (role === "professor" || role === "psicologo") {
+      const conditions = [];
+      const params = [];
+      if (search) { params.push(search); conditions.push(`s.name ILIKE $${params.length}`); }
+      if (yearFilter) { params.push(yearFilter); conditions.push(`s.school_year = $${params.length}`); }
+      const where = conditions.length ? "WHERE " + conditions.join(" AND ") : "";
+      params.push(limit, offset);
       const result = await pool.query(
-        "SELECT id, name, sex, age, school_year, class_name, created_at FROM students ORDER BY name ASC"
+        `SELECT s.id, s.name, s.sex, s.age, s.birth_date, s.school_year, s.class_name, s.created_at,
+                COUNT(*) OVER() AS total_count
+         FROM students s ${where}
+         ORDER BY s.name ASC
+         LIMIT $${params.length - 1} OFFSET $${params.length}`,
+        params
       );
-      rows = result.rows;
+      const totalCount = result.rows[0] ? Number(result.rows[0].total_count) : 0;
+      return res.json({ data: result.rows.map(r => { const { total_count, ...rest } = r; return rest; }), totalCount, limit, offset });
     } else if (role === "aluno") {
       const result = await pool.query(
-        "SELECT id, name, sex, age, school_year, class_name, created_at FROM students WHERE user_id = $1 ORDER BY created_at DESC",
-        [id]
+        "SELECT id, name, sex, age, birth_date, school_year, class_name, created_at FROM students WHERE user_id = $1 ORDER BY created_at DESC LIMIT $2 OFFSET $3",
+        [id, limit, offset]
       );
-      rows = result.rows;
+      return res.json({ data: result.rows, totalCount: result.rows.length, limit, offset });
     } else if (role === "pais") {
       const result = await pool.query(
-        `SELECT s.id, s.name, s.sex, s.age, s.school_year, s.class_name, s.created_at
+        `SELECT s.id, s.name, s.sex, s.age, s.birth_date, s.school_year, s.class_name, s.created_at
          FROM students s
          INNER JOIN student_guardians sg ON sg.student_id = s.id
-         WHERE sg.guardian_user_id = $1 ORDER BY s.name ASC`,
-        [id]
+         WHERE sg.guardian_user_id = $1 ORDER BY s.name ASC LIMIT $2 OFFSET $3`,
+        [id, limit, offset]
       );
-      rows = result.rows;
-    } else {
-      rows = [];
+      return res.json({ data: result.rows, totalCount: result.rows.length, limit, offset });
     }
-    return res.json(rows);
+    return res.json({ data: [], totalCount: 0, limit, offset });
   })
 );
 
@@ -67,15 +84,22 @@ router.post(
   auth,
   requirePermission(PERMISSIONS.CREATE_STUDENT),
   asyncHandler(async (req, res) => {
-    const { name, sex, age, schoolYear, class_name } = req.body;
-    if (!name || !sex || !age) {
-      return res.status(400).json({ error: "Nome, sexo e idade são obrigatórios." });
+    const { name, sex, age, birthDate, schoolYear, class_name } = req.body;
+    if (!name || !sex || (!age && !birthDate)) {
+      return res.status(400).json({ error: "Nome, sexo e idade (ou data de nascimento) são obrigatórios." });
+    }
+    if (!["M", "F"].includes(sex)) {
+      return res.status(400).json({ error: "Sexo deve ser 'M' ou 'F'." });
+    }
+    const parsedAge = age ? Number(age) : null;
+    if (parsedAge !== null && (parsedAge < 5 || parsedAge > 25)) {
+      return res.status(400).json({ error: "Idade deve ser entre 5 e 25 anos." });
     }
     const result = await pool.query(
-      `INSERT INTO students (user_id, name, sex, age, school_year, class_name)
-       VALUES ($1, $2, $3, $4, $5, $6)
-       RETURNING id, name, sex, age, school_year, class_name, created_at`,
-      [req.user.id, name.trim(), sex, Number(age), schoolYear || null, class_name || null]
+      `INSERT INTO students (user_id, name, sex, age, birth_date, school_year, class_name)
+       VALUES ($1, $2, $3, $4, $5, $6, $7)
+       RETURNING id, name, sex, age, birth_date, school_year, class_name, created_at`,
+      [req.user.id, name.trim(), sex, parsedAge, birthDate || null, schoolYear || null, class_name || null]
     );
     return res.status(201).json(result.rows[0]);
   })
@@ -99,6 +123,7 @@ router.get(
 router.post(
   "/:id/biometrics",
   auth,
+  requireConsent,
   asyncHandler(async (req, res) => {
     const studentId = Number(req.params.id);
     const { student, isOwner, isGuardian } = await resolveStudentAccess(studentId, req.user);
@@ -124,6 +149,8 @@ router.post(
 router.get(
   "/:id/biometrics",
   auth,
+  requireConsent,
+  auditLog("read_biometrics"),
   asyncHandler(async (req, res) => {
     const studentId = Number(req.params.id);
     const { student, isOwner, isGuardian } = await resolveStudentAccess(studentId, req.user);
@@ -142,26 +169,29 @@ router.get(
 // ── POST /api/students/:id/tests ─────────────────────────────────────────────
 router.post(
   "/:id/tests",
-  auth,
-  asyncHandler(async (req, res) => {
+  auth,  requireConsent,  asyncHandler(async (req, res) => {
     const studentId = Number(req.params.id);
     const { student, isOwner, isGuardian } = await resolveStudentAccess(studentId, req.user);
     if (!student) return res.status(404).json({ error: "Aluno não encontrado." });
     if (!canAccessStudentByRole({ role: req.user.role, permission: PERMISSIONS.RECORD_TESTS, isOwner, isGuardian })) {
       return res.status(403).json({ error: "Forbidden" });
     }
-    const { tests } = req.body;
+    const { tests, sessionId } = req.body;
     if (!Array.isArray(tests) || tests.length === 0) {
       return res.status(400).json({ error: "Array de testes obrigatório." });
     }
-    // Upsert: delete existing and re-insert
-    await pool.query("DELETE FROM tests WHERE student_id = $1", [studentId]);
+
+    // ─── NEVER delete old records — always INSERT new rows ───────────────────
+    // Each call creates a new set of test records (preserves full history).
+    // Use sessionId to group a batch of tests into an evaluation session.
     const inserted = [];
     for (const t of tests) {
+      // Try to parse numeric value; keep null if it's a time string (mm:ss)
+      const numVal = !isNaN(Number(t.value)) ? Number(t.value) : null;
       const row = await pool.query(
-        `INSERT INTO tests (student_id, test_id, value, unit, zone)
-         VALUES ($1,$2,$3,$4,$5) RETURNING id, test_id, value, unit, zone`,
-        [studentId, t.id, String(t.value), t.unit || "", t.zone || "-"]
+        `INSERT INTO tests (student_id, session_id, test_id, value_num, value_text, unit, zone)
+         VALUES ($1,$2,$3,$4,$5,$6,$7) RETURNING id, test_id, value_text AS value, unit, zone, recorded_at`,
+        [studentId, sessionId || null, t.id, numVal, String(t.value), t.unit || "", t.zone || "-"]
       );
       inserted.push(row.rows[0]);
     }
@@ -172,8 +202,7 @@ router.post(
 // ── GET /api/students/:id/tests ──────────────────────────────────────────────
 router.get(
   "/:id/tests",
-  auth,
-  asyncHandler(async (req, res) => {
+  auth,  requireConsent,  asyncHandler(async (req, res) => {
     const studentId = Number(req.params.id);
     const { student, isOwner, isGuardian } = await resolveStudentAccess(studentId, req.user);
     if (!student) return res.status(404).json({ error: "Aluno não encontrado." });
@@ -181,7 +210,10 @@ router.get(
       return res.status(403).json({ error: "Forbidden" });
     }
     const result = await pool.query(
-      "SELECT * FROM tests WHERE student_id = $1 ORDER BY recorded_at DESC",
+      `SELECT id, student_id, session_id, test_id,
+              COALESCE(value_text, value_num::TEXT) AS value,
+              value_text, value_num, unit, zone, recorded_at
+       FROM tests WHERE student_id = $1 ORDER BY recorded_at DESC`,
       [studentId]
     );
     return res.json(result.rows);
@@ -304,18 +336,18 @@ router.post(
     if (!canAccessStudentByRole({ role: req.user.role, permission: PERMISSIONS.SEND_REPORTS, isOwner, isGuardian })) {
       return res.status(403).json({ error: "Forbidden" });
     }
-    const { content, email } = req.body;
+    const { content, email, schoolYear } = req.body;
     if (!content || !email) {
       return res.status(400).json({ error: "content e email são obrigatórios." });
     }
 
-    // Save report to DB
+    // Save report metadata only — do NOT persist plain-text health data in the DB
     const saved = await pool.query(
-      "INSERT INTO reports (student_id, content, emailed_to) VALUES ($1,$2,$3) RETURNING id, created_at",
-      [studentId, content, email]
+      "INSERT INTO reports (student_id, title, emailed_to, school_year, created_by) VALUES ($1,$2,$3,$4,$5) RETURNING id, created_at",
+      [studentId, `Relatório AtlanticoFit — ${student.name}`, email, schoolYear || null, req.user.id]
     );
 
-    // Attempt email
+    // Attempt email delivery
     try {
       await sendMail({
         to: email,
@@ -377,16 +409,16 @@ router.patch(
   "/sos/:alertId",
   auth,
   asyncHandler(async (req, res) => {
-    const { role } = req.user;
+    const { role, id: userId } = req.user;
     if (role !== "professor" && role !== "psicologo") {
       return res.status(403).json({ error: "Forbidden" });
     }
     const alertId = Number(req.params.alertId);
     const result = await pool.query(
-      "UPDATE sos_alerts SET resolved = true WHERE id = $1 RETURNING id, resolved",
-      [alertId]
+      "UPDATE sos_alerts SET resolved = true, resolved_at = NOW(), resolved_by = $1 WHERE id = $2 RETURNING id, resolved, resolved_at",
+      [userId, alertId]
     );
-    if (!result.rows.length) return res.status(404).json({ error: "Alerta n\u00e3o encontrado." });
+    if (!result.rows.length) return res.status(404).json({ error: "Alerta não encontrado." });
     return res.json(result.rows[0]);
   })
 );

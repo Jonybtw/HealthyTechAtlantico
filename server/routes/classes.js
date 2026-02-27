@@ -7,14 +7,15 @@ const { PERMISSIONS } = require("../utils/rbac");
 
 const router = express.Router();
 
-// ── GET /api/classes/:year/report ───────────────────────────────────────────
+// ── GET /api/classes/report?year=2025/2026 ───────────────────────────────────
 // Returns all students for a given school year with latest biometrics and test count
+// Uses query param to safely handle years containing "/"
 router.get(
-  "/:year/report",
+  "/report",
   auth,
   requirePermission(PERMISSIONS.READ_CLASS_REPORTS),
   asyncHandler(async (req, res) => {
-    const year = decodeURIComponent(req.params.year);
+    const year = decodeURIComponent(req.query.year || "");
 
     // Students for this year with their latest biometrics
     const result = await pool.query(

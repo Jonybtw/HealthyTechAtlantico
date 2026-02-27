@@ -20,6 +20,14 @@
   --card:       #ffffff;
   --card-2:     #f8fafb;
   --bg:         #edf2f4;
+  /* ── Colégio Atlântico brand colours ─────────────── */
+  --gold:       #c2970d;
+  --gold-lt:    #fdf4dc;
+  --gold-dk:    #9a7608;
+  --navy:       #14304C;
+  --navy-2:     #1a3f63;
+  --navy-lt:    #b0c6d3;
+  --navy-hero:  linear-gradient(135deg, #14304C 0%, #1a3f63 100%);
   /* ── Semantics ───────────────────────────────────── */
   --line:       rgba(13, 38, 48, 0.09);
   --line-2:     rgba(13, 38, 48, 0.05);
@@ -29,9 +37,12 @@
   --shadow-lg:  0 12px 48px rgba(13, 38, 48, 0.16);
   --shadow-sea: 0 6px 24px rgba(14, 104, 117, 0.28);
   --shadow-coral: 0 6px 24px rgba(232, 88, 58, 0.28);
+  --shadow-gold: 0 6px 24px rgba(194, 151, 13, 0.30);
   /* ── Gradients ───────────────────────────────────── */
   --grad-sea:   linear-gradient(135deg, #0e6875 0%, #12909f 100%);
   --grad-coral: linear-gradient(135deg, #e8583a 0%, #f4804f 100%);
+  --grad-gold:  linear-gradient(135deg, #c2970d 0%, #e0b428 100%);
+  --grad-navy:  linear-gradient(135deg, #14304C 0%, #1a4a6e 100%);
   --grad-page:  linear-gradient(160deg, #e0eff2 0%, #edf2f4 55%, #f0ece3 100%);
   --grad-card:  linear-gradient(160deg, #ffffff 0%, #f8fafb 100%);
   /* ── Shape ───────────────────────────────────────── */
@@ -329,14 +340,31 @@ textarea {
 }
 
 .field select {
-  background-color: rgba(14, 104, 117, 0.05);
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%230e6875' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
   background-repeat: no-repeat;
-  background-position: right 10px center;
-  padding-right: 34px;
-  border-color: rgba(14, 104, 117, 0.22);
-  font-weight: 500;
+  background-position: right 12px center;
+  padding-right: 36px;
   cursor: pointer;
+}
+
+/* ── Date input — improved appearance ─────────────── */
+.field input[type="date"] {
+  cursor: pointer;
+  font-variant-numeric: tabular-nums;
+  min-height: 44px;
+}
+.field input[type="date"]::-webkit-calendar-picker-indicator {
+  background: transparent;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 24 24' fill='none' stroke='%230e6875' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3' y='4' width='18' height='18' rx='2' ry='2'%3E%3C/rect%3E%3Cline x1='16' y1='2' x2='16' y2='6'%3E%3C/line%3E%3Cline x1='8' y1='2' x2='8' y2='6'%3E%3C/line%3E%3Cline x1='3' y1='10' x2='21' y2='10'%3E%3C/line%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: center;
+  width: 22px;
+  height: 22px;
+  cursor: pointer;
+  opacity: 0.8;
+}
+.field input[type="date"]::-webkit-calendar-picker-indicator:hover {
+  opacity: 1;
 }
 
 .field input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):focus,
@@ -344,14 +372,15 @@ textarea {
 textarea:focus {
   outline: none;
   border-color: var(--sea-2);
-  box-shadow: 0 0 0 3px rgba(14, 104, 117, 0.12);
+  box-shadow: 0 0 0 3px rgba(14, 104, 117, 0.14), 0 1px 4px rgba(14, 104, 117, 0.1);
   background: var(--card);
 }
 
 .field input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):hover:not(:focus),
 .field select:hover:not(:focus) {
   border-color: var(--sea-2);
-  background-color: rgba(14, 104, 117, 0.08);
+  background-color: rgba(14, 104, 117, 0.06);
+  box-shadow: 0 1px 4px rgba(14, 104, 117, 0.1);
 }
 
 .field--inline {
@@ -389,6 +418,11 @@ textarea:focus {
   row-gap: 10px;
 }
 
+/* Prevent grid children from overflowing their column */
+.two-col > * {
+  min-width: 0;
+}
+
 /* ── Student data grid ─────────────────────────────── */
 .two-col.two-col--student {
   grid-template-columns: 1fr 1fr 1fr 1fr;
@@ -398,29 +432,40 @@ textarea:focus {
 }
 .two-col.two-col--student .field {
   gap: 6px;
+  min-width: 0;
 }
 .two-col.two-col--student .num-stepper {
   width: 100%;
-  height: 42px;
+  height: 44px;
 }
+/* Sex pill-select: fill column, equal-width buttons */
 .two-col.two-col--student .pill-select--toggle {
-  height: 42px;
+  height: 44px;
   box-sizing: border-box;
   align-items: center;
   align-self: end;
+  width: 100%;
 }
 .two-col.two-col--student .pill-select--toggle .pill-select__btn {
-  padding: 6px 18px;
+  padding: 6px 8px;
   font-size: 0.84rem;
+  flex: 1;
+  min-width: 0;
+  justify-content: center;
 }
 .two-col.two-col--student input:not([type="checkbox"]):not([type="radio"]),
 .two-col.two-col--student select {
-  height: 42px;
+  height: 44px;
   box-sizing: border-box;
 }
 @media (max-width: 660px) {
   .two-col.two-col--student {
     grid-template-columns: 1fr 1fr;
+  }
+}
+@media (max-width: 400px) {
+  .two-col.two-col--student {
+    grid-template-columns: 1fr;
   }
 }
 
@@ -698,6 +743,44 @@ textarea:focus {
   display: flex;
 }
 
+/* ── Modal Overlay (confirmation dialogs) ───────────── */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(13, 38, 48, 0.65);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  z-index: 600;
+}
+.modal-overlay.hidden { display: none; }
+
+.modal-card {
+  background: var(--card);
+  padding: 28px 24px;
+  border-radius: var(--radius-xl);
+  max-width: 400px;
+  width: 100%;
+  box-shadow: var(--shadow-lg);
+  display: grid;
+  gap: 14px;
+  animation: modal-in 0.2s ease both;
+  text-align: center;
+}
+.modal-card__icon { font-size: 2rem; line-height: 1; }
+.modal-card__icon--sos { filter: drop-shadow(0 0 8px rgba(220,53,69,0.45)); }
+.modal-card__title { font-size: 1.15rem; font-weight: 700; margin: 0; color: var(--danger, #dc3545); }
+.modal-card__body  { font-size: 0.9rem; color: var(--muted); margin: 0; line-height: 1.55; }
+.modal-card__actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 4px;
+}
+
 /* ── Textarea ───────────────────────────────────────── */
 textarea {
   min-height: 160px;
@@ -894,19 +977,19 @@ textarea[readonly] {
   align-items: center;
   justify-content: center;
   padding: 24px 16px;
-  background: var(--grad-page);
+  background: linear-gradient(160deg, #dde8f0 0%, #edf2f4 50%, #f5f2eb 100%);
   position: relative;
   overflow: hidden;
 }
 
-/* Decorative blobs */
+/* Decorative blobs – navy + gold brand colours */
 .login-screen::before {
   content: "";
   position: absolute;
   width: 520px;
   height: 520px;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(14, 104, 117, 0.13) 0%, transparent 70%);
+  background: radial-gradient(circle, rgba(20, 48, 76, 0.12) 0%, transparent 70%);
   top: -180px;
   right: -140px;
   pointer-events: none;
@@ -918,7 +1001,7 @@ textarea[readonly] {
   width: 380px;
   height: 380px;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(232, 88, 58, 0.08) 0%, transparent 70%);
+  background: radial-gradient(circle, rgba(194, 151, 13, 0.10) 0%, transparent 70%);
   bottom: -100px;
   left: -100px;
   pointer-events: none;
@@ -950,35 +1033,58 @@ textarea[readonly] {
   margin-bottom: 6px;
 }
 
+/* School logo — light/dark variants */
+.login-logo__img {
+  display: block;
+  width: 90px;
+  height: 90px;
+  object-fit: contain;
+  margin: 0 auto 14px;
+  border-radius: 16px;
+  box-shadow: 0 4px 18px rgba(14, 104, 117, 0.18);
+  background: var(--card);
+  padding: 6px;
+}
+.login-logo__img--dark  { display: none; }
+[data-theme="dark"] .login-logo__img--light { display: none; }
+[data-theme="dark"] .login-logo__img--dark  { display: block; }
+
 .login-logo__badge {
   display: inline-block;
   padding: 5px 16px;
   border-radius: 999px;
-  background: var(--grad-sea);
-  color: #fff;
+  background: var(--grad-navy);
+  color: var(--gold);
   font-size: 0.78rem;
   font-weight: 700;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
   margin-bottom: 12px;
-  box-shadow: 0 3px 12px rgba(14, 104, 117, 0.3);
+  box-shadow: 0 3px 12px rgba(20, 48, 76, 0.30);
+  border: 1px solid rgba(194, 151, 13, 0.35);
 }
 
 .login-logo h1 {
-  font-size: 2.1rem;
-  letter-spacing: -0.04em;
-  background: linear-gradient(135deg, var(--ink) 0%, var(--sea) 100%);
+  font-family: "Syne", "Space Grotesk", sans-serif;
+  font-weight: 800;
+  font-size: 2.0rem;
+  letter-spacing: -0.03em;
+  background: linear-gradient(135deg, var(--navy) 0%, var(--gold) 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
+  line-height: 1.15;
 }
 
 .login-logo__sub {
-  color: var(--muted);
-  font-size: 0.88rem;
-  font-family: "Literata", serif;
+  color: var(--navy);
+  opacity: 0.62;
+  font-size: 0.9rem;
+  font-family: "DM Serif Display", "Literata", serif;
   font-style: italic;
-  margin-top: 6px;
+  font-weight: 400;
+  margin-top: 8px;
+  line-height: 1.5;
 }
 
 .login-actions {
@@ -1067,14 +1173,14 @@ textarea[readonly] {
   position: sticky;
   top: 0;
   z-index: 100;
-  background: var(--grad-sea);
+  background: var(--grad-navy);
   color: #fff;
   display: flex;
   align-items: center;
   gap: 10px;
   padding: 0 16px;
   height: var(--topbar-h);
-  box-shadow: 0 2px 20px rgba(14, 104, 117, 0.35);
+  box-shadow: 0 2px 20px rgba(20, 48, 76, 0.40);
   flex-shrink: 0;
 }
 
@@ -1085,19 +1191,78 @@ textarea[readonly] {
   flex: 1;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
 }
 
-.topbar__logo::before {
-  content: "";
+/* Gold accent dot replaced by school logo thumbnail */
+.topbar__logo-img {
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  object-fit: contain;
+  background: rgba(255,255,255,0.12);
+  padding: 3px;
+  flex-shrink: 0;
+}
+.topbar__logo-img--dark { display: none; }
+[data-theme="dark"] .topbar__logo-img--light { display: none; }
+[data-theme="dark"] .topbar__logo-img--dark  { display: block; }
+
+/* fallback dot if no logo */
+.topbar__logo-dot {
   display: inline-block;
   width: 9px;
   height: 9px;
   border-radius: 50%;
-  background: rgba(255,255,255,0.7);
-  box-shadow: 0 0 0 3px rgba(255,255,255,0.2);
+  background: var(--gold);
+  box-shadow: 0 0 0 3px rgba(194,151,13,0.25);
   flex-shrink: 0;
 }
+
+/* ── Custom date picker wrapper ─────────────────────────────────────────── */
+.date-picker-wrap {
+  position: relative;
+  display: flex;
+  align-items: stretch;
+}
+
+.date-picker__input {
+  flex: 1;
+  border-radius: var(--radius-sm) 0 0 var(--radius-sm) !important;
+  border-right: none !important;
+}
+
+.date-picker__btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  min-height: 44px;
+  border: 1.5px solid var(--line);
+  border-left: none;
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  background: var(--navy);
+  color: #fff;
+  cursor: pointer;
+  transition: background 0.18s;
+  flex-shrink: 0;
+  padding: 0;
+}
+
+.date-picker__btn:hover {
+  background: var(--navy-2);
+}
+
+[data-theme="dark"] .date-picker__btn {
+  background: var(--sea);
+  border-color: var(--sea);
+}
+
+[data-theme="dark"] .date-picker__btn:hover {
+  background: #0e8090;
+}
+
+/* native calendar popup on click via JS showPicker() */
 
 .topbar__stats {
   display: flex;
@@ -1657,6 +1822,164 @@ input[type="checkbox"] {
   background: var(--grad-sea);
   color: #fff;
   box-shadow: 0 2px 8px rgba(14, 104, 117, 0.25);
+}
+
+/* ═══════════════════════════════════════════════════
+   CUSTOM SELECT — styled dropdown list
+═══════════════════════════════════════════════════ */
+.custom-select {
+  position: relative;
+  width: 100%;
+  display: block;
+}
+
+.custom-select__trigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  border: 1.5px solid var(--line);
+  border-radius: var(--radius-sm);
+  padding: 8px 12px;
+  font-family: inherit;
+  font-size: 0.92rem;
+  background: var(--card);
+  color: var(--ink);
+  cursor: pointer;
+  min-height: 44px;
+  box-sizing: border-box;
+  user-select: none;
+  transition: border-color 0.18s, box-shadow 0.18s, background 0.18s;
+}
+
+.custom-select__trigger:hover,
+.custom-select.open .custom-select__trigger {
+  border-color: var(--sea-2);
+  box-shadow: 0 0 0 3px rgba(14, 104, 117, 0.12), 0 1px 4px rgba(14, 104, 117, 0.08);
+  background: var(--card);
+}
+
+.custom-select__trigger-text {
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: var(--ink);
+}
+
+.custom-select__trigger-text.placeholder {
+  color: var(--muted);
+}
+
+.custom-select__arrow {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  color: var(--sea-2);
+  transition: transform 0.2s ease;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.custom-select.open .custom-select__arrow {
+  transform: rotate(180deg);
+}
+
+.custom-select__list {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  z-index: 300;
+  background: var(--card);
+  border: 1.5px solid var(--sea-2);
+  border-radius: var(--radius-sm);
+  box-shadow: 0 8px 24px rgba(14, 104, 117, 0.14), 0 2px 8px rgba(0, 0, 0, 0.08);
+  overflow-y: auto;
+  max-height: 220px;
+  animation: csDropIn 0.15s ease;
+}
+
+@keyframes csDropIn {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.custom-select__list.hidden {
+  display: none;
+}
+
+.custom-select__option {
+  padding: 10px 14px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  color: var(--ink);
+  transition: background 0.12s, color 0.12s;
+  border-left: 3px solid transparent;
+}
+
+.custom-select__option:first-child {
+  border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+}
+
+.custom-select__option:last-child {
+  border-radius: 0 0 var(--radius-sm) var(--radius-sm);
+}
+
+.custom-select__option:hover {
+  background: rgba(14, 104, 117, 0.06);
+  color: var(--sea-2);
+  border-left-color: var(--sea-2);
+}
+
+.custom-select__option.selected {
+  background: linear-gradient(90deg, rgba(14, 104, 117, 0.10) 0%, transparent 100%);
+  color: var(--sea-dk);
+  font-weight: 600;
+  border-left-color: var(--sea);
+}
+
+.custom-select__option.disabled {
+  color: var(--muted);
+  cursor: default;
+  font-style: italic;
+  pointer-events: none;
+  opacity: 0.6;
+}
+
+[data-theme="dark"] .custom-select__trigger {
+  background: var(--card-2);
+}
+
+[data-theme="dark"] .custom-select__list {
+  background: var(--card-2);
+  border-color: rgba(26, 184, 207, 0.4);
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.4), 0 2px 10px rgba(0, 0, 0, 0.2);
+}
+
+[data-theme="dark"] .custom-select__option:hover {
+  background: rgba(26, 184, 207, 0.1);
+}
+
+[data-theme="dark"] .custom-select__option.selected {
+  background: linear-gradient(90deg, rgba(26, 184, 207, 0.15) 0%, transparent 100%);
+  color: var(--sea-lt);
+}
+
+/* Turma chart — constrain doughnut height */
+.turma-chart-wrap {
+  position: relative;
+  max-height: 280px;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+.turma-chart-wrap canvas {
+  max-height: 280px;
 }
 
 /* ═══════════════════════════════════════════════════
@@ -2255,13 +2578,16 @@ input[type="number"] {
   box-shadow: 0 20px 64px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.07) inset;
 }
 [data-theme="dark"] .login-title {
-  background: linear-gradient(135deg, var(--ink) 0%, var(--sea) 100%);
+  font-family: "Syne", "Space Grotesk", sans-serif;
+  font-weight: 800;
+  background: linear-gradient(135deg, #b0c6d3 0%, var(--gold) 100%);
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 [data-theme="dark"] .topbar {
-  background: linear-gradient(135deg, #0a4a55 0%, #0e6070 100%);
+  background: linear-gradient(135deg, #0d2035 0%, #14304C 100%);
+  box-shadow: 0 2px 20px rgba(0,0,0,0.55);
 }
 [data-theme="dark"] .bottomnav {
   background: rgba(22, 33, 40, 0.96);
@@ -2274,12 +2600,9 @@ input[type="number"] {
   border-color: var(--line);
 }
 [data-theme="dark"] .field select {
-  background-color: rgba(26, 184, 207, 0.08);
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%231ab8cf' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
   background-repeat: no-repeat;
-  background-position: right 10px center;
-  color: var(--ink);
-  border-color: rgba(26, 184, 207, 0.22);
+  background-position: right 12px center;
 }
 [data-theme="dark"] .table__row {
   background: var(--card-2);
@@ -2298,6 +2621,23 @@ input[type="number"] {
 }
 [data-theme="dark"] .ref-table tbody tr:nth-child(even) td {
   background: var(--card-2);
+}
+[data-theme="dark"] .student-picker__input {
+  background: var(--card-2);
+  color: var(--ink);
+  border-color: var(--line);
+}
+[data-theme="dark"] .student-picker__item:hover {
+  background: rgba(26, 184, 207, 0.08);
+}
+[data-theme="dark"] .kpi-card {
+  background: var(--card-2);
+}
+[data-theme="dark"] .kpi-card--green {
+  background: rgba(22, 160, 80, 0.08);
+}
+[data-theme="dark"] .kpi-card--coral {
+  background: rgba(242, 108, 79, 0.08);
 }
 [data-theme="dark"] .num-stepper {
   background: var(--card-2);
@@ -2331,6 +2671,220 @@ input[type="number"] {
 /* Theme-switch icon flip */
 [data-theme="dark"] #themeToggle svg {
   transform: rotate(180deg);
+}
+
+/* ═══════════════════════════════════════════════════
+   STUDENT PICKER — R8 quick-select
+═══════════════════════════════════════════════════ */
+.student-picker-card {
+  margin-bottom: 12px;
+  padding: 12px 16px;
+}
+
+.student-picker__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.student-picker__header .section-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+}
+
+.student-picker-card--open .student-picker__header {
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--line);
+  margin-bottom: 10px;
+}
+
+#pickerChevron {
+  transition: transform 0.2s ease;
+}
+
+.student-picker-card--open #pickerChevron {
+  transform: rotate(180deg);
+}
+
+.student-picker__input {
+  width: 100%;
+  border: 1.5px solid var(--line);
+  border-radius: var(--radius-sm);
+  padding: 8px 12px;
+  font-family: inherit;
+  font-size: 0.9rem;
+  background: var(--bg);
+  color: var(--ink);
+  margin-bottom: 8px;
+  box-sizing: border-box;
+  transition: border-color 0.18s, box-shadow 0.18s;
+}
+
+.student-picker__input:focus {
+  outline: none;
+  border-color: var(--sea-2);
+  box-shadow: 0 0 0 3px rgba(14, 104, 117, 0.12);
+}
+
+.student-picker__list {
+  max-height: 220px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.student-picker__item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 9px 12px;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  width: 100%;
+  transition: background 0.12s;
+  border-left: 3px solid transparent;
+}
+
+.student-picker__item:hover {
+  background: rgba(14, 104, 117, 0.06);
+  border-left-color: var(--sea-2);
+}
+
+.student-picker__item:active {
+  background: rgba(14, 104, 117, 0.12);
+}
+
+.student-picker__item-name {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.student-picker__item-meta {
+  font-size: 0.78rem;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+/* ═══════════════════════════════════════════════════
+   TURMA METRICS — R11 KPI cards
+═══════════════════════════════════════════════════ */
+.turma-metrics {
+  margin-bottom: 14px;
+}
+
+.turma-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+}
+
+@media (max-width: 560px) {
+  .turma-kpi-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.kpi-card {
+  background: var(--bg);
+  border: 1.5px solid var(--line);
+  border-radius: var(--radius-sm);
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  border-top: 3px solid var(--sea-2);
+  transition: box-shadow 0.18s;
+}
+
+.kpi-card:hover {
+  box-shadow: 0 2px 10px rgba(14, 104, 117, 0.1);
+}
+
+.kpi-card--green {
+  border-top-color: #16a050;
+  background: rgba(22, 160, 80, 0.04);
+}
+
+.kpi-card--coral {
+  border-top-color: var(--coral);
+  background: rgba(242, 108, 79, 0.04);
+}
+
+.kpi-card__value {
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: var(--ink);
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+}
+
+.kpi-card--green .kpi-card__value { color: #16a050; }
+.kpi-card--coral .kpi-card__value { color: var(--coral); }
+
+.kpi-card__label {
+  font-size: 0.72rem;
+  color: var(--muted);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+/* Small variant for dashboard cards */
+.kpi-card--sm {
+  padding: 8px 10px;
+}
+
+.kpi-card--sm .kpi-card__value {
+  font-size: 1.2rem;
+}
+
+/* ═══════════════════════════════════════════════════
+   DASHBOARD — R13 school overview
+═══════════════════════════════════════════════════ */
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 16px;
+  padding-bottom: 16px;
+}
+
+.dashboard-year-card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.dashboard-year-card__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.dashboard-year-card__year {
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: var(--sea-dk);
+  letter-spacing: -0.02em;
+}
+
+.dashboard-year-card__stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.dashboard-year-card .btn {
+  margin-top: auto;
 }
 
 /* ═══════════════════════════════════════════════════

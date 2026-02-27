@@ -3,21 +3,22 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-    <title>AtlanticoFit</title>
+    <title>HealthyTech Atlântico</title>
     <!-- PWA -->
     <link rel="manifest" href="manifest.json" />
     <meta name="theme-color" content="#0e6875" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-    <meta name="apple-mobile-web-app-title" content="AtlanticoFit" />
+    <meta name="apple-mobile-web-app-title" content="HealthyTech Atlântico" />
     <link rel="apple-touch-icon" href="icon-192.png" />
     <!-- Description -->
     <meta name="description" content="Plataforma escolar de avaliação física, acompanhamento longitudinal e bem-estar. Colégio Atlântico." />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300..700&family=Literata:ital,opsz,wght@0,7..72,300..700;1,7..72,300..700&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300..700&family=Literata:ital,opsz,wght@0,7..72,300..700;1,7..72,300..700&family=Syne:wght@700;800&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="styles.css" />
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
     <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
   </head>
   <body>
@@ -51,15 +52,17 @@
     <div id="appShell" class="app-shell hidden">
 
       <header class="topbar">
-        <span class="topbar__logo">AtlanticoFit</span>
+        <span class="topbar__logo">
+          <img src="/assets/logos/Logo1.jpg" alt="" class="topbar__logo-img topbar__logo-img--light" />
+          <img src="/assets/logos/Logo12.jpg" alt="" class="topbar__logo-img topbar__logo-img--dark" />
+          HealthyTech Atlântico
+        </span>
         <span class="topbar__divider" aria-hidden="true"></span>
         <div class="topbar__stats" id="topbarStats">
           <span class="topstat hidden" id="statStudentsWrap"><span id="statStudents">0</span> <span data-i18n="students">alunos</span></span>
           <span class="topstat sos-count hidden" id="statAlertsWrap"><span id="statAlerts">0</span> SOS</span>
         </div>
         <div class="topbar__right">
-          <button class="btn--lang" id="langToggle" aria-label="Idioma">PT</button>
-          <button class="btn--theme-toggle" id="themeToggle" aria-label="Alternar tema" title="Modo escuro"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg></button>
           <span class="topbar__user" id="topbarEmail"></span>
           <button class="btn--profile" id="profileBtn" aria-label="Perfil"><span id="topbarInitials">?</span></button>
         </div>
@@ -70,13 +73,33 @@
         <!-- Biometria -->
         <section class="tab-panel hidden" id="tab-bio" data-tab="bio">
           <div class="page-header"><h2>Registo Biométrico</h2><p class="helper">Dados do aluno e composição corporal — guarda para aceder aos testes</p></div>
+
+          <!-- R8: Student quick-select picker (professor/psicologo only) -->
+          <div class="card student-picker-card hidden" id="studentPickerCard">
+            <div class="student-picker__header">
+              <p class="section-label" style="margin:0"><i data-lucide="users" class="field-icon"></i>Pesquisar aluno existente</p>
+              <button class="btn btn--ghost btn--sm" id="toggleStudentPicker" type="button" aria-label="Abrir pesquisa"><i data-lucide="chevron-down" id="pickerChevron"></i></button>
+            </div>
+            <div id="studentPickerBody" class="hidden">
+              <input id="studentPickerSearch" type="text" placeholder="Nome do aluno..." class="student-picker__input" autocomplete="off" />
+              <div id="studentPickerList" class="student-picker__list"></div>
+            </div>
+          </div>
           <div class="card">
             <p class="section-label">Dados do aluno</p>
             <div class="two-col two-col--student">
               <label class="field"><span class="field__label"><i data-lucide="user" class="field-icon"></i>Nome</span><input id="studentName" type="text" placeholder="Nome completo" /></label>
               <label class="field"><span class="field__label"><i data-lucide="user" class="field-icon"></i>Sexo</span><select id="studentSex"><option value="">Selecionar</option><option value="F">Feminino</option><option value="M">Masculino</option></select></label>
-              <label class="field"><span class="field__label"><i data-lucide="hash" class="field-icon"></i>Idade</span><input id="studentAge" type="number" min="9" max="18" placeholder="9–18" /></label>
-              <label class="field"><span class="field__label"><i data-lucide="book-open" class="field-icon"></i>Ano letivo</span><select id="schoolYear"><option value="">-- Ano letivo --</option><option value="2020/2021">2020/2021</option><option value="2021/2022">2021/2022</option><option value="2022/2023">2022/2023</option><option value="2023/2024">2023/2024</option><option value="2024/2025">2024/2025</option><option value="2025/2026" selected>2025/2026</option><option value="2026/2027">2026/2027</option><option value="2027/2028">2027/2028</option><option value="2028/2029">2028/2029</option></select></label>
+              <label class="field">
+                <span class="field__label"><i data-lucide="calendar" class="field-icon"></i>Data de Nascimento</span>
+                <div class="date-picker-wrap">
+                  <input id="studentBirthDate" type="date" class="date-picker__input" />
+                  <button type="button" class="date-picker__btn" id="birthDatePickerBtn" aria-label="Escolher data">
+                    <i data-lucide="calendar-days" style="width:16px;height:16px"></i>
+                  </button>
+                </div>
+              </label>
+              <div class="field"><span class="field__label"><i data-lucide="book-open" class="field-icon"></i>Ano letivo</span><select id="schoolYear"><option value="">-- Ano letivo --</option><option value="2020/2021">2020/2021</option><option value="2021/2022">2021/2022</option><option value="2022/2023">2022/2023</option><option value="2023/2024">2023/2024</option><option value="2024/2025">2024/2025</option><option value="2025/2026" selected>2025/2026</option><option value="2026/2027">2026/2027</option><option value="2027/2028">2027/2028</option><option value="2028/2029">2028/2029</option></select></div>
             </div>
             <hr class="card-divider" />
             <p class="section-label">Composição corporal</p>
@@ -302,21 +325,20 @@
 
         <!-- Relatórios -->
         <section class="tab-panel hidden" id="tab-reports" data-tab="reports">
-          <div class="page-header"><h2>Relatórios</h2><p class="helper">Gera e envia o relatório ao Encarregado de Educação por email</p></div>
+          <div class="page-header"><h2>Relatório</h2><p class="helper">Gera o PDF do relatório ou envia-o por email ao Encarregado de Educação</p></div>
           <div class="card">
-            <p class="section-label">Pré-visualização do relatório</p>
-            <div class="actions">
-              <button class="btn btn--ghost" id="generateReport"><i data-lucide="file-text" class="btn-icon"></i><span data-i18n="generate_report">Gerar relatório</span></button>
-              <button class="btn btn--ghost" id="downloadReportTxt"><i data-lucide="download" class="btn-icon"></i><span data-i18n="download_txt">Descarregar .txt</span></button>
-              <button class="btn btn--ghost" id="printReport"><i data-lucide="printer" class="btn-icon"></i><span data-i18n="print_pdf">Imprimir / PDF</span></button>
+            <p class="section-label">Transferir PDF</p>
+            <p class="helper">Documento formatado com dados do aluno, IMC, testes ZAF e mensagens de acompanhamento.</p>
+            <div class="actions" style="margin-top:12px">
+              <button class="btn" id="generateReport"><i data-lucide="file-down" class="btn-icon"></i>Gerar e transferir PDF</button>
             </div>
-            <textarea id="reportText" rows="12" placeholder="Clica em 'Gerar relatório' para preencher automaticamente..." readonly></textarea>
             <hr class="card-divider" />
             <p class="section-label">Enviar por email</p>
             <label class="field"><span class="field__label"><i data-lucide="mail" class="field-icon"></i>Email do destinatário</span><input id="reportEmail" type="email" placeholder="encarregado@exemplo.pt" /></label>
             <div class="actions">
-              <button class="btn" id="sendReport"><i data-lucide="send" class="btn-icon"></i>Enviar por email</button>
+              <button class="btn btn--ghost" id="sendReport"><i data-lucide="send" class="btn-icon"></i>Enviar por email</button>
             </div>
+            <p class="helper" id="reportStatus"></p>
           </div>
         </section>
 
@@ -326,12 +348,13 @@
           <div class="card">
             <p class="section-label">Adicionar ano letivo</p>
             <div class="two-col">
-              <label class="field"><span class="field__label"><i data-lucide="calendar" class="field-icon"></i>Ano letivo</span><select id="chartYear"><option value="">-- Selecionar --</option><option value="2020/2021">2020/2021</option><option value="2021/2022">2021/2022</option><option value="2022/2023">2022/2023</option><option value="2023/2024">2023/2024</option><option value="2024/2025">2024/2025</option><option value="2025/2026">2025/2026</option><option value="2026/2027">2026/2027</option><option value="2027/2028">2027/2028</option><option value="2028/2029">2028/2029</option></select></label>
+              <div class="field"><span class="field__label"><i data-lucide="calendar" class="field-icon"></i>Ano letivo</span><select id="chartYear"><option value="">-- Selecionar --</option><option value="2020/2021">2020/2021</option><option value="2021/2022">2021/2022</option><option value="2022/2023">2022/2023</option><option value="2023/2024">2023/2024</option><option value="2024/2025">2024/2025</option><option value="2025/2026">2025/2026</option><option value="2026/2027">2026/2027</option><option value="2027/2028">2027/2028</option><option value="2028/2029">2028/2029</option></select></div>
               <label class="field"><span class="field__label"><i data-lucide="bar-chart-2" class="field-icon"></i>IMC médio da turma</span><input id="chartClassImc" type="number" step="0.1" placeholder="20.4" /></label>
             </div>
             <button class="btn btn--ghost" id="addYear"><i data-lucide="plus-circle" class="btn-icon"></i>Adicionar ano</button>
             <hr class="card-divider" />
-            <p class="section-label">IMC do aluno ao longo dos anos</p>
+            <p class="section-label">IMC do aluno ao longo do tempo</p>
+            <p class="helper" id="chartHistoryStatus">Abre este separador com um aluno selecionado para ver o histórico real de IMC.</p>
             <canvas id="studentChart" height="140"></canvas>
             <hr class="card-divider" />
             <p class="section-label">IMC médio da turma</p>
@@ -344,16 +367,29 @@
           <div class="page-header"><h2>Vista de Turma</h2><p class="helper">Consulta e filtra o desempenho físico global por ano letivo</p></div>
           <div class="card">
             <p class="section-label">Filtrar por ano letivo</p>
-            <div class="actions">
-              <label class="field" style="margin:0;flex:1"><span class="field__label"><i data-lucide="calendar" class="field-icon"></i>Ano letivo</span><select id="turmaYear"><option value="">-- Todos os anos --</option><option value="2020/2021">2020/2021</option><option value="2021/2022">2021/2022</option><option value="2022/2023">2022/2023</option><option value="2023/2024">2023/2024</option><option value="2024/2025">2024/2025</option><option value="2025/2026">2025/2026</option><option value="2026/2027">2026/2027</option><option value="2027/2028">2027/2028</option><option value="2028/2029">2028/2029</option></select></label>
-              <button class="btn" id="loadTurma"><i data-lucide="search" class="btn-icon"></i>Carregar turma</button>
+            <div class="actions" style="align-items:flex-end">
+              <div class="field" style="margin:0;flex:1"><span class="field__label"><i data-lucide="calendar" class="field-icon"></i>Ano letivo</span><select id="turmaYear"><option value="">-- Todos os anos --</option><option value="2020/2021">2020/2021</option><option value="2021/2022">2021/2022</option><option value="2022/2023">2022/2023</option><option value="2023/2024">2023/2024</option><option value="2024/2025">2024/2025</option><option value="2025/2026">2025/2026</option><option value="2026/2027">2026/2027</option><option value="2027/2028">2027/2028</option><option value="2028/2029">2028/2029</option></select></div>
+              <button class="btn btn--sm" id="loadTurma" style="white-space:nowrap"><i data-lucide="search" class="btn-icon"></i>Carregar</button>
             </div>
             <p class="helper" id="turmaStatus"></p>
+            <div id="turmaMetrics" class="turma-metrics hidden"></div>
             <div id="turmaTable"></div>
+            <div class="actions" id="turmaExportRow" style="margin-top:8px; display:none">
+              <button class="btn btn--ghost btn--sm" id="exportTurmaCSV"><i data-lucide="download" class="btn-icon"></i>Exportar CSV</button>
+            </div>
             <hr class="card-divider" />
             <p class="section-label">Distribuição ZAF — IMC</p>
-            <canvas id="turmaChart" height="180"></canvas>
+            <div class="turma-chart-wrap">
+              <canvas id="turmaChart"></canvas>
+            </div>
           </div>
+        </section>
+
+        <!-- Dashboard -->
+        <section class="tab-panel hidden" id="tab-dashboard" data-tab="dashboard">
+          <div class="page-header"><h2>Dashboard Escolar</h2><p class="helper">Resumo por ano letivo — distribuição ZAF e métricas globais</p></div>
+          <p class="helper" id="dashboardStatus"></p>
+          <div id="dashboardGrid" class="dashboard-grid"></div>
         </section>
 
         <!-- Dispensas -->
@@ -362,7 +398,7 @@
           <div class="card">
             <p class="section-label">Aluno e motivo</p>
             <div class="two-col">
-              <label class="field"><span class="field__label"><i data-lucide="user" class="field-icon"></i>Aluno</span><select id="dispensaStudentId"><option value="">— Seleciona o aluno —</option></select></label>
+              <div class="field"><span class="field__label"><i data-lucide="user" class="field-icon"></i>Aluno</span><select id="dispensaStudentId"><option value="">— Seleciona o aluno —</option></select></div>
               <label class="field"><span class="field__label"><i data-lucide="file-text" class="field-icon"></i>Motivo</span><input id="dispensaReason" type="text" placeholder="Descreve o motivo da dispensa" /></label>
             </div>
             <hr class="card-divider" />
@@ -553,6 +589,20 @@
 
     <!-- Toast de feedback -->
     <div class="toast hidden" id="toast"></div>
+
+    <!-- SOS confirmation modal -->
+    <div class="modal-overlay hidden" id="sosConfirmModal" role="dialog" aria-modal="true" aria-labelledby="sosConfirmTitle">
+      <div class="modal-card">
+        <div class="modal-card__icon modal-card__icon--sos">⚠️</div>
+        <h3 class="modal-card__title" id="sosConfirmTitle">Confirmar Alerta SOS</h3>
+        <p class="modal-card__body">Vais enviar um alerta <strong>confidencial e imediato</strong> ao psicólogo e professor indicados. Esta ação não pode ser desfeita.</p>
+        <p class="modal-card__body" id="sosConfirmRecipients"></p>
+        <div class="modal-card__actions">
+          <button class="btn btn--alert" id="sosConfirmYes">Confirmar — Enviar SOS</button>
+          <button class="btn btn--ghost" id="sosConfirmNo">Cancelar</button>
+        </div>
+      </div>
+    </div>
 
     <!-- Elementos legados mantidos para compatibilidade JS -->
     <div style="display:none" aria-hidden="true">
