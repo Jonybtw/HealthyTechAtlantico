@@ -2099,7 +2099,12 @@ const buildBottomNav = (role) => {
     const d = document.createElement("div"); d.className = "bottomnav__indicator"; d.id = "navIndicator"; return d;
   })();
   const footerEl = elements.bottomnav.querySelector(".app-footer");
-  elements.bottomnav.innerHTML = tabs.map((id) => {
+  const brandHtml = `<div class="sidebar-brand">
+    <img src="/assets/logos/Logo1.jpg" alt="Colégio Atlântico" class="sidebar-brand__logo-img sidebar-brand__logo-img--light" />
+    <img src="/assets/logos/Logo3.jpg" alt="Colégio Atlântico" class="sidebar-brand__logo-img sidebar-brand__logo-img--dark" />
+    <span class="sidebar-brand__name">Atlântico</span>
+  </div>`;
+  elements.bottomnav.innerHTML = brandHtml + tabs.map((id) => {
     const m = TAB_META[id];
     return `<button class="bottomnav__item ${m.cls || ""}" data-tab="${id}" aria-label="${m.label}">${m.icon}<span>${m.label}</span></button>`;
   }).join("");
