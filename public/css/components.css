@@ -181,6 +181,7 @@ textarea {
   background-repeat: no-repeat;
   background-position: right 12px center;
   padding-right: 36px;
+  min-height: 44px;
   cursor: pointer;
 }
 

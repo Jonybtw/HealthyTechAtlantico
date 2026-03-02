@@ -343,7 +343,7 @@ const elements = {
   profileEmail: document.getElementById("profileEmail"),
   profileRoleBadge: document.getElementById("profileRoleBadge"),
   saveAccess: document.getElementById("saveAccess"),
-  accessStatus: document.getElementById("accessStatus"),
+  accessStatus: null, // removed — use toast
   studentName: document.getElementById("studentName"),
   studentSex: document.getElementById("studentSex"),
   studentBirthDate: document.getElementById("studentBirthDate"),
@@ -381,8 +381,8 @@ const elements = {
   qHydration: document.getElementById("qHydration"),
   questProgressBar: document.getElementById("questProgressBar"),
   questProgressLabel: document.getElementById("questProgressLabel"),
-  questInitialStatus: document.getElementById("questInitialStatus"),
-  questRoutineStatus: document.getElementById("questRoutineStatus"),
+  questInitialStatus: null, // removed — use toast
+  questRoutineStatus: null, // removed — use toast
   submitInitial: document.getElementById("submitInitial"),
   deferInitial: document.getElementById("deferInitial"),
   deferStatus: document.getElementById("deferStatus"),
@@ -404,20 +404,20 @@ const elements = {
   topbarUser: document.getElementById("topbarUser"),
   bottomnav: document.getElementById("bottomnav"),
   toastEl: document.getElementById("toast"),
-  bioStatus: document.getElementById("bioStatus"),
+  bioStatus: null, // removed — use toast
   dispensaRecipient: document.getElementById("dispensaStudentId"),
   dispensaReason: document.getElementById("dispensaReason"),
   dispensaStartDate: document.getElementById("dispensaStartDate"),
   dispensaEndDate: document.getElementById("dispensaEndDate"),
   dispensaMedical: document.getElementById("dispensaMedical"),
   registerDispensa: document.getElementById("registerDispensa"),
-  dispensaStatus: document.getElementById("dispensaStatus"),
+  dispensaStatus: null, // removed — use toast
   dispensasCard: document.getElementById("dispensasCard"),
   turmaCard: document.getElementById("turmaCard"),
   turmaYear: document.getElementById("turmaYear"),
   loadTurma: document.getElementById("loadTurma"),
   turmaTable: document.getElementById("turmaTable"),
-  turmaStatus: document.getElementById("turmaStatus"),
+  turmaStatus: null, // removed — use toast
 };
 
 let studentChart = null;
@@ -489,10 +489,8 @@ const toast = (msg, type = "") => {
   _toastTimer = setTimeout(() => el.classList.add("hidden"), 3500);
 };
 
-const updateAccessStatus = (text) => {
-  toast(text);
-  if (elements.bioStatus) elements.bioStatus.textContent = text;
-  if (elements.accessStatus) elements.accessStatus.textContent = text;
+const updateAccessStatus = (text, type = "success") => {
+  toast(text, type);
 };
 
 const formatZone = (label, ok) => (ok ? `Zona Saudável (${label})` : "Zona de Melhoria");
@@ -561,123 +559,105 @@ const calculateImc = () => {
   };
 };
 
-const buildTestRow = () => {
-  const row = document.createElement("div");
-  row.className = "table__row";
+const buildTestItem = (testOpt) => {
+  const item = document.createElement("div");
+  item.className = "test-item";
+  item.dataset.testId = testOpt.id;
 
-  const testSelect = document.createElement("select");
-  const byCategory = testOptions.reduce((acc, option) => {
-    const key = option.category || "Outros";
-    if (!acc[key]) acc[key] = [];
-    acc[key].push(option);
-    return acc;
-  }, {});
-  Object.entries(byCategory).forEach(([category, options]) => {
-    const group = document.createElement("optgroup");
-    group.label = category;
-    options.forEach((opt) => {
-      const option = document.createElement("option");
-      option.value = opt.id;
-      option.textContent = opt.label;
-      group.appendChild(option);
-    });
-    testSelect.appendChild(group);
-  });
+  const nameSpan = document.createElement("span");
+  nameSpan.className = "test-item__name";
+  nameSpan.textContent = testOpt.label;
 
   const resultInput = document.createElement("input");
-  resultInput.placeholder = "Resultado";
+  resultInput.className = "test-item__input";
+  resultInput.placeholder = "—";
+  resultInput.inputMode = testOpt.unit === "mm:ss" ? "text" : "decimal";
+  resultInput.setAttribute("aria-label", testOpt.label);
 
-  const unitInput = document.createElement("input");
-  unitInput.placeholder = "Unidade";
+  const unitSpan = document.createElement("span");
+  unitSpan.className = "test-item__unit";
+  unitSpan.textContent = testOpt.unit;
 
   const zoneSpan = document.createElement("span");
-  zoneSpan.className = "zone-badge zone-badge--na";
-  zoneSpan.textContent = "-";
+  zoneSpan.className = "zone-badge zone-badge--na test-item__zone";
+  zoneSpan.textContent = "—";
 
-  row.appendChild(testSelect);
-  row.appendChild(resultInput);
-  row.appendChild(unitInput);
-  row.appendChild(zoneSpan);
+  item.appendChild(nameSpan);
+  item.appendChild(resultInput);
+  item.appendChild(unitSpan);
+  item.appendChild(zoneSpan);
 
   const updateZone = () => {
     const age = calcAgeFromBirthDate(elements.studentBirthDate?.value);
     const sex = elements.studentSex.value;
     const ageKey = getAgeKey(age);
-    const testId = testSelect.value;
-    if (!ageKey) return;
-
     const valueRaw = resultInput.value.trim();
-    if (!valueRaw) { zoneSpan.textContent = "-"; zoneSpan.className = "zone-badge zone-badge--na"; return; }
-
-    const testData = testTable[sex]?.[ageKey]?.[testId];
-    if (!testData) { zoneSpan.textContent = "N/D"; zoneSpan.className = "zone-badge zone-badge--na"; return; }
-
-    const testInfo = testOptions.find((opt) => opt.id === testId);
+    if (!valueRaw || !ageKey) {
+      zoneSpan.textContent = "—";
+      zoneSpan.className = "zone-badge zone-badge--na test-item__zone";
+      return;
+    }
+    const testData = testTable[sex]?.[ageKey]?.[testOpt.id];
+    if (!testData) {
+      zoneSpan.textContent = "N/D";
+      zoneSpan.className = "zone-badge zone-badge--na test-item__zone";
+      return;
+    }
     let ok = false;
-
-    if (testInfo.better === "high") {
-      const min = testData[0];
-      ok = Number(valueRaw) >= min;
+    if (testOpt.better === "high") {
+      ok = Number(valueRaw) >= testData[0];
     } else {
-      const maxTime = testData[0];
       const value = toSeconds(valueRaw);
-      const maxSeconds = toSeconds(maxTime);
+      const maxSeconds = toSeconds(testData[0]);
       ok = value !== null && maxSeconds !== null && value <= maxSeconds;
     }
-
     zoneSpan.textContent = ok ? "Zona Saudável" : "Zona de Melhoria";
-    zoneSpan.className = ok ? "zone-badge zone-badge--ok" : "zone-badge zone-badge--needs";
-    unitInput.value = testInfo.unit;
+    zoneSpan.className = ok ? "zone-badge zone-badge--ok test-item__zone" : "zone-badge zone-badge--needs test-item__zone";
   };
 
-  testSelect.addEventListener("change", updateZone);
   resultInput.addEventListener("input", updateZone);
-
-  return row;
+  return item;
 };
 
 const renderTests = () => {
-  elements.testsTable.querySelectorAll(".table__row:not(.table__header)").forEach((row) => row.remove());
-  if (state.tests.length === 0) {
-    elements.testsTable.appendChild(buildTestRow());
-    return;
-  }
-
-  state.tests.forEach((test) => {
-    const row = buildTestRow();
-    const select = row.querySelector("select");
-    const inputs = row.querySelectorAll("input");
-    select.value = test.id;
-    inputs[0].value = test.value;
-    inputs[1].value = test.unit;
-    elements.testsTable.appendChild(row);
-    inputs[0].dispatchEvent(new Event("input"));
+  const table = elements.testsTable;
+  if (!table) return;
+  table.innerHTML = "";
+  const categories = [...new Set(testOptions.map((t) => t.category))];
+  categories.forEach((cat) => {
+    const header = document.createElement("div");
+    header.className = "tests-category";
+    header.innerHTML = `<span class="tests-category__label">${cat}</span>`;
+    table.appendChild(header);
+    testOptions.filter((t) => t.category === cat).forEach((opt) => {
+      const item = buildTestItem(opt);
+      const saved = state.tests.find((t) => t.id === opt.id);
+      if (saved) {
+        const inp = item.querySelector(".test-item__input");
+        if (inp) { inp.value = saved.value; inp.dispatchEvent(new Event("input")); }
+      }
+      table.appendChild(item);
+    });
   });
 };
 
 const saveTests = () => {
-  const rows = elements.testsTable.querySelectorAll(".table__row:not(.table__header)");
+  const items = elements.testsTable.querySelectorAll(".test-item");
   const collected = [];
-  rows.forEach((row) => {
-    const select = row.querySelector("select");
-    const inputs = row.querySelectorAll("input");
-    const zone = row.querySelector("span")?.textContent || "-";
-    if (!inputs[0].value) return;
-    collected.push({
-      id: select.value,
-      value: inputs[0].value,
-      unit: inputs[1].value,
-      zone,
-    });
+  items.forEach((item) => {
+    const input  = item.querySelector(".test-item__input");
+    const unit   = item.querySelector(".test-item__unit")?.textContent || "";
+    const badge  = item.querySelector(".zone-badge");
+    if (!input?.value?.trim()) return;
+    collected.push({ id: item.dataset.testId, value: input.value, unit, zone: badge?.textContent || "-" });
   });
   state.tests = collected;
-  // Health data is NOT persisted to localStorage — kept in memory only
   updateStats();
   if (state.token && state.currentStudentId && collected.length > 0) {
     apiFetch(`/students/${state.currentStudentId}/tests`, {
       method: "POST",
       body: JSON.stringify({ tests: collected }),
-    }).catch((err) => updateAccessStatus(err.message));
+    }).catch((err) => updateAccessStatus(err.message, "error"));
   }
 };
 
@@ -749,7 +729,7 @@ const saveProfile = () => {
     consent_share: elements.consentShare.checked,
   };
   if (!state.token) {
-    updateAccessStatus("Sessão: faz login primeiro");
+    updateAccessStatus("Sessão: faz login primeiro", "error");
     return;
   }
   apiFetch("/users/me", {
@@ -761,7 +741,7 @@ const saveProfile = () => {
       localStorage.setItem("af_user", JSON.stringify(user));
       updateAccessStatus("Perfil guardado com sucesso");
     })
-    .catch((err) => updateAccessStatus(err.message));
+    .catch((err) => updateAccessStatus(err.message, "error"));
 };
 
 const registerUser = () => {
@@ -919,7 +899,7 @@ const logoutUser = () => {
 
 const saveStudent = () => {
   if (!state.token) {
-    updateAccessStatus("Sessão: faz login primeiro");
+    updateAccessStatus("Sessão: faz login primeiro", "error");
     return;
   }
   const name = elements.studentName.value.trim();
@@ -928,7 +908,7 @@ const saveStudent = () => {
   const age = calcAgeFromBirthDate(birthDate);
   const schoolYear = elements.schoolYear.value.trim();
   if (!name || !sex || (!birthDate && !age)) {
-    updateAccessStatus("Validação: preenche nome, sexo e data de nascimento");
+    updateAccessStatus("Validação: preenche nome, sexo e data de nascimento", "error");
     return;
   }
   apiFetch("/students", {
@@ -941,12 +921,12 @@ const saveStudent = () => {
       updateAccessStatus(`Aluno guardado: ${student.name}`);
       refreshTopbarStats();
     })
-    .catch((err) => updateAccessStatus(err.message));
+    .catch((err) => updateAccessStatus(err.message, "error"));
 };
 
 const saveBiometrics = () => {
   if (!state.token || !state.currentStudentId) {
-    updateAccessStatus("Biometria: guarda o aluno primeiro");
+    updateAccessStatus("Biometria: guarda o aluno primeiro", "error");
     return;
   }
   if (!state.lastBiometrics) {
@@ -959,7 +939,7 @@ const saveBiometrics = () => {
     body: JSON.stringify(state.lastBiometrics),
   })
     .then(() => updateAccessStatus("Biometria guardada"))
-    .catch((err) => updateAccessStatus(err.message));
+    .catch((err) => updateAccessStatus(err.message, "error"));
 };
 
 const buildTextReport = () => {
@@ -975,18 +955,18 @@ const buildTextReport = () => {
   const waistZoneText = elements.waistZone.textContent || "-";
   const waistVal = waistRaw ? `${waistRaw} cm — ${waistZoneText}` : "Não registado";
 
-  const rows = elements.testsTable.querySelectorAll(".table__row:not(.table__header)");
+  const rows = elements.testsTable.querySelectorAll(".test-item");
   const testsByCategory = {};
-  rows.forEach((row) => {
-    const select = row.querySelector("select");
-    const inputs = row.querySelectorAll("input");
-    const badge = row.querySelector(".zone-badge");
-    if (!inputs[0]?.value) return;
-    const selected = testOptions.find((t) => t.id === select?.value);
-    const label = selected?.label || select?.value || "-";
-    const category = selected?.category || "Outros";
+  rows.forEach((item) => {
+    const input = item.querySelector(".test-item__input");
+    const unitSpan = item.querySelector(".test-item__unit");
+    const badge = item.querySelector(".zone-badge");
+    if (!input?.value?.trim()) return;
+    const found = testOptions.find((t) => t.id === item.dataset.testId);
+    const label = found?.label || item.dataset.testId || "-";
+    const category = found?.category || "Outros";
     if (!testsByCategory[category]) testsByCategory[category] = [];
-    testsByCategory[category].push(`  ${label}: ${inputs[0].value} ${inputs[1].value} — ${badge?.textContent || "-"}`);
+    testsByCategory[category].push(`  ${label}: ${input.value} ${unitSpan?.textContent || ""} — ${badge?.textContent || "-"}`);
   });
   const testSections = Object.entries(testsByCategory).map(([category, lines]) => `${category}\n${lines.join("\n")}`);
 
@@ -996,12 +976,12 @@ const buildTextReport = () => {
   const waistAdvisory = !waistRaw ? ""
     : (waistZoneText === "Zona Saudável" || waistZoneText === "Zona Saudavel")
       ? "O perímetro da cintura encontra-se dentro dos valores de referência saudáveis."
-      : "ATENÇÃO: O Perímetro da Cintura relaciona-se com a gordura abdominal. Um perímetro elevado é considerado um fator de risco de doenças cardiometabólicas e respiratórias.";
+      : "ATENÇÃO: O Perímetro da Cintura elevado é considerado um fator de risco de doenças cardiometabólicas e respiratórias.";
 
   const now = new Date().toLocaleDateString("pt-PT");
   return (
 `===========================================
-RELATÓRIO HEALTHYTECH ATLA’NTICO — ${now}
+RELATÓRIO HEALTHYTECH ATLÂNTICO — ${now}
 Colégio Atlântico
 Educação Física — Avaliação Física
 ===========================================
@@ -1033,7 +1013,7 @@ const sendReport = () => {
   const content = buildTextReport();
   const email = elements.reportEmail.value.trim() || elements.userEmail.value.trim() || "";
   if (!email) {
-    updateAccessStatus("Relatório: insere o email do destinatário");
+    updateAccessStatus("Relatório: insere o email do destinatário", "error");
     return;
   }
   if (state.token && state.currentStudentId) {
@@ -1043,10 +1023,8 @@ const sendReport = () => {
     })
       .then(() => {
         updateAccessStatus("Relatório: enviado por email");
-        const s = document.getElementById("reportStatus");
-        if (s) { s.textContent = "Relatório enviado por email."; }
       })
-      .catch((err) => updateAccessStatus("Erro: " + err.message));
+      .catch((err) => updateAccessStatus("Erro: " + err.message, "error"));
   } else {
     const subject = encodeURIComponent("Relatório HealthyTech Atlântico");
     const body = encodeURIComponent(content);
@@ -1081,18 +1059,18 @@ const generatePDF = () => {
   const waistZoneText = elements.waistZone.textContent || "—";
   const waistVal = waistRaw ? `${waistRaw} cm` : "Não registado";
 
-  const testRows = elements.testsTable.querySelectorAll(".table__row:not(.table__header)");
+  const testRows = elements.testsTable.querySelectorAll(".test-item");
   const tests = [];
-  testRows.forEach((row) => {
-    const sel = row.querySelector("select");
-    const inputs = row.querySelectorAll("input");
-    const badge = row.querySelector(".zone-badge");
-    if (!inputs[0]?.value) return;
-    const found = testOptions.find((t) => t.id === sel?.value);
+  testRows.forEach((item) => {
+    const input   = item.querySelector(".test-item__input");
+    const unitSpan = item.querySelector(".test-item__unit");
+    const badge   = item.querySelector(".zone-badge");
+    if (!input?.value?.trim()) return;
+    const found = testOptions.find((t) => t.id === item.dataset.testId);
     tests.push({
-      label: (found?.label || sel?.value || "—").substring(0, 44),
-      result: inputs[0].value,
-      unit: inputs[1]?.value || "",
+      label: (found?.label || item.dataset.testId || "—").substring(0, 44),
+      result: input.value,
+      unit: unitSpan?.textContent || "",
       zone: badge?.textContent || "—",
     });
   });
@@ -1181,7 +1159,7 @@ const generatePDF = () => {
   // School logo (top-right)
   if (_logoImg && _logoImg.complete && _logoImg.naturalWidth > 0) {
     try {
-      doc.addImage(_logoImg, "JPEG", W - M - 26, 2, 26, 26, undefined, "FAST");
+      doc.addImage(_logoImg, "PNG", W - M - 26, 2, 26, 26, undefined, "FAST");
     } catch (e) { /* skip if logo unavailable */ }
   }
 
@@ -1207,7 +1185,7 @@ const generatePDF = () => {
   field("Sexo", sex, M + 70, y);
   field("Data de Nascimento", birthLabel, M + 115, y);
   y += 14;
-  if (age) field("Idade", `${age} anos`, M, y);
+  field("Idade", age ? `${age} anos` : "—", M, y);
   y += 14;
 
   // ════════════════════════ COMPOSIÇÃO CORPORAL ══════════════════════════════
@@ -1383,8 +1361,7 @@ const loadBiometricsHistory = async () => {
     if (Array.isArray(rows) && rows.length > 0) {
       // Show most-recent last for a chronological trend
       updateCharts([...rows].reverse());
-      const statusEl = document.getElementById("chartHistoryStatus");
-      if (statusEl) statusEl.textContent = `${rows.length} registos biométricos carregados.`;
+      toast(`${rows.length} registos biométricos carregados.`, "success");
     } else {
       updateCharts();
     }
@@ -1452,31 +1429,27 @@ const updateQuestionnaireProgress = () => {
   }
 };
 
-const validateQuestionnaireStep = (fieldIds, statusElement, missingText) => {
+const validateQuestionnaireStep = (fieldIds, missingText) => {
   const missing = fieldIds.filter((id) => {
     const value = elements[id]?.value;
     return value === undefined || String(value).trim() === "";
   });
   if (missing.length > 0) {
-    if (statusElement) statusElement.textContent = missingText;
+    toast(missingText, "error");
     return false;
   }
-  if (statusElement) statusElement.textContent = "";
   return true;
 };
 
 const submitInitial = () => {
   const valid = validateQuestionnaireStep(
     initialQuestionFields,
-    elements.questInitialStatus,
     "Preenche os 3 campos do questionário inicial."
   );
   if (!valid) return;
   sessionStorage.setItem("af_initial", "done"); // session-only flag
   elements.deferStatus.textContent = `Questionário inicial completo. ${state.defers} adiamentos usados.`;
-  if (elements.questInitialStatus) {
-    elements.questInitialStatus.textContent = "Questionário inicial submetido com sucesso.";
-  }
+  toast("Questionário inicial submetido com sucesso.", "success");
   saveQuestionnaireDraft();
   updateQuestionnaireProgress();
   if (state.token && state.currentStudentId) {
@@ -1491,7 +1464,7 @@ const submitInitial = () => {
         },
         deferredCount: state.defers,
       }),
-    }).catch((err) => updateAccessStatus(err.message));
+    }).catch((err) => updateAccessStatus(err.message, "error"));
   }
 };
 
@@ -1508,14 +1481,11 @@ const deferInitial = () => {
 const submitRoutine = () => {
   const valid = validateQuestionnaireStep(
     routineQuestionFields,
-    elements.questRoutineStatus,
     "Completa o questionário de rotina antes de submeter."
   );
   if (!valid) return;
   sessionStorage.setItem("af_routine", new Date().toISOString());
-  if (elements.questRoutineStatus) {
-    elements.questRoutineStatus.textContent = "Questionário de rotina submetido com sucesso.";
-  }
+  toast("Questionário de rotina submetido com sucesso.", "success");
   saveQuestionnaireDraft();
   updateQuestionnaireProgress();
   if (state.token && state.currentStudentId) {
@@ -1533,7 +1503,7 @@ const submitRoutine = () => {
         },
         deferredCount: state.defers,
       }),
-    }).catch((err) => updateAccessStatus(err.message));
+    }).catch((err) => updateAccessStatus(err.message, "error"));
   }
 };
 
@@ -1594,18 +1564,8 @@ const _doTriggerSos = ({ psych, teacher, psychEmail, teacherEmail }) => {
 };
 
 const populateDispensaStudents = async () => {
-  const select = elements.dispensaRecipient;
-  if (!select || select.tagName !== "SELECT") return;
-  if (!state.token) return;
-  try {
-    const result = await apiFetch("/students?limit=200");
-    const students = result?.data ?? (Array.isArray(result) ? result : []);
-    select.innerHTML = students.length
-      ? students.map((s) => `<option value="${s.id}">${s.name}${s.school_year ? " — " + s.school_year : ""}</option>`).join("")
-      : `<option value="">Sem alunos registados</option>`;
-    // Reinit/sync custom select UI after options change
-    initCustomSelect(select);
-  } catch (_) {}
+  // Student selection handled by dispensaPickerCard
+  if (!_pickerStudents.length) await loadStudentPicker();
 };
 
 const registerDispensa = async () => {
@@ -1616,27 +1576,26 @@ const registerDispensa = async () => {
   const hasMedical = elements.dispensaMedical.checked;
 
   if (!recipientId || !reason || !startDate || !endDate) {
-    elements.dispensaStatus.textContent = "Erro: Preencha todos os campos.";
+    toast("Preenche todos os campos da dispensa.", "error");
     return;
   }
   if (!state.token) {
-    elements.dispensaStatus.textContent = "Erro: N�o autenticado.";
+    toast("Sessão: faz login primeiro.", "error");
     return;
   }
   try {
-    elements.dispensaStatus.textContent = "A registar...";
     const data = await apiFetch(`/students/${recipientId}/dispensas`, {
       method: "POST",
       body: JSON.stringify({ reason, startDate, endDate, hasMedicalCertificate: hasMedical }),
     });
-    elements.dispensaStatus.textContent = `Dispensa registada (ID: ${data.id}) para aluno ${recipientId}.`;
+    toast("Dispensa registada para o aluno selecionado.", "success");
     elements.dispensaReason.value = "";
     elements.dispensaStartDate.value = "";
     elements.dispensaEndDate.value = "";
     elements.dispensaMedical.checked = false;
     state.dispensas.push(data);
   } catch (error) {
-    elements.dispensaStatus.textContent = `Erro: ${error.message}`;
+    toast(`Erro: ${error.message}`, "error");
   }
 };
 
@@ -1648,7 +1607,7 @@ let _logoImg = null; // preloaded school logo for PDF
 const preloadLogo = () => {
   _logoImg = new Image();
   _logoImg.crossOrigin = "anonymous";
-  _logoImg.src = "/assets/logos/Logo1.jpg";
+  _logoImg.src = "/assets/logos/logo.png";
 };
 
 /* ── R11: Turma KPI metrics ──────────────────────────────────────────────── */
@@ -1724,22 +1683,18 @@ const exportTurmaCSV = () => {
 
 /* ── R13: School dashboard ───────────────────────────────────────────────── */
 const loadDashboard = async () => {
-  const status = document.getElementById("dashboardStatus");
   const grid = document.getElementById("dashboardGrid");
   if (!grid) return;
-  if (!state.token) { if (status) status.textContent = "Sem sessão ativa."; return; }
+  if (!state.token) { toast("Sessão: faz login primeiro", "error"); return; }
 
-  if (status) status.textContent = "A carregar anos letivos…";
   grid.innerHTML = "";
 
   try {
     const years = await apiFetch("/classes");
     if (!Array.isArray(years) || !years.length) {
-      if (status) status.textContent = "Nenhum dado disponível.";
+      toast("Dashboard: nenhum dado disponível.");
       return;
     }
-
-    if (status) status.textContent = `A carregar ${years.length} ano(s) letivo(s)…`;
 
     const results = await Promise.all(
       years.map((year) =>
@@ -1748,8 +1703,6 @@ const loadDashboard = async () => {
           .catch(() => ({ year, students: [] }))
       )
     );
-
-    if (status) status.textContent = "";
 
     grid.innerHTML = results.map(({ year, students }) => {
       const total = students.length;
@@ -1783,7 +1736,7 @@ const loadDashboard = async () => {
             <span class="kpi-card__label">Com testes</span>
           </div>
         </div>
-        <button class="btn btn--ghost btn--sm" onclick="loadTurmaFromDashboard('${year.replace(/'/g, "\\'")}')">
+        <button class="btn btn--ghost btn--sm" data-action="loadTurma" data-year="${year.replace(/"/g, '&quot;')}">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14" style="vertical-align:middle;margin-right:4px">
             <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/>
             <path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/>
@@ -1792,20 +1745,30 @@ const loadDashboard = async () => {
       </div>`;
     }).join("");
   } catch (err) {
-    if (status) status.textContent = "Erro: " + err.message;
+    toast("Erro ao carregar dashboard: " + err.message, "error");
   }
 };
 
-// Exposed globally for inline onclick in dashboard cards
-window.loadTurmaFromDashboard = (year) => {
+const loadTurmaFromDashboard = (year) => {
   showTab("turma");
   const sel = elements.turmaYear;
-  if (sel) {
-    sel.value = year;
-    // sync custom select trigger text
-    sel.nextElementSibling?._rebuildCustomSelect?.();
-  }
+  if (sel) sel.value = year;
+  // Highlight the matching pill
+  document.querySelectorAll(".turma-year-pill").forEach((p) => {
+    p.classList.toggle("turma-year-pill--active", p.dataset.year === year);
+  });
   loadTurmaView();
+};
+
+const initTurmaYearPills = () => {
+  document.querySelectorAll(".turma-year-pill").forEach((pill) => {
+    pill.addEventListener("click", () => {
+      document.querySelectorAll(".turma-year-pill").forEach((p) => p.classList.remove("turma-year-pill--active"));
+      pill.classList.add("turma-year-pill--active");
+      if (elements.turmaYear) elements.turmaYear.value = pill.dataset.year;
+      loadTurmaView();
+    });
+  });
 };
 
 /* ── R8: Student quick-select picker ─────────────────────────────────────── */
@@ -1815,29 +1778,54 @@ const initStudentPicker = () => {
   const card = document.getElementById("studentPickerCard");
   if (!card) return;
   const role = state.user?.role;
-  // Only professors and psicólogos have the picker
   if (role !== "professor" && role !== "psicologo") {
     card.classList.add("hidden");
     return;
   }
   card.classList.remove("hidden");
 
-  const toggleBtn = document.getElementById("toggleStudentPicker");
   const searchInput = document.getElementById("studentPickerSearch");
-  toggleBtn?.addEventListener("click", () => {
-    const body = document.getElementById("studentPickerBody");
-    const isOpen = !body.classList.contains("hidden");
-    body.classList.toggle("hidden", isOpen);
-    card.classList.toggle("student-picker-card--open", !isOpen);
-    if (!isOpen) {
-      // Opened — load if not yet loaded
-      if (!_pickerStudents.length) loadStudentPicker();
-      else filterStudentPicker();
-      searchInput?.focus();
+  const clearBtn    = document.getElementById("pickerClear");
+  const listEl      = document.getElementById("studentPickerList");
+
+  // Show list on focus (once students loaded)
+  searchInput?.addEventListener("focus", () => {
+    if (_pickerStudents.length) {
+      filterStudentPicker();
+      listEl?.classList.remove("hidden");
     }
   });
 
-  searchInput?.addEventListener("input", filterStudentPicker);
+  // Filter + show list on input
+  searchInput?.addEventListener("input", () => {
+    const val = searchInput.value.trim();
+    clearBtn?.classList.toggle("hidden", !val);
+    filterStudentPicker();
+    listEl?.classList.remove("hidden");
+  });
+
+  // Clear button
+  clearBtn?.addEventListener("click", () => {
+    if (searchInput) searchInput.value = "";
+    clearBtn.classList.add("hidden");
+    listEl?.classList.add("hidden");
+    // Clear selected pill and state
+    const selEl = document.getElementById("pickerSelected");
+    if (selEl) selEl.classList.add("hidden");
+    state.currentStudentId = null;
+    sessionStorage.removeItem("af_student_id");
+  });
+
+  // Hide list on blur (delay to allow click inside list)
+  searchInput?.addEventListener("blur", () => {
+    setTimeout(() => {
+      const active = document.activeElement;
+      if (!active?.closest("#studentPickerList")) {
+        listEl?.classList.add("hidden");
+      }
+    }, 160);
+  });
+
   loadStudentPicker();
 };
 
@@ -1849,6 +1837,137 @@ const loadStudentPicker = async () => {
   } catch (_) {}
 };
 
+const _pickerInitials = (name) => {
+  const parts = (name || "").trim().split(/\s+/);
+  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+};
+
+/* ── Generic picker factory (Dispensas / Charts / Reports) ──────────────── */
+const _renderPickerItems = (listEl, query, onItemClick) => {
+  if (!listEl) return;
+  const q = (query || "").toLowerCase().trim();
+  const filtered = q
+    ? _pickerStudents.filter((s) => (s.name || "").toLowerCase().includes(q))
+    : _pickerStudents;
+  if (!filtered.length) {
+    listEl.innerHTML = `<p class="helper" style="padding:8px 4px">${q ? 'Sem resultados para "' + q + '".' : "Nenhum aluno registado."}</p>`;
+    return;
+  }
+  listEl.innerHTML = filtered.slice(0, 30).map((s) =>
+    `<button type="button" class="student-picker__item" data-id="${s.id}">
+      <span class="student-picker__avatar">${_pickerInitials(s.name)}</span>
+      <span class="student-picker__item-info">
+        <span class="student-picker__item-name">${s.name}</span>
+        <span class="student-picker__item-meta">${s.sex === "F" ? "Feminino" : "Masculino"} · ${s.school_year || "—"}</span>
+      </span>
+    </button>`
+  ).join("");
+  listEl.querySelectorAll(".student-picker__item").forEach((btn) => {
+    btn.addEventListener("mousedown", (e) => e.preventDefault());
+    btn.addEventListener("click", () => {
+      const student = _pickerStudents.find((s) => String(s.id) === btn.dataset.id);
+      if (student) onItemClick(student);
+    });
+  });
+};
+
+const _confirmPickerSelection = (ids, student) => {
+  const searchInput = document.getElementById(ids.search);
+  const clearBtn    = document.getElementById(ids.clear);
+  const listEl      = document.getElementById(ids.list);
+  const selEl       = document.getElementById(ids.selected);
+  if (searchInput) searchInput.value = "";
+  clearBtn?.classList.add("hidden");
+  listEl?.classList.add("hidden");
+  const deselectId = ids.card + "Deselect";
+  if (selEl && student) {
+    selEl.innerHTML = `
+      <i data-lucide="user-check" style="width:14px;height:14px;flex-shrink:0"></i>
+      <span class="student-picker__selected-name">${student.name}</span>
+      <button type="button" class="student-picker__deselect" id="${deselectId}" aria-label="Remover">
+        <i data-lucide="x"></i>
+      </button>`;
+    selEl.classList.remove("hidden");
+    lucide.createIcons({ el: selEl });
+  }
+  return deselectId;
+};
+
+const _initPickerInstance = (ids, onSelect) => {
+  const card = document.getElementById(ids.card);
+  if (!card) return;
+  const role = state.user?.role;
+  if (role !== "professor" && role !== "psicologo") {
+    card.classList.add("hidden");
+    return;
+  }
+  card.classList.remove("hidden");
+  const searchInput = document.getElementById(ids.search);
+  const clearBtn    = document.getElementById(ids.clear);
+  const listEl      = document.getElementById(ids.list);
+  const selEl       = document.getElementById(ids.selected);
+  const showList = () => {
+    _renderPickerItems(listEl, searchInput?.value || "", (student) => {
+      const deselectId = _confirmPickerSelection(ids, student);
+      onSelect(student);
+      document.getElementById(deselectId)?.addEventListener("click", () => {
+        if (selEl) selEl.classList.add("hidden");
+        onSelect(null);
+      }, { once: true });
+    });
+    listEl?.classList.remove("hidden");
+  };
+  searchInput?.addEventListener("focus", () => {
+    if (_pickerStudents.length) showList();
+  });
+  searchInput?.addEventListener("input", () => {
+    clearBtn?.classList.toggle("hidden", !searchInput.value.trim());
+    showList();
+  });
+  clearBtn?.addEventListener("click", () => {
+    if (searchInput) searchInput.value = "";
+    clearBtn.classList.add("hidden");
+    listEl?.classList.add("hidden");
+    if (selEl) selEl.classList.add("hidden");
+    onSelect(null);
+  });
+  searchInput?.addEventListener("blur", () => {
+    setTimeout(() => {
+      if (!document.activeElement?.closest("#" + ids.list)) {
+        listEl?.classList.add("hidden");
+      }
+    }, 160);
+  });
+};
+
+const initDispensaPicker = () => _initPickerInstance(
+  { card: "dispensaPickerCard", search: "dispensaPickerSearch", clear: "dispensaPickerClear", list: "dispensaPickerList", selected: "dispensaPickerSelected" },
+  (student) => {
+    const inp = document.getElementById("dispensaStudentId");
+    if (inp) inp.value = student ? student.id : "";
+  }
+);
+
+const initChartsPicker = () => _initPickerInstance(
+  { card: "chartsPickerCard", search: "chartsPickerSearch", clear: "chartsPickerClear", list: "chartsPickerList", selected: "chartsPickerSelected" },
+  (student) => {
+    if (!student) { state.currentStudentId = null; sessionStorage.removeItem("af_student_id"); return; }
+    state.currentStudentId = student.id;
+    sessionStorage.setItem("af_student_id", String(student.id));
+    loadBiometricsHistory();
+  }
+);
+
+const initReportsPicker = () => _initPickerInstance(
+  { card: "reportsPickerCard", search: "reportsPickerSearch", clear: "reportsPickerClear", list: "reportsPickerList", selected: "reportsPickerSelected" },
+  (student) => {
+    if (!student) { state.currentStudentId = null; sessionStorage.removeItem("af_student_id"); return; }
+    state.currentStudentId = student.id;
+    sessionStorage.setItem("af_student_id", String(student.id));
+  }
+);
+
 const filterStudentPicker = () => {
   const q = (document.getElementById("studentPickerSearch")?.value || "").toLowerCase().trim();
   const listEl = document.getElementById("studentPickerList");
@@ -1859,18 +1978,25 @@ const filterStudentPicker = () => {
     : _pickerStudents;
 
   if (!filtered.length) {
-    listEl.innerHTML = `<p class="helper" style="padding:8px 0">${q ? "Nenhum resultado para \"" + q + "\"." : "Nenhum aluno registado."}</p>`;
+    listEl.innerHTML = `<p class="helper" style="padding:8px 4px">${q ? "Sem resultados para \"" + q + "\"." : "Nenhum aluno registado."}</p>`;
     return;
   }
 
-  listEl.innerHTML = filtered.slice(0, 25).map((s) =>
+  listEl.innerHTML = filtered.slice(0, 30).map((s) =>
     `<button type="button" class="student-picker__item" data-id="${s.id}">
-      <span class="student-picker__item-name">${s.name}</span>
-      <span class="student-picker__item-meta">${s.sex === "F" ? "Feminino" : "Masculino"} · ${s.school_year || "—"}</span>
+      <span class="student-picker__avatar">${_pickerInitials(s.name)}</span>
+      <span class="student-picker__item-info">
+        <span class="student-picker__item-name">${s.name}</span>
+        <span class="student-picker__item-meta">${s.sex === "F" ? "Feminino" : "Masculino"} · ${s.school_year || "—"}</span>
+      </span>
     </button>`
   ).join("");
 
   listEl.querySelectorAll(".student-picker__item").forEach((btn) => {
+    btn.addEventListener("mousedown", (e) => {
+      // Prevent blur from firing before click
+      e.preventDefault();
+    });
     btn.addEventListener("click", () => {
       const student = _pickerStudents.find((s) => String(s.id) === btn.dataset.id);
       if (student) loadStudentIntoForm(student);
@@ -1906,11 +2032,30 @@ const loadStudentIntoForm = (student) => {
   state.currentStudentId = student.id;
   sessionStorage.setItem("af_student_id", String(student.id));
 
-  // Close picker
-  const body = document.getElementById("studentPickerBody");
-  if (body) body.classList.add("hidden");
-  const card = document.getElementById("studentPickerCard");
-  if (card) card.classList.remove("student-picker-card--open");
+  // Clear search input + hide list
+  const searchInput = document.getElementById("studentPickerSearch");
+  if (searchInput) searchInput.value = "";
+  const clearBtn = document.getElementById("pickerClear");
+  if (clearBtn) clearBtn.classList.add("hidden");
+  document.getElementById("studentPickerList")?.classList.add("hidden");
+
+  // Show selected pill
+  const selEl = document.getElementById("pickerSelected");
+  if (selEl) {
+    selEl.innerHTML = `
+      <i data-lucide="user-check" style="width:14px;height:14px;flex-shrink:0"></i>
+      <span class="student-picker__selected-name">${student.name}</span>
+      <button type="button" class="student-picker__deselect" id="pickerDeselect" aria-label="Remover aluno">
+        <i data-lucide="x"></i>
+      </button>`;
+    selEl.classList.remove("hidden");
+    lucide.createIcons({ el: selEl });
+    document.getElementById("pickerDeselect")?.addEventListener("click", () => {
+      selEl.classList.add("hidden");
+      state.currentStudentId = null;
+      sessionStorage.removeItem("af_student_id");
+    });
+  }
 
   updateAccessStatus(`Aluno carregado: ${student.name}`);
 
@@ -1925,30 +2070,27 @@ const loadTurmaView = async () => {
   // native select value is always kept in sync by the custom-select component
   const year = (elements.turmaYear?.value || "").trim();
   if (!year) {
-    if (elements.turmaStatus) elements.turmaStatus.textContent = "Seleciona um ano letivo primeiro.";
     toast("Turma: seleciona um ano letivo", "error");
     return;
   }
   if (!state.token) {
-    if (elements.turmaStatus) elements.turmaStatus.textContent = "Sem sessao ativa.";
+    toast("Sessão: faz login primeiro", "error");
     return;
   }
   try {
-    if (elements.turmaStatus) elements.turmaStatus.textContent = "A carregar...";
     const students = await apiFetch("/classes/report?year=" + encodeURIComponent(year));
     _turmaStudents = Array.isArray(students) ? students : [];
     renderTurmaTable(_turmaStudents);
     renderTurmaMetrics(_turmaStudents);
     renderTurmaChart(_turmaStudents);
-    if (elements.turmaStatus) elements.turmaStatus.textContent = _turmaStudents.length + " aluno(s) encontrado(s).";
     const exportRow = document.getElementById("turmaExportRow");
     if (exportRow) exportRow.style.display = _turmaStudents.length ? "flex" : "none";
     // Show the results section once data is loaded
     const resultsSection = document.getElementById("turmaResultsSection");
     if (resultsSection) resultsSection.classList.toggle("hidden", !_turmaStudents.length);
     if (_turmaStudents.length > 0) toast("Turma carregada: " + _turmaStudents.length + " aluno(s)", "success");
+    else toast("Nenhum aluno encontrado para este ano letivo.", "error");
   } catch (err) {
-    if (elements.turmaStatus) elements.turmaStatus.textContent = "Erro: " + err.message;
     toast("Erro ao carregar turma: " + err.message, "error");
   }
 };
@@ -2001,7 +2143,7 @@ const renderTurmaChart = (students) => {
 const NAV_TABS = {
   aluno:     ["bio", "tests", "quest", "sos", "reports", "protocols"],
   professor: ["bio", "tests", "turma", "dispensas", "reports", "charts", "dashboard", "protocols"],
-  psicologo: ["sos", "reports", "protocols"],
+  psicologo: ["sos"],
   pais:      ["reports", "protocols"],
 };
 
@@ -2051,6 +2193,7 @@ const showTab = (tabId) => {
   if (tabId === "dispensas") populateDispensaStudents();
   if (tabId === "perfil") populateProfileTab();
   if (tabId === "dashboard") loadDashboard();
+  if (tabId === "turma") { if (elements.turmaYear?.value) loadTurmaView(); }
   if (tabId === "sos") {
     const role = state.user?.role;
     const isStaff = role === "professor" || role === "psicologo";
@@ -2155,6 +2298,10 @@ const showApp = (user) => {
   showTab(firstTab);
   updateStats();
   initStudentPicker();
+  initDispensaPicker();
+  initChartsPicker();
+  initReportsPicker();
+  initTurmaYearPills();
   preloadLogo();
   // Re-initialize all Lucide icons after app shell becomes visible
   requestAnimationFrame(() => { if (typeof lucide !== "undefined") lucide.createIcons(); });
@@ -2162,7 +2309,34 @@ const showApp = (user) => {
     const role = state.user?.role || user?.role || "aluno";
     buildBottomNav(role);
     refreshTopbarStats();
+    // Auto-load student record for roles that need one pre-selected
+    autoLoadStudentForRole(role);
   });
+};
+
+/* Auto-load the relevant student after login so reports / tests work immediately */
+const autoLoadStudentForRole = async (role) => {
+  if (role !== "aluno" && role !== "pais") return;
+  // Avoid re-loading if already set from session storage
+  if (state.currentStudentId) return;
+  try {
+    const result = await apiFetch("/students?limit=1");
+    const students = result?.data ?? (Array.isArray(result) ? result : []);
+    if (!students.length) return;
+    const s = students[0];
+    state.currentStudentId = s.id;
+    sessionStorage.setItem("af_student_id", String(s.id));
+    // Populate bio form fields so IMC / report generation work
+    if (elements.studentName) elements.studentName.value = s.name || "";
+    const sexSel = document.getElementById("studentSex");
+    if (sexSel) { sexSel.value = s.sex || ""; sexSel._syncPills?.(); }
+    const yearSel = document.getElementById("schoolYear");
+    if (yearSel) yearSel.value = s.school_year || "";
+    if (elements.studentBirthDate) {
+      elements.studentBirthDate.value = s.birth_date ? s.birth_date.split("T")[0] : "";
+    }
+    if (role === "pais") toast(`Educando carregado: ${s.name}`, "success");
+  } catch (_) {}
 };
 
 const applyRoleVisibility = () => {}; // replaced by tab navigation
@@ -2761,28 +2935,25 @@ const initPWAInstall = () => {
 const changePassword = () => {
   const current = document.getElementById("currentPassword")?.value.trim();
   const next = document.getElementById("newPassword")?.value.trim();
-  const status = document.getElementById("changePasswordStatus");
   if (!current || !next) {
-    if (status) status.textContent = "Preenche os dois campos.";
+    toast("Preenche os dois campos.", "error");
     return;
   }
   if (next.length < 8) {
-    if (status) status.textContent = "A nova palavra-passe deve ter pelo menos 8 caracteres.";
+    toast("A nova palavra-passe deve ter pelo menos 8 caracteres.", "error");
     return;
   }
-  if (!state.token) { if (status) status.textContent = "Sem sessão ativa."; return; }
+  if (!state.token) { toast("Sem sessão ativa.", "error"); return; }
   apiFetch("/users/me/password", {
     method: "PUT",
     body: JSON.stringify({ currentPassword: current, newPassword: next }),
   })
     .then(() => {
-      if (status) status.textContent = "";
       toast("Palavra-passe alterada com sucesso", "success");
       document.getElementById("currentPassword").value = "";
       document.getElementById("newPassword").value = "";
     })
     .catch((err) => {
-      if (status) status.textContent = err.message;
       toast(err.message, "error");
     });
 };
@@ -2818,9 +2989,7 @@ const init = () => {
   elements.calcImc?.addEventListener("click", calculateImc);
   elements.saveStudent?.addEventListener("click", saveStudent);
   elements.saveBiometrics?.addEventListener("click", saveBiometrics);
-  elements.addTestRow?.addEventListener("click", () => {
-    elements.testsTable.appendChild(buildTestRow());
-  });
+  elements.addTestRow?.addEventListener("click", () => { /* removed — tests are pre-listed */ });
   elements.saveTests?.addEventListener("click", saveTests);
   elements.saveAccess?.addEventListener("click", saveProfile);
   elements.registerUser?.addEventListener("click", registerUser);
@@ -2847,6 +3016,10 @@ const init = () => {
   elements.triggerSos?.addEventListener("click", triggerSos);
   elements.registerDispensa?.addEventListener("click", registerDispensa);
   elements.loadTurma?.addEventListener("click", loadTurmaView);
+  document.getElementById("dashboardGrid")?.addEventListener("click", (e) => {
+    const btn = e.target.closest("[data-action='loadTurma']");
+    if (btn) loadTurmaFromDashboard(btn.dataset.year);
+  });
   document.getElementById("exportTurmaCSV")?.addEventListener("click", exportTurmaCSV);
   document.getElementById("changePasswordBtn")?.addEventListener("click", changePassword);
 

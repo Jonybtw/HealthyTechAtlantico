@@ -154,7 +154,7 @@
 [data-theme="dark"] .result {
   background: linear-gradient(135deg, var(--card-2) 0%, var(--card) 100%);
 }
-[data-theme="dark"] .toast { background: #1e3040; color: var(--ink); }
+[data-theme="dark"] .toast { background: #1e3040; color: #fff; }
 [data-theme="dark"] #themeToggle svg { transform: rotate(180deg); }
 
 /* ── Date/time inputs ─────────────────────────────── */

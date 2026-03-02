@@ -10,16 +10,16 @@
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
     <meta name="apple-mobile-web-app-title" content="HealthyTech Atlântico" />
-    <link rel="apple-touch-icon" href="icon-192.png" />
+    <link rel="apple-touch-icon" href="assets/logos/logo.png" />
     <!-- Description -->
     <meta name="description" content="Plataforma escolar de avaliação física, acompanhamento longitudinal e bem-estar. Colégio Atlântico." />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300..800&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300..800&family=DM+Serif+Display:ital@0;1&family=Space+Grotesk:wght@300..700&family=Montserrat:wght@400;500;600;700;800&family=Raleway:wght@300;400;500;600&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="styles.css" />
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
-    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/lucide@0.439.0/dist/umd/lucide.min.js"></script>
   </head>
   <body>
 
@@ -41,8 +41,7 @@
     <div id="loadingScreen" class="loading-screen">
       <div class="loading-screen__inner">
         <div class="loading-screen__logo">
-          <img src="/assets/logos/Logo1.jpg" alt="Colégio Atlântico" class="loading-screen__logo-img loading-screen__logo-img--light" />
-          <img src="/assets/logos/Logo3.jpg" alt="Colégio Atlântico" class="loading-screen__logo-img loading-screen__logo-img--dark" />
+          <img src="/assets/logos/logo.png" alt="Colégio Atlântico" class="loading-screen__logo-img" />
           <span>HealthyTech Atlântico</span>
         </div>
         <div class="loading-screen__spinner"></div>
@@ -57,8 +56,7 @@
 
       <header class="topbar">
         <span class="topbar__logo">
-          <img src="/assets/logos/Logo1.jpg" alt="Colégio Atlântico" class="topbar__logo-img topbar__logo-img--light" />
-          <img src="/assets/logos/Logo3.jpg"  alt="Colégio Atlântico" class="topbar__logo-img topbar__logo-img--dark" />
+          <img src="/assets/logos/logo.png" alt="Colégio Atlântico" class="topbar__logo-img" />
           HealthyTech Atlântico
         </span>
         <span class="topbar__divider" aria-hidden="true"></span>
@@ -80,14 +78,15 @@
 
           <!-- R8: Student quick-select picker (professor/psicologo only) -->
           <div class="card student-picker-card hidden" id="studentPickerCard">
-            <div class="student-picker__header">
-              <p class="section-label" style="margin:0"><i data-lucide="users" class="field-icon"></i>Pesquisar aluno existente</p>
-              <button class="btn btn--ghost btn--sm" id="toggleStudentPicker" type="button" aria-label="Abrir pesquisa"><i data-lucide="chevron-down" id="pickerChevron"></i></button>
+            <div class="student-picker__search-wrap">
+              <i data-lucide="search" class="student-picker__search-icon"></i>
+              <input id="studentPickerSearch" type="text" placeholder="Pesquisar aluno existente…" class="student-picker__input" autocomplete="off" />
+              <button type="button" class="student-picker__clear hidden" id="pickerClear" aria-label="Limpar">
+                <i data-lucide="x"></i>
+              </button>
             </div>
-            <div id="studentPickerBody" class="hidden">
-              <input id="studentPickerSearch" type="text" placeholder="Nome do aluno..." class="student-picker__input" autocomplete="off" />
-              <div id="studentPickerList" class="student-picker__list"></div>
-            </div>
+            <div id="studentPickerList" class="student-picker__list hidden"></div>
+            <div id="pickerSelected" class="student-picker__selected hidden"></div>
           </div>
           <div class="card">
             <p class="section-label">Dados do aluno</p>
@@ -139,7 +138,6 @@
               <button class="btn" id="saveStudent"><i data-lucide="user-check" class="btn-icon"></i>Guardar aluno</button>
               <button class="btn btn--ghost" id="saveBiometrics"><i data-lucide="heart" class="btn-icon"></i>Guardar biometria</button>
             </div>
-            <p class="helper" id="bioStatus"></p>
           </div>
         </section>
 
@@ -147,11 +145,8 @@
         <section class="tab-panel hidden" id="tab-tests" data-tab="tests">
           <div class="page-header"><h2>Bateria de Testes Físicos</h2><p class="helper">Classificação automática ZAF por idade e sexo — guarda o aluno primeiro</p></div>
           <div class="card">
-            <div class="table" id="testsTable">
-              <div class="table__row table__header"><span>Teste</span><span>Resultado</span><span>Unidade</span><span>ZAF</span></div>
-            </div>
+            <div class="tests-grouped" id="testsTable"></div>
             <div class="actions">
-              <button class="btn btn--ghost" id="addTestRow"><i data-lucide="plus" class="btn-icon"></i>Adicionar teste</button>
               <button class="btn" id="saveTests"><i data-lucide="save" class="btn-icon"></i>Guardar testes</button>
             </div>
           </div>
@@ -207,7 +202,6 @@
               <button class="btn" id="submitInitial"><i data-lucide="send" class="btn-icon"></i>Submeter inicial</button>
               <button class="btn btn--ghost" id="deferInitial"><i data-lucide="clock" class="btn-icon"></i>Adiar</button>
             </div>
-            <p class="helper" id="questInitialStatus"></p>
           </div>
           <div class="card questionnaire">
             <p class="section-label">Passo 2</p>
@@ -265,7 +259,6 @@
             <div class="actions">
               <button class="btn" id="submitRoutine"><i data-lucide="send" class="btn-icon"></i>Submeter rotina</button>
             </div>
-            <p class="helper" id="questRoutineStatus"></p>
           </div>
         </section>
         <!-- SOS -->
@@ -330,6 +323,15 @@
         <!-- Relatórios -->
         <section class="tab-panel hidden" id="tab-reports" data-tab="reports">
           <div class="page-header"><h2>Relatório</h2><p class="helper">Gera o PDF do relatório ou envia-o por email ao Encarregado de Educação</p></div>
+          <div class="card student-picker-card hidden" id="reportsPickerCard">
+            <div class="student-picker__search-wrap">
+              <i data-lucide="search" class="student-picker__search-icon"></i>
+              <input id="reportsPickerSearch" type="text" placeholder="Pesquisar aluno…" class="student-picker__input" autocomplete="off" />
+              <button type="button" class="student-picker__clear hidden" id="reportsPickerClear" aria-label="Limpar"><i data-lucide="x"></i></button>
+            </div>
+            <div id="reportsPickerList" class="student-picker__list hidden"></div>
+            <div id="reportsPickerSelected" class="student-picker__selected hidden"></div>
+          </div>
           <div class="card">
             <p class="section-label">Transferir PDF</p>
             <p class="helper">Documento formatado com dados do aluno, IMC, testes ZAF e mensagens de acompanhamento.</p>
@@ -342,13 +344,21 @@
             <div class="actions">
               <button class="btn btn--ghost" id="sendReport"><i data-lucide="send" class="btn-icon"></i>Enviar por email</button>
             </div>
-            <p class="helper" id="reportStatus"></p>
           </div>
         </section>
 
         <!-- Análise -->
         <section class="tab-panel hidden" id="tab-charts" data-tab="charts">
           <div class="page-header"><h2>Análise Longitudinal</h2><p class="helper">Evolução individual e desempenho global da turma ao longo dos anos</p></div>
+          <div class="card student-picker-card hidden" id="chartsPickerCard">
+            <div class="student-picker__search-wrap">
+              <i data-lucide="search" class="student-picker__search-icon"></i>
+              <input id="chartsPickerSearch" type="text" placeholder="Pesquisar aluno…" class="student-picker__input" autocomplete="off" />
+              <button type="button" class="student-picker__clear hidden" id="chartsPickerClear" aria-label="Limpar"><i data-lucide="x"></i></button>
+            </div>
+            <div id="chartsPickerList" class="student-picker__list hidden"></div>
+            <div id="chartsPickerSelected" class="student-picker__selected hidden"></div>
+          </div>
           <div class="card">
             <p class="section-label">Adicionar ano letivo</p>
             <div class="two-col">
@@ -358,7 +368,7 @@
             <button class="btn btn--ghost" id="addYear"><i data-lucide="plus-circle" class="btn-icon"></i>Adicionar ano</button>
             <hr class="card-divider" />
             <p class="section-label">IMC do aluno ao longo do tempo</p>
-            <p class="helper" id="chartHistoryStatus">Abre este separador com um aluno selecionado para ver o histórico real de IMC.</p>
+            <p class="helper">Abre este separador com um aluno selecionado para ver o histórico real de IMC.</p>
             <canvas id="studentChart" height="140"></canvas>
             <hr class="card-divider" />
             <p class="section-label">IMC médio da turma</p>
@@ -370,12 +380,29 @@
         <section class="tab-panel hidden" id="tab-turma" data-tab="turma">
           <div class="page-header"><h2>Vista de Turma</h2><p class="helper">Consulta e filtra o desempenho físico global por ano letivo</p></div>
           <div class="card">
-            <p class="section-label">Filtrar por ano letivo</p>
-            <div class="actions" style="align-items:flex-end">
-              <div class="field" style="margin:0;flex:1"><span class="field__label"><i data-lucide="calendar" class="field-icon"></i>Ano letivo</span><select id="turmaYear"><option value="">-- Todos os anos --</option><option value="2020/2021">2020/2021</option><option value="2021/2022">2021/2022</option><option value="2022/2023">2022/2023</option><option value="2023/2024">2023/2024</option><option value="2024/2025">2024/2025</option><option value="2025/2026">2025/2026</option><option value="2026/2027">2026/2027</option><option value="2027/2028">2027/2028</option><option value="2028/2029">2028/2029</option></select></div>
-              <button class="btn btn--sm" id="loadTurma" style="white-space:nowrap"><i data-lucide="search" class="btn-icon"></i>Carregar</button>
+              <select id="turmaYear" class="hidden">
+              <option value=""></option>
+              <option value="2020/2021">2020/2021</option>
+              <option value="2021/2022">2021/2022</option>
+              <option value="2022/2023">2022/2023</option>
+              <option value="2023/2024">2023/2024</option>
+              <option value="2024/2025">2024/2025</option>
+              <option value="2025/2026">2025/2026</option>
+              <option value="2026/2027">2026/2027</option>
+              <option value="2027/2028">2027/2028</option>
+              <option value="2028/2029">2028/2029</option>
+            </select>
+            <div class="turma-year-pills" id="turmaYearPills">
+              <button class="turma-year-pill" data-year="2020/2021">2020/21</button>
+              <button class="turma-year-pill" data-year="2021/2022">2021/22</button>
+              <button class="turma-year-pill" data-year="2022/2023">2022/23</button>
+              <button class="turma-year-pill" data-year="2023/2024">2023/24</button>
+              <button class="turma-year-pill" data-year="2024/2025">2024/25</button>
+              <button class="turma-year-pill" data-year="2025/2026">2025/26</button>
+              <button class="turma-year-pill" data-year="2026/2027">2026/27</button>
+              <button class="turma-year-pill" data-year="2027/2028">2027/28</button>
+              <button class="turma-year-pill" data-year="2028/2029">2028/29</button>
             </div>
-            <p class="helper" id="turmaStatus"></p>
             <div id="turmaResultsSection" class="hidden">
             <div id="turmaMetrics" class="turma-metrics hidden"></div>
             <div id="turmaTable"></div>
@@ -394,19 +421,25 @@
         <!-- Dashboard -->
         <section class="tab-panel hidden" id="tab-dashboard" data-tab="dashboard">
           <div class="page-header"><h2>Dashboard Escolar</h2><p class="helper">Resumo por ano letivo — distribuição ZAF e métricas globais</p></div>
-          <p class="helper" id="dashboardStatus"></p>
           <div id="dashboardGrid" class="dashboard-grid"></div>
         </section>
 
         <!-- Dispensas -->
         <section class="tab-panel hidden" id="tab-dispensas" data-tab="dispensas">
           <div class="page-header"><h2>Atestados e Dispensas</h2><p class="helper">Regista atestados médicos e períodos de dispensa de aula</p></div>
-          <div class="card">
-            <p class="section-label">Aluno e motivo</p>
-            <div class="two-col">
-              <div class="field"><span class="field__label"><i data-lucide="user" class="field-icon"></i>Aluno</span><select id="dispensaStudentId"><option value="">— Seleciona o aluno —</option></select></div>
-              <label class="field"><span class="field__label"><i data-lucide="file-text" class="field-icon"></i>Motivo</span><input id="dispensaReason" type="text" placeholder="Descreve o motivo da dispensa" /></label>
+          <div class="card student-picker-card hidden" id="dispensaPickerCard">
+            <div class="student-picker__search-wrap">
+              <i data-lucide="search" class="student-picker__search-icon"></i>
+              <input id="dispensaPickerSearch" type="text" placeholder="Pesquisar aluno…" class="student-picker__input" autocomplete="off" />
+              <button type="button" class="student-picker__clear hidden" id="dispensaPickerClear" aria-label="Limpar"><i data-lucide="x"></i></button>
             </div>
+            <div id="dispensaPickerList" class="student-picker__list hidden"></div>
+            <div id="dispensaPickerSelected" class="student-picker__selected hidden"></div>
+          </div>
+          <input type="hidden" id="dispensaStudentId" />
+          <div class="card">
+            <p class="section-label">Motivo</p>
+            <label class="field"><span class="field__label"><i data-lucide="file-text" class="field-icon"></i>Motivo</span><input id="dispensaReason" type="text" placeholder="Descreve o motivo da dispensa" /></label>
             <hr class="card-divider" />
             <p class="section-label">Período</p>
             <div class="two-col">
@@ -415,8 +448,9 @@
             </div>
             <label class="field field--inline"><input id="dispensaMedical" type="checkbox" /> Tem atestado médico</label>
             <hr class="card-divider" />
-            <button class="btn" id="registerDispensa"><i data-lucide="file-plus" class="btn-icon"></i>Registar dispensa</button>
-            <p class="helper" id="dispensaStatus"></p>
+            <div class="actions">
+              <button class="btn" id="registerDispensa"><i data-lucide="file-plus" class="btn-icon"></i>Registar dispensa</button>
+            </div>
           </div>
         </section>
 
@@ -573,7 +607,6 @@
             <div class="actions">
               <button class="btn" id="changePasswordBtn"><i data-lucide="key" class="btn-icon"></i><span data-i18n="save_pass">Guardar palavra-passe</span></button>
             </div>
-            <p class="helper" id="changePasswordStatus"></p>
           </div>
           <div class="card">
             <p class="section-label" data-i18n="session">Sessão</p>
