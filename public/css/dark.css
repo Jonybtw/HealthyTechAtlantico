@@ -1,0 +1,164 @@
+/* ═══════════════════════════════════════════════════
+   DARK MODE OVERRIDES
+═══════════════════════════════════════════════════ */
+[data-theme="dark"] {
+  color-scheme: dark;
+  --ink:        #dce9ee;
+  --ink-2:      #b8d0da;
+  --muted:      #7fa2b0;
+  --muted-2:    #527a8a;
+  --sand:       #1a2a32;
+  --sand-2:     #1e3040;
+  --sea:        #e8a810;
+  --sea-2:      #f5c040;
+  --sea-dk:     #f8d868;
+  --sea-lt:     rgba(232,168,16,0.18);
+  --coral:      #f07560;
+  --coral-lt:   rgba(240,117,96,0.12);
+  --sun:        #f5c040;
+  --sun-lt:     rgba(245,192,64,0.12);
+  --mint:       #12d488;
+  --mint-lt:    rgba(18,212,136,0.12);
+  --card:       #162128;
+  --card-2:     #1c2e38;
+  --bg:         #0f1a21;
+  --line:       rgba(180,220,235,0.12);
+  --line-2:     rgba(180,220,235,0.07);
+  --shadow-xs:  0 1px 4px rgba(0,0,0,0.35);
+  --shadow-sm:  0 2px 10px rgba(0,0,0,0.45);
+  --shadow:     0 4px 28px rgba(0,0,0,0.55);
+  --shadow-lg:  0 12px 48px rgba(0,0,0,0.65);
+  --shadow-sea: 0 6px 24px rgba(232,168,16,0.28);
+  --grad-page:  linear-gradient(160deg, #0d1820 0%, #0f1a21 55%, #141f28 100%);
+  --grad-card:  linear-gradient(160deg, #162128 0%, #1c2e38 100%);
+}
+
+/* ── Login ────────────────────────────────────────── */
+[data-theme="dark"] .login-card {
+  background: rgba(22, 33, 40, 0.95);
+  box-shadow: 0 20px 64px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.07) inset;
+}
+[data-theme="dark"] .login-title {
+  font-family: "DM Serif Display", "Literata", serif;
+  font-weight: 400;
+  background: linear-gradient(135deg, #b0c6d3 0%, var(--gold) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+[data-theme="dark"] .login-logo__sub {
+  color: var(--navy-lt);
+  opacity: 0.75;
+}
+
+/* ── Topbar / Sidebar ─────────────────────────────── */
+[data-theme="dark"] .topbar {
+  background: linear-gradient(135deg, #0d2035 0%, #14304C 100%);
+  box-shadow: 0 2px 20px rgba(0,0,0,0.55);
+}
+[data-theme="dark"] .bottomnav {
+  background: linear-gradient(180deg, #0d1e2e 0%, #14304C 100%);
+  border-top-color: var(--line);
+  border-right-color: rgba(176, 198, 211, 0.12);
+}
+[data-theme="dark"] .bottomnav__item:hover:not(.active) {
+  background: rgba(176, 198, 211, 0.08);
+  color: var(--navy-lt);
+}
+[data-theme="dark"] .bottomnav__item.active {
+  background: linear-gradient(90deg, rgba(194, 151, 13, 0.22) 0%, rgba(194, 151, 13, 0.07) 100%);
+  color: #e8c46a;
+  box-shadow: inset 3px 0 0 var(--gold);
+}
+[data-theme="dark"] .sidebar-brand {
+  border-bottom-color: rgba(194, 151, 13, 0.45);
+}
+[data-theme="dark"] .sidebar-brand__name {
+  color: var(--navy-lt);
+}
+
+/* ── Loading ──────────────────────────────────────── */
+[data-theme="dark"] .loading-screen {
+  background: var(--grad-page);
+}
+[data-theme="dark"] .loading-screen__logo span {
+  background: linear-gradient(135deg, var(--navy-lt) 0%, var(--gold) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+}
+[data-theme="dark"] .loading-screen__spinner {
+  border-color: rgba(176, 198, 211, 0.18);
+  border-top-color: var(--gold);
+}
+
+/* ── Forms / Inputs ───────────────────────────────── */
+[data-theme="dark"] .field input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+[data-theme="dark"] textarea {
+  background: var(--card-2);
+  color: var(--ink);
+  border-color: var(--line);
+}
+[data-theme="dark"] .field select {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23c2970d' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+}
+
+/* ── Tables ───────────────────────────────────────── */
+[data-theme="dark"] .table__row { background: var(--card-2); }
+[data-theme="dark"] .table__row input,
+[data-theme="dark"] .table__row select {
+  background: var(--card);
+  color: var(--ink);
+  border-color: var(--line);
+}
+[data-theme="dark"] .ref-table th { background: var(--card-2); }
+[data-theme="dark"] .ref-table tbody tr:nth-child(even) td { background: var(--card-2); }
+
+/* ── Student picker ───────────────────────────────── */
+[data-theme="dark"] .student-picker__input {
+  background: var(--card-2);
+  color: var(--ink);
+  border-color: var(--line);
+}
+[data-theme="dark"] .student-picker__item:hover {
+  background: rgba(232, 168, 16, 0.08);
+}
+
+/* ── KPI / Dashboard ──────────────────────────────── */
+[data-theme="dark"] .kpi-card { background: var(--card-2); }
+[data-theme="dark"] .kpi-card--green { background: rgba(22, 160, 80, 0.08); }
+[data-theme="dark"] .kpi-card--coral { background: rgba(242, 108, 79, 0.08); }
+
+/* ── Widget overrides ─────────────────────────────── */
+[data-theme="dark"] .num-stepper { background: var(--card-2); border-color: var(--line); }
+[data-theme="dark"] .input-unit-wrap { background: var(--card-2); border-color: var(--line); }
+[data-theme="dark"] .input-unit-wrap > input { background: transparent; color: var(--ink); }
+[data-theme="dark"] .pill-select__btn { background: var(--card-2); border-color: var(--line); color: var(--muted); }
+[data-theme="dark"] .pill-select--toggle { background: var(--card-2); border-color: var(--line); }
+
+/* ── Custom select (dark) ─────────────────────────── */
+[data-theme="dark"] .custom-select__trigger { background: var(--card-2); }
+[data-theme="dark"] .custom-select__list {
+  background: var(--card-2);
+  border-color: rgba(232, 168, 16, 0.4);
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.4), 0 2px 10px rgba(0, 0, 0, 0.2);
+}
+[data-theme="dark"] .custom-select__option:hover { background: rgba(232, 168, 16, 0.1); }
+[data-theme="dark"] .custom-select__option.selected {
+  background: linear-gradient(90deg, rgba(232, 168, 16, 0.15) 0%, transparent 100%);
+  color: var(--sea-lt);
+}
+
+/* ── Misc ─────────────────────────────────────────── */
+[data-theme="dark"] .result {
+  background: linear-gradient(135deg, var(--card-2) 0%, var(--card) 100%);
+}
+[data-theme="dark"] .toast { background: #1e3040; color: var(--ink); }
+[data-theme="dark"] #themeToggle svg { transform: rotate(180deg); }
+
+/* ── Date/time inputs ─────────────────────────────── */
+[data-theme="dark"] input[type="date"],
+[data-theme="dark"] input[type="time"] {
+  color-scheme: dark;
+}

@@ -15,7 +15,7 @@
     <meta name="description" content="Plataforma escolar de avaliação física, acompanhamento longitudinal e bem-estar. Colégio Atlântico." />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300..700&family=Literata:ital,opsz,wght@0,7..72,300..700;1,7..72,300..700&family=Syne:wght@700;800&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300..800&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="styles.css" />
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
@@ -57,7 +57,7 @@
 
       <header class="topbar">
         <span class="topbar__logo">
-          <img src="/assets/logos/Logo11.jpg" alt="Colégio Atlântico" class="topbar__logo-img topbar__logo-img--light" />
+          <img src="/assets/logos/Logo1.jpg" alt="Colégio Atlântico" class="topbar__logo-img topbar__logo-img--light" />
           <img src="/assets/logos/Logo3.jpg"  alt="Colégio Atlântico" class="topbar__logo-img topbar__logo-img--dark" />
           HealthyTech Atlântico
         </span>
@@ -376,6 +376,7 @@
               <button class="btn btn--sm" id="loadTurma" style="white-space:nowrap"><i data-lucide="search" class="btn-icon"></i>Carregar</button>
             </div>
             <p class="helper" id="turmaStatus"></p>
+            <div id="turmaResultsSection" class="hidden">
             <div id="turmaMetrics" class="turma-metrics hidden"></div>
             <div id="turmaTable"></div>
             <div class="actions" id="turmaExportRow" style="margin-top:8px; display:none">
@@ -385,6 +386,7 @@
             <p class="section-label">Distribuição ZAF — IMC</p>
             <div class="turma-chart-wrap">
               <canvas id="turmaChart"></canvas>
+            </div>
             </div>
           </div>
         </section>

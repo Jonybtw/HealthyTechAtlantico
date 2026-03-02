@@ -460,6 +460,17 @@ const apiFetch = async (path, options = {}) => {
   });
 
   if (!response.ok) {
+    if (response.status === 401) {
+      state.token = "";
+      state.user = null;
+      localStorage.removeItem("af_token");
+      localStorage.removeItem("af_user");
+      sessionStorage.removeItem("af_token");
+      sessionStorage.removeItem("af_user");
+      showLogin();
+      toast("Sessão expirada: inicia sessão novamente", "error");
+      throw new Error("Sessão expirada");
+    }
     const error = await response.json().catch(() => ({ error: "Erro" }));
     throw new Error(error.error || "Erro de API");
   }
@@ -738,7 +749,7 @@ const saveProfile = () => {
     consent_share: elements.consentShare.checked,
   };
   if (!state.token) {
-    updateAccessStatus("Sem sess\u00e3o ativa. Faz login primeiro.");
+    updateAccessStatus("Sessão: faz login primeiro");
     return;
   }
   apiFetch("/users/me", {
@@ -748,7 +759,7 @@ const saveProfile = () => {
     .then((user) => {
       state.user = user;
       localStorage.setItem("af_user", JSON.stringify(user));
-      updateAccessStatus("Perfil guardado com sucesso.");
+      updateAccessStatus("Perfil guardado com sucesso");
     })
     .catch((err) => updateAccessStatus(err.message));
 };
@@ -758,11 +769,11 @@ const registerUser = () => {
   const password = elements.userPassword.value.trim();
   const role = elements.roleSelect.value;
   if (!email || !password) {
-    toast("Email e palavra-passe s\u00e3o obrigat\u00f3rios.", "error");
+    toast("Autenticação: email e palavra-passe obrigatórios", "error");
     return;
   }
   if (!role) {
-    toast("Seleciona o perfil da conta para registo.", "error");
+    toast("Registo: seleciona o perfil da conta", "error");
     return;
   }
   showLoading();
@@ -777,7 +788,7 @@ const registerUser = () => {
     .then((data) => {
       if (!data?.token || !data?.user) {
         hideLoading();
-        toast("Resposta do servidor inválida. Tenta outra vez.", "error");
+        toast("Erro: resposta do servidor inválida", "error");
         return;
       }
       state.token = data.token;
@@ -789,7 +800,7 @@ const registerUser = () => {
       localStorage.removeItem("af_token");
       localStorage.removeItem("af_user");
       showApp(state.user);
-      toast(`Bem-vindo/a! Conta criada: ${data.user.email}`, "success");
+      toast(`Registo: conta criada — ${data.user.email}`, "success");
     })
     .catch((err) => {
       hideLoading();
@@ -801,7 +812,7 @@ const loginUser = () => {
   const email = elements.userEmail.value.trim();
   const password = elements.userPassword.value.trim();
   if (!email || !password) {
-    toast("Email e palavra-passe s\u00e3o obrigat\u00f3rios.", "error");
+    toast("Autenticação: email e palavra-passe obrigatórios", "error");
     return;
   }
   showLoading();
@@ -812,7 +823,7 @@ const loginUser = () => {
     .then((data) => {
       if (!data?.token || !data?.user) {
         hideLoading();
-        toast("Resposta do servidor inválida. Tenta outra vez.", "error");
+        toast("Erro: resposta do servidor inválida", "error");
         return;
       }
       const registerFields = document.getElementById("registerFields");
@@ -831,7 +842,7 @@ const loginUser = () => {
       clearStore.removeItem("af_token");
       clearStore.removeItem("af_user");
       showApp(state.user);
-      toast(`Bem-vindo/a, ${data.user.email}`, "success");
+      toast(`Sessão iniciada: ${data.user.email}`, "success");
     })
     .catch((err) => {
       hideLoading();
@@ -908,7 +919,7 @@ const logoutUser = () => {
 
 const saveStudent = () => {
   if (!state.token) {
-    updateAccessStatus("Sem sessão ativa. Faz login primeiro.");
+    updateAccessStatus("Sessão: faz login primeiro");
     return;
   }
   const name = elements.studentName.value.trim();
@@ -917,7 +928,7 @@ const saveStudent = () => {
   const age = calcAgeFromBirthDate(birthDate);
   const schoolYear = elements.schoolYear.value.trim();
   if (!name || !sex || (!birthDate && !age)) {
-    updateAccessStatus("Preenche nome, sexo e data de nascimento do aluno.");
+    updateAccessStatus("Validação: preenche nome, sexo e data de nascimento");
     return;
   }
   apiFetch("/students", {
@@ -935,7 +946,7 @@ const saveStudent = () => {
 
 const saveBiometrics = () => {
   if (!state.token || !state.currentStudentId) {
-    updateAccessStatus("Guarda o aluno antes da biometria.");
+    updateAccessStatus("Biometria: guarda o aluno primeiro");
     return;
   }
   if (!state.lastBiometrics) {
@@ -947,7 +958,7 @@ const saveBiometrics = () => {
     method: "POST",
     body: JSON.stringify(state.lastBiometrics),
   })
-    .then(() => updateAccessStatus("Biometria guardada."))
+    .then(() => updateAccessStatus("Biometria guardada"))
     .catch((err) => updateAccessStatus(err.message));
 };
 
@@ -1022,7 +1033,7 @@ const sendReport = () => {
   const content = buildTextReport();
   const email = elements.reportEmail.value.trim() || elements.userEmail.value.trim() || "";
   if (!email) {
-    updateAccessStatus("Insere o email do destinatário no campo Email do relatório.");
+    updateAccessStatus("Relatório: insere o email do destinatário");
     return;
   }
   if (state.token && state.currentStudentId) {
@@ -1031,7 +1042,7 @@ const sendReport = () => {
       body: JSON.stringify({ content, email }),
     })
       .then(() => {
-        updateAccessStatus("Relatório enviado por email.");
+        updateAccessStatus("Relatório: enviado por email");
         const s = document.getElementById("reportStatus");
         if (s) { s.textContent = "Relatório enviado por email."; }
       })
@@ -1048,7 +1059,7 @@ const sendReport = () => {
 ═══════════════════════════════════════════════════ */
 const generatePDF = () => {
   if (!window.jspdf) {
-    toast("Biblioteca PDF não carregada. Atualiza a página.", "error");
+    toast("Erro: biblioteca PDF não carregada", "error");
     return;
   }
   const { jsPDF } = window.jspdf;
@@ -1575,7 +1586,7 @@ const _doTriggerSos = ({ psych, teacher, psychEmail, teacherEmail }) => {
     })
       .then((data) => {
         if (data.emailsSent?.length > 0) {
-          toast(`📧 Email enviado: ${data.emailsSent.join(", ")}`, "success");
+          toast(`Email enviado: ${data.emailsSent.join(", ")}`, "success");
         }
       })
       .catch((err) => toast(err.message, "error"));
@@ -1683,7 +1694,7 @@ const renderTurmaMetrics = (students) => {
 
 /* ── R14: CSV export ─────────────────────────────────────────────────────── */
 const exportTurmaCSV = () => {
-  if (!_turmaStudents.length) { toast("Carrega a turma primeiro.", "error"); return; }
+  if (!_turmaStudents.length) { toast("Exportação: carrega a turma primeiro", "error"); return; }
   const header = ["Nome", "Sexo", "Idade", "Ano Letivo", "IMC", "ZAF IMC", "Cintura (cm)", "ZAF Cintura", "N.º Testes"];
   const rows = _turmaStudents.map((s) => [
     `"${(s.name || "").replace(/"/g, '""')}"`,
@@ -1708,7 +1719,7 @@ const exportTurmaCSV = () => {
   a.click();
   document.body.removeChild(a);
   URL.revokeObjectURL(url);
-  toast("CSV exportado.", "success");
+  toast("Exportação: CSV transferido", "success");
 };
 
 /* ── R13: School dashboard ───────────────────────────────────────────────── */
@@ -1915,7 +1926,7 @@ const loadTurmaView = async () => {
   const year = (elements.turmaYear?.value || "").trim();
   if (!year) {
     if (elements.turmaStatus) elements.turmaStatus.textContent = "Seleciona um ano letivo primeiro.";
-    toast("Seleciona um ano letivo.", "error");
+    toast("Turma: seleciona um ano letivo", "error");
     return;
   }
   if (!state.token) {
@@ -1932,7 +1943,10 @@ const loadTurmaView = async () => {
     if (elements.turmaStatus) elements.turmaStatus.textContent = _turmaStudents.length + " aluno(s) encontrado(s).";
     const exportRow = document.getElementById("turmaExportRow");
     if (exportRow) exportRow.style.display = _turmaStudents.length ? "flex" : "none";
-    if (_turmaStudents.length > 0) toast("Turma carregada: " + _turmaStudents.length + " aluno(s).", "success");
+    // Show the results section once data is loaded
+    const resultsSection = document.getElementById("turmaResultsSection");
+    if (resultsSection) resultsSection.classList.toggle("hidden", !_turmaStudents.length);
+    if (_turmaStudents.length > 0) toast("Turma carregada: " + _turmaStudents.length + " aluno(s)", "success");
   } catch (err) {
     if (elements.turmaStatus) elements.turmaStatus.textContent = "Erro: " + err.message;
     toast("Erro ao carregar turma: " + err.message, "error");
@@ -1946,8 +1960,8 @@ const renderTurmaTable = (students) => {
   }
   let html = `<div class="table"><div class="table__row table__header turma-header"><span>Nome</span><span>Sexo</span><span>Idade</span><span>IMC</span><span>ZAF IMC</span><span>Cintura ZAF</span><span>Testes</span></div>`;
   students.forEach((s) => {
-    const imcOk = s.imc_zone === "Zona Saudavel" || s.imc_zone === "Zona Saud�vel";
-    const waistOk = s.waist_zone === "Zona Saudavel" || s.waist_zone === "Zona Saud�vel";
+    const imcOk = s.imc_zone === "Zona Saudavel" || s.imc_zone === "Zona Saud\u00e1vel";
+    const waistOk = s.waist_zone === "Zona Saudavel" || s.waist_zone === "Zona Saud\u00e1vel";
     html += `<div class="table__row turma-row">
       <span>${s.name}</span>
       <span>${s.sex === "F" ? "Feminino" : "Masculino"}</span>
@@ -1965,14 +1979,14 @@ const renderTurmaTable = (students) => {
 const renderTurmaChart = (students) => {
   const canvas = document.getElementById("turmaChart");
   if (!canvas) return;
-  const saudavel = students.filter((s) => s.imc_zone === "Zona Saudavel" || s.imc_zone === "Zona Saud�vel").length;
-  const melhoria = students.filter((s) => s.imc_zone && s.imc_zone !== "Zona Saudavel" && s.imc_zone !== "Zona Saud�vel").length;
+  const saudavel = students.filter((s) => s.imc_zone === "Zona Saudavel" || s.imc_zone === "Zona Saud\u00e1vel").length;
+  const melhoria = students.filter((s) => s.imc_zone && s.imc_zone !== "Zona Saudavel" && s.imc_zone !== "Zona Saud\u00e1vel").length;
   const semDados = students.length - saudavel - melhoria;
   if (turmaChart) turmaChart.destroy();
   turmaChart = new Chart(canvas, {
     type: "doughnut",
     data: {
-      labels: ["Zona Saud�vel", "Zona de Melhoria", "Sem dados"],
+      labels: ["Zona Saud\u00e1vel", "Zona de Melhoria", "Sem dados"],
       datasets: [{ data: [saudavel, melhoria, semDados], backgroundColor: ["rgba(15,160,80,0.75)", "rgba(242,108,79,0.75)", "rgba(74,95,104,0.3)"] }],
     },
     options: {
@@ -2044,6 +2058,8 @@ const showTab = (tabId) => {
     document.getElementById("sosStaffSection")?.classList.toggle("hidden", !isStaff);
     if (isStaff) loadSosAlerts();
   }
+  // Re-initialize Lucide icons after tab DOM is ready
+  requestAnimationFrame(() => { if (typeof lucide !== "undefined") lucide.createIcons(); });
 };
 
 const loadSosAlerts = async () => {
@@ -2077,7 +2093,7 @@ const loadSosAlerts = async () => {
         btn.disabled = true;
         try {
           await apiFetch(`/students/sos/${id}`, { method: "PATCH" });
-          toast("Alerta marcado como resolvido.", "success");
+          toast("SOS: alerta marcado como resolvido", "success");
           loadSosAlerts();
           refreshTopbarStats();
         } catch (err) {
@@ -2099,11 +2115,7 @@ const buildBottomNav = (role) => {
     const d = document.createElement("div"); d.className = "bottomnav__indicator"; d.id = "navIndicator"; return d;
   })();
   const footerEl = elements.bottomnav.querySelector(".app-footer");
-  const brandHtml = `<div class="sidebar-brand">
-    <img src="/assets/logos/Logo1.jpg" alt="Colégio Atlântico" class="sidebar-brand__logo-img sidebar-brand__logo-img--light" />
-    <img src="/assets/logos/Logo3.jpg" alt="Colégio Atlântico" class="sidebar-brand__logo-img sidebar-brand__logo-img--dark" />
-    <span class="sidebar-brand__name">Atlântico</span>
-  </div>`;
+  const brandHtml = ``;
   elements.bottomnav.innerHTML = brandHtml + tabs.map((id) => {
     const m = TAB_META[id];
     return `<button class="bottomnav__item ${m.cls || ""}" data-tab="${id}" aria-label="${m.label}">${m.icon}<span>${m.label}</span></button>`;
@@ -2144,6 +2156,8 @@ const showApp = (user) => {
   updateStats();
   initStudentPicker();
   preloadLogo();
+  // Re-initialize all Lucide icons after app shell becomes visible
+  requestAnimationFrame(() => { if (typeof lucide !== "undefined") lucide.createIcons(); });
   hydrateSessionUser().finally(() => {
     const role = state.user?.role || user?.role || "aluno";
     buildBottomNav(role);
@@ -2763,7 +2777,7 @@ const changePassword = () => {
   })
     .then(() => {
       if (status) status.textContent = "";
-      toast("Palavra-passe alterada com sucesso.", "success");
+      toast("Palavra-passe alterada com sucesso", "success");
       document.getElementById("currentPassword").value = "";
       document.getElementById("newPassword").value = "";
     })
