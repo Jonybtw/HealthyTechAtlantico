@@ -1,4 +1,4 @@
-﻿# AtlanticoFit
+﻿# HealthyTechAtlantico
 
 Plataforma escolar de avaliação física (web + PWA) para o Colégio Atlântico.
 
