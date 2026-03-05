@@ -1,0 +1,48 @@
+{
+  "app": {
+    "name": "AtlânticoFit",
+    "tagline": "Plataforma de Avaliação Física Escolar"
+  },
+  "nav": {
+    "dashboard": "Painel",
+    "biometria": "Biometria",
+    "testes": "Testes",
+    "questionarios": "Questionários",
+    "sos": "SOS",
+    "relatorio": "Relatórios",
+    "analise": "Análise",
+    "turma": "Turma",
+    "dispensas": "Dispensas",
+    "protocolos": "Protocolos",
+    "perfil": "Perfil",
+    "alunos": "Alunos"
+  },
+  "auth": {
+    "login": "Iniciar Sessão",
+    "register": "Registo",
+    "email": "E-mail",
+    "password": "Palavra-passe",
+    "confirmPassword": "Confirmar palavra-passe",
+    "name": "Nome completo",
+    "enter": "Entrar",
+    "createAccount": "Criar conta",
+    "noAccount": "Ainda não tem conta?",
+    "hasAccount": "Já tem conta?",
+    "wrongCredentials": "E-mail ou palavra-passe incorretos.",
+    "connectionError": "Erro de ligação. Tente novamente."
+  },
+  "common": {
+    "save": "Gravar",
+    "cancel": "Cancelar",
+    "confirm": "Confirmar",
+    "delete": "Eliminar",
+    "loading": "A carregar…",
+    "noData": "Sem dados registados.",
+    "search": "Pesquisar…",
+    "export": "Exportar",
+    "male": "Masculino",
+    "female": "Feminino",
+    "healthy": "Zona Saudável",
+    "risk": "Precisa Melhorar"
+  }
+}

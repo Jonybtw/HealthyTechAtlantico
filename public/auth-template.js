@@ -2,8 +2,7 @@ window.AUTH_TEMPLATE = `
 <div id="loginScreen" class="login-screen">
   <div class="login-card">
     <div class="login-logo">
-      <img src="/assets/logos/logo.png" alt="Colégio Atlântico" class="login-logo__img" />
-      <h1 class="login-title">HealthyTech Atlântico</h1>
+      <img src="/assets/logos/logo.png" alt="HealthyTech Atlântico" class="login-logo__img" />
       <p class="login-logo__sub">Plataforma de Educação Física &amp; Bem-Estar</p>
     </div>
     <label class="field">

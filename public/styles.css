@@ -57,7 +57,7 @@
   --radius-lg:  18px;
   --radius-xl:  24px;
   /* ── Layout ──────────────────────────────────────── */
-  --topbar-h:   52px;
+  --topbar-h:   72px;
   --sidebar-w:  200px;
   --nav-h:      62px;
 }
@@ -1181,14 +1181,14 @@ textarea[readonly] {
 
 .login-logo__img {
   display: block;
-  width: 90px;
-  height: 90px;
+  width: 280px;
+  height: 160px;
   object-fit: contain;
-  margin: 0 auto 16px;
-  border-radius: 16px;
-  box-shadow: 0 2px 12px rgba(20, 48, 76, 0.12);
-  background: rgba(255, 255, 255, 0.92);
-  padding: 8px;
+  margin: 0 auto 12px;
+  border-radius: 0;
+  box-shadow: none;
+  background: transparent;
+  padding: 0;
 }
 
 .login-logo h1,
@@ -1299,6 +1299,7 @@ textarea[readonly] {
   align-items: center;
   gap: 10px;
   padding: 0 16px;
+  min-height: var(--topbar-h);
   height: var(--topbar-h);
   box-shadow: 0 1px 12px rgba(20, 48, 76, 0.25);
   flex-shrink: 0;
@@ -1315,14 +1316,16 @@ textarea[readonly] {
 }
 
 .topbar__logo-img {
-  width: 28px;
-  height: 28px;
-  border-radius: 6px;
+  width: auto;
+  max-width: 160px;
+  height: auto;
+  max-height: 60px;
+  border-radius: 0;
   object-fit: contain;
-  background: rgba(255,255,255,0.92);
-  padding: 2px;
+  background: transparent;
+  padding: 0;
   flex-shrink: 0;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.20);
+  box-shadow: none;
 }
 
 .topbar__logo-dot {
@@ -2144,13 +2147,13 @@ input[type="number"] { -moz-appearance: textfield; appearance: textfield; }
 
 .loading-screen__logo-img {
   display: block;
-  width: 90px;
-  height: 90px;
+  width: 180px;
+  height: 180px;
   object-fit: contain;
-  border-radius: 16px;
-  padding: 8px;
-  background: rgba(255, 255, 255, 0.92);
-  box-shadow: 0 2px 16px rgba(20, 48, 76, 0.15);
+  border-radius: 0;
+  padding: 0;
+  background: transparent;
+  box-shadow: none;
 }
 
 .loading-screen__logo span {

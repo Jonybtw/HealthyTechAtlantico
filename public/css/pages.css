@@ -69,14 +69,14 @@
 
 .login-logo__img {
   display: block;
-  width: 160px;
-  height: 80px;
+  width: 280px;
+  height: 160px;
   object-fit: contain;
-  margin: 0 auto 18px;
-  border-radius: 12px;
-  box-shadow: 0 4px 20px rgba(20, 48, 76, 0.14);
-  background: var(--card);
-  padding: 8px 12px;
+  margin: 0 auto 12px;
+  border-radius: 0;
+  box-shadow: none;
+  background: transparent;
+  padding: 0;
 }
 .login-logo__img--dark  { display: none; }
 [data-theme="dark"] .login-logo__img--light { display: none; }

@@ -1,0 +1,252 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ── Enums ────────────────────────────────────────────────────────────────────
+
+enum Role {
+  ALUNO
+  PROFESSOR
+  PSICOLOGO
+  PAIS
+}
+
+enum Sex {
+  M
+  F
+}
+
+enum QuestionnaireType {
+  AUTOCONCEITO
+  AUTOESTIMA
+}
+
+// ── Models ───────────────────────────────────────────────────────────────────
+
+model User {
+  id            String   @id @default(cuid())
+  email         String   @unique
+  name          String?
+  passwordHash  String   @map("password_hash")
+  role          Role
+  consentRgpd   Boolean  @default(false) @map("consent_rgpd")
+  consentShare  Boolean  @default(false) @map("consent_share")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  students            Student[]
+  guardianLinks       StudentGuardian[]  @relation("Guardian")
+  createdGuardians    StudentGuardian[]  @relation("GuardianCreator")
+  createdSessions     EvaluationSession[]
+  resolvedAlerts      SosAlert[]         @relation("Resolver")
+  createdReports      Report[]
+  createdDispensas    Dispensa[]
+  auditLogs           AuditLog[]
+
+  @@map("users")
+}
+
+model Student {
+  id         String    @id @default(cuid())
+  userId     String    @unique @map("user_id")
+  name       String
+  sex        Sex
+  birthDate  DateTime? @map("birth_date") @db.Date
+  age        Int?      @db.SmallInt
+  schoolYear String?   @map("school_year")
+  className  String?   @map("class_name")
+  createdAt  DateTime  @default(now()) @map("created_at")
+  updatedAt  DateTime  @updatedAt @map("updated_at")
+
+  // Relations
+  user           User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  biometrics     Biometric[]
+  tests          Test[]
+  questionnaires Questionnaire[]
+  sosAlerts      SosAlert[]
+  reports        Report[]
+  dispensas      Dispensa[]
+  guardians      StudentGuardian[]
+  sessions       EvaluationSession[]
+
+  @@index([userId])
+  @@index([schoolYear])
+  @@map("students")
+}
+
+model AcademicYear {
+  id    String @id @default(cuid())
+  label String @unique // e.g. '2025/2026'
+
+  classes SchoolClass[]
+
+  @@map("academic_years")
+}
+
+model SchoolClass {
+  id             String @id @default(cuid())
+  academicYearId String @map("academic_year_id")
+  name           String // e.g. '8A'
+
+  academicYear AcademicYear @relation(fields: [academicYearId], references: [id], onDelete: Cascade)
+
+  @@unique([academicYearId, name])
+  @@map("school_classes")
+}
+
+model EvaluationSession {
+  id         String   @id @default(cuid())
+  studentId  String   @map("student_id")
+  label      String   @default("Avaliação")
+  schoolYear String?  @map("school_year")
+  createdById String? @map("created_by")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  student    Student    @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  createdBy  User?      @relation(fields: [createdById], references: [id])
+  biometrics Biometric[]
+  tests      Test[]
+
+  @@map("evaluation_sessions")
+}
+
+model Biometric {
+  id         String   @id @default(cuid())
+  studentId  String   @map("student_id")
+  sessionId  String?  @map("session_id")
+  heightM    Decimal  @map("height_m") @db.Decimal(4, 2)
+  weightKg   Decimal  @map("weight_kg") @db.Decimal(5, 2)
+  fatPct     Decimal? @map("fat_pct") @db.Decimal(4, 1)
+  waistCm    Decimal? @map("waist_cm") @db.Decimal(5, 1)
+  imc        Decimal  @db.Decimal(4, 1)
+  imcZone    String   @map("imc_zone")
+  fatZone    String?  @map("fat_zone")
+  waistZone  String?  @map("waist_zone")
+  recordedAt DateTime @default(now()) @map("recorded_at")
+
+  student Student            @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  session EvaluationSession? @relation(fields: [sessionId], references: [id], onDelete: SetNull)
+
+  @@index([studentId, recordedAt(sort: Desc)])
+  @@index([studentId, sessionId])
+  @@map("biometrics")
+}
+
+model Test {
+  id         String   @id @default(cuid())
+  studentId  String   @map("student_id")
+  sessionId  String?  @map("session_id")
+  testId     String   @map("test_id")
+  valueNum   Decimal? @map("value_num") @db.Decimal
+  valueText  String   @map("value_text")
+  unit       String
+  zone       String
+  recordedAt DateTime @default(now()) @map("recorded_at")
+
+  student Student            @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  session EvaluationSession? @relation(fields: [sessionId], references: [id], onDelete: SetNull)
+
+  @@index([studentId, recordedAt(sort: Desc)])
+  @@index([studentId, sessionId])
+  @@map("tests")
+}
+
+model Questionnaire {
+  id            String            @id @default(cuid())
+  studentId     String            @map("student_id")
+  type          QuestionnaireType
+  payload       Json
+  deferredCount Int               @default(0) @map("deferred_count")
+  submittedAt   DateTime          @default(now()) @map("submitted_at")
+
+  student Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@map("questionnaires")
+}
+
+model SosAlert {
+  id           String    @id @default(cuid())
+  studentId    String    @map("student_id")
+  psych        String
+  teacher      String
+  psychEmail   String?   @map("psych_email")
+  teacherEmail String?   @map("teacher_email")
+  createdAt    DateTime  @default(now()) @map("created_at")
+  resolved     Boolean   @default(false)
+  resolvedAt   DateTime? @map("resolved_at")
+  resolvedById String?   @map("resolved_by")
+
+  student    Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  resolvedBy User?   @relation("Resolver", fields: [resolvedById], references: [id])
+
+  @@index([studentId, resolved])
+  @@map("sos_alerts")
+}
+
+model Report {
+  id          String   @id @default(cuid())
+  studentId   String   @map("student_id")
+  title       String   @default("Relatório AtlanticoFit")
+  emailedTo   String   @map("emailed_to")
+  schoolYear  String?  @map("school_year")
+  createdById String?  @map("created_by")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  student   Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  createdBy User?   @relation(fields: [createdById], references: [id])
+
+  @@map("reports")
+}
+
+model Dispensa {
+  id                 String   @id @default(cuid())
+  studentId          String   @map("student_id")
+  reason             String
+  startDate          DateTime @map("start_date") @db.Date
+  endDate            DateTime @map("end_date") @db.Date
+  medicalCertificate Boolean  @default(false) @map("medical_certificate")
+  createdAt          DateTime @default(now()) @map("created_at")
+  createdById        String   @map("created_by")
+
+  student   Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  createdBy User    @relation(fields: [createdById], references: [id])
+
+  @@map("dispensas")
+}
+
+model StudentGuardian {
+  id              String   @id @default(cuid())
+  studentId       String   @map("student_id")
+  guardianUserId  String   @map("guardian_user_id")
+  relationship    String   @default("encarregado")
+  createdById     String   @map("created_by")
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  student   Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  guardian  User    @relation("Guardian", fields: [guardianUserId], references: [id], onDelete: Cascade)
+  createdBy User    @relation("GuardianCreator", fields: [createdById], references: [id])
+
+  @@unique([studentId, guardianUserId])
+  @@index([studentId])
+  @@index([guardianUserId])
+  @@map("student_guardians")
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  userId    String?  @map("user_id")
+  action    String
+  targetId  String?  @map("target_id")
+  ipAddress String?  @map("ip_address")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([userId, createdAt(sort: Desc)])
+  @@map("audit_log")
+}

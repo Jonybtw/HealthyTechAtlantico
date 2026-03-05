@@ -1,0 +1,48 @@
+{
+  "app": {
+    "name": "AtlânticoFit",
+    "tagline": "School Physical Assessment Platform"
+  },
+  "nav": {
+    "dashboard": "Dashboard",
+    "biometria": "Biometrics",
+    "testes": "Tests",
+    "questionarios": "Questionnaires",
+    "sos": "SOS",
+    "relatorio": "Reports",
+    "analise": "Analysis",
+    "turma": "Class",
+    "dispensas": "Exemptions",
+    "protocolos": "Protocols",
+    "perfil": "Profile",
+    "alunos": "Students"
+  },
+  "auth": {
+    "login": "Sign In",
+    "register": "Register",
+    "email": "Email",
+    "password": "Password",
+    "confirmPassword": "Confirm password",
+    "name": "Full name",
+    "enter": "Sign In",
+    "createAccount": "Create account",
+    "noAccount": "Don't have an account?",
+    "hasAccount": "Already have an account?",
+    "wrongCredentials": "Wrong email or password.",
+    "connectionError": "Connection error. Please try again."
+  },
+  "common": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "delete": "Delete",
+    "loading": "Loading…",
+    "noData": "No data recorded.",
+    "search": "Search…",
+    "export": "Export",
+    "male": "Male",
+    "female": "Female",
+    "healthy": "Healthy Zone",
+    "risk": "Needs Improvement"
+  }
+}
