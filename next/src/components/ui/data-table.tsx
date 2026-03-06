@@ -95,7 +95,7 @@ export function DataTable<T extends Record<string, unknown>>({
       <div className="relative overflow-x-auto overflow-y-auto max-h-[600px] rounded-2xl border border-border shadow-card bg-card/70 glass scrollbar-thin">
         <table className="w-full text-sm">
           <thead className="sticky top-0 z-20">
-            <tr className="border-b border-border/50 bg-card/85 backdrop-blur-md shadow-[0_1px_3px_rgba(0,0,0,0.02)]">
+            <tr className="border-b border-border/50 bg-card shadow-[0_1px_3px_rgba(0,0,0,0.02)]">
               {columns.map((col) => (
                 <th
                   key={col.key}

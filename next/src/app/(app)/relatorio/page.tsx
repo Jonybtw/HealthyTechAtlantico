@@ -124,13 +124,18 @@ export default function RelatorioPage() {
 
       // Add actual logo to PDF
       try {
-        const logoImg = new window.Image();
-        logoImg.src = "/logo.png";
-        await new Promise((resolve, reject) => {
-          logoImg.onload = resolve;
-          logoImg.onerror = reject;
-        });
-        doc.addImage(logoImg, "PNG", 14, 10, 40, 10.27);
+        const logoDataUrl = await fetch("/logo.png")
+          .then((r) => r.blob())
+          .then(
+            (blob) =>
+              new Promise<string>((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = () => resolve(reader.result as string);
+                reader.onerror = reject;
+                reader.readAsDataURL(blob);
+              })
+          );
+        doc.addImage(logoDataUrl, "PNG", 14, 10, 40, 10.27);
       } catch (e) {
         doc.setTextColor(255, 255, 255);
         doc.setFontSize(18);

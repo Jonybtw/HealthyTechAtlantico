@@ -106,7 +106,7 @@ export function AppShell({ user, children }: AppShellProps) {
       <div className="bg-noise" />
       {/* ── Sidebar (desktop) ─────────────────────────────────── */}
       <aside className="hidden lg:flex lg:flex-col lg:w-64 fixed inset-y-0 left-0 z-30
-                        bg-navy-950/80 backdrop-blur-xl border-r border-navy-800/40 shadow-float">
+                        bg-navy-950 border-r border-navy-800/40 shadow-float">
         {/* Logo area */}
         <div className="flex items-center px-5 py-6 border-b border-navy-800/40 relative overflow-hidden">
           <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-gold-500/20 to-transparent" />
@@ -200,7 +200,7 @@ export function AppShell({ user, children }: AppShellProps) {
         {/* Mobile topbar */}
         <header
           className="lg:hidden flex items-center justify-between px-5 py-3.5
-                     bg-navy-950/80 backdrop-blur-xl border-b border-navy-800/40 sticky top-0 z-20 shadow-sm"
+                     bg-navy-950 border-b border-navy-800/40 sticky top-0 z-20 shadow-sm"
           style={{ animation: "slideDown 0.3s ease both" }}
         >
           <div className="absolute bottom-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />
@@ -236,7 +236,7 @@ export function AppShell({ user, children }: AppShellProps) {
 
         {/* Mobile bottom nav */}
         <nav className="lg:hidden fixed bottom-0 inset-x-0 z-20
-                        bg-navy-950/85 backdrop-blur-2xl border-t border-navy-800/40 shadow-[0_-8px_30px_rgba(0,0,0,0.12)]">
+                        bg-navy-950 border-t border-navy-800/40 shadow-[0_-8px_30px_rgba(0,0,0,0.12)]">
           <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />
           <div className="flex items-center justify-around px-2 py-2">
             {visibleItems.slice(0, 5).map((item) => {

@@ -141,12 +141,12 @@ export function DashboardClient({ role, username, kpis, studentSummary, zafByYea
       )}
 
       {/* Quick actions */}
-      <div className="bg-card rounded-2xl border border-border p-6 animate-fade-in-up delay-400 shadow-card">
+      <div className="bg-card rounded-2xl border border-border p-6 animate-fade-in-up delay-400 shadow-card overflow-hidden">
         <h3 className="font-semibold mb-4 text-sm uppercase tracking-wider text-muted-foreground">{t("quickActions")}</h3>
         <div className="flex flex-wrap gap-x-4 gap-y-5 mt-4">
           {[
-            { href: "/biometria", label: t("registerBiometric"), cls: "from-navy-600 to-navy-800 text-white shadow-[0_4px_14px_rgba(20,48,76,0.39)] border-navy-700/50" },
-            { href: "/testes", label: t("registerTests"), cls: "from-gold-400 to-gold-600 text-navy-950 shadow-[0_0_15px_rgba(194,151,13,0.5)] border-gold-400/50" },
+            { href: "/biometria", label: t("registerBiometric"), cls: "from-navy-600 to-navy-800 text-white border-navy-700/50" },
+            { href: "/testes", label: t("registerTests"), cls: "from-gold-400 to-gold-600 text-navy-950 border-gold-400/50" },
             { href: "/turma", label: t("viewClass"), cls: "from-muted to-muted-foreground/10 text-foreground shadow-sm border-border" },
             { href: "/analise", label: t("analyzeZaf"), cls: "from-muted to-muted-foreground/10 text-foreground shadow-sm border-border" },
           ].map(({ href, label, cls }) => (
@@ -157,8 +157,7 @@ export function DashboardClient({ role, username, kpis, studentSummary, zafByYea
                          hover:-translate-y-1 hover:shadow-float active:scale-95 active:translate-y-0
                          bg-gradient-to-b border ${cls}`}
             >
-              <span className="relative z-10">{label}</span>
-              <div className="absolute inset-x-0 top-0 h-px bg-white/20 rounded-t-xl" />
+              {label}
             </a>
           ))}
         </div>
