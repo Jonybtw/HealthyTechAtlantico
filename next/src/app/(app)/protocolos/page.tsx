@@ -1,3 +1,4 @@
+import { getTranslations } from "next-intl/server";
 import { PageHeader } from "@/components/ui/page-header";
 
 /* ── Static ZAF reference tables (server component) ── */
@@ -49,12 +50,12 @@ function ReferenceTable({
   rows: { cells: string[] }[];
 }) {
   return (
-    <div className="flex flex-col gap-2">
-      <h3 className="text-base font-semibold">{title}</h3>
-      <div className="overflow-x-auto rounded-xl border border-border">
+    <div className="flex flex-col gap-3 animate-fade-in-up">
+      <h3 className="text-lg font-bold tracking-tight">{title}</h3>
+      <div className="overflow-x-auto rounded-2xl border border-border/50 bg-card/85 glass shadow-float">
         <table className="w-full text-sm">
           <thead>
-            <tr className="bg-navy-50 dark:bg-navy-900/60">
+            <tr className="bg-navy-50/50 dark:bg-navy-900/30">
               {headers.map((h) => (
                 <th key={h} className="px-4 py-2.5 text-left font-semibold">
                   {h}
@@ -64,9 +65,9 @@ function ReferenceTable({
           </thead>
           <tbody>
             {rows.map((r, i) => (
-              <tr key={i} className="border-t border-border">
+              <tr key={i} className="border-t border-border/50 hover:bg-muted/30 transition-colors">
                 {r.cells.map((c, j) => (
-                  <td key={j} className="px-4 py-2">
+                  <td key={j} className="px-4 py-3 font-medium">
                     {c}
                   </td>
                 ))}
@@ -79,12 +80,13 @@ function ReferenceTable({
   );
 }
 
-export default function ProtocolosPage() {
+export default async function ProtocolosPage() {
+  const t = await getTranslations("protocolos");
   return (
     <div className="flex flex-col gap-8">
       <PageHeader
-        title="Protocolos ZAF"
-        description="Tabelas de referência da Zona de Aptidão Física"
+        title={t("title")}
+        description={t("description")}
       />
 
       {/* BMI table */}
@@ -106,13 +108,13 @@ export default function ProtocolosPage() {
       />
 
       {/* Fitness tests overview */}
-      <div className="flex flex-col gap-2">
-        <h3 className="text-base font-semibold">Testes de Aptidão Física</h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+      <div className="flex flex-col gap-4 mb-10 animate-fade-in-up delay-100">
+        <h3 className="text-lg font-bold tracking-tight">Testes de Aptidão Física</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {TEST_ZONES.map((t) => (
             <div
               key={t.test}
-              className="bg-card rounded-xl border border-border p-4 flex flex-col gap-1"
+              className="bg-card/85 glass rounded-2xl border border-border/50 shadow-sm p-5 flex flex-col gap-1.5 transition-all duration-300 hover:shadow-float hover:-translate-y-1"
             >
               <span className="font-semibold">{t.test}</span>
               <span className="text-xs text-muted-foreground">{t.description}</span>

@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import { canAccessStudentByRole, PERMISSIONS } from "@/lib/rbac";
 import { questionnaireSchema } from "@/lib/validations";
+import { auditLog } from "@/lib/audit";
 import type { Role } from "@prisma/client";
 
 // GET /api/students/[id]/questionnaires
@@ -31,6 +32,8 @@ export async function GET(
     if (!canAccessStudentByRole({ role: session.user.role as Role, permission: PERMISSIONS.READ_QUESTIONNAIRES, isOwner, isGuardian })) {
       return NextResponse.json({ error: "Sem permissão" }, { status: 403 });
     }
+
+    await auditLog({ userId: session.user.id, action: "read_questionnaires", targetId: id }).catch(() => {});
 
     const questionnaires = await prisma.questionnaire.findMany({
       where: { studentId: id },
@@ -71,6 +74,8 @@ export async function POST(
 
     const body = await req.json();
     const data = questionnaireSchema.parse(body);
+
+    await auditLog({ userId: session.user.id, action: "submit_questionnaire", targetId: id }).catch(() => {});
 
     const questionnaire = await prisma.questionnaire.create({
       data: {

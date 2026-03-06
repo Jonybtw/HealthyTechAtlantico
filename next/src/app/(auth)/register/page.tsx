@@ -3,17 +3,23 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import { UserPlus } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { PillSelect } from "@/components/ui/pill-select";
 
 export default function RegisterPage() {
   const router = useRouter();
+  const t = useTranslations("auth");
   const [form, setForm] = useState({
     name: "",
     email: "",
     password: "",
     confirmPassword: "",
+    role: "ALUNO" as "ALUNO" | "PAIS",
+    consentRgpd: false,
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [apiError, setApiError] = useState<string | null>(null);
@@ -24,13 +30,15 @@ export default function RegisterPage() {
 
   const validate = () => {
     const errs: Record<string, string> = {};
-    if (form.name.trim().length < 2) errs.name = "Nome demasiado curto.";
+    if (form.name.trim().length < 2) errs.name = t("nameTooShort");
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email))
-      errs.email = "E-mail inválido.";
+      errs.email = t("invalidEmail");
     if (form.password.length < 8)
-      errs.password = "Mínimo 8 caracteres.";
+      errs.password = t("passwordMin8");
     if (form.password !== form.confirmPassword)
-      errs.confirmPassword = "Palavras-passe não coincidem.";
+      errs.confirmPassword = t("passwordNoMatch");
+    if (!form.consentRgpd)
+      errs.consentRgpd = t("rgpdRequired");
     setErrors(errs);
     return Object.keys(errs).length === 0;
   };
@@ -49,18 +57,20 @@ export default function RegisterPage() {
           name: form.name.trim(),
           email: form.email.trim().toLowerCase(),
           password: form.password,
+          role: form.role,
+          consentRgpd: true,
         }),
       });
 
       if (!res.ok) {
         const body = await res.json().catch(() => ({}));
-        setApiError(body.error ?? "Erro ao criar conta.");
+        setApiError(body.error ?? t("createError"));
         return;
       }
 
       router.push("/login?registered=1");
     } catch {
-      setApiError("Erro de ligação. Tente novamente.");
+      setApiError(t("connectionError"));
     } finally {
       setLoading(false);
     }
@@ -70,21 +80,21 @@ export default function RegisterPage() {
     <div className="w-full max-w-sm mx-auto">
       {/* logo */}
       <div className="text-center mb-8">
-        <div className="inline-flex items-center justify-center size-14 rounded-2xl bg-navy-800 text-white mb-4">
-          <span className="text-xl font-bold font-display">AF</span>
+        <div className="inline-flex items-center justify-center mb-4">
+          <Image src="/logo.png" alt="HealthyTech Atlântico" width={200} height={60} className="object-contain" />
         </div>
-        <h1 className="text-2xl font-bold font-display">AtlânticoFit</h1>
         <p className="text-sm text-muted-foreground mt-1">
-          Criar nova conta de aluno
+          {t("newAccountTagline")}
         </p>
       </div>
 
       {/* card */}
       <form
         onSubmit={handleSubmit}
-        className="bg-card rounded-2xl border border-border shadow-card p-6 flex flex-col gap-4"
+        className="animate-fade-in-up delay-100 bg-card/85 glass rounded-2xl border border-border/50 shadow-float p-6 flex flex-col gap-4 relative"
       >
-        <h2 className="text-lg font-semibold text-center">Registo</h2>
+        <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-navy-500 to-gold-400 opacity-80" />
+        <h2 className="text-xl font-bold tracking-tight text-center">{t("register")}</h2>
 
         {apiError && (
           <div className="rounded-lg bg-danger-50 border border-danger-200 text-danger-700 text-sm px-4 py-2.5">
@@ -93,7 +103,7 @@ export default function RegisterPage() {
         )}
 
         <Input
-          label="Nome completo"
+          label={t("name")}
           value={form.name}
           onChange={set("name")}
           placeholder="Maria Silva"
@@ -103,7 +113,7 @@ export default function RegisterPage() {
         />
 
         <Input
-          label="E-mail"
+          label={t("email")}
           type="email"
           value={form.email}
           onChange={set("email")}
@@ -114,18 +124,18 @@ export default function RegisterPage() {
         />
 
         <Input
-          label="Palavra-passe"
+          label={t("password")}
           type="password"
           value={form.password}
           onChange={set("password")}
-          placeholder="Mínimo 8 caracteres"
+          placeholder={t("passwordMin8")}
           error={errors.password}
           required
           autoComplete="new-password"
         />
 
         <Input
-          label="Confirmar palavra-passe"
+          label={t("confirmPassword")}
           type="password"
           value={form.confirmPassword}
           onChange={set("confirmPassword")}
@@ -135,22 +145,54 @@ export default function RegisterPage() {
           autoComplete="new-password"
         />
 
+        {/* Role selector */}
+        <div className="flex flex-col gap-1.5">
+          <label className="text-sm font-medium">{t("roleLabel")}</label>
+          <PillSelect
+            options={[
+              { value: "ALUNO", label: t("role_aluno") },
+              { value: "PAIS", label: t("role_pais") },
+            ]}
+            value={form.role}
+            onChange={(v) => setForm((f) => ({ ...f, role: v as "ALUNO" | "PAIS" }))}
+          />
+        </div>
+
+        {/* RGPD consent */}
+        <div className="flex flex-col gap-1">
+          <label className="flex items-start gap-2 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={form.consentRgpd}
+              onChange={(e) => setForm((f) => ({ ...f, consentRgpd: e.target.checked }))}
+              className="mt-0.5 h-4 w-4 rounded border-border accent-navy-800"
+              required
+            />
+            <span className="text-xs text-muted-foreground leading-relaxed">
+              {t("rgpdConsent")}
+            </span>
+          </label>
+          {errors.consentRgpd && (
+            <p className="text-xs text-danger-600">{errors.consentRgpd}</p>
+          )}
+        </div>
+
         <Button
           type="submit"
           loading={loading}
           icon={<UserPlus className="size-4" />}
           className="w-full mt-2"
         >
-          Criar conta
+          {t("createAccount")}
         </Button>
 
         <p className="text-center text-xs text-muted-foreground mt-2">
-          Já tem conta?{" "}
+          {t("hasAccount")}{" "}
           <Link
             href="/login"
             className="text-navy-700 font-medium hover:underline"
           >
-            Iniciar sessão
+            {t("login")}
           </Link>
         </p>
       </form>

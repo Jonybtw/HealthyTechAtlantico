@@ -1,13 +1,19 @@
 {
-  "name": "AtlânticoFit",
-  "short_name": "AtlânticoFit",
-  "description": "Plataforma de Avaliação Física Escolar",
+  "name": "HealthyTech Atlântico",
+  "short_name": "HTA",
+  "description": "A tua saúde, em movimento — FitEscola / ZAF",
   "start_url": "/dashboard",
   "display": "standalone",
-  "background_color": "#0f172a",
-  "theme_color": "#0f172a",
+  "background_color": "#14304c",
+  "theme_color": "#14304c",
   "orientation": "portrait-primary",
   "icons": [
+    {
+      "src": "/logo.png",
+      "sizes": "any",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
     {
       "src": "/icons/icon-192.png",
       "sizes": "192x192",

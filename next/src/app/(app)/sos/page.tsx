@@ -1,11 +1,13 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { useTranslations } from "next-intl";
 import { useSession } from "next-auth/react";
 import { toast } from "sonner";
 import { AlertTriangle, CheckCircle } from "lucide-react";
 import { PageHeader } from "@/components/ui/page-header";
 import { Button } from "@/components/ui/button";
+import { EmptyState } from "@/components/ui/empty-state";
 
 interface SosAlert {
   id: string;
@@ -19,6 +21,7 @@ interface SosAlert {
 }
 
 export default function SosPage() {
+  const t = useTranslations("sos");
   const { data: session } = useSession();
   const role = (session?.user as Record<string, unknown>)?.role as string;
 
@@ -74,7 +77,7 @@ export default function SosPage() {
         return;
       }
 
-      toast.success("Alerta SOS enviado. A equipa foi notificada.");
+      toast.success(t("success"));
       setPsych("");
       setTeacher("");
     } catch {
@@ -93,11 +96,11 @@ export default function SosPage() {
         body: JSON.stringify({ resolved: true }),
       });
       if (res.ok) {
-        toast.success("Alerta resolvido.");
+        toast.success(t("resolve"));
         loadAlerts();
       }
     } catch {
-      toast.error("Erro ao resolver alerta.");
+      toast.error(t("noAlerts"));
     }
   };
 
@@ -106,33 +109,33 @@ export default function SosPage() {
     return (
       <div className="flex flex-col gap-6">
         <PageHeader
-          title="SOS"
-          description="Envia um alerta confidencial à equipa de apoio"
+          title={t("title")}
+          description={t("descriptionStudent")}
         />
 
         <form
           onSubmit={handleTrigger}
-          className="bg-card rounded-xl border border-border p-6 flex flex-col gap-5 max-w-lg"
+          className="animate-fade-in-up bg-card/85 glass rounded-2xl border border-border/50 shadow-float p-6 flex flex-col gap-5 max-w-lg"
         >
-          <div className="flex flex-col gap-1.5">
-            <label className="text-sm font-medium">Psicólogo</label>
+          <div className="flex flex-col gap-1.5 focus-within:text-gold-600 transition-colors">
+            <label className="text-sm font-medium">{t("psychLabel")}</label>
             <input
               value={psych}
               onChange={(e) => setPsych(e.target.value)}
-              placeholder="Nome do psicólogo…"
+              placeholder={t("psych")}
               required
-              className="w-full rounded-lg border border-border px-3 py-2 text-sm bg-card focus:outline-none focus:ring-2 focus:ring-gold-500/40"
+              className="w-full rounded-xl border border-border px-4 py-2.5 text-sm bg-background/50 focus:outline-none focus:ring-2 focus:ring-gold-500/40 focus:bg-background transition-all shadow-inner inset-shadow-sm"
             />
           </div>
 
-          <div className="flex flex-col gap-1.5">
-            <label className="text-sm font-medium">Professor</label>
+          <div className="flex flex-col gap-1.5 focus-within:text-gold-600 transition-colors">
+            <label className="text-sm font-medium">{t("teacherLabel")}</label>
             <input
               value={teacher}
               onChange={(e) => setTeacher(e.target.value)}
-              placeholder="Nome do professor…"
+              placeholder={t("teacher")}
               required
-              className="w-full rounded-lg border border-border px-3 py-2 text-sm bg-card focus:outline-none focus:ring-2 focus:ring-gold-500/40"
+              className="w-full rounded-xl border border-border px-4 py-2.5 text-sm bg-background/50 focus:outline-none focus:ring-2 focus:ring-gold-500/40 focus:bg-background transition-all shadow-inner inset-shadow-sm"
             />
           </div>
 
@@ -143,7 +146,7 @@ export default function SosPage() {
             icon={<AlertTriangle className="size-4" />}
             className="self-start"
           >
-            Enviar alerta SOS
+            {t("trigger")}
           </Button>
         </form>
       </div>
@@ -154,29 +157,32 @@ export default function SosPage() {
   return (
     <div className="flex flex-col gap-6">
       <PageHeader
-        title="Alertas SOS"
-        description="Alertas de bem-estar dos alunos"
+        title={t("staffTitle")}
+        description={t("staffDescription")}
       />
 
       {loadingAlerts ? (
-        <p className="text-sm text-muted-foreground">A carregar…</p>
+        <p className="text-sm text-muted-foreground animate-pulse">{t("sending")}</p>
       ) : alerts.length === 0 ? (
-        <div className="bg-card rounded-xl border border-border p-10 text-center text-muted-foreground">
-          Sem alertas pendentes.
-        </div>
+        <EmptyState
+          icon={CheckCircle}
+          title="Sem Alertas Pendentes"
+          description="A caixa de entrada de alertas de emergência (SOS) encontra-se totalmente limpa. Não existem casos ativos para verificação."
+        />
       ) : (
         <div className="flex flex-col gap-3">
-          {alerts.map((a) => (
+          {alerts.map((a, i) => (
             <div
               key={a.id}
-              className={`bg-card rounded-xl border p-4 flex items-start justify-between gap-4 ${
-                a.resolved ? "border-border opacity-60" : "border-danger-300"
-              }`}
+              className={`bg-card/85 glass rounded-2xl border p-5 flex items-start justify-between gap-4 transition-all duration-300 hover:shadow-float animate-fade-in-up
+                ${a.resolved ? "border-border/40 opacity-50" : "border-danger-300 dark:border-danger-800/40 hover:-translate-y-1"}
+              `}
+              style={{ animationDelay: `${i * 50}ms`, animationFillMode: 'both' }}
             >
               <div className="flex flex-col gap-1">
                 <span className="font-semibold">{a.student.name}</span>
                 <p className="text-sm text-muted-foreground">
-                  Psicólogo: {a.psych} · Professor: {a.teacher}
+                  {t("psychLabel")}: {a.psych} · {t("teacherLabel")}: {a.teacher}
                 </p>
                 <div className="flex items-center gap-3 text-xs text-muted-foreground mt-1">
                   <span>{new Date(a.createdAt).toLocaleString("pt-PT")}</span>
@@ -190,7 +196,7 @@ export default function SosPage() {
                   icon={<CheckCircle className="size-4" />}
                   onClick={() => handleResolve(a.id)}
                 >
-                  Resolver
+                  {t("resolve")}
                 </Button>
               )}
             </div>

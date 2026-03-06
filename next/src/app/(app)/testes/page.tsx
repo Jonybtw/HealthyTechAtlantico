@@ -1,6 +1,7 @@
-"use client";
+﻿"use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { useTranslations } from "next-intl";
 import { useSession } from "next-auth/react";
 import { toast } from "sonner";
 import { Timer } from "lucide-react";
@@ -10,25 +11,25 @@ import { UnitInput } from "@/components/ui/unit-input";
 import { PillSelect } from "@/components/ui/pill-select";
 import { Button } from "@/components/ui/button";
 import { ZoneBadge } from "@/components/ui/zone-badge";
+import { TEST_OPTIONS, classifyTest } from "@/lib/fitness-tests";
+import { calcAgeFromBirthDate } from "@/lib/zaf";
+import type { Sex } from "@prisma/client";
 
-const TEST_OPTIONS = [
-  { key: "vaivem", label: "Vai e Vem", unit: "percursos" },
-  { key: "cooper", label: "Cooper", unit: "m" },
-  { key: "milha", label: "Milha", unit: "mm:ss" },
-  { key: "velocidade", label: "Velocidade", unit: "seg" },
-  { key: "agilidade", label: "Agilidade", unit: "seg" },
-  { key: "abdominais", label: "Abdominais", unit: "rep" },
-  { key: "extensoes", label: "Extensões de braços", unit: "rep" },
-  { key: "senta_alcanca", label: "Senta e Alcança", unit: "cm" },
-];
+interface StudentOption {
+  id: string;
+  name: string;
+  sex: Sex;
+  birthDate: string | null;
+}
 
 export default function TestesPage() {
+  const t = useTranslations("testes");
   const { data: session } = useSession();
   const role = (session?.user as Record<string, unknown>)?.role as string;
 
-  const [students, setStudents] = useState<{ id: string; name: string }[]>([]);
+  const [students, setStudents] = useState<StudentOption[]>([]);
   const [studentId, setStudentId] = useState<string | null>(null);
-  const [selectedTest, setSelectedTest] = useState(TEST_OPTIONS[0].key);
+  const [selectedTest, setSelectedTest] = useState(TEST_OPTIONS[0].id);
   const [value, setValue] = useState("");
   const [saving, setSaving] = useState(false);
   const [lastResult, setLastResult] = useState<{ zone: string } | null>(null);
@@ -37,9 +38,17 @@ export default function TestesPage() {
     const res = await fetch("/api/students?limit=500");
     if (res.ok) {
       const body = await res.json();
-      setStudents(body.students.map((s: { id: string; name: string }) => ({ id: s.id, name: s.name })));
-      if (role === "ALUNO" && body.students.length === 1) {
-        setStudentId(body.students[0].id);
+      const mapped: StudentOption[] = body.students.map(
+        (s: { id: string; name: string; sex: string; birthDate: string | null }) => ({
+          id: s.id,
+          name: s.name,
+          sex: s.sex as Sex,
+          birthDate: s.birthDate ?? null,
+        })
+      );
+      setStudents(mapped);
+      if (role === "ALUNO" && mapped.length === 1) {
+        setStudentId(mapped[0].id);
       }
     }
   }, [role]);
@@ -48,22 +57,36 @@ export default function TestesPage() {
     loadStudents();
   }, [loadStudents]);
 
-  const currentTest = TEST_OPTIONS.find((t) => t.key === selectedTest)!;
+  const selectedStudent = students.find((s) => s.id === studentId);
+  const currentTest = TEST_OPTIONS.find((t) => t.id === selectedTest)!;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!studentId) {
-      toast.error("Selecione um aluno.");
+      toast.error(t("selectStudent"));
       return;
     }
     if (!value.trim()) {
-      toast.error("Introduza o valor do teste.");
+      toast.error(t("fillValue"));
       return;
     }
     setSaving(true);
 
     try {
       const numValue = selectedTest === "milha" ? null : parseFloat(value);
+      const age = selectedStudent?.birthDate
+        ? calcAgeFromBirthDate(selectedStudent.birthDate)
+        : null;
+      const sex = selectedStudent?.sex ?? ("M" as Sex);
+      const zone =
+        age !== null
+          ? (classifyTest(
+            selectedTest,
+            selectedTest === "milha" ? value : (numValue ?? value),
+            sex,
+            age
+          ) ?? "Zona de Melhoria")
+          : "Zona de Melhoria";
       const payload = {
         tests: [
           {
@@ -71,7 +94,7 @@ export default function TestesPage() {
             valueNum: numValue,
             valueText: value,
             unit: currentTest.unit,
-            zone: "ZSAF", // default — server can recalculate
+            zone,
           },
         ],
       };
@@ -89,8 +112,8 @@ export default function TestesPage() {
       }
 
       const body = await res.json();
-      setLastResult({ zone: body.test?.zone ?? "healthy" });
-      toast.success("Teste registado com sucesso!");
+      setLastResult({ zone: body.test?.zone ?? zone });
+      toast.success(t("success"));
       setValue("");
     } catch {
       toast.error("Erro de ligação.");
@@ -102,13 +125,13 @@ export default function TestesPage() {
   return (
     <div className="flex flex-col gap-6">
       <PageHeader
-        title="Testes Físicos"
-        description="Registar resultados dos testes de aptidão física"
+        title={t("title")}
+        description={t("description")}
       />
 
       <form
         onSubmit={handleSubmit}
-        className="bg-card rounded-xl border border-border p-6 flex flex-col gap-5 max-w-lg"
+        className="animate-fade-in-up bg-card/85 glass rounded-2xl border border-border/50 shadow-float p-6 flex flex-col gap-5 max-w-lg"
       >
         {role !== "ALUNO" && (
           <StudentPicker
@@ -120,9 +143,9 @@ export default function TestesPage() {
 
         {/* Test selector */}
         <div className="flex flex-col gap-1.5">
-          <label className="text-sm font-medium">Teste</label>
+          <label className="text-sm font-medium">{t("selectTest")}</label>
           <PillSelect
-            options={TEST_OPTIONS.map((t) => ({ value: t.key, label: t.label }))}
+            options={TEST_OPTIONS.map((t) => ({ value: t.id, label: t.label }))}
             value={selectedTest}
             onChange={(v) => {
               setSelectedTest(v);
@@ -142,9 +165,9 @@ export default function TestesPage() {
         />
 
         {lastResult && (
-          <div className="flex items-center gap-3 p-4 rounded-lg bg-navy-50 dark:bg-navy-900/30">
-            <span className="text-sm font-medium">Resultado:</span>
-            <ZoneBadge zone={lastResult.zone as "healthy" | "risk"} />
+          <div className="flex items-center gap-3 p-4 rounded-xl bg-navy-50/50 dark:bg-navy-900/20 border border-border/50 animate-scale-in">
+            <span className="text-sm font-medium">{t("lastResult")}</span>
+            <ZoneBadge zone={lastResult.zone} />
           </div>
         )}
 
@@ -154,7 +177,7 @@ export default function TestesPage() {
           icon={<Timer className="size-4" />}
           className="self-start"
         >
-          Gravar teste
+          {t("save")}
         </Button>
       </form>
     </div>

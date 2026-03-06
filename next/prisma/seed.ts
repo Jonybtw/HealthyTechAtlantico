@@ -1,7 +1,14 @@
 import { PrismaClient, Role, Sex, QuestionnaireType } from "@prisma/client";
+import { PrismaPg } from "@prisma/adapter-pg";
+import pg from "pg";
 import bcrypt from "bcryptjs";
 
-const prisma = new PrismaClient();
+const pool = new pg.Pool({
+  connectionString: process.env.DATABASE_URL!,
+  ssl: { rejectUnauthorized: false },
+});
+const adapter = new PrismaPg(pool);
+const prisma = new PrismaClient({ adapter });
 
 async function main() {
   console.log("🌱 Seeding database…");
@@ -183,49 +190,72 @@ async function main() {
     });
   }
 
-  // ── SOS Alerts ──
-  await prisma.sosAlert.create({
-    data: {
-      studentId: students[0].id,
-      psych: "Dr. Ana Rodrigues",
-      teacher: "Prof. Carlos Silva",
-      psychEmail: "psicologo@atlanticofit.pt",
-      teacherEmail: "professor@atlanticofit.pt",
-      resolved: false,
-    },
+  // ── SOS Alerts (skip if already exist for these students) ──
+  const existingSos = await prisma.sosAlert.findMany({
+    where: { studentId: { in: [students[0].id, students[3].id] } },
+    select: { studentId: true },
   });
+  const sosStudentIds = new Set(existingSos.map((s) => s.studentId));
 
-  await prisma.sosAlert.create({
-    data: {
-      studentId: students[3].id,
-      psych: "Dr. Ana Rodrigues",
-      teacher: "Prof. Carlos Silva",
-      psychEmail: "psicologo@atlanticofit.pt",
-      teacherEmail: "professor@atlanticofit.pt",
-      resolved: false,
-    },
+  if (!sosStudentIds.has(students[0].id)) {
+    await prisma.sosAlert.create({
+      data: {
+        studentId: students[0].id,
+        psych: "Dr. Ana Rodrigues",
+        teacher: "Prof. Carlos Silva",
+        psychEmail: "psicologo@atlanticofit.pt",
+        teacherEmail: "professor@atlanticofit.pt",
+        resolved: false,
+      },
+    });
+  }
+
+  if (!sosStudentIds.has(students[3].id)) {
+    await prisma.sosAlert.create({
+      data: {
+        studentId: students[3].id,
+        psych: "Dr. Ana Rodrigues",
+        teacher: "Prof. Carlos Silva",
+        psychEmail: "psicologo@atlanticofit.pt",
+        teacherEmail: "professor@atlanticofit.pt",
+        resolved: false,
+      },
+    });
+  }
+
+  // ── Dispensas (skip if already exists) ──
+  const existingDispensa = await prisma.dispensa.findFirst({
+    where: { studentId: students[2].id },
   });
+  if (!existingDispensa) {
+    await prisma.dispensa.create({
+      data: {
+        studentId: students[2].id,
+        reason: "Entorse do tornozelo direito",
+        startDate: new Date("2025-10-01"),
+        endDate: new Date("2025-10-20"),
+        createdById: professor.id,
+      },
+    });
+  }
 
-  // ── Dispensas ──
-  await prisma.dispensa.create({
-    data: {
-      studentId: students[2].id,
-      reason: "Entorse do tornozelo direito",
-      startDate: new Date("2025-10-01"),
-      endDate: new Date("2025-10-20"),
-      createdById: professor.id,
+  // ── Guardian link (upsert via unique constraint) ──
+  await prisma.studentGuardian.upsert({
+    where: {
+      studentId_guardianUserId: {
+        studentId: students[0].id,
+        guardianUserId: parentUser.id,
+      },
     },
-  });
-
-  // ── Guardian link ──
-  await prisma.studentGuardian.create({
-    data: {
+    update: {},
+    create: {
       studentId: students[0].id,
       guardianUserId: parentUser.id,
       relationship: "Pai",
       createdById: professor.id,
     },
   });
+
 
   console.log("✅ Seed complete!");
   console.log(`   ${students.length} students, 1 professor, 1 psicólogo, 1 encarregado`);
@@ -239,4 +269,5 @@ main()
   })
   .finally(async () => {
     await prisma.$disconnect();
+    await pool.end();
   });

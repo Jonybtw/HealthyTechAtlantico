@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import { canRole, PERMISSIONS } from "@/lib/rbac";
+import { auditLog } from "@/lib/audit";
 import type { Role } from "@prisma/client";
 
 // PATCH /api/sos/[alertId] — mark SOS resolved
@@ -21,6 +22,8 @@ export async function PATCH(
     }
 
     const { alertId } = await params;
+
+    await auditLog({ userId: session.user.id, action: "resolve_sos", targetId: alertId }).catch(() => {});
 
     const alert = await prisma.sosAlert.update({
       where: { id: alertId },

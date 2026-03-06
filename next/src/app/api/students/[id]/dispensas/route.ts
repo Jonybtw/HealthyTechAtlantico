@@ -88,3 +88,37 @@ export async function POST(
     return NextResponse.json({ error: "Erro interno" }, { status: 500 });
   }
 }
+
+// DELETE /api/students/[id]/dispensas  (body: { dispensaId })
+export async function DELETE(
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const session = await auth();
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: "Não autenticado" }, { status: 401 });
+    }
+    if (session.user.role !== "PROFESSOR") {
+      return NextResponse.json({ error: "Sem permissão" }, { status: 403 });
+    }
+
+    const { id } = await params;
+    const body = await req.json();
+    const dispensaId = body?.dispensaId as string | undefined;
+    if (!dispensaId) {
+      return NextResponse.json({ error: "dispensaId obrigatório" }, { status: 400 });
+    }
+
+    const dispensa = await prisma.dispensa.findUnique({ where: { id: dispensaId } });
+    if (!dispensa || dispensa.studentId !== id) {
+      return NextResponse.json({ error: "Dispensa não encontrada" }, { status: 404 });
+    }
+
+    await prisma.dispensa.delete({ where: { id: dispensaId } });
+    return new NextResponse(null, { status: 204 });
+  } catch (error) {
+    console.error("DELETE dispensas error:", error);
+    return NextResponse.json({ error: "Erro interno" }, { status: 500 });
+  }
+}

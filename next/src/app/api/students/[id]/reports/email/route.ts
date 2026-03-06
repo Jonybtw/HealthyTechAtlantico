@@ -4,6 +4,7 @@ import { auth } from "@/lib/auth";
 import { canAccessStudentByRole, PERMISSIONS } from "@/lib/rbac";
 import { reportEmailSchema } from "@/lib/validations";
 import { sendMail } from "@/lib/mailer";
+import { auditLog } from "@/lib/audit";
 import type { Role } from "@prisma/client";
 
 // POST /api/students/[id]/reports/email
@@ -35,6 +36,8 @@ export async function POST(
 
     const body = await req.json();
     const data = reportEmailSchema.parse(body);
+
+    await auditLog({ userId: session.user.id, action: "send_report", targetId: id }).catch(() => {});
 
     // Save report metadata
     const report = await prisma.report.create({

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { useTranslations } from "next-intl";
 import { useSession } from "next-auth/react";
 import { toast } from "sonner";
 import { ShieldOff, Plus, Trash2 } from "lucide-react";
@@ -9,6 +10,7 @@ import { StudentPicker } from "@/components/ui/student-picker";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ConfirmModal } from "@/components/ui/confirm-modal";
+import { EmptyState } from "@/components/ui/empty-state";
 
 interface Dispensa {
   id: string;
@@ -19,6 +21,7 @@ interface Dispensa {
 }
 
 export default function DispensasPage() {
+  const t = useTranslations("dispensas");
   const { data: session } = useSession();
   const role = (session?.user as Record<string, unknown>)?.role as string;
 
@@ -84,7 +87,7 @@ export default function DispensasPage() {
         toast.error(body.error ?? "Erro ao criar dispensa.");
         return;
       }
-      toast.success("Dispensa criada.");
+      toast.success(t("success"));
       setShowForm(false);
       setForm({ reason: "", startDate: "", endDate: "" });
       // reload
@@ -106,7 +109,7 @@ export default function DispensasPage() {
         body: JSON.stringify({ dispensaId: deleteId }),
       });
       if (res.ok) {
-        toast.success("Dispensa removida.");
+        toast.success(t("deleteSuccess"));
         setDispensas((d) => d.filter((x) => x.id !== deleteId));
       }
     } catch {
@@ -119,17 +122,17 @@ export default function DispensasPage() {
   return (
     <div className="flex flex-col gap-6">
       <PageHeader
-        title="Dispensas"
-        description="Dispensas médicas e atestados"
+        title={t("title")}
+        description={t("description")}
       >
         {role !== "ALUNO" && (
-            <Button
-              size="sm"
-              icon={<Plus className="size-4" />}
-              onClick={() => setShowForm((v) => !v)}
-            >
-              {showForm ? "Cancelar" : "Nova dispensa"}
-            </Button>
+          <Button
+            size="sm"
+            icon={<Plus className="size-4" />}
+            onClick={() => setShowForm((v) => !v)}
+          >
+            {showForm ? t("deleteBtn") : t("newBtn")}
+          </Button>
         )}
       </PageHeader>
 
@@ -141,57 +144,61 @@ export default function DispensasPage() {
       {showForm && (
         <form
           onSubmit={handleCreate}
-          className="bg-card rounded-xl border border-border p-6 flex flex-col gap-4 max-w-lg"
+          className="animate-fade-in-up bg-card/85 glass rounded-2xl border border-border/50 shadow-float p-6 flex flex-col gap-5 max-w-lg mb-2"
         >
           <Input
-            label="Motivo"
+            label={t("reason")}
             value={form.reason}
             onChange={(e) => setForm((f) => ({ ...f, reason: e.target.value }))}
             required
           />
           <div className="grid grid-cols-2 gap-4">
             <Input
-              label="Data início"
+              label={t("startDateShort")}
               type="date"
               value={form.startDate}
               onChange={(e) => setForm((f) => ({ ...f, startDate: e.target.value }))}
               required
             />
             <Input
-              label="Data fim"
+              label={t("endDateShort")}
               type="date"
               value={form.endDate}
               onChange={(e) => setForm((f) => ({ ...f, endDate: e.target.value }))}
             />
           </div>
           <Button type="submit" loading={saving} className="self-start">
-            Criar dispensa
+            {t("createBtn")}
           </Button>
         </form>
       )}
 
       {/* List */}
       {!studentId ? (
-        <div className="bg-card rounded-xl border border-border p-10 text-center text-muted-foreground text-sm">
-          Selecione um aluno.
-        </div>
+        <EmptyState
+          icon={ShieldOff}
+          title="Nenhum Aluno Selecionado"
+          description="Selecione um aluno para visualizar ou gerir as dispensas associadas."
+        />
       ) : loading ? (
-        <p className="text-sm text-muted-foreground">A carregar…</p>
+        <p className="text-sm text-muted-foreground animate-pulse py-10 text-center">A carregar…</p>
       ) : dispensas.length === 0 ? (
-        <div className="bg-card rounded-xl border border-border p-10 text-center text-muted-foreground text-sm">
-          <ShieldOff className="size-8 mx-auto mb-2 opacity-40" />
-          Sem dispensas registadas.
-        </div>
+        <EmptyState
+          icon={ShieldOff}
+          title="Sem Dispensas"
+          description={t("noDispensas")}
+        />
       ) : (
         <div className="flex flex-col gap-3">
-          {dispensas.map((d) => (
+          {dispensas.map((d, i) => (
             <div
               key={d.id}
-              className="bg-card rounded-xl border border-border p-4 flex items-center justify-between"
+              className="animate-fade-in-up bg-card/85 glass rounded-2xl border border-border/50 p-5 flex items-center justify-between transition-all duration-300 hover:shadow-float hover:-translate-y-1"
+              style={{ animationDelay: `${i * 50}ms`, animationFillMode: 'both' }}
             >
               <div>
-                <p className="font-medium">{d.reason}</p>
-                <p className="text-xs text-muted-foreground mt-1">
+                <p className="font-semibold">{d.reason}</p>
+                <p className="text-xs text-muted-foreground mt-1 font-medium bg-muted/50 inline-block px-2 py-0.5 rounded-md border border-border/50">
                   {new Date(d.startDate).toLocaleDateString("pt-PT")}
                   {` — ${new Date(d.endDate).toLocaleDateString("pt-PT")}`}
                 </p>
@@ -199,7 +206,7 @@ export default function DispensasPage() {
               {role !== "ALUNO" && (
                 <button
                   onClick={() => setDeleteId(d.id)}
-                  className="p-2 rounded-lg text-muted-foreground hover:text-danger-600 hover:bg-danger-50 transition-colors"
+                  className="p-2.5 rounded-xl text-muted-foreground hover:text-danger-600 hover:bg-danger-50 dark:hover:bg-danger-900/20 transition-all border border-transparent hover:border-danger-200 dark:hover:border-danger-800/30 shadow-sm"
                 >
                   <Trash2 className="size-4" />
                 </button>
@@ -211,8 +218,8 @@ export default function DispensasPage() {
 
       <ConfirmModal
         open={!!deleteId}
-        title="Remover dispensa"
-        message="Tem a certeza que pretende eliminar esta dispensa?"
+        title={t("deleteTitle")}
+        message={t("deleteDesc")}
         variant="danger"
         onConfirm={handleDelete}
         onCancel={() => setDeleteId(null)}

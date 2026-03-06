@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { AppShell } from "@/components/app-shell";
+import { UserProvider } from "@/components/user-context";
 
 export default async function AppLayout({
   children,
@@ -12,5 +13,10 @@ export default async function AppLayout({
     redirect("/login");
   }
 
-  return <AppShell user={session.user as any}>{children}</AppShell>;
+  return (
+    <UserProvider user={session.user as { id: string; email: string; role: import("@prisma/client").Role }}>
+      <AppShell user={session.user as any}>{children}</AppShell>
+    </UserProvider>
+  );
 }
+

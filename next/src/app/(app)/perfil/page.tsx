@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { useSession } from "next-auth/react";
 import { toast } from "sonner";
 import { User, Lock, Sun, Moon } from "lucide-react";
@@ -9,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 
 export default function PerfilPage() {
+  const t = useTranslations("perfil");
   const { data: session, update } = useSession();
   const user = session?.user as Record<string, unknown> | undefined;
 
@@ -32,11 +34,11 @@ export default function PerfilPage() {
   const handlePasswordChange = async (e: React.FormEvent) => {
     e.preventDefault();
     if (pw.newPw !== pw.confirm) {
-      toast.error("As palavras-passe não coincidem.");
+      toast.error(t("passwordMismatch"));
       return;
     }
     if (pw.newPw.length < 8) {
-      toast.error("Mínimo 8 caracteres.");
+      toast.error(t("passwordShort"));
       return;
     }
     setChangingPw(true);
@@ -56,7 +58,7 @@ export default function PerfilPage() {
         return;
       }
 
-      toast.success("Palavra-passe alterada com sucesso!");
+      toast.success(t("passwordSuccess"));
       setPw({ current: "", newPw: "", confirm: "" });
     } catch {
       toast.error("Erro de ligação.");
@@ -78,7 +80,7 @@ export default function PerfilPage() {
         body: JSON.stringify({ consentRgpd: value }),
       });
       if (res.ok) {
-        toast.success(value ? "Consentimento dado." : "Consentimento revogado.");
+        toast.success(value ? t("rgpdGrant") : t("rgpdRevoke"));
         update(); // refresh session
       }
     } catch {
@@ -90,11 +92,11 @@ export default function PerfilPage() {
 
   return (
     <div className="flex flex-col gap-6 max-w-lg">
-      <PageHeader title="Perfil" description="Definições da conta e preferências" />
+      <PageHeader title={t("title")} description={t("description")} />
 
       {/* User info */}
-      <div className="bg-card rounded-xl border border-border p-6 flex items-center gap-4">
-        <div className="flex items-center justify-center size-12 rounded-full bg-navy-100 text-navy-700">
+      <div className="bg-card/85 glass rounded-2xl border border-border/50 shadow-float p-6 flex items-center gap-4 animate-fade-in-up">
+        <div className="flex items-center justify-center size-14 rounded-full bg-navy-100 dark:bg-navy-900/50 text-navy-700 dark:text-navy-300 ring-4 ring-navy-50 dark:ring-navy-900/20">
           <User className="size-6" />
         </div>
         <div>
@@ -107,11 +109,11 @@ export default function PerfilPage() {
       </div>
 
       {/* Theme toggle */}
-      <div className="bg-card rounded-xl border border-border p-6 flex items-center justify-between">
+      <div className="bg-card/85 glass rounded-2xl border border-border/50 shadow-float p-6 flex items-center justify-between animate-fade-in-up delay-75">
         <div>
-          <p className="font-medium">Tema</p>
+          <p className="font-medium">{t("themeLabel")}</p>
           <p className="text-sm text-muted-foreground">
-            {theme === "light" ? "Modo claro" : "Modo escuro"}
+            {theme === "light" ? t("lightMode") : t("darkMode")}
           </p>
         </div>
         <button
@@ -123,9 +125,9 @@ export default function PerfilPage() {
       </div>
 
       {/* RGPD consent */}
-      <div className="bg-card rounded-xl border border-border p-6 flex flex-col gap-3">
+      <div className="bg-card/85 glass rounded-2xl border border-border/50 shadow-float p-6 flex flex-col gap-3 animate-fade-in-up delay-100">
         <div>
-          <p className="font-medium">Consentimento RGPD</p>
+          <p className="font-medium">{t("rgpdTitle")}</p>
           <p className="text-sm text-muted-foreground">
             Autorização para tratamento de dados de saúde
           </p>
@@ -137,7 +139,7 @@ export default function PerfilPage() {
             onClick={() => handleConsent(true)}
             loading={updatingConsent}
           >
-            Autorizar
+            {t("rgpdGrant")}
           </Button>
           <Button
             size="sm"
@@ -145,7 +147,7 @@ export default function PerfilPage() {
             onClick={() => handleConsent(false)}
             loading={updatingConsent}
           >
-            Revogar
+            {t("rgpdRevoke")}
           </Button>
         </div>
       </div>
@@ -153,15 +155,15 @@ export default function PerfilPage() {
       {/* Password change */}
       <form
         onSubmit={handlePasswordChange}
-        className="bg-card rounded-xl border border-border p-6 flex flex-col gap-4"
+        className="bg-card/85 glass rounded-2xl border border-border/50 shadow-float p-6 flex flex-col gap-4 animate-fade-in-up delay-150"
       >
         <h3 className="font-medium flex items-center gap-2">
           <Lock className="size-4" />
-          Alterar palavra-passe
+          {t("changePassword")}
         </h3>
 
         <Input
-          label="Palavra-passe atual"
+          label={t("currentPassword")}
           type="password"
           value={pw.current}
           onChange={(e) => setPw((p) => ({ ...p, current: e.target.value }))}
@@ -169,7 +171,7 @@ export default function PerfilPage() {
           autoComplete="current-password"
         />
         <Input
-          label="Nova palavra-passe"
+          label={t("newPassword")}
           type="password"
           value={pw.newPw}
           onChange={(e) => setPw((p) => ({ ...p, newPw: e.target.value }))}
@@ -177,7 +179,7 @@ export default function PerfilPage() {
           autoComplete="new-password"
         />
         <Input
-          label="Confirmar nova palavra-passe"
+          label={t("confirmPassword")}
           type="password"
           value={pw.confirm}
           onChange={(e) => setPw((p) => ({ ...p, confirm: e.target.value }))}
@@ -186,7 +188,7 @@ export default function PerfilPage() {
         />
 
         <Button type="submit" loading={changingPw} className="self-start">
-          Alterar
+          {t("savePassword")}
         </Button>
       </form>
     </div>

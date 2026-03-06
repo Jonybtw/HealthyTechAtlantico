@@ -6,14 +6,14 @@ interface PageHeaderProps {
 
 export function PageHeader({ title, description, children }: PageHeaderProps) {
   return (
-    <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between mb-6">
+    <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between mb-6 animate-fade-in-up">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight">{title}</h1>
+        <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tighter text-gradient-gold drop-shadow-sm pb-1">{title}</h1>
         {description && (
-          <p className="text-sm text-muted-foreground mt-1">{description}</p>
+          <p className="text-sm sm:text-base text-muted-foreground mt-0.5 font-medium animate-fade-in delay-100">{description}</p>
         )}
       </div>
-      {children && <div className="mt-3 sm:mt-0">{children}</div>}
+      {children && <div className="mt-3 sm:mt-0 animate-fade-in delay-150">{children}</div>}
     </div>
   );
 }

@@ -8,6 +8,7 @@ export const loginSchema = z.object({
 });
 
 export const registerSchema = z.object({
+  name: z.string().min(2, "Nome obrigatório").max(100).optional(),
   email: z.string().email("Email inválido"),
   password: z.string().min(6, "Mínimo 6 caracteres"),
   role: z.enum(["ALUNO", "PAIS"]),

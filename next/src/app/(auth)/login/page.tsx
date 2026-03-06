@@ -4,12 +4,15 @@ import { useState } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import { LogIn } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
 export default function LoginPage() {
   const router = useRouter();
+  const t = useTranslations("auth");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -28,13 +31,13 @@ export default function LoginPage() {
       });
 
       if (res?.error) {
-        setError("E-mail ou palavra-passe incorretos.");
+        setError(t("wrongCredentials"));
       } else {
         router.push("/dashboard");
         router.refresh();
       }
     } catch {
-      setError("Erro de ligação. Tente novamente.");
+      setError(t("connectionError"));
     } finally {
       setLoading(false);
     }
@@ -42,67 +45,77 @@ export default function LoginPage() {
 
   return (
     <div className="w-full max-w-sm mx-auto">
-      {/* logo / branding */}
-      <div className="text-center mb-8">
-        <div className="inline-flex items-center justify-center size-14 rounded-2xl bg-navy-800 text-white mb-4">
-          <span className="text-xl font-bold font-display">AF</span>
+      {/* Logo */}
+      <div className="text-center mb-8 animate-fade-in-up">
+        <div className="inline-flex items-center justify-center mb-4">
+          <Image
+            src="/logo.png"
+            alt="HealthyTech Atlântico"
+            width={200}
+            height={60}
+            className="object-contain drop-shadow-md"
+            priority
+          />
         </div>
-        <h1 className="text-2xl font-bold font-display">AtlânticoFit</h1>
-        <p className="text-sm text-muted-foreground mt-1">
-          Plataforma de Avaliação Física Escolar
-        </p>
       </div>
 
-      {/* card */}
+      {/* Card */}
       <form
         onSubmit={handleSubmit}
-        className="bg-card rounded-2xl border border-border shadow-card p-6 flex flex-col gap-4"
+        className="animate-fade-in-up delay-100 bg-card/85 glass rounded-2xl border border-border/50 shadow-float p-6 flex flex-col gap-4 relative"
       >
-        <h2 className="text-lg font-semibold text-center">Iniciar Sessão</h2>
+        <div className="absolute top-0 left-0 right-0 h-[3px] bg-gradient-to-r from-navy-600 to-gold-500 opacity-90 shadow-[0_0_10px_rgba(194,151,13,0.5)]" />
+        <h2 className="text-xl font-bold tracking-tight text-center">{t("login")}</h2>
 
         {error && (
-          <div className="rounded-lg bg-danger-50 border border-danger-200 text-danger-700 text-sm px-4 py-2.5">
+          <div className="animate-scale-in rounded-lg bg-danger-50 border border-danger-200 text-danger-700 text-sm px-4 py-2.5">
             {error}
           </div>
         )}
 
-        <Input
-          label="E-mail"
-          type="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          placeholder="exemplo@escola.pt"
-          required
-          autoComplete="email"
-          autoFocus
-        />
+        <div className="animate-fade-in-up delay-150">
+          <Input
+            label={t("email")}
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="exemplo@escola.pt"
+            required
+            autoComplete="email"
+            autoFocus
+          />
+        </div>
 
-        <Input
-          label="Palavra-passe"
-          type="password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          placeholder="••••••••"
-          required
-          autoComplete="current-password"
-        />
+        <div className="animate-fade-in-up delay-200">
+          <Input
+            label={t("password")}
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            placeholder="••••••••"
+            required
+            autoComplete="current-password"
+          />
+        </div>
 
-        <Button
-          type="submit"
-          loading={loading}
-          icon={<LogIn className="size-4" />}
-          className="w-full mt-2"
-        >
-          Entrar
-        </Button>
+        <div className="animate-fade-in-up delay-300">
+          <Button
+            type="submit"
+            loading={loading}
+            icon={<LogIn className="size-4" />}
+            className="w-full mt-2"
+          >
+            {t("enter")}
+          </Button>
+        </div>
 
-        <p className="text-center text-xs text-muted-foreground mt-2">
-          Ainda não tem conta?{" "}
+        <p className="text-center text-xs text-muted-foreground mt-1 animate-fade-in delay-400">
+          {t("noAccount")}{" "}
           <Link
             href="/register"
-            className="text-navy-700 font-medium hover:underline"
+            className="text-navy-700 dark:text-navy-300 font-medium hover:underline transition-colors"
           >
-            Criar conta
+            {t("createAccount")}
           </Link>
         </p>
       </form>
