@@ -26,7 +26,7 @@ import {
   Users,
   AlertTriangle,
 } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 
 type NavItem = {
   href: string;
@@ -36,21 +36,21 @@ type NavItem = {
 };
 
 const NAV_ITEMS: NavItem[] = [
-  { href: "/dashboard", label: "nav.dashboard", icon: <Home size={18} />, roles: ["PROFESSOR", "ALUNO", "PSICOLOGO", "PAIS"] },
-  { href: "/biometria", label: "nav.biometria", icon: <Activity size={18} />, roles: ["ALUNO", "PROFESSOR"] },
-  { href: "/testes", label: "nav.testes", icon: <ClipboardList size={18} />, roles: ["ALUNO", "PROFESSOR"] },
+  { href: "/dashboard", label: "nav.dashboard", icon: <Home size={18} />, roles: ["ADMIN", "PROFESSOR", "ALUNO", "PSICOLOGO", "PAIS"] },
+  { href: "/biometria", label: "nav.biometria", icon: <Activity size={18} />, roles: ["ADMIN", "ALUNO", "PROFESSOR"] },
+  { href: "/testes", label: "nav.testes", icon: <ClipboardList size={18} />, roles: ["ADMIN", "ALUNO", "PROFESSOR"] },
   { href: "/questionarios", label: "nav.questionarios", icon: <BookOpen size={18} />, roles: ["ALUNO"] },
-  { href: "/sos", label: "nav.sos", icon: <AlertTriangle size={18} />, roles: ["ALUNO", "PROFESSOR", "PSICOLOGO"] },
-  { href: "/relatorio", label: "nav.relatorio", icon: <FileText size={18} />, roles: ["ALUNO", "PROFESSOR", "PAIS"] },
-  { href: "/analise", label: "nav.analise", icon: <BarChart3 size={18} />, roles: ["PROFESSOR"] },
-  { href: "/turma", label: "nav.turma", icon: <Users size={18} />, roles: ["PROFESSOR"] },
-  { href: "/dispensas", label: "nav.dispensas", icon: <Shield size={18} />, roles: ["PROFESSOR"] },
-  { href: "/protocolos", label: "nav.protocolos", icon: <Heart size={18} />, roles: ["ALUNO", "PROFESSOR", "PAIS"] },
-  { href: "/alunos", label: "nav.alunos", icon: <Users size={18} />, roles: ["PROFESSOR"] },
-  { href: "/perfil", label: "nav.perfil", icon: <User size={18} />, roles: ["PROFESSOR", "ALUNO", "PSICOLOGO", "PAIS"] },
-  { href: "/guardioes", label: "nav.guardioes", icon: <UserCheck size={18} />, roles: ["PROFESSOR"] },
-  { href: "/admin", label: "nav.admin", icon: <Settings size={18} />, roles: ["PROFESSOR"] },
-  { href: "/auditoria", label: "nav.auditoria", icon: <FileSearch size={18} />, roles: ["PROFESSOR"] },
+  { href: "/sos", label: "nav.sos", icon: <AlertTriangle size={18} />, roles: ["ADMIN", "ALUNO", "PROFESSOR", "PSICOLOGO"] },
+  { href: "/relatorio", label: "nav.relatorio", icon: <FileText size={18} />, roles: ["ADMIN", "ALUNO", "PROFESSOR", "PAIS"] },
+  { href: "/analise", label: "nav.analise", icon: <BarChart3 size={18} />, roles: ["ADMIN", "PROFESSOR"] },
+  { href: "/turma", label: "nav.turma", icon: <Users size={18} />, roles: ["ADMIN", "PROFESSOR"] },
+  { href: "/dispensas", label: "nav.dispensas", icon: <Shield size={18} />, roles: ["ADMIN", "PROFESSOR"] },
+  { href: "/protocolos", label: "nav.protocolos", icon: <Heart size={18} />, roles: ["ADMIN", "ALUNO", "PROFESSOR", "PAIS"] },
+  { href: "/alunos", label: "nav.alunos", icon: <Users size={18} />, roles: ["ADMIN", "PROFESSOR"] },
+  { href: "/perfil", label: "nav.perfil", icon: <User size={18} />, roles: ["ADMIN", "PROFESSOR", "ALUNO", "PSICOLOGO", "PAIS"] },
+  { href: "/guardioes", label: "nav.guardioes", icon: <UserCheck size={18} />, roles: ["ADMIN", "PROFESSOR"] },
+  { href: "/admin", label: "nav.admin", icon: <Settings size={18} />, roles: ["ADMIN"] },
+  { href: "/auditoria", label: "nav.auditoria", icon: <FileSearch size={18} />, roles: ["ADMIN"] },
 ];
 
 interface AppShellProps {
@@ -58,22 +58,23 @@ interface AppShellProps {
   children: React.ReactNode;
 }
 
+function getInitialTheme(): boolean {
+  if (typeof document === "undefined") return false;
+  return document.documentElement.getAttribute("data-theme") === "dark";
+}
+
+function getInitialLocale(): string {
+  if (typeof document === "undefined") return "pt";
+  const match = document.cookie.match(/(?:^|;\s*)NEXT_LOCALE=([^;]+)/);
+  return match?.[1] ?? "pt";
+}
+
 export function AppShell({ user, children }: AppShellProps) {
   const pathname = usePathname();
   const router = useRouter();
   const t = useTranslations();
-  const [dark, setDark] = useState(false);
-  const [locale, setLocale] = useState("pt");
-
-  useEffect(() => {
-    const saved = localStorage.getItem("theme");
-    if (saved === "dark") {
-      setDark(true);
-      document.documentElement.setAttribute("data-theme", "dark");
-    }
-    const match = document.cookie.match(/(?:^|;\s*)NEXT_LOCALE=([^;]+)/);
-    if (match) setLocale(match[1]);
-  }, []);
+  const [dark, setDark] = useState(getInitialTheme);
+  const [locale, setLocale] = useState(getInitialLocale);
 
   const toggleTheme = () => {
     const next = !dark;
@@ -92,6 +93,7 @@ export function AppShell({ user, children }: AppShellProps) {
   const visibleItems = NAV_ITEMS.filter((item) => item.roles.includes(user.role));
 
   const roleLabels: Record<Role, string> = {
+    ADMIN: t("roles.ADMIN"),
     PROFESSOR: t("roles.PROFESSOR"),
     ALUNO: t("roles.ALUNO"),
     PSICOLOGO: t("roles.PSICOLOGO"),

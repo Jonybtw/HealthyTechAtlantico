@@ -1,10 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
-import { canAccessStudentByRole, PERMISSIONS } from "@/lib/rbac";
+import { PERMISSIONS } from "@/lib/rbac";
 import { questionnaireSchema } from "@/lib/validations";
 import { auditLog } from "@/lib/audit";
 import type { Role } from "@prisma/client";
+import { getStudentAccessContext } from "@/lib/student-access";
 
 // GET /api/students/[id]/questionnaires
 export async function GET(
@@ -18,19 +20,14 @@ export async function GET(
     }
 
     const { id } = await params;
-    const student = await prisma.student.findUnique({
-      where: { id },
-      include: { guardians: { select: { guardianUserId: true } } },
-    });
-    if (!student) {
-      return NextResponse.json({ error: "Aluno não encontrado" }, { status: 404 });
-    }
-
-    const isOwner = student.userId === session.user.id;
-    const isGuardian = student.guardians.some((g) => g.guardianUserId === session.user.id);
-
-    if (!canAccessStudentByRole({ role: session.user.role as Role, permission: PERMISSIONS.READ_QUESTIONNAIRES, isOwner, isGuardian })) {
-      return NextResponse.json({ error: "Sem permissão" }, { status: 403 });
+    const access = await getStudentAccessContext(
+      id,
+      session.user.id,
+      session.user.role as Role,
+      PERMISSIONS.READ_QUESTIONNAIRES
+    );
+    if (!access.ok) {
+      return NextResponse.json({ error: access.error }, { status: access.status });
     }
 
     await auditLog({ userId: session.user.id, action: "read_questionnaires", targetId: id }).catch(() => {});
@@ -59,17 +56,14 @@ export async function POST(
     }
 
     const { id } = await params;
-    const student = await prisma.student.findUnique({
-      where: { id },
-      include: { guardians: { select: { guardianUserId: true } } },
-    });
-    if (!student) {
-      return NextResponse.json({ error: "Aluno não encontrado" }, { status: 404 });
-    }
-
-    const isOwner = student.userId === session.user.id;
-    if (!canAccessStudentByRole({ role: session.user.role as Role, permission: PERMISSIONS.SUBMIT_QUESTIONNAIRES, isOwner, isGuardian: false })) {
-      return NextResponse.json({ error: "Sem permissão" }, { status: 403 });
+    const access = await getStudentAccessContext(
+      id,
+      session.user.id,
+      session.user.role as Role,
+      PERMISSIONS.SUBMIT_QUESTIONNAIRES
+    );
+    if (!access.ok) {
+      return NextResponse.json({ error: access.error }, { status: access.status });
     }
 
     const body = await req.json();
@@ -87,9 +81,9 @@ export async function POST(
     });
 
     return NextResponse.json(questionnaire, { status: 201 });
-  } catch (error: any) {
-    if (error.name === "ZodError") {
-      return NextResponse.json({ error: error.errors }, { status: 400 });
+  } catch (error: unknown) {
+    if (error instanceof z.ZodError) {
+      return NextResponse.json({ error: error.issues }, { status: 400 });
     }
     console.error("POST questionnaires error:", error);
     return NextResponse.json({ error: "Erro interno" }, { status: 500 });

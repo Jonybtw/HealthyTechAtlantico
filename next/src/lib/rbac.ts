@@ -5,6 +5,7 @@ import type { Role } from "@prisma/client";
 export const PERMISSIONS = {
   CREATE_STUDENT: "create_student",
   LIST_STUDENTS: "list_students",
+  READ_STUDENT_PROFILE: "read_student_profile",
   RECORD_BIOMETRICS: "record_biometrics",
   READ_BIOMETRICS: "read_biometrics",
   RECORD_TESTS: "record_tests",
@@ -19,6 +20,8 @@ export const PERMISSIONS = {
   READ_CLASS_REPORTS: "read_class_reports",
   MANAGE_GUARDIANS: "manage_guardians",
   READ_LINKED_STUDENTS: "read_linked_students",
+  MANAGE_STAFF: "manage_staff",
+  READ_AUDIT: "read_audit",
 } as const;
 
 export type Permission = (typeof PERMISSIONS)[keyof typeof PERMISSIONS];
@@ -30,8 +33,8 @@ const ALL_PERMISSIONS = new Set<Permission>(
 );
 
 const ROLE_PERMISSIONS: Record<Role, Set<Permission>> = {
+  ADMIN: ALL_PERMISSIONS,
   ALUNO: new Set([
-    PERMISSIONS.CREATE_STUDENT,
     PERMISSIONS.LIST_STUDENTS,
     PERMISSIONS.RECORD_BIOMETRICS,
     PERMISSIONS.READ_BIOMETRICS,
@@ -40,13 +43,27 @@ const ROLE_PERMISSIONS: Record<Role, Set<Permission>> = {
     PERMISSIONS.SUBMIT_QUESTIONNAIRES,
     PERMISSIONS.READ_QUESTIONNAIRES,
     PERMISSIONS.TRIGGER_SOS,
-    PERMISSIONS.SEND_REPORTS,
     PERMISSIONS.READ_REPORTS,
   ]),
-  PROFESSOR: ALL_PERMISSIONS,
-  PSICOLOGO: new Set([
-    PERMISSIONS.READ_SOS,
+  PROFESSOR: new Set([
+    PERMISSIONS.CREATE_STUDENT,
     PERMISSIONS.LIST_STUDENTS,
+    PERMISSIONS.READ_STUDENT_PROFILE,
+    PERMISSIONS.RECORD_BIOMETRICS,
+    PERMISSIONS.READ_BIOMETRICS,
+    PERMISSIONS.RECORD_TESTS,
+    PERMISSIONS.READ_TESTS,
+    PERMISSIONS.READ_QUESTIONNAIRES,
+    PERMISSIONS.READ_SOS,
+    PERMISSIONS.SEND_REPORTS,
+    PERMISSIONS.READ_REPORTS,
+    PERMISSIONS.MANAGE_DISPENSAS,
+    PERMISSIONS.READ_CLASS_REPORTS,
+    PERMISSIONS.MANAGE_GUARDIANS,
+  ]),
+  PSICOLOGO: new Set([
+    PERMISSIONS.LIST_STUDENTS,
+    PERMISSIONS.READ_SOS,
     PERMISSIONS.READ_QUESTIONNAIRES,
   ]),
   PAIS: new Set([
@@ -73,6 +90,14 @@ export function isKnownRole(role: string): role is Role {
   return role in ROLE_PERMISSIONS;
 }
 
+export function isAdminRole(role: Role): boolean {
+  return role === "ADMIN";
+}
+
+export function isStaffRole(role: Role): boolean {
+  return role === "ADMIN" || role === "PROFESSOR";
+}
+
 export function canAccessStudentByRole({
   role,
   permission,
@@ -85,11 +110,11 @@ export function canAccessStudentByRole({
   isGuardian: boolean;
 }): boolean {
   if (!canRole(role, permission)) return false;
-  if (role === "PROFESSOR") return true;
+  if (role === "ADMIN" || role === "PROFESSOR") return true;
   if (role === "PSICOLOGO") {
     return (
       permission === PERMISSIONS.READ_SOS ||
-      permission === PERMISSIONS.READ_REPORTS
+      permission === PERMISSIONS.READ_QUESTIONNAIRES
     );
   }
   if (role === "ALUNO") return isOwner;

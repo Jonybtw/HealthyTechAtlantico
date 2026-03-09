@@ -13,7 +13,7 @@ export async function GET() {
 
     const role = session.user.role as Role;
 
-    if (role === "PROFESSOR") {
+    if (role === "ADMIN" || role === "PROFESSOR") {
       const [studentCount, openSos, totalBiometrics, totalTests] =
         await Promise.all([
           prisma.student.count(),
@@ -39,7 +39,7 @@ export async function GET() {
 
     if (role === "ALUNO") {
       const student = await prisma.student.findFirst({
-        where: { userId: session.user.id },
+        where: { linkedUserId: session.user.id },
       });
       if (!student) return NextResponse.json({});
 

@@ -50,7 +50,6 @@ export default function GuardioesPage() {
 
   // Delete confirm
   const [deleteTarget, setDeleteTarget] = useState<{ guardianUserId: string; studentId: string } | null>(null);
-  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     fetch("/api/students")
@@ -111,7 +110,6 @@ export default function GuardioesPage() {
 
   async function handleDelete() {
     if (!deleteTarget) return;
-    setDeleting(true);
     try {
       const res = await fetch(`/api/students/${deleteTarget.studentId}/guardians`, {
         method: "DELETE",
@@ -127,12 +125,10 @@ export default function GuardioesPage() {
       loadGuardians(deleteTarget.studentId);
     } catch {
       toast.error("Erro de ligação.");
-    } finally {
-      setDeleting(false);
     }
   }
 
-  if (role !== "PROFESSOR") {
+  if (role !== "PROFESSOR" && role !== "ADMIN") {
     return (
       <div className="flex items-center justify-center min-h-[40vh]">
         <p className="text-muted-foreground">{t("noPermission")}</p>

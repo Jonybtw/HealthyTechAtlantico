@@ -102,10 +102,9 @@ export const dispensaSchema = z.object({
 // ── Report Email ─────────────────────────────────────────────────────────────
 
 export const reportEmailSchema = z.object({
+  guardianUserId: z.string().min(1),
   title: z.string().default("Relatório AtlanticoFit"),
-  emailedTo: z.string().email(),
   schoolYear: z.string().optional(),
-  htmlContent: z.string().optional(),
 });
 
 // ── Guardian ─────────────────────────────────────────────────────────────────

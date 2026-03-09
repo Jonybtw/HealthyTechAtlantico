@@ -43,12 +43,19 @@ export function AlunosClient({ initialStudents }: AlunosClientProps) {
     useEffect(() => {
         if (state?.error) {
             toast.error(state.error);
-        } else if (state?.success) {
-            toast.success(t("createSuccess"));
-            setShowCreate(false);
-            setForm({ name: "", sex: "M", birthDate: "", className: "" });
+            return;
         }
-    }, [state, t]);
+
+        if (state?.success) {
+            toast.success(t("createSuccess"));
+            const frame = requestAnimationFrame(() => {
+                setShowCreate(false);
+                setForm({ name: "", sex: "M", birthDate: "", className: "" });
+                router.refresh();
+            });
+            return () => cancelAnimationFrame(frame);
+        }
+    }, [router, state, t]);
 
     const columns: Column<StudentRow>[] = [
         { key: "name", header: t("colName"), sortable: true },

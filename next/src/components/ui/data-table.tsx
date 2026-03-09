@@ -22,7 +22,7 @@ interface DataTableProps<T> {
   rowKey: (row: T) => string;
 }
 
-export function DataTable<T extends Record<string, unknown>>({
+export function DataTable<T extends object>({
   columns,
   data,
   pageSize = 15,
@@ -42,7 +42,7 @@ export function DataTable<T extends Record<string, unknown>>({
     const q = search.toLowerCase();
     return data.filter((row) =>
       columns.some((col) => {
-        const val = row[col.key];
+        const val = (row as Record<string, unknown>)[col.key];
         return val != null && String(val).toLowerCase().includes(q);
       })
     );
@@ -52,8 +52,8 @@ export function DataTable<T extends Record<string, unknown>>({
     if (!sortKey) return filtered;
     const copy = [...filtered];
     copy.sort((a, b) => {
-      const av = a[sortKey] ?? "";
-      const bv = b[sortKey] ?? "";
+      const av = (a as Record<string, unknown>)[sortKey] ?? "";
+      const bv = (b as Record<string, unknown>)[sortKey] ?? "";
       if (typeof av === "number" && typeof bv === "number")
         return sortDir === "asc" ? av - bv : bv - av;
       return sortDir === "asc"
@@ -136,7 +136,9 @@ export function DataTable<T extends Record<string, unknown>>({
                 >
                   {columns.map((col) => (
                     <td key={col.key} className={`px-5 py-3.5 text-foreground transition-colors ${col.className ?? ""}`}>
-                      {col.render ? col.render(row) : (row[col.key] as React.ReactNode)}
+                      {col.render
+                        ? col.render(row)
+                        : ((row as Record<string, unknown>)[col.key] as React.ReactNode)}
                     </td>
                   ))}
                 </tr>

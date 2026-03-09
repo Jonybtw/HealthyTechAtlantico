@@ -3,6 +3,7 @@ import Credentials from "next-auth/providers/credentials";
 import { compare } from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 import type { Role } from "@prisma/client";
+import { getRolePermissions } from "@/lib/rbac";
 
 class InvalidCredentialsError extends CredentialsSignin {
   code = "invalid_credentials";
@@ -24,17 +25,16 @@ declare module "next-auth" {
   }
 }
 
-declare module "next-auth" {
-  interface JWT {
-    id: string;
-    role: Role;
-    consentRgpd: boolean;
-    permissions: string[];
-  }
+function hasSessionFields(
+  user: unknown
+): user is { id?: string; role: Role; consentRgpd: boolean } {
+  return (
+    typeof user === "object" &&
+    user !== null &&
+    "role" in user &&
+    "consentRgpd" in user
+  );
 }
-
-// Import RBAC inline to avoid circular dependency
-import { getRolePermissions } from "@/lib/rbac";
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   trustHost: true,
@@ -80,19 +80,33 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   ],
   callbacks: {
     async jwt({ token, user }) {
-      if (user) {
-        token.id = user.id!;
-        token.role = (user as any).role;
-        token.consentRgpd = (user as any).consentRgpd;
-        token.permissions = getRolePermissions((user as any).role);
+      const sessionToken = token as typeof token & {
+        id?: string;
+        role?: Role;
+        consentRgpd?: boolean;
+        permissions?: string[];
+      };
+
+      if (user && hasSessionFields(user)) {
+        sessionToken.id = user.id ?? sessionToken.id;
+        sessionToken.role = user.role;
+        sessionToken.consentRgpd = user.consentRgpd;
+        sessionToken.permissions = getRolePermissions(user.role);
       }
-      return token;
+      return sessionToken;
     },
     async session({ session, token }) {
-      session.user.id = token.id as string;
-      session.user.role = token.role as Role;
-      session.user.consentRgpd = token.consentRgpd as boolean;
-      session.user.permissions = token.permissions as string[];
+      const sessionToken = token as typeof token & {
+        id?: string;
+        role?: Role;
+        consentRgpd?: boolean;
+        permissions?: string[];
+      };
+
+      session.user.id = sessionToken.id ?? "";
+      session.user.role = sessionToken.role as Role;
+      session.user.consentRgpd = sessionToken.consentRgpd ?? false;
+      session.user.permissions = sessionToken.permissions ?? [];
       return session;
     },
   },

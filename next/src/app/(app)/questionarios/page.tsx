@@ -4,12 +4,13 @@ import { useState, useEffect, useCallback } from "react";
 import { useTranslations } from "next-intl";
 import { useSession } from "next-auth/react";
 import { toast } from "sonner";
-import { ClipboardList, Clock } from "lucide-react";
+import { ClipboardList, Clock, Link2 } from "lucide-react";
 import { PageHeader } from "@/components/ui/page-header";
 import { StudentPicker } from "@/components/ui/student-picker";
 import { PillSelect } from "@/components/ui/pill-select";
 import { RangeSlider } from "@/components/ui/range-slider";
 import { Button } from "@/components/ui/button";
+import { EmptyState } from "@/components/ui/empty-state";
 
 const MAX_DEFERRALS = 3;
 const STRESS_LABELS = ["Nenhum", "Baixo", "Moderado", "Elevado", "Extremo"];
@@ -38,6 +39,7 @@ const INITIAL_QUESTIONS = [
 
 export default function QuestionariosPage() {
   const t = useTranslations("questionarios");
+  const common = useTranslations("common");
   const { data: session } = useSession();
   const role = (session?.user as Record<string, unknown>)?.role as string;
 
@@ -101,6 +103,27 @@ export default function QuestionariosPage() {
   }, [studentId, loadLatestQ]);
 
   const deferralsLeft = MAX_DEFERRALS - deferredCount;
+
+  if (role && role !== "ALUNO") {
+    return (
+      <div className="flex items-center justify-center min-h-[40vh]">
+        <p className="text-muted-foreground">{common("noPermission")}</p>
+      </div>
+    );
+  }
+
+  if (role === "ALUNO" && students.length === 0) {
+    return (
+      <div className="flex flex-col gap-6">
+        <PageHeader title={t("title")} description={t("description")} />
+        <EmptyState
+          icon={Link2}
+          title="Perfil não associado"
+          description="A tua conta ainda não está associada a um perfil de aluno. Contacta a escola para concluírem a ligação."
+        />
+      </div>
+    );
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

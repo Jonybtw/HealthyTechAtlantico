@@ -1,16 +1,16 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
-import { useSession } from "next-auth/react";
 import { toast } from "sonner";
-import { ShieldOff, Plus, Trash2 } from "lucide-react";
+import { Plus, ShieldOff, Trash2 } from "lucide-react";
 import { PageHeader } from "@/components/ui/page-header";
 import { StudentPicker } from "@/components/ui/student-picker";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ConfirmModal } from "@/components/ui/confirm-modal";
 import { EmptyState } from "@/components/ui/empty-state";
+import { useUser } from "@/components/user-context";
 
 interface Dispensa {
   id: string;
@@ -22,8 +22,9 @@ interface Dispensa {
 
 export default function DispensasPage() {
   const t = useTranslations("dispensas");
-  const { data: session } = useSession();
-  const role = (session?.user as Record<string, unknown>)?.role as string;
+  const common = useTranslations("common");
+  const { role } = useUser();
+  const canManageDispensas = role === "ADMIN" || role === "PROFESSOR";
 
   const [students, setStudents] = useState<{ id: string; name: string }[]>([]);
   const [studentId, setStudentId] = useState<string | null>(null);
@@ -40,37 +41,60 @@ export default function DispensasPage() {
   });
 
   const loadStudents = useCallback(async () => {
-    const res = await fetch("/api/students?limit=500");
-    if (res.ok) {
-      const body = await res.json();
-      setStudents(body.students.map((s: { id: string; name: string }) => ({ id: s.id, name: s.name })));
-      if (role === "ALUNO" && body.students.length === 1) {
-        setStudentId(body.students[0].id);
-      }
+    if (!canManageDispensas) {
+      setStudents([]);
+      setStudentId(null);
+      return;
     }
-  }, [role]);
+
+    const res = await fetch("/api/students?limit=500");
+    if (!res.ok) return;
+
+    const body = await res.json();
+    setStudents(
+      body.students.map((student: { id: string; name: string }) => ({
+        id: student.id,
+        name: student.name,
+      }))
+    );
+  }, [canManageDispensas]);
 
   useEffect(() => {
     loadStudents();
   }, [loadStudents]);
 
-  /* Load dispensas for selected student */
   useEffect(() => {
-    if (!studentId) return;
+    if (!canManageDispensas || !studentId) {
+      setDispensas([]);
+      setLoading(false);
+      return;
+    }
+
+    let active = true;
     setLoading(true);
+
     fetch(`/api/students/${studentId}/dispensas`)
       .then(async (res) => {
-        if (res.ok) {
-          const body = await res.json();
-          setDispensas(Array.isArray(body) ? body : (body.dispensas ?? []));
-        }
+        if (!res.ok || !active) return;
+        const body = await res.json();
+        setDispensas(Array.isArray(body) ? body : (body.dispensas ?? []));
       })
-      .finally(() => setLoading(false));
-  }, [studentId]);
+      .catch(() => {
+        if (active) toast.error("Failed to load dispensas.");
+      })
+      .finally(() => {
+        if (active) setLoading(false);
+      });
 
-  const handleCreate = async (e: React.FormEvent) => {
-    e.preventDefault();
+    return () => {
+      active = false;
+    };
+  }, [canManageDispensas, studentId]);
+
+  const handleCreate = async (event: React.FormEvent) => {
+    event.preventDefault();
     if (!studentId) return;
+
     setSaving(true);
     try {
       const res = await fetch(`/api/students/${studentId}/dispensas`, {
@@ -82,19 +106,23 @@ export default function DispensasPage() {
           endDate: form.endDate || undefined,
         }),
       });
+
       if (!res.ok) {
         const body = await res.json().catch(() => ({}));
-        toast.error(body.error ?? "Erro ao criar dispensa.");
+        toast.error(body.error ?? "Failed to create dispensa.");
         return;
       }
+
       toast.success(t("success"));
       setShowForm(false);
       setForm({ reason: "", startDate: "", endDate: "" });
-      // reload
-      const body = await fetch(`/api/students/${studentId}/dispensas`).then((r) => r.json());
+
+      const body = await fetch(`/api/students/${studentId}/dispensas`).then((response) =>
+        response.json()
+      );
       setDispensas(Array.isArray(body) ? body : (body.dispensas ?? []));
     } catch {
-      toast.error("Erro de ligação.");
+      toast.error("Connection error.");
     } finally {
       setSaving(false);
     }
@@ -102,45 +130,47 @@ export default function DispensasPage() {
 
   const handleDelete = async () => {
     if (!deleteId || !studentId) return;
+
     try {
       const res = await fetch(`/api/students/${studentId}/dispensas`, {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ dispensaId: deleteId }),
       });
+
       if (res.ok) {
         toast.success(t("deleteSuccess"));
-        setDispensas((d) => d.filter((x) => x.id !== deleteId));
+        setDispensas((current) => current.filter((dispensa) => dispensa.id !== deleteId));
       }
     } catch {
-      toast.error("Erro ao remover.");
+      toast.error("Failed to remove dispensa.");
     } finally {
       setDeleteId(null);
     }
   };
 
+  if (!canManageDispensas) {
+    return (
+      <div className="flex items-center justify-center min-h-[40vh]">
+        <p className="text-muted-foreground">{common("noPermission")}</p>
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-col gap-6">
-      <PageHeader
-        title={t("title")}
-        description={t("description")}
-      >
-        {role !== "ALUNO" && (
-          <Button
-            size="sm"
-            icon={<Plus className="size-4" />}
-            onClick={() => setShowForm((v) => !v)}
-          >
-            {showForm ? t("deleteBtn") : t("newBtn")}
-          </Button>
-        )}
+      <PageHeader title={t("title")} description={t("description")}>
+        <Button
+          size="sm"
+          icon={<Plus className="size-4" />}
+          onClick={() => setShowForm((value) => !value)}
+        >
+          {showForm ? t("deleteBtn") : t("newBtn")}
+        </Button>
       </PageHeader>
 
-      {role !== "ALUNO" && (
-        <StudentPicker students={students} value={studentId} onChange={setStudentId} />
-      )}
+      <StudentPicker students={students} value={studentId} onChange={setStudentId} />
 
-      {/* Create form */}
       {showForm && (
         <form
           onSubmit={handleCreate}
@@ -149,7 +179,7 @@ export default function DispensasPage() {
           <Input
             label={t("reason")}
             value={form.reason}
-            onChange={(e) => setForm((f) => ({ ...f, reason: e.target.value }))}
+            onChange={(event) => setForm((current) => ({ ...current, reason: event.target.value }))}
             required
           />
           <div className="grid grid-cols-2 gap-4">
@@ -157,14 +187,18 @@ export default function DispensasPage() {
               label={t("startDateShort")}
               type="date"
               value={form.startDate}
-              onChange={(e) => setForm((f) => ({ ...f, startDate: e.target.value }))}
+              onChange={(event) =>
+                setForm((current) => ({ ...current, startDate: event.target.value }))
+              }
               required
             />
             <Input
               label={t("endDateShort")}
               type="date"
               value={form.endDate}
-              onChange={(e) => setForm((f) => ({ ...f, endDate: e.target.value }))}
+              onChange={(event) =>
+                setForm((current) => ({ ...current, endDate: event.target.value }))
+              }
             />
           </div>
           <Button type="submit" loading={saving} className="self-start">
@@ -173,44 +207,43 @@ export default function DispensasPage() {
         </form>
       )}
 
-      {/* List */}
       {!studentId ? (
         <EmptyState
           icon={ShieldOff}
-          title="Nenhum Aluno Selecionado"
-          description="Selecione um aluno para visualizar ou gerir as dispensas associadas."
+          title="No Student Selected"
+          description="Select a student to view or manage dispensas."
         />
       ) : loading ? (
-        <p className="text-sm text-muted-foreground animate-pulse py-10 text-center">A carregar…</p>
+        <p className="text-sm text-muted-foreground animate-pulse py-10 text-center">
+          Loading...
+        </p>
       ) : dispensas.length === 0 ? (
         <EmptyState
           icon={ShieldOff}
-          title="Sem Dispensas"
+          title="No Dispensas"
           description={t("noDispensas")}
         />
       ) : (
         <div className="flex flex-col gap-3">
-          {dispensas.map((d, i) => (
+          {dispensas.map((dispensa, index) => (
             <div
-              key={d.id}
+              key={dispensa.id}
               className="animate-fade-in-up bg-card/85 glass rounded-2xl border border-border/50 p-5 flex items-center justify-between transition-all duration-300 hover:shadow-float hover:-translate-y-1"
-              style={{ animationDelay: `${i * 50}ms`, animationFillMode: 'both' }}
+              style={{ animationDelay: `${index * 50}ms`, animationFillMode: "both" }}
             >
               <div>
-                <p className="font-semibold">{d.reason}</p>
+                <p className="font-semibold">{dispensa.reason}</p>
                 <p className="text-xs text-muted-foreground mt-1 font-medium bg-muted/50 inline-block px-2 py-0.5 rounded-md border border-border/50">
-                  {new Date(d.startDate).toLocaleDateString("pt-PT")}
-                  {` — ${new Date(d.endDate).toLocaleDateString("pt-PT")}`}
+                  {new Date(dispensa.startDate).toLocaleDateString("pt-PT")}
+                  {` - ${new Date(dispensa.endDate).toLocaleDateString("pt-PT")}`}
                 </p>
               </div>
-              {role !== "ALUNO" && (
-                <button
-                  onClick={() => setDeleteId(d.id)}
-                  className="p-2.5 rounded-xl text-muted-foreground hover:text-danger-600 hover:bg-danger-50 dark:hover:bg-danger-900/20 transition-all border border-transparent hover:border-danger-200 dark:hover:border-danger-800/30 shadow-sm"
-                >
-                  <Trash2 className="size-4" />
-                </button>
-              )}
+              <button
+                onClick={() => setDeleteId(dispensa.id)}
+                className="p-2.5 rounded-xl text-muted-foreground hover:text-danger-600 hover:bg-danger-50 dark:hover:bg-danger-900/20 transition-all border border-transparent hover:border-danger-200 dark:hover:border-danger-800/30 shadow-sm"
+              >
+                <Trash2 className="size-4" />
+              </button>
             </div>
           ))}
         </div>

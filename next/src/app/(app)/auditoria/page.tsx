@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
-import { FileSearch, RefreshCw, Loader2 } from "lucide-react";
+import { FileSearch, RefreshCw } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { PageHeader } from "@/components/ui/page-header";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -63,13 +63,13 @@ export default function AuditoriaPage() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [t]);
 
   useEffect(() => {
-    if (role === "PROFESSOR") loadLogs();
+    if (role === "ADMIN") loadLogs();
   }, [role, loadLogs]);
 
-  if (role !== "PROFESSOR") {
+  if (role !== "ADMIN") {
     return (
       <div className="flex items-center justify-center min-h-[40vh]">
         <p className="text-muted-foreground">{t("noPermission")}</p>

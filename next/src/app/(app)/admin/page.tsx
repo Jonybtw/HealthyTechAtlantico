@@ -39,7 +39,6 @@ export default function AdminPage() {
 
   // Delete
   const [deleteTarget, setDeleteTarget] = useState<StaffUser | null>(null);
-  const [deleting, setDeleting] = useState(false);
 
   const loadStaff = useCallback(async () => {
     setLoading(true);
@@ -55,7 +54,7 @@ export default function AdminPage() {
   }, []);
 
   useEffect(() => {
-    if (role === "PROFESSOR") loadStaff();
+    if (role === "ADMIN") loadStaff();
   }, [role, loadStaff]);
 
   function validateForm() {
@@ -95,7 +94,6 @@ export default function AdminPage() {
 
   async function handleDelete() {
     if (!deleteTarget) return;
-    setDeleting(true);
     try {
       const res = await fetch("/api/admin/staff", {
         method: "DELETE",
@@ -112,12 +110,10 @@ export default function AdminPage() {
       loadStaff();
     } catch {
       toast.error("Erro de ligação.");
-    } finally {
-      setDeleting(false);
     }
   }
 
-  if (role !== "PROFESSOR") {
+  if (role !== "ADMIN") {
     return (
       <div className="flex items-center justify-center min-h-[40vh]">
         <p className="text-muted-foreground">{t("noPermission")}</p>

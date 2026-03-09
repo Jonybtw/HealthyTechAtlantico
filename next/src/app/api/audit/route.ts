@@ -1,15 +1,17 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
+import { canRole, PERMISSIONS } from "@/lib/rbac";
+import type { Role } from "@prisma/client";
 
-// GET /api/audit — last 100 audit log entries (PROFESSOR only)
+// GET /api/audit — last 100 audit log entries (ADMIN only)
 export async function GET() {
   try {
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Não autenticado" }, { status: 401 });
     }
-    if (session.user.role !== "PROFESSOR") {
+    if (!canRole(session.user.role as Role, PERMISSIONS.READ_AUDIT)) {
       return NextResponse.json({ error: "Sem permissão" }, { status: 403 });
     }
 

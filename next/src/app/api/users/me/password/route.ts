@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { compare, hash } from "bcryptjs";
+import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import { changePasswordSchema } from "@/lib/validations";
@@ -33,9 +34,9 @@ export async function PUT(req: NextRequest) {
     });
 
     return NextResponse.json({ ok: true });
-  } catch (error: any) {
-    if (error.name === "ZodError") {
-      return NextResponse.json({ error: error.errors }, { status: 400 });
+  } catch (error: unknown) {
+    if (error instanceof z.ZodError) {
+      return NextResponse.json({ error: error.issues }, { status: 400 });
     }
     console.error("PUT /api/users/me/password error:", error);
     return NextResponse.json({ error: "Erro interno" }, { status: 500 });

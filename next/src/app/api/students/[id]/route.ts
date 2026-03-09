@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
-import { canAccessStudentByRole, PERMISSIONS } from "@/lib/rbac";
+import { canAccessStudentByRole, isStaffRole, PERMISSIONS } from "@/lib/rbac";
 import { createStudentSchema } from "@/lib/validations";
 import type { Role } from "@prisma/client";
 
@@ -30,7 +31,7 @@ export async function GET(
       return NextResponse.json({ error: "Aluno não encontrado" }, { status: 404 });
     }
 
-    const isOwner = student.userId === session.user.id;
+    const isOwner = student.linkedUserId === session.user.id;
     const isGuardian = student.guardians.some(
       (g) => g.guardianUserId === session.user.id
     );
@@ -38,7 +39,7 @@ export async function GET(
     if (
       !canAccessStudentByRole({
         role,
-        permission: PERMISSIONS.LIST_STUDENTS,
+        permission: PERMISSIONS.READ_STUDENT_PROFILE,
         isOwner,
         isGuardian,
       })
@@ -63,7 +64,7 @@ export async function PUT(
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Não autenticado" }, { status: 401 });
     }
-    if (session.user.role !== "PROFESSOR") {
+    if (!isStaffRole(session.user.role as Role)) {
       return NextResponse.json({ error: "Sem permissão" }, { status: 403 });
     }
 
@@ -86,9 +87,9 @@ export async function PUT(
     });
 
     return NextResponse.json(student);
-  } catch (error: any) {
-    if (error.name === "ZodError") {
-      return NextResponse.json({ error: error.errors }, { status: 400 });
+  } catch (error: unknown) {
+    if (error instanceof z.ZodError) {
+      return NextResponse.json({ error: error.issues }, { status: 400 });
     }
     console.error("PUT /api/students/[id] error:", error);
     return NextResponse.json({ error: "Erro interno" }, { status: 500 });
@@ -105,7 +106,7 @@ export async function DELETE(
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Não autenticado" }, { status: 401 });
     }
-    if (session.user.role !== "PROFESSOR") {
+    if (!isStaffRole(session.user.role as Role)) {
       return NextResponse.json({ error: "Sem permissão" }, { status: 403 });
     }
 

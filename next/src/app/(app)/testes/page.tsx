@@ -4,13 +4,14 @@ import { useState, useEffect, useCallback } from "react";
 import { useTranslations } from "next-intl";
 import { useSession } from "next-auth/react";
 import { toast } from "sonner";
-import { Timer } from "lucide-react";
+import { Link2, Timer } from "lucide-react";
 import { PageHeader } from "@/components/ui/page-header";
 import { StudentPicker } from "@/components/ui/student-picker";
 import { UnitInput } from "@/components/ui/unit-input";
 import { PillSelect } from "@/components/ui/pill-select";
 import { Button } from "@/components/ui/button";
 import { ZoneBadge } from "@/components/ui/zone-badge";
+import { EmptyState } from "@/components/ui/empty-state";
 import { TEST_OPTIONS, classifyTest } from "@/lib/fitness-tests";
 import { calcAgeFromBirthDate } from "@/lib/zaf";
 import type { Sex } from "@prisma/client";
@@ -59,6 +60,19 @@ export default function TestesPage() {
 
   const selectedStudent = students.find((s) => s.id === studentId);
   const currentTest = TEST_OPTIONS.find((t) => t.id === selectedTest)!;
+
+  if (role === "ALUNO" && students.length === 0) {
+    return (
+      <div className="flex flex-col gap-6">
+        <PageHeader title={t("title")} description={t("description")} />
+        <EmptyState
+          icon={Link2}
+          title="Perfil não associado"
+          description="A tua conta ainda não está associada a um perfil de aluno. Contacta a escola para concluírem a ligação."
+        />
+      </div>
+    );
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

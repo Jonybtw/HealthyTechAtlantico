@@ -35,6 +35,19 @@ async function main() {
   // ── Staff accounts (password = Password1) ──
   const hash = await bcrypt.hash("Password1", 12);
 
+  const admin = await prisma.user.upsert({
+    where: { email: "admin@atlanticofit.pt" },
+    update: {},
+    create: {
+      email: "admin@atlanticofit.pt",
+      name: "Admin Atlântico",
+      passwordHash: hash,
+      role: Role.ADMIN,
+      consentRgpd: true,
+      consentShare: true,
+    },
+  });
+
   const professor = await prisma.user.upsert({
     where: { email: "professor@atlanticofit.pt" },
     update: {},
@@ -90,7 +103,7 @@ async function main() {
   for (let i = 0; i < studentNames.length; i++) {
     const s = studentNames[i];
     const email = `aluno${i + 1}@atlanticofit.pt`;
-    const className = i < 5 ? "7ºA" : "8ºB";
+    const className = i < 5 ? class7A.name : class8B.name;
 
     const user = await prisma.user.upsert({
       where: { email },
@@ -105,13 +118,14 @@ async function main() {
     });
 
     const student = await prisma.student.upsert({
-      where: { userId: user.id },
+      where: { linkedUserId: user.id },
       update: {},
       create: {
         name: s.name,
         sex: s.sex,
         birthDate: new Date(s.birth),
-        userId: user.id,
+        linkedUserId: user.id,
+        createdById: admin.id,
         schoolYear: "2025/2026",
         className,
       },
@@ -258,7 +272,7 @@ async function main() {
 
 
   console.log("✅ Seed complete!");
-  console.log(`   ${students.length} students, 1 professor, 1 psicólogo, 1 encarregado`);
+  console.log(`   ${students.length} students, 1 admin, 1 professor, 1 psicólogo, 1 encarregado`);
   console.log(`   Login: any email above / Password1`);
 }
 

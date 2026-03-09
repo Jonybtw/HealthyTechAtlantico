@@ -1,6 +1,6 @@
-﻿"use client";
+"use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { Download, Users } from "lucide-react";
@@ -21,6 +21,7 @@ import { Button } from "@/components/ui/button";
 import { ZoneBadge } from "@/components/ui/zone-badge";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useUser } from "@/components/user-context";
 
 interface ClassOption {
   id: string;
@@ -35,63 +36,129 @@ interface StudentRow {
   className: string | null;
   latestBiometric: { imc: number | string; imcZone: string } | null;
   testCount: number;
-  [key: string]: unknown;
+}
+
+interface TooltipEntry {
+  color?: string;
+  name?: string;
+  value?: string | number;
+}
+
+function ChartTooltip({
+  active,
+  payload,
+  label,
+}: {
+  active?: boolean;
+  payload?: TooltipEntry[];
+  label?: string | number;
+}) {
+  if (!active || !payload?.length) return null;
+
+  return (
+    <div className="bg-card/90 glass p-3 border border-border/50 shadow-float rounded-xl text-sm">
+      <p className="font-semibold mb-2 tracking-tight text-foreground">{label}</p>
+      <div className="flex flex-col gap-1.5">
+        {payload.map((entry, index) => (
+          <div key={`${entry.name}-${index}`} className="flex items-center gap-2">
+            <div
+              className="size-2.5 rounded-full"
+              style={{ backgroundColor: entry.color }}
+            />
+            <span className="text-muted-foreground mr-2">{entry.name}:</span>
+            <span className="font-bold text-foreground">{entry.value}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
 }
 
 export default function TurmaPage() {
   const t = useTranslations("turma");
+  const common = useTranslations("common");
+  const { role } = useUser();
+  const canViewClassReports = role === "ADMIN" || role === "PROFESSOR";
   const [classes, setClasses] = useState<ClassOption[]>([]);
-  const [classId, setClassId] = useState<string | null>(null);
+  const [classId, setClassId] = useState<string>("");
   const [students, setStudents] = useState<StudentRow[]>([]);
   const [loading, setLoading] = useState(false);
 
-  /* Load classes */
-  const loadClasses = useCallback(async () => {
-    const res = await fetch("/api/classes");
-    if (res.ok) {
-      const body = await res.json();
-      // API returns academic years with nested classes
-      const allClasses: ClassOption[] = [];
-      for (const ay of body as { label: string; classes: { id: string; name: string }[] }[]) {
-        for (const c of ay.classes) {
-          allClasses.push({ id: c.id, name: c.name, year: ay.label });
-        }
-      }
+  useEffect(() => {
+    if (!canViewClassReports) return;
+
+    let active = true;
+
+    (async () => {
+      const res = await fetch("/api/classes");
+      if (!res.ok) return;
+
+      const body = (await res.json()) as {
+        label: string;
+        classes: { id: string; name: string }[];
+      }[];
+
+      if (!active) return;
+
+      const allClasses: ClassOption[] = body.flatMap((academicYear) =>
+        academicYear.classes.map((schoolClass) => ({
+          id: schoolClass.id,
+          name: schoolClass.name,
+          year: academicYear.label,
+        }))
+      );
       setClasses(allClasses);
-    }
-  }, []);
+    })().catch(() => {
+      if (active) toast.error(t("loadError"));
+    });
+
+    return () => {
+      active = false;
+    };
+  }, [canViewClassReports, t]);
 
   useEffect(() => {
-    loadClasses();
-  }, [loadClasses]);
+    if (!canViewClassReports || !classId) return;
 
-  /* Load class report */
-  useEffect(() => {
-    if (!classId) return;
-    setLoading(true);
-    const cls = classes.find((c) => c.id === classId);
-    const year = cls?.year ?? "";
-    fetch(`/api/classes/report?year=${encodeURIComponent(year)}`)
-      .then(async (res) => {
-        if (res.ok) {
-          const body = await res.json();
-          setStudents(Array.isArray(body) ? body : []);
+    let active = true;
+
+    (async () => {
+      const res = await fetch(
+        `/api/classes/report?classId=${encodeURIComponent(classId)}`
+      );
+      if (!res.ok) {
+        throw new Error("load-class-report");
+      }
+
+      const body = (await res.json()) as StudentRow[];
+      if (!active) return;
+      setStudents(Array.isArray(body) ? body : []);
+    })()
+      .catch(() => {
+        if (active) {
+          setStudents([]);
+          toast.error(t("loadError"));
         }
       })
-      .finally(() => setLoading(false));
-  }, [classId, classes]);
+      .finally(() => {
+        if (active) setLoading(false);
+      });
 
-  /* CSV export */
+    return () => {
+      active = false;
+    };
+  }, [canViewClassReports, classId, t]);
+
   const exportCsv = () => {
     if (!students.length) return;
     const headers = ["Nome", "Sexo", "IMC", "Zona", "Testes"];
-    const rows = students.map((s) =>
+    const rows = students.map((student) =>
       [
-        s.name,
-        s.sex,
-        s.latestBiometric ? Number(s.latestBiometric.imc).toFixed(1) : "",
-        s.latestBiometric?.imcZone ?? "",
-        s.testCount,
+        student.name,
+        student.sex,
+        student.latestBiometric ? Number(student.latestBiometric.imc).toFixed(1) : "",
+        student.latestBiometric?.imcZone ?? "",
+        student.testCount,
       ].join(",")
     );
     const csv = [headers.join(","), ...rows].join("\n");
@@ -105,71 +172,69 @@ export default function TurmaPage() {
     toast.success(t("exportCsv"));
   };
 
-  /* Zone distribution for bar chart */
   const zoneChartData = (() => {
     if (!students.length) return [];
-    let zsaf = 0, zmf = 0, noData = 0;
-    for (const s of students) {
-      const zone = s.latestBiometric?.imcZone ?? "";
+    let zsaf = 0;
+    let zmf = 0;
+    let noData = 0;
+    for (const student of students) {
+      const zone = student.latestBiometric?.imcZone ?? "";
       if (zone.toLowerCase().includes("saud") || zone === "ZSAF") zsaf++;
       else if (zone) zmf++;
       else noData++;
     }
-    return [{ name: "Turma", "Zona Saudável": zsaf, "Zona de Melhoria": zmf, "Sem dados": noData }];
+    return [
+      {
+        name: "Turma",
+        "Zona Saudável": zsaf,
+        "Zona de Melhoria": zmf,
+        "Sem dados": noData,
+      },
+    ];
   })();
 
   const columns: Column<StudentRow>[] = [
     { key: "name", header: t("colName"), sortable: true },
-    { key: "sex", header: t("colSex"), sortable: true, className: "w-16 text-center" },
+    {
+      key: "sex",
+      header: t("colSex"),
+      sortable: true,
+      className: "w-16 text-center",
+    },
     {
       key: "imc",
       header: t("colBmi"),
       sortable: true,
       className: "w-20 text-right",
-      render: (r) => (r.latestBiometric ? Number(r.latestBiometric.imc).toFixed(1) : "—"),
+      render: (row) =>
+        row.latestBiometric ? Number(row.latestBiometric.imc).toFixed(1) : "—",
     },
     {
       key: "imcZone",
       header: t("colZone"),
       sortable: true,
-      render: (r) => <ZoneBadge zone={r.latestBiometric?.imcZone ?? ""} />,
+      render: (row) => <ZoneBadge zone={row.latestBiometric?.imcZone ?? ""} />,
     },
     {
       key: "testCount",
       header: t("colTests"),
       sortable: true,
       className: "w-16 text-center",
-      render: (r) => r.testCount,
+      render: (row) => row.testCount,
     },
   ];
 
-  /* Premium Glassmorphic Tooltip */
-  const CustomTooltip = ({ active, payload, label }: any) => {
-    if (active && payload && payload.length) {
-      return (
-        <div className="bg-card/90 glass p-3 border border-border/50 shadow-float rounded-xl text-sm">
-          <p className="font-semibold mb-2 tracking-tight text-foreground">{label}</p>
-          <div className="flex flex-col gap-1.5">
-            {payload.map((entry: any, index: number) => (
-              <div key={index} className="flex items-center gap-2">
-                <div className="size-2.5 rounded-full" style={{ backgroundColor: entry.color }} />
-                <span className="text-muted-foreground mr-2">{entry.name}:</span>
-                <span className="font-bold text-foreground">{entry.value}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-      );
-    }
-    return null;
-  };
+  if (!canViewClassReports) {
+    return (
+      <div className="flex items-center justify-center min-h-[40vh]">
+        <p className="text-muted-foreground">{common("noPermission")}</p>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col gap-6">
-      <PageHeader
-        title={t("title")}
-        description={t("description")}
-      >
+      <PageHeader title={t("title")} description={t("description")}>
         <Button
           size="sm"
           variant="secondary"
@@ -181,17 +246,20 @@ export default function TurmaPage() {
         </Button>
       </PageHeader>
 
-      {/* class selector */}
       {classes.length > 0 && (
         <div className="flex items-center gap-3">
           <Users className="size-4 text-muted-foreground" />
           <PillSelect
-            options={classes.map((c) => ({
-              value: c.id,
-              label: `${c.name} (${c.year})`,
+            options={classes.map((schoolClass) => ({
+              value: schoolClass.id,
+              label: `${schoolClass.name} (${schoolClass.year})`,
             }))}
-            value={classId ?? ""}
-            onChange={(v) => setClassId(v)}
+            value={classId}
+            onChange={(value) => {
+              setLoading(true);
+              setClassId(value);
+              setStudents([]);
+            }}
           />
         </div>
       )}
@@ -209,21 +277,69 @@ export default function TurmaPage() {
         </div>
       ) : (
         <>
-          {/* ZAF distribution bar chart */}
           {zoneChartData.length > 0 && (
             <div className="bg-card/85 glass rounded-2xl border border-border/50 shadow-float p-6 animate-fade-in-up">
-              <h3 className="text-base font-bold tracking-tight mb-4">Distribuição ZAF</h3>
+              <h3 className="text-base font-bold tracking-tight mb-4">
+                Distribuição ZAF
+              </h3>
               <div className="h-40 w-full">
                 <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={zoneChartData} layout="vertical" margin={{ top: 0, right: 20, left: 20, bottom: 0 }} barSize={40}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" horizontal={false} />
-                    <XAxis type="number" allowDecimals={false} tick={{ fill: "var(--color-muted-foreground)", fontSize: 12 }} axisLine={false} tickLine={false} />
-                    <YAxis type="category" dataKey="name" tick={{ fill: "var(--color-foreground)", fontSize: 12, fontWeight: 600 }} axisLine={false} tickLine={false} width={60} />
-                    <Tooltip content={<CustomTooltip />} cursor={{ fill: 'var(--color-muted)', opacity: 0.4 }} />
+                  <BarChart
+                    data={zoneChartData}
+                    layout="vertical"
+                    margin={{ top: 0, right: 20, left: 20, bottom: 0 }}
+                    barSize={40}
+                  >
+                    <CartesianGrid
+                      strokeDasharray="3 3"
+                      stroke="var(--color-border)"
+                      horizontal={false}
+                    />
+                    <XAxis
+                      type="number"
+                      allowDecimals={false}
+                      tick={{ fill: "var(--color-muted-foreground)", fontSize: 12 }}
+                      axisLine={false}
+                      tickLine={false}
+                    />
+                    <YAxis
+                      type="category"
+                      dataKey="name"
+                      tick={{
+                        fill: "var(--color-foreground)",
+                        fontSize: 12,
+                        fontWeight: 600,
+                      }}
+                      axisLine={false}
+                      tickLine={false}
+                      width={60}
+                    />
+                    <Tooltip
+                      content={<ChartTooltip />}
+                      cursor={{ fill: "var(--color-muted)", opacity: 0.4 }}
+                    />
                     <Legend wrapperStyle={{ paddingTop: "10px" }} />
-                    <Bar dataKey="Zona Saudável" fill="#10b981" stackId="a" radius={[0, 0, 0, 0]} animationDuration={1000} />
-                    <Bar dataKey="Zona de Melhoria" fill="#f59e0b" stackId="a" radius={[0, 0, 0, 0]} animationDuration={1000} />
-                    <Bar dataKey="Sem dados" fill="var(--color-muted)" stackId="a" radius={[0, 4, 4, 0]} animationDuration={1000} />
+                    <Bar
+                      dataKey="Zona Saudável"
+                      fill="#10b981"
+                      stackId="a"
+                      radius={[0, 0, 0, 0]}
+                      animationDuration={1000}
+                    />
+                    <Bar
+                      dataKey="Zona de Melhoria"
+                      fill="#f59e0b"
+                      stackId="a"
+                      radius={[0, 0, 0, 0]}
+                      animationDuration={1000}
+                    />
+                    <Bar
+                      dataKey="Sem dados"
+                      fill="var(--color-muted)"
+                      stackId="a"
+                      radius={[0, 4, 4, 0]}
+                      animationDuration={1000}
+                    />
                   </BarChart>
                 </ResponsiveContainer>
               </div>
@@ -233,7 +349,7 @@ export default function TurmaPage() {
             <DataTable
               columns={columns}
               data={students}
-              rowKey={(r) => r.id}
+              rowKey={(row) => row.id}
               emptyMessage={t("noStudents")}
             />
           </div>

@@ -4,6 +4,8 @@ import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import { createStaffSchema } from "@/lib/validations";
+import { canRole, PERMISSIONS } from "@/lib/rbac";
+import type { Role } from "@prisma/client";
 
 const createStaffWithNameSchema = createStaffSchema.extend({
   name: z.string().min(2).optional(),
@@ -16,7 +18,7 @@ export async function GET() {
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Não autenticado" }, { status: 401 });
     }
-    if (session.user.role !== "PROFESSOR") {
+    if (!canRole(session.user.role as Role, PERMISSIONS.MANAGE_STAFF)) {
       return NextResponse.json({ error: "Sem permissão" }, { status: 403 });
     }
 
@@ -40,7 +42,7 @@ export async function POST(req: NextRequest) {
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Não autenticado" }, { status: 401 });
     }
-    if (session.user.role !== "PROFESSOR") {
+    if (!canRole(session.user.role as Role, PERMISSIONS.MANAGE_STAFF)) {
       return NextResponse.json({ error: "Sem permissão" }, { status: 403 });
     }
 
@@ -66,9 +68,9 @@ export async function POST(req: NextRequest) {
     });
 
     return NextResponse.json(user, { status: 201 });
-  } catch (error: any) {
-    if (error.name === "ZodError") {
-      return NextResponse.json({ error: error.errors }, { status: 400 });
+  } catch (error: unknown) {
+    if (error instanceof z.ZodError) {
+      return NextResponse.json({ error: error.issues }, { status: 400 });
     }
     console.error("POST /api/admin/staff error:", error);
     return NextResponse.json({ error: "Erro interno" }, { status: 500 });
@@ -82,7 +84,7 @@ export async function DELETE(req: NextRequest) {
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Não autenticado" }, { status: 401 });
     }
-    if (session.user.role !== "PROFESSOR") {
+    if (!canRole(session.user.role as Role, PERMISSIONS.MANAGE_STAFF)) {
       return NextResponse.json({ error: "Sem permissão" }, { status: 403 });
     }
 

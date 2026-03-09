@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import { canRole, PERMISSIONS } from "@/lib/rbac";
@@ -10,6 +10,10 @@ export async function GET() {
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Não autenticado" }, { status: 401 });
+    }
+
+    if (!canRole(session.user.role as Role, PERMISSIONS.READ_CLASS_REPORTS)) {
+      return NextResponse.json({ error: "Sem permissão" }, { status: 403 });
     }
 
     const years = await prisma.academicYear.findMany({

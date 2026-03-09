@@ -2,7 +2,7 @@
   "name": "HealthyTech Atlântico",
   "short_name": "HTA",
   "description": "A tua saúde, em movimento — FitEscola / ZAF",
-  "start_url": "/dashboard",
+  "start_url": "/",
   "display": "standalone",
   "background_color": "#14304c",
   "theme_color": "#14304c",

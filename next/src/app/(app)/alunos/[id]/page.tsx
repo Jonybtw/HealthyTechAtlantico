@@ -1,6 +1,7 @@
 import { requireAuth } from "@/lib/auth-guard";
 import { prisma } from "@/lib/prisma";
-import { notFound } from "next/navigation";
+import { isStaffRole } from "@/lib/rbac";
+import { notFound, redirect } from "next/navigation";
 import { StudentDetailClient } from "./student-detail-client";
 
 interface Props {
@@ -9,7 +10,11 @@ interface Props {
 
 export default async function StudentDetailPage({ params }: Props) {
   const { id } = await params;
-  await requireAuth();
+  const user = await requireAuth();
+
+  if (!isStaffRole(user.role)) {
+    redirect("/dashboard");
+  }
 
   const student = await prisma.student.findUnique({
     where: { id },

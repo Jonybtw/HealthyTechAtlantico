@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import { useTranslations } from "next-intl";
 import { useSession } from "next-auth/react";
 import { toast } from "sonner";
-import { AlertTriangle, CheckCircle } from "lucide-react";
+import { AlertTriangle, CheckCircle, Link2 } from "lucide-react";
 import { PageHeader } from "@/components/ui/page-header";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -33,6 +33,7 @@ export default function SosPage() {
   /* ── Staff: alert list ── */
   const [alerts, setAlerts] = useState<SosAlert[]>([]);
   const [loadingAlerts, setLoadingAlerts] = useState(false);
+  const [hasLinkedStudent, setHasLinkedStudent] = useState<boolean | null>(null);
 
   const loadAlerts = useCallback(async () => {
     setLoadingAlerts(true);
@@ -50,6 +51,29 @@ export default function SosPage() {
   useEffect(() => {
     if (role !== "ALUNO") loadAlerts();
   }, [role, loadAlerts]);
+
+  useEffect(() => {
+    if (role !== "ALUNO") return;
+
+    let active = true;
+
+    fetch("/api/students?limit=1")
+      .then(async (response) => {
+        if (!response.ok) return { students: [] };
+        return response.json();
+      })
+      .then((body) => {
+        if (!active) return;
+        setHasLinkedStudent(Boolean(body.students?.length));
+      })
+      .catch(() => {
+        if (active) setHasLinkedStudent(false);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [role]);
 
   /* ── Aluno: send SOS ── */
   const handleTrigger = async (e: React.FormEvent) => {
@@ -106,6 +130,22 @@ export default function SosPage() {
 
   /* ── ALUNO view ── */
   if (role === "ALUNO") {
+    if (hasLinkedStudent === false) {
+      return (
+        <div className="flex flex-col gap-6">
+          <PageHeader
+            title={t("title")}
+            description={t("descriptionStudent")}
+          />
+          <EmptyState
+            icon={Link2}
+            title="Perfil não associado"
+            description="A tua conta ainda não está associada a um perfil de aluno. Contacta a escola para concluírem a ligação."
+          />
+        </div>
+      );
+    }
+
     return (
       <div className="flex flex-col gap-6">
         <PageHeader

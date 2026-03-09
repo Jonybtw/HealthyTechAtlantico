@@ -34,7 +34,7 @@ DROP TYPE IF EXISTS "QuestionnaireType" CASCADE;
 CREATE SCHEMA IF NOT EXISTS "public";
 
 -- CreateEnum
-CREATE TYPE "Role" AS ENUM ('ALUNO', 'PROFESSOR', 'PSICOLOGO', 'PAIS');
+CREATE TYPE "Role" AS ENUM ('ADMIN', 'ALUNO', 'PROFESSOR', 'PSICOLOGO', 'PAIS');
 
 -- CreateEnum
 CREATE TYPE "Sex" AS ENUM ('M', 'F');
@@ -60,7 +60,8 @@ CREATE TABLE "users" (
 -- CreateTable
 CREATE TABLE "students" (
     "id" TEXT NOT NULL,
-    "user_id" TEXT NOT NULL,
+    "linked_user_id" TEXT,
+    "created_by" TEXT,
     "name" TEXT NOT NULL,
     "sex" "Sex" NOT NULL,
     "birth_date" DATE,
@@ -218,10 +219,13 @@ CREATE TABLE "audit_log" (
 CREATE UNIQUE INDEX "users_email_key" ON "users"("email");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "students_user_id_key" ON "students"("user_id");
+CREATE UNIQUE INDEX "students_linked_user_id_key" ON "students"("linked_user_id");
 
 -- CreateIndex
-CREATE INDEX "students_user_id_idx" ON "students"("user_id");
+CREATE INDEX "students_linked_user_id_idx" ON "students"("linked_user_id");
+
+-- CreateIndex
+CREATE INDEX "students_created_by_idx" ON "students"("created_by");
 
 -- CreateIndex
 CREATE INDEX "students_school_year_idx" ON "students"("school_year");
@@ -260,7 +264,10 @@ CREATE UNIQUE INDEX "student_guardians_student_id_guardian_user_id_key" ON "stud
 CREATE INDEX "audit_log_user_id_created_at_idx" ON "audit_log"("user_id", "created_at" DESC);
 
 -- AddForeignKey
-ALTER TABLE "students" ADD CONSTRAINT "students_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "students" ADD CONSTRAINT "students_linked_user_id_fkey" FOREIGN KEY ("linked_user_id") REFERENCES "users"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "students" ADD CONSTRAINT "students_created_by_fkey" FOREIGN KEY ("created_by") REFERENCES "users"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "school_classes" ADD CONSTRAINT "school_classes_academic_year_id_fkey" FOREIGN KEY ("academic_year_id") REFERENCES "academic_years"("id") ON DELETE CASCADE ON UPDATE CASCADE;

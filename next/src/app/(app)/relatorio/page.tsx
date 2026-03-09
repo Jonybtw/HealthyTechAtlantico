@@ -16,10 +16,12 @@ import {
   CheckCircle2,
   ChevronRight,
   Send,
+  Link2,
 } from "lucide-react";
 import { PageHeader } from "@/components/ui/page-header";
 import { StudentPicker } from "@/components/ui/student-picker";
 import { Button } from "@/components/ui/button";
+import { EmptyState } from "@/components/ui/empty-state";
 
 type BiometricEntry = {
   heightM?: number;
@@ -36,13 +38,27 @@ type TestEntry = {
   date?: string;
 };
 
+type GuardianOption = {
+  id: string;
+  guardian: { name: string | null; email: string };
+  relationship: string;
+};
+
 export default function RelatorioPage() {
   const t = useTranslations("relatorio");
+  const common = useTranslations("common");
   const { role } = useUser();
+  const canViewReports =
+    role === "ADMIN" ||
+    role === "PROFESSOR" ||
+    role === "ALUNO" ||
+    role === "PAIS";
+  const canSendEmail = role === "ADMIN" || role === "PROFESSOR";
 
   const [students, setStudents] = useState<{ id: string; name: string }[]>([]);
   const [studentId, setStudentId] = useState<string | null>(null);
-  const [recipientEmail, setRecipientEmail] = useState("");
+  const [guardians, setGuardians] = useState<GuardianOption[]>([]);
+  const [guardianUserId, setGuardianUserId] = useState("");
   const [sendingEmail, setSendingEmail] = useState(false);
   const [generatingPdf, setGeneratingPdf] = useState(false);
 
@@ -52,6 +68,12 @@ export default function RelatorioPage() {
   const [loadingPreview, setLoadingPreview] = useState(false);
 
   const loadStudents = useCallback(async () => {
+    if (!canViewReports) {
+      setStudents([]);
+      setStudentId(null);
+      return;
+    }
+
     const res = await fetch("/api/students?limit=500");
     if (res.ok) {
       const body = await res.json();
@@ -65,7 +87,7 @@ export default function RelatorioPage() {
         setStudentId(body.students[0].id);
       }
     }
-  }, [role]);
+  }, [canViewReports, role]);
 
   useEffect(() => {
     loadStudents();
@@ -73,9 +95,11 @@ export default function RelatorioPage() {
 
   // Load preview data when student changes
   useEffect(() => {
-    if (!studentId) {
+    if (!canViewReports || !studentId) {
       setBioData([]);
       setTestData([]);
+      setGuardians([]);
+      setGuardianUserId("");
       return;
     }
     setLoadingPreview(true);
@@ -92,7 +116,41 @@ export default function RelatorioPage() {
         setTestData(Array.isArray(tests) ? tests : []);
       })
       .finally(() => setLoadingPreview(false));
-  }, [studentId]);
+  }, [canViewReports, studentId]);
+
+  useEffect(() => {
+    if (!studentId || !canSendEmail) {
+      setGuardians([]);
+      setGuardianUserId("");
+      return;
+    }
+
+    let active = true;
+
+    fetch(`/api/students/${studentId}/guardians`)
+      .then(async (response) => {
+        if (!response.ok) return [];
+        return (await response.json()) as GuardianOption[];
+      })
+      .then((data) => {
+        if (!active) return;
+        setGuardians(Array.isArray(data) ? data : []);
+        setGuardianUserId((current) =>
+          current && data.some((guardian) => guardian.id === current)
+            ? current
+            : data[0]?.id ?? ""
+        );
+      })
+      .catch(() => {
+        if (!active) return;
+        setGuardians([]);
+        setGuardianUserId("");
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [canSendEmail, studentId]);
 
   const selectedStudent = students.find((s) => s.id === studentId);
 
@@ -131,7 +189,7 @@ export default function RelatorioPage() {
           logoImg.onerror = reject;
         });
         doc.addImage(logoImg, "PNG", 14, 10, 40, 10.27);
-      } catch (e) {
+      } catch {
         doc.setTextColor(255, 255, 255);
         doc.setFontSize(18);
         doc.setFont("helvetica", "bold");
@@ -290,8 +348,8 @@ export default function RelatorioPage() {
       toast.error("Selecione um aluno.");
       return;
     }
-    if (!recipientEmail) {
-      toast.error("Introduza o e-mail do destinatário.");
+    if (!guardianUserId) {
+      toast.error("Selecione um encarregado.");
       return;
     }
     setSendingEmail(true);
@@ -299,7 +357,7 @@ export default function RelatorioPage() {
       const res = await fetch(`/api/students/${studentId}/reports/email`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ emailedTo: recipientEmail }),
+        body: JSON.stringify({ guardianUserId }),
       });
       if (!res.ok) {
         const body = await res.json().catch(() => ({}));
@@ -307,7 +365,6 @@ export default function RelatorioPage() {
         return;
       }
       toast.success("Relatório enviado por e-mail!");
-      setRecipientEmail("");
     } catch {
       toast.error("Erro de ligação.");
     } finally {
@@ -326,6 +383,27 @@ export default function RelatorioPage() {
 
   const bio0 = bioData[0] as BiometricEntry | undefined;
   const classification = imcLabel(bio0?.imc);
+
+  if (!canViewReports) {
+    return (
+      <div className="flex items-center justify-center min-h-[40vh]">
+        <p className="text-muted-foreground">{common("noPermission")}</p>
+      </div>
+    );
+  }
+
+  if (role === "ALUNO" && students.length === 0) {
+    return (
+      <div className="flex flex-col gap-6 max-w-4xl">
+        <PageHeader title={t("title")} description={t("description")} />
+        <EmptyState
+          icon={Link2}
+          title="Perfil não associado"
+          description="A tua conta ainda não está associada a um perfil de aluno. Contacta a escola para concluírem a ligação."
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col gap-6 max-w-4xl">
@@ -510,7 +588,7 @@ export default function RelatorioPage() {
       </div>
 
       {/* Actions row */}
-      <div className="grid sm:grid-cols-2 gap-4">
+      <div className={`grid gap-4 ${canSendEmail ? "sm:grid-cols-2" : "sm:grid-cols-1"}`}>
         {/* PDF download */}
         <div className="bg-card rounded-2xl border border-border p-5 flex flex-col gap-4 shadow-card">
           <div className="flex items-center gap-3">
@@ -537,39 +615,55 @@ export default function RelatorioPage() {
         </div>
 
         {/* Email */}
-        <div className="bg-card rounded-2xl border border-border p-5 flex flex-col gap-4 shadow-card">
-          <div className="flex items-center gap-3">
-            <div className="h-10 w-10 rounded-xl bg-navy-50 dark:bg-navy-900 flex items-center justify-center">
-              <Mail className="size-5 text-navy-700 dark:text-navy-300" />
+        {canSendEmail && (
+          <div className="bg-card rounded-2xl border border-border p-5 flex flex-col gap-4 shadow-card">
+            <div className="flex items-center gap-3">
+              <div className="h-10 w-10 rounded-xl bg-navy-50 dark:bg-navy-900 flex items-center justify-center">
+                <Mail className="size-5 text-navy-700 dark:text-navy-300" />
+              </div>
+              <div>
+                <h3 className="text-sm font-semibold text-foreground">
+                  Enviar por e-mail
+                </h3>
+                <p className="text-xs text-muted-foreground">
+                  Apenas para encarregados associados ao aluno
+                </p>
+              </div>
             </div>
-            <div>
-              <h3 className="text-sm font-semibold text-foreground">
-                Enviar por e-mail
-              </h3>
-              <p className="text-xs text-muted-foreground">
-                Para encarregado ou outro destinatário
-              </p>
+            <div className="flex flex-col gap-2">
+              {guardians.length > 0 ? (
+                <>
+                  <select
+                    value={guardianUserId}
+                    onChange={(event) => setGuardianUserId(event.target.value)}
+                    className="w-full rounded-xl border border-border bg-muted/40 px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-navy-600/30 transition"
+                  >
+                    {guardians.map((guardian) => (
+                      <option key={guardian.id} value={guardian.id}>
+                        {(guardian.guardian.name ?? guardian.guardian.email) +
+                          " · " +
+                          guardian.guardian.email}
+                      </option>
+                    ))}
+                  </select>
+                  <Button
+                    onClick={handleSendEmail}
+                    loading={sendingEmail}
+                    icon={<Send className="size-4" />}
+                    variant="secondary"
+                    className="w-full justify-center"
+                  >
+                    Enviar relatório
+                  </Button>
+                </>
+              ) : (
+                <p className="text-sm text-muted-foreground">
+                  Este aluno não tem encarregados associados para envio por e-mail.
+                </p>
+              )}
             </div>
           </div>
-          <div className="flex flex-col gap-2">
-            <input
-              type="email"
-              value={recipientEmail}
-              onChange={(e) => setRecipientEmail(e.target.value)}
-              placeholder="encarregado@email.com"
-              className="w-full rounded-xl border border-border bg-muted/40 px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-navy-600/30 transition"
-            />
-            <Button
-              onClick={handleSendEmail}
-              loading={sendingEmail}
-              icon={<Send className="size-4" />}
-              variant="secondary"
-              className="w-full justify-center"
-            >
-              Enviar relatório
-            </Button>
-          </div>
-        </div>
+        )}
       </div>
     </div>
   );

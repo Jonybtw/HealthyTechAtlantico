@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
-import { canRole, PERMISSIONS } from "@/lib/rbac";
+import { canRole, isStaffRole, PERMISSIONS } from "@/lib/rbac";
 import { createStudentSchema } from "@/lib/validations";
-import type { Role } from "@prisma/client";
+import { Prisma, type Role } from "@prisma/client";
 
 // GET /api/students — list students (paginated, role-scoped)
 export async function GET(req: NextRequest) {
@@ -26,12 +27,10 @@ export async function GET(req: NextRequest) {
     const className = searchParams.get("class_name") || "";
     const skip = (page - 1) * limit;
 
-    // Build where clause based on role
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const where: any = {};
+    const where: Prisma.StudentWhereInput = {};
 
     if (role === "ALUNO") {
-      where.userId = session.user.id;
+      where.linkedUserId = session.user.id;
     } else if (role === "PAIS") {
       where.guardians = {
         some: { guardianUserId: session.user.id },
@@ -63,7 +62,7 @@ export async function GET(req: NextRequest) {
           age: true,
           schoolYear: true,
           className: true,
-          userId: true,
+          linkedUserId: true,
         },
       }),
       prisma.student.count({ where }),
@@ -89,33 +88,30 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Não autenticado" }, { status: 401 });
     }
 
-    if (!canRole(session.user.role as Role, PERMISSIONS.CREATE_STUDENT)) {
+    const role = session.user.role as Role;
+    if (!canRole(role, PERMISSIONS.CREATE_STUDENT) || !isStaffRole(role)) {
       return NextResponse.json({ error: "Sem permissão" }, { status: 403 });
     }
 
     const body = await req.json();
     const data = createStudentSchema.parse(body);
 
-    // For ALUNO role, the student is linked to their own account
-    const userId =
-      session.user.role === "ALUNO" ? session.user.id : session.user.id;
-
     const student = await prisma.student.create({
       data: {
-        userId,
         name: data.name,
         sex: data.sex,
         birthDate: data.birthDate ? new Date(data.birthDate) : null,
         age: data.age ?? null,
         schoolYear: data.schoolYear ?? null,
         className: data.className ?? null,
+        createdById: session.user.id,
       },
     });
 
     return NextResponse.json(student, { status: 201 });
-  } catch (error: any) {
-    if (error.name === "ZodError") {
-      return NextResponse.json({ error: error.errors }, { status: 400 });
+  } catch (error: unknown) {
+    if (error instanceof z.ZodError) {
+      return NextResponse.json({ error: error.issues }, { status: 400 });
     }
     console.error("POST /api/students error:", error);
     return NextResponse.json({ error: "Erro interno" }, { status: 500 });

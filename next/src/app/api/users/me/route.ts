@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import { getRolePermissions } from "@/lib/rbac";
@@ -63,8 +64,8 @@ export async function PUT(req: NextRequest) {
 
     return NextResponse.json(user);
   } catch (error: unknown) {
-    if (error instanceof Error && error.name === "ZodError") {
-      return NextResponse.json({ error: (error as any).errors }, { status: 400 });
+    if (error instanceof z.ZodError) {
+      return NextResponse.json({ error: error.issues }, { status: 400 });
     }
     console.error("PUT /api/users/me error:", error);
     return NextResponse.json({ error: "Erro interno" }, { status: 500 });

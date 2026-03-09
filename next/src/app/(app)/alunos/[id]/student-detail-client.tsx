@@ -61,7 +61,7 @@ export function StudentDetailClient({ student }: Props) {
   const router = useRouter();
   const { data: session } = useSession();
   const role = (session?.user as Record<string, unknown>)?.role as string;
-  const isProfessor = role === "PROFESSOR";
+  const canManageStudent = role === "PROFESSOR" || role === "ADMIN";
 
   const age = student.birthDate
     ? Math.floor(
@@ -139,7 +139,7 @@ export function StudentDetailClient({ student }: Props) {
             : "Sem turma"
         }`}
       >
-        {isProfessor && (
+        {canManageStudent && (
           <div className="flex gap-2">
             <Button
               size="sm"
@@ -373,5 +373,4 @@ function Stat({
 function Empty() {
   return <p className="text-sm text-muted-foreground">Sem dados registados.</p>;
 }
-
 

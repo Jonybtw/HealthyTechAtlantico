@@ -4,7 +4,7 @@ import { auth } from "@/lib/auth";
 import { canRole, PERMISSIONS } from "@/lib/rbac";
 import type { Role } from "@prisma/client";
 
-// GET /api/classes/report?year=2025/2026
+// GET /api/classes/report?classId=...
 export async function GET(req: NextRequest) {
   try {
     const session = await auth();
@@ -16,13 +16,24 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: "Sem permissão" }, { status: 403 });
     }
 
-    const year = req.nextUrl.searchParams.get("year");
-    if (!year) {
-      return NextResponse.json({ error: "Parâmetro 'year' obrigatório" }, { status: 400 });
+    const classId = req.nextUrl.searchParams.get("classId");
+    if (!classId) {
+      return NextResponse.json({ error: "Parâmetro 'classId' obrigatório" }, { status: 400 });
+    }
+
+    const schoolClass = await prisma.schoolClass.findUnique({
+      where: { id: classId },
+      include: { academicYear: { select: { label: true } } },
+    });
+    if (!schoolClass) {
+      return NextResponse.json({ error: "Turma não encontrada" }, { status: 404 });
     }
 
     const students = await prisma.student.findMany({
-      where: { schoolYear: year },
+      where: {
+        schoolYear: schoolClass.academicYear.label,
+        className: schoolClass.name,
+      },
       orderBy: [{ className: "asc" }, { name: "asc" }],
       include: {
         biometrics: {

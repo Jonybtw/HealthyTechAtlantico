@@ -1,26 +1,20 @@
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
-import { canAccessStudentByRole, PERMISSIONS } from "@/lib/rbac";
+import { PERMISSIONS, type Permission } from "@/lib/rbac";
 import { biometricsSchema } from "@/lib/validations";
 import { auditLog } from "@/lib/audit";
 import type { Role } from "@prisma/client";
+import { getStudentAccessContext } from "@/lib/student-access";
 
-// Helper to check student access
-async function checkAccess(studentId: string, userId: string, role: Role, permission: string) {
-  const student = await prisma.student.findUnique({
-    where: { id: studentId },
-    include: { guardians: { select: { guardianUserId: true } } },
-  });
-  if (!student) return { error: "Aluno não encontrado", status: 404 };
-
-  const isOwner = student.userId === userId;
-  const isGuardian = student.guardians.some((g) => g.guardianUserId === userId);
-
-  if (!canAccessStudentByRole({ role, permission: permission as any, isOwner, isGuardian })) {
-    return { error: "Sem permissão", status: 403 };
-  }
-  return { student };
+async function checkAccess(
+  studentId: string,
+  userId: string,
+  role: Role,
+  permission: Permission
+) {
+  return getStudentAccessContext(studentId, userId, role, permission);
 }
 
 // GET /api/students/[id]/biometrics
@@ -36,7 +30,7 @@ export async function GET(
 
     const { id } = await params;
     const access = await checkAccess(id, session.user.id, session.user.role as Role, PERMISSIONS.READ_BIOMETRICS);
-    if ("error" in access) {
+    if (!access.ok) {
       return NextResponse.json({ error: access.error }, { status: access.status });
     }
 
@@ -73,7 +67,7 @@ export async function POST(
 
     const { id } = await params;
     const access = await checkAccess(id, session.user.id, session.user.role as Role, PERMISSIONS.RECORD_BIOMETRICS);
-    if ("error" in access) {
+    if (!access.ok) {
       return NextResponse.json({ error: access.error }, { status: access.status });
     }
 
@@ -96,9 +90,9 @@ export async function POST(
     });
 
     return NextResponse.json(biometric, { status: 201 });
-  } catch (error: any) {
-    if (error.name === "ZodError") {
-      return NextResponse.json({ error: error.errors }, { status: 400 });
+  } catch (error: unknown) {
+    if (error instanceof z.ZodError) {
+      return NextResponse.json({ error: error.issues }, { status: 400 });
     }
     console.error("POST biometrics error:", error);
     return NextResponse.json({ error: "Erro interno" }, { status: 500 });
