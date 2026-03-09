@@ -27,7 +27,7 @@ export function ConfirmModal({
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
       {/* Backdrop */}
       <div
-        className="absolute inset-0 bg-navy-950/80 backdrop-blur-xl animate-fade-in"
+        className="absolute inset-0 bg-navy-950/80 animate-fade-in"
         style={{ animationDuration: "0.4s" }}
         onClick={onCancel}
       />
