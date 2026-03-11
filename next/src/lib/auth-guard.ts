@@ -1,15 +1,9 @@
 import { auth } from "@/lib/auth";
 import { canRole, type Permission } from "@/lib/rbac";
 import { redirect } from "next/navigation";
-import type { Role } from "@prisma/client";
+import type { AppSessionUser } from "@/types";
 
-export type SessionUser = {
-  id: string;
-  email: string;
-  role: Role;
-  consentRgpd: boolean;
-  permissions: string[];
-};
+export type SessionUser = AppSessionUser;
 
 /**
  * Require an authenticated session. Redirects to /login if not authenticated.

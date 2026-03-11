@@ -1,4 +1,27 @@
 import type { LucideIcon } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+
+function useAnimatedNumber(target: number, duration = 600) {
+  const [display, setDisplay] = useState(0);
+  const raf = useRef<number | undefined>(undefined);
+
+  useEffect(() => {
+    const start = performance.now();
+    const from = 0;
+    const tick = (now: number) => {
+      const elapsed = now - start;
+      const progress = Math.min(elapsed / duration, 1);
+      // ease-out cubic
+      const eased = 1 - Math.pow(1 - progress, 3);
+      setDisplay(Math.round(from + (target - from) * eased));
+      if (progress < 1) raf.current = requestAnimationFrame(tick);
+    };
+    raf.current = requestAnimationFrame(tick);
+    return () => { if (raf.current) cancelAnimationFrame(raf.current); };
+  }, [target, duration]);
+
+  return display;
+}
 
 interface KpiCardProps {
   title: string;
@@ -11,35 +34,54 @@ interface KpiCardProps {
 }
 
 const accents = {
-  gold: { bg: "bg-gold-50/50 dark:bg-gold-900/30 ring-1 ring-gold-200 dark:ring-gold-500/30", icon: "text-gold-600 dark:text-gold-400", bar: "bg-gradient-to-r from-gold-300 to-gold-500" },
-  green: { bg: "bg-success-50/50 dark:bg-success-900/30 ring-1 ring-success-200 dark:ring-success-500/30", icon: "text-success-600 dark:text-success-400", bar: "bg-gradient-to-r from-success-400 to-success-600" },
-  red: { bg: "bg-danger-50/50 dark:bg-danger-900/30 ring-1 ring-danger-200 dark:ring-danger-500/30", icon: "text-danger-600 dark:text-danger-400", bar: "bg-gradient-to-r from-danger-400 to-danger-600" },
-  blue: { bg: "bg-navy-50/50 dark:bg-navy-900/40 ring-1 ring-navy-200 dark:ring-navy-500/30", icon: "text-navy-600 dark:text-navy-300", bar: "bg-gradient-to-r from-navy-500 to-navy-700" },
+  gold: {
+    chip: "bg-gold-100/80 text-gold-700 ring-gold-500/20 dark:bg-gold-400/10 dark:text-gold-300",
+    bar: "from-gold-300 via-gold-400 to-gold-600",
+  },
+  green: {
+    chip: "bg-success-100/80 text-success-700 ring-success-500/20 dark:bg-success-500/10 dark:text-success-300",
+    bar: "from-emerald-300 via-emerald-500 to-emerald-700",
+  },
+  red: {
+    chip: "bg-danger-100/80 text-danger-700 ring-danger-500/20 dark:bg-danger-500/10 dark:text-danger-300",
+    bar: "from-rose-300 via-rose-500 to-rose-700",
+  },
+  blue: {
+    chip: "bg-navy-100/80 text-navy-700 ring-navy-500/20 dark:bg-navy-400/10 dark:text-navy-200",
+    bar: "from-sky-300 via-sky-500 to-navy-700",
+  },
 };
 
-export function KpiCard({ title, value, icon: Icon, description, delay = 0, accent = "blue" }: KpiCardProps) {
-  const a = accents[accent];
-  return (
-    <div
-      className="animate-fade-in-up relative overflow-hidden rounded-2xl bg-card/70 glass glow-border p-5
-                 shadow-card hover:shadow-float hover:-translate-y-1 hover:bg-card/90 transition-all duration-[400ms] cursor-default group"
-      style={{ animationDelay: `${delay}ms`, animationFillMode: "both" }}
-    >
-      {/* Subtle top accent bar */}
-      <div className={`absolute top-0 left-0 right-0 h-[3px] ${a.bar} opacity-90`} />
-      <div className="absolute top-0 left-1/4 right-1/4 h-[1px] bg-white opacity-40 blur-[1px]" />
+export function KpiCard({
+  title,
+  value,
+  icon: Icon,
+  description,
+  accent = "blue",
+}: KpiCardProps) {
+  const styles = accents[accent];
+  const isNumeric = typeof value === "number";
+  const animatedValue = useAnimatedNumber(isNumeric ? value : 0);
 
-      <div className="flex items-start justify-between gap-3">
-        <div className="flex-1 min-w-0">
-          <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.15em]">{title}</p>
-          <p className="mt-1.5 text-3xl font-extrabold tracking-tighter text-foreground">{value}</p>
-          {description && (
-            <p className="mt-1 text-xs text-muted-foreground font-medium">{description}</p>
-          )}
+  return (
+    <div className="glass group relative overflow-hidden rounded-2xl p-5 shadow-card transition-all duration-300 hover:-translate-y-1 hover:shadow-card-hover">
+      <div className={`absolute inset-x-0 top-0 h-1 bg-gradient-to-r ${styles.bar}`} />
+      <div className="flex items-start justify-between gap-4">
+        <div className="space-y-2">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-muted-foreground">
+            {title}
+          </p>
+          <p className="text-2xl font-semibold tracking-tight text-foreground sm:text-3xl tabular-nums">
+            {isNumeric ? animatedValue : value}
+          </p>
+          {description ? (
+            <p className="max-w-xs text-sm text-muted-foreground">{description}</p>
+          ) : null}
         </div>
-        <div className={`h-11 w-11 shrink-0 rounded-2xl ${a.bg} flex items-center justify-center
-                         group-hover:scale-110 group-hover:rotate-3 transition-all duration-300 shadow-sm`}>
-          <Icon size={20} className={a.icon} />
+        <div
+          className={`flex size-10 items-center justify-center rounded-xl ring-1 ${styles.chip}`}
+        >
+          <Icon className="size-5" />
         </div>
       </div>
     </div>

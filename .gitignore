@@ -1,0 +1,31 @@
+# Workspace
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.log
+
+# Environments
+.env
+.env.*
+!.env.example
+!next/.env.example
+
+# Dependencies and build output
+**/node_modules/
+**/.next/
+**/out/
+**/dist/
+**/build/
+**/coverage/
+**/.turbo/
+
+# Test artefacts
+**/playwright-report/
+**/test-results/
+
+# TypeScript
+**/*.tsbuildinfo
+
+# Legacy archive
+old/server/config/.env

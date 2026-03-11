@@ -233,7 +233,7 @@ export default function TurmaPage() {
   }
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-5">
       <PageHeader title={t("title")} description={t("description")}>
         <Button
           size="sm"
@@ -271,14 +271,14 @@ export default function TurmaPage() {
           description={t("selectYear")}
         />
       ) : loading ? (
-        <div className="flex flex-col gap-6 animate-fade-in">
+        <div className="flex flex-col gap-5 animate-fade-in">
           <Skeleton className="h-52 w-full rounded-2xl" />
           <Skeleton className="h-96 w-full rounded-2xl" />
         </div>
       ) : (
         <>
           {zoneChartData.length > 0 && (
-            <div className="bg-card/85 glass rounded-2xl border border-border/50 shadow-float p-6 animate-fade-in-up">
+            <div className="bg-card/85 glass rounded-2xl border border-border/50 shadow-float p-5 animate-fade-in-up">
               <h3 className="text-base font-bold tracking-tight mb-4">
                 Distribuição ZAF
               </h3>
@@ -335,7 +335,7 @@ export default function TurmaPage() {
                     />
                     <Bar
                       dataKey="Sem dados"
-                      fill="var(--color-muted)"
+                      fill="#64748b"
                       stackId="a"
                       radius={[0, 4, 4, 0]}
                       animationDuration={1000}

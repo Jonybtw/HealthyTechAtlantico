@@ -1,9 +1,10 @@
-import { NextRequest, NextResponse } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import { getRolePermissions } from "@/lib/rbac";
 import { updateConsentSchema } from "@/lib/validations";
+import { auditLog } from "@/lib/audit";
 
 // GET /api/users/me — current user profile + permissions
 export async function GET() {
@@ -18,6 +19,7 @@ export async function GET() {
       select: {
         id: true,
         email: true,
+        name: true,
         role: true,
         consentRgpd: true,
         consentShare: true,
@@ -56,11 +58,18 @@ export async function PUT(req: NextRequest) {
       select: {
         id: true,
         email: true,
+        name: true,
         role: true,
         consentRgpd: true,
         consentShare: true,
       },
     });
+
+    await auditLog({
+      userId: session.user.id,
+      action: "update_consent",
+      targetId: session.user.id,
+    }).catch(() => {});
 
     return NextResponse.json(user);
   } catch (error: unknown) {

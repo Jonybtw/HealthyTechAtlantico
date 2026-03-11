@@ -98,6 +98,10 @@ export function isStaffRole(role: Role): boolean {
   return role === "ADMIN" || role === "PROFESSOR";
 }
 
+export function canAccessSosInbox(role: Role): boolean {
+  return role === "ADMIN" || role === "PROFESSOR" || role === "PSICOLOGO";
+}
+
 export function canAccessStudentByRole({
   role,
   permission,

@@ -1,9 +1,10 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { Plus, ShieldOff, Trash2 } from "lucide-react";
+import { PageTransition, FadeIn, StaggerList, StaggerItem, AnimatePresence } from "@/components/ui/motion";
 import { PageHeader } from "@/components/ui/page-header";
 import { StudentPicker } from "@/components/ui/student-picker";
 import { Button } from "@/components/ui/button";
@@ -11,14 +12,12 @@ import { Input } from "@/components/ui/input";
 import { ConfirmModal } from "@/components/ui/confirm-modal";
 import { EmptyState } from "@/components/ui/empty-state";
 import { useUser } from "@/components/user-context";
-
-interface Dispensa {
-  id: string;
-  reason: string;
-  startDate: string;
-  endDate: string;
-  createdAt: string;
-}
+import {
+  useStudents,
+  useDispensas,
+  useCreateDispensa,
+  useDeleteDispensa,
+} from "@/hooks/use-queries";
 
 export default function DispensasPage() {
   const t = useTranslations("dispensas");
@@ -26,11 +25,12 @@ export default function DispensasPage() {
   const { role } = useUser();
   const canManageDispensas = role === "ADMIN" || role === "PROFESSOR";
 
-  const [students, setStudents] = useState<{ id: string; name: string }[]>([]);
+  const { data: studentsList = [] } = useStudents();
+  const students = studentsList.map((s) => ({ id: s.id, name: s.name }));
   const [studentId, setStudentId] = useState<string | null>(null);
-  const [dispensas, setDispensas] = useState<Dispensa[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [saving, setSaving] = useState(false);
+  const { data: dispensas = [], isLoading: loading } = useDispensas(studentId);
+  const createMutation = useCreateDispensa(studentId);
+  const deleteMutation = useDeleteDispensa(studentId);
   const [showForm, setShowForm] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);
 
@@ -40,91 +40,21 @@ export default function DispensasPage() {
     endDate: "",
   });
 
-  const loadStudents = useCallback(async () => {
-    if (!canManageDispensas) {
-      setStudents([]);
-      setStudentId(null);
-      return;
-    }
-
-    const res = await fetch("/api/students?limit=500");
-    if (!res.ok) return;
-
-    const body = await res.json();
-    setStudents(
-      body.students.map((student: { id: string; name: string }) => ({
-        id: student.id,
-        name: student.name,
-      }))
-    );
-  }, [canManageDispensas]);
-
-  useEffect(() => {
-    loadStudents();
-  }, [loadStudents]);
-
-  useEffect(() => {
-    if (!canManageDispensas || !studentId) {
-      setDispensas([]);
-      setLoading(false);
-      return;
-    }
-
-    let active = true;
-    setLoading(true);
-
-    fetch(`/api/students/${studentId}/dispensas`)
-      .then(async (res) => {
-        if (!res.ok || !active) return;
-        const body = await res.json();
-        setDispensas(Array.isArray(body) ? body : (body.dispensas ?? []));
-      })
-      .catch(() => {
-        if (active) toast.error("Failed to load dispensas.");
-      })
-      .finally(() => {
-        if (active) setLoading(false);
-      });
-
-    return () => {
-      active = false;
-    };
-  }, [canManageDispensas, studentId]);
-
   const handleCreate = async (event: React.FormEvent) => {
     event.preventDefault();
     if (!studentId) return;
 
-    setSaving(true);
     try {
-      const res = await fetch(`/api/students/${studentId}/dispensas`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          reason: form.reason,
-          startDate: form.startDate,
-          endDate: form.endDate || undefined,
-        }),
+      await createMutation.mutateAsync({
+        reason: form.reason,
+        startDate: form.startDate,
+        endDate: form.endDate || undefined,
       });
-
-      if (!res.ok) {
-        const body = await res.json().catch(() => ({}));
-        toast.error(body.error ?? "Failed to create dispensa.");
-        return;
-      }
-
       toast.success(t("success"));
       setShowForm(false);
       setForm({ reason: "", startDate: "", endDate: "" });
-
-      const body = await fetch(`/api/students/${studentId}/dispensas`).then((response) =>
-        response.json()
-      );
-      setDispensas(Array.isArray(body) ? body : (body.dispensas ?? []));
-    } catch {
-      toast.error("Connection error.");
-    } finally {
-      setSaving(false);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Connection error.");
     }
   };
 
@@ -132,16 +62,8 @@ export default function DispensasPage() {
     if (!deleteId || !studentId) return;
 
     try {
-      const res = await fetch(`/api/students/${studentId}/dispensas`, {
-        method: "DELETE",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ dispensaId: deleteId }),
-      });
-
-      if (res.ok) {
-        toast.success(t("deleteSuccess"));
-        setDispensas((current) => current.filter((dispensa) => dispensa.id !== deleteId));
-      }
+      await deleteMutation.mutateAsync(deleteId);
+      toast.success(t("deleteSuccess"));
     } catch {
       toast.error("Failed to remove dispensa.");
     } finally {
@@ -158,8 +80,8 @@ export default function DispensasPage() {
   }
 
   return (
-    <div className="flex flex-col gap-6">
-      <PageHeader title={t("title")} description={t("description")}>
+    <PageTransition className="flex flex-col gap-5">
+      <PageHeader title={t("title")} description={t("description")}>    
         <Button
           size="sm"
           icon={<Plus className="size-4" />}
@@ -171,10 +93,12 @@ export default function DispensasPage() {
 
       <StudentPicker students={students} value={studentId} onChange={setStudentId} />
 
+      <AnimatePresence>
       {showForm && (
+        <FadeIn key="dispensa-form" className="bg-card/85 glass rounded-2xl border border-border/50 shadow-float p-5 flex flex-col gap-5 max-w-lg mb-2">
         <form
           onSubmit={handleCreate}
-          className="animate-fade-in-up bg-card/85 glass rounded-2xl border border-border/50 shadow-float p-6 flex flex-col gap-5 max-w-lg mb-2"
+          className="flex flex-col gap-5"
         >
           <Input
             label={t("reason")}
@@ -201,11 +125,13 @@ export default function DispensasPage() {
               }
             />
           </div>
-          <Button type="submit" loading={saving} className="self-start">
+          <Button type="submit" loading={createMutation.isPending} className="self-start">
             {t("createBtn")}
           </Button>
         </form>
+        </FadeIn>
       )}
+      </AnimatePresence>
 
       {!studentId ? (
         <EmptyState
@@ -224,12 +150,11 @@ export default function DispensasPage() {
           description={t("noDispensas")}
         />
       ) : (
-        <div className="flex flex-col gap-3">
-          {dispensas.map((dispensa, index) => (
-            <div
+        <StaggerList className="flex flex-col gap-3">
+          {dispensas.map((dispensa) => (
+            <StaggerItem
               key={dispensa.id}
-              className="animate-fade-in-up bg-card/85 glass rounded-2xl border border-border/50 p-5 flex items-center justify-between transition-all duration-300 hover:shadow-float hover:-translate-y-1"
-              style={{ animationDelay: `${index * 50}ms`, animationFillMode: "both" }}
+              className="bg-card/85 glass rounded-2xl border border-border/50 p-5 flex items-center justify-between transition-all duration-300 hover:shadow-float hover:-translate-y-1"
             >
               <div>
                 <p className="font-semibold">{dispensa.reason}</p>
@@ -244,9 +169,9 @@ export default function DispensasPage() {
               >
                 <Trash2 className="size-4" />
               </button>
-            </div>
+            </StaggerItem>
           ))}
-        </div>
+        </StaggerList>
       )}
 
       <ConfirmModal
@@ -257,6 +182,6 @@ export default function DispensasPage() {
         onConfirm={handleDelete}
         onCancel={() => setDeleteId(null)}
       />
-    </div>
+    </PageTransition>
   );
 }

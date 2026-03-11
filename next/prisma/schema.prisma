@@ -171,6 +171,7 @@ model Questionnaire {
 
   student Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
 
+  @@index([studentId, submittedAt(sort: Desc)])
   @@map("questionnaires")
 }
 
@@ -196,7 +197,7 @@ model SosAlert {
 model Report {
   id          String   @id @default(cuid())
   studentId   String   @map("student_id")
-  title       String   @default("Relatório AtlanticoFit")
+  title       String   @default("Relatório HealthyTech Altântico")
   emailedTo   String   @map("emailed_to")
   schoolYear  String?  @map("school_year")
   createdById String?  @map("created_by")
@@ -205,6 +206,7 @@ model Report {
   student   Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
   createdBy User?   @relation(fields: [createdById], references: [id])
 
+  @@index([studentId, createdAt(sort: Desc)])
   @@map("reports")
 }
 
@@ -253,5 +255,6 @@ model AuditLog {
   user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
 
   @@index([userId, createdAt(sort: Desc)])
+  @@index([action])
   @@map("audit_log")
 }

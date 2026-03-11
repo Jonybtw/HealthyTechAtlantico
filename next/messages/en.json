@@ -60,9 +60,9 @@
     "cancel": "Cancel",
     "confirm": "Confirm",
     "delete": "Delete",
-    "loading": "Loading…",
+    "loading": "Loading...",
     "noData": "No data recorded.",
-    "search": "Search…",
+    "search": "Search...",
     "export": "Export",
     "male": "Male",
     "female": "Female",
@@ -163,7 +163,7 @@
     "psych": "Responsible psychologist",
     "teacher": "Trusted teacher",
     "trigger": "Send SOS alert",
-    "sending": "Sending…",
+    "sending": "Sending...",
     "success": "SOS alert sent. The team has been notified.",
     "noAlerts": "No active alerts.",
     "resolve": "Resolve",
@@ -179,7 +179,7 @@
     "title": "Report",
     "description": "Export health report as PDF",
     "generate": "Generate PDF",
-    "generating": "Generating PDF…",
+    "generating": "Generating PDF...",
     "noData": "Not enough data to generate a report.",
     "success": "Report generated successfully.",
     "biometricsSection": "Biometrics",
@@ -235,9 +235,9 @@
   "protocolos": {
     "title": "Protocols",
     "description": "ZAF reference tables by age and sex",
-    "bmiTable": "BMI — Healthy Zone",
+    "bmiTable": "BMI  -  Healthy Zone",
     "waistTable": "Waist Circumference (max cm)",
-    "testTable": "Fitness Tests — Thresholds",
+    "testTable": "Fitness Tests  -  Thresholds",
     "age": "Age",
     "male": "Male (M)",
     "female": "Female (F)"
@@ -248,7 +248,7 @@
     "create": "Create student",
     "new": "New student",
     "cancel": "Cancel",
-    "search": "Search student…",
+    "search": "Search student...",
     "colName": "Name",
     "colSex": "Sex",
     "colBirth": "Birth",
@@ -337,5 +337,20 @@
     "noLogs": "No audit log entries.",
     "noPermission": "You don't have permission to access this page.",
     "loadError": "Error loading audit log."
+  },
+  "commandPalette": {
+    "placeholder": "Search pages and actions…",
+    "noResults": "No results found.",
+    "navigate": "Navigate",
+    "actions": "Actions",
+    "toggleTheme": "Toggle theme",
+    "signOut": "Sign out"
+  },
+  "notifications": {
+    "bellLabel": "Notifications",
+    "title": "Notifications",
+    "allClear": "All clear — no pending alerts.",
+    "pendingAlerts": "{count, plural, one {# pending SOS alert} other {# pending SOS alerts}}",
+    "pendingDescription": "Visit the SOS page to resolve."
   }
 }

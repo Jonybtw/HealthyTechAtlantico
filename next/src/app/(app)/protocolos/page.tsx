@@ -83,7 +83,7 @@ function ReferenceTable({
 export default async function ProtocolosPage() {
   const t = await getTranslations("protocolos");
   return (
-    <div className="flex flex-col gap-8">
+    <div className="flex flex-col gap-5 max-w-3xl">
       <PageHeader
         title={t("title")}
         description={t("description")}

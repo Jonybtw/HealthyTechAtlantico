@@ -1,8 +1,7 @@
 import { redirect } from "next/navigation";
-import { auth } from "@/lib/auth";
 import { AppShell } from "@/components/app-shell";
 import { UserProvider } from "@/components/user-context";
-import type { Role } from "@prisma/client";
+import { auth } from "@/lib/auth";
 
 export default async function AppLayout({
   children,
@@ -10,16 +9,14 @@ export default async function AppLayout({
   children: React.ReactNode;
 }) {
   const session = await auth();
-  if (!session?.user?.id) {
+
+  if (!session?.user?.id || !session.user.email || !session.user.role) {
     redirect("/login");
   }
 
-  const user = session.user as { id: string; email: string; role: Role };
-
   return (
-    <UserProvider user={user}>
-      <AppShell user={user}>{children}</AppShell>
+    <UserProvider user={session.user}>
+      <AppShell user={session.user}>{children}</AppShell>
     </UserProvider>
   );
 }
-

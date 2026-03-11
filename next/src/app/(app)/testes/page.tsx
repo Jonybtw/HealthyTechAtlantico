@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useTranslations } from "next-intl";
-import { useSession } from "next-auth/react";
 import { toast } from "sonner";
 import { Link2, Timer } from "lucide-react";
 import { PageHeader } from "@/components/ui/page-header";
@@ -12,6 +11,7 @@ import { PillSelect } from "@/components/ui/pill-select";
 import { Button } from "@/components/ui/button";
 import { ZoneBadge } from "@/components/ui/zone-badge";
 import { EmptyState } from "@/components/ui/empty-state";
+import { useUser } from "@/components/user-context";
 import { TEST_OPTIONS, classifyTest } from "@/lib/fitness-tests";
 import { calcAgeFromBirthDate } from "@/lib/zaf";
 import type { Sex } from "@prisma/client";
@@ -25,8 +25,7 @@ interface StudentOption {
 
 export default function TestesPage() {
   const t = useTranslations("testes");
-  const { data: session } = useSession();
-  const role = (session?.user as Record<string, unknown>)?.role as string;
+  const { role } = useUser();
 
   const [students, setStudents] = useState<StudentOption[]>([]);
   const [studentId, setStudentId] = useState<string | null>(null);
@@ -63,7 +62,7 @@ export default function TestesPage() {
 
   if (role === "ALUNO" && students.length === 0) {
     return (
-      <div className="flex flex-col gap-6">
+      <div className="flex flex-col gap-5">
         <PageHeader title={t("title")} description={t("description")} />
         <EmptyState
           icon={Link2}
@@ -137,7 +136,7 @@ export default function TestesPage() {
   };
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-5">
       <PageHeader
         title={t("title")}
         description={t("description")}
@@ -145,7 +144,7 @@ export default function TestesPage() {
 
       <form
         onSubmit={handleSubmit}
-        className="animate-fade-in-up bg-card/85 glass rounded-2xl border border-border/50 shadow-float p-6 flex flex-col gap-5 max-w-lg"
+        className="animate-fade-in-up bg-card/85 glass rounded-2xl border border-border/50 shadow-float p-5 flex flex-col gap-5 max-w-lg"
       >
         {role !== "ALUNO" && (
           <StudentPicker

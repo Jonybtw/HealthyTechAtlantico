@@ -1,10 +1,10 @@
-import { NextRequest, NextResponse } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import { canRole, isStaffRole, PERMISSIONS } from "@/lib/rbac";
 import { createStudentSchema } from "@/lib/validations";
-import { Prisma, type Role } from "@prisma/client";
+import { type Prisma, type Role } from "@prisma/client";
 
 // GET /api/students — list students (paginated, role-scoped)
 export async function GET(req: NextRequest) {

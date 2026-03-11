@@ -1,9 +1,10 @@
-import { NextRequest, NextResponse } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
 import { compare, hash } from "bcryptjs";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import { changePasswordSchema } from "@/lib/validations";
+import { auditLog } from "@/lib/audit";
 
 export async function PUT(req: NextRequest) {
   try {
@@ -32,6 +33,12 @@ export async function PUT(req: NextRequest) {
       where: { id: session.user.id },
       data: { passwordHash },
     });
+
+    await auditLog({
+      userId: session.user.id,
+      action: "change_password",
+      targetId: session.user.id,
+    }).catch(() => {});
 
     return NextResponse.json({ ok: true });
   } catch (error: unknown) {

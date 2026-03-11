@@ -34,7 +34,7 @@ function buildTransporter() {
 const transporter = buildTransporter();
 const SMTP_FROM =
   process.env.SMTP_FROM ||
-  `HealthyTech Atlântico <${process.env.SMTP_USER || "no-reply@atlanticofit.pt"}>`;
+  `HealthyTech Atlântico <${process.env.SMTP_USER || "no-reply@colegioatlantico.pt"}>`;
 
 export async function sendMail(opts: {
   to: string;

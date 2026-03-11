@@ -3,7 +3,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { useTranslations } from "next-intl";
 import { useUser } from "@/components/user-context";
-import Image from "next/image";
 import { toast } from "sonner";
 import {
   FileText,
@@ -193,13 +192,13 @@ export default function RelatorioPage() {
         doc.setTextColor(255, 255, 255);
         doc.setFontSize(18);
         doc.setFont("helvetica", "bold");
-        doc.text("HealthyTechAtlantico", 14, 18);
+        doc.text("HealthyTech Atlântico", 14, 18);
       }
 
       doc.setTextColor(176, 198, 211); // Azul Claro
       doc.setFontSize(11);
       doc.setFont("helvetica", "bold");
-      doc.text("HealthyTechAtlantico — Relatório Individual", 14, 25);
+      doc.text("HealthyTech Atlântico — Relatório Individual", 14, 25);
 
       const today = new Date().toLocaleDateString("pt-PT", {
         day: "2-digit",
@@ -325,7 +324,7 @@ export default function RelatorioPage() {
       doc.setFontSize(7);
       doc.setFont("helvetica", "normal");
       doc.text(
-        "HealthyTechAtlantico · Documento gerado automaticamente",
+        "HealthyTech Atlântico · Documento gerado automaticamente",
         pageW / 2,
         pageH - 5,
         { align: "center" }
@@ -394,7 +393,7 @@ export default function RelatorioPage() {
 
   if (role === "ALUNO" && students.length === 0) {
     return (
-      <div className="flex flex-col gap-6 max-w-4xl">
+      <div className="flex flex-col gap-5 max-w-4xl">
         <PageHeader title={t("title")} description={t("description")} />
         <EmptyState
           icon={Link2}
@@ -406,30 +405,14 @@ export default function RelatorioPage() {
   }
 
   return (
-    <div className="flex flex-col gap-6 max-w-4xl">
+    <div className="flex flex-col gap-5 max-w-4xl">
       <PageHeader title={t("title")} description={t("description")} />
 
       {/* Document preview card */}
       <div className="bg-card rounded-2xl border border-border shadow-card">
         {/* Card header — mimics PDF header */}
-        <div className="bg-navy-800 rounded-t-2xl px-6 py-5 flex items-start justify-between border-b-[3px] border-gold-400">
-          <div>
-            <p className="text-white text-lg font-bold tracking-tight">
-              HealthyTechAtlantico
-            </p>
-            <p className="text-navy-200 text-xs mt-0.5">
-              Relatório Individual
-            </p>
-          </div>
-          {/* Logo placeholder area — real logo via next/image */}
-          <div className="h-10 w-28 relative rounded-lg flex items-center justify-end overflow-hidden">
-            <Image
-              src="/logo.png"
-              alt="HealthyTechAtlantico"
-              fill
-              className="object-contain object-right brightness-0 invert py-1"
-            />
-          </div>
+        <div className="bg-navy-800 rounded-t-2xl px-6 py-5 border-b-[3px] border-gold-400">
+          <p className="text-navy-200 text-xs font-medium uppercase tracking-wider">Relatório Individual</p>
         </div>
 
         {/* Student selector */}

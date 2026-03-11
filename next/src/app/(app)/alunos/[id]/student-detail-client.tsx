@@ -2,13 +2,24 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { useSession } from "next-auth/react";
 import { toast } from "sonner";
 import { Ruler, Timer, ClipboardList, ShieldOff, Users, Pencil, Trash2 } from "lucide-react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import type { z } from "zod";
+import { createStudentSchema } from "@/lib/validations";
 import { PageHeader } from "@/components/ui/page-header";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { ZoneBadge } from "@/components/ui/zone-badge";
 import { ConfirmModal } from "@/components/ui/confirm-modal";
+import { useUser } from "@/components/user-context";
+import {
+  Form,
+  FormField,
+  FormItem,
+  FormControl,
+} from "@/components/ui/form";
 
 interface Props {
   student: {
@@ -59,8 +70,7 @@ interface Props {
 
 export function StudentDetailClient({ student }: Props) {
   const router = useRouter();
-  const { data: session } = useSession();
-  const role = (session?.user as Record<string, unknown>)?.role as string;
+  const { role } = useUser();
   const canManageStudent = role === "PROFESSOR" || role === "ADMIN";
 
   const age = student.birthDate
@@ -73,30 +83,33 @@ export function StudentDetailClient({ student }: Props) {
 
   // Edit state
   const [editing, setEditing] = useState(false);
-  const [editForm, setEditForm] = useState({
-    name: student.name,
-    sex: student.sex,
-    birthDate: student.birthDate ? student.birthDate.slice(0, 10) : "",
-    schoolYear: student.schoolYear ?? "",
-    className: student.className ?? "",
+
+  type StudentEditValues = z.infer<typeof createStudentSchema>;
+  const editForm = useForm<StudentEditValues>({
+    resolver: zodResolver(createStudentSchema),
+    defaultValues: {
+      name: student.name,
+      sex: student.sex as "M" | "F",
+      birthDate: student.birthDate ? student.birthDate.slice(0, 10) : "",
+      schoolYear: student.schoolYear ?? "",
+      className: student.className ?? "",
+    },
   });
-  const [saving, setSaving] = useState(false);
 
   // Delete state
   const [confirmDelete, setConfirmDelete] = useState(false);
 
-  const handleSave = async () => {
-    setSaving(true);
+  const handleSave = async (values: StudentEditValues) => {
     try {
       const res = await fetch(`/api/students/${student.id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          name: editForm.name,
-          sex: editForm.sex,
-          birthDate: editForm.birthDate || null,
-          schoolYear: editForm.schoolYear || null,
-          className: editForm.className || null,
+          name: values.name,
+          sex: values.sex,
+          birthDate: values.birthDate || null,
+          schoolYear: values.schoolYear || null,
+          className: values.className || null,
         }),
       });
       if (!res.ok) {
@@ -109,8 +122,6 @@ export function StudentDetailClient({ student }: Props) {
       router.refresh();
     } catch {
       toast.error("Erro de liga\u00e7\u00e3o.");
-    } finally {
-      setSaving(false);
     }
   };
 
@@ -130,10 +141,10 @@ export function StudentDetailClient({ student }: Props) {
   };
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-5">
       <PageHeader
         title={student.name}
-        description={`${student.sex === "M" ? "Masculino" : "Feminino"}${age != null ? " \u00b7 " + age + " anos" : ""} \u00b7 ${
+        description={`${student.sex === "M" ? "Masculino" : "Feminino"}${age !== null && age !== undefined ? " \u00b7 " + age + " anos" : ""} \u00b7 ${
           student.className
             ? student.className + " (" + (student.schoolYear ?? "") + ")"
             : "Sem turma"
@@ -163,66 +174,106 @@ export function StudentDetailClient({ student }: Props) {
 
       {/* Edit form */}
       {editing && (
-        <div className="bg-card rounded-xl border border-border p-5 flex flex-col gap-4 max-w-lg">
-          <h3 className="font-semibold text-sm">Editar dados do aluno</h3>
-          <div className="flex flex-col gap-1.5">
-            <label className="text-xs text-muted-foreground">Nome</label>
-            <input
-              value={editForm.name}
-              onChange={(e) => setEditForm((f) => ({ ...f, name: e.target.value }))}
-              className="rounded-lg border border-border px-3 py-2 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-gold-500/40"
-            />
-          </div>
-          <div className="grid grid-cols-2 gap-3">
-            <div className="flex flex-col gap-1.5">
-              <label className="text-xs text-muted-foreground">Sexo</label>
-              <select
-                value={editForm.sex}
-                onChange={(e) => setEditForm((f) => ({ ...f, sex: e.target.value }))}
-                className="rounded-lg border border-border px-3 py-2 text-sm bg-background focus:outline-none"
-              >
-                <option value="M">Masculino</option>
-                <option value="F">Feminino</option>
-              </select>
-            </div>
-            <div className="flex flex-col gap-1.5">
-              <label className="text-xs text-muted-foreground">Data de nasc.</label>
-              <input
-                type="date"
-                value={editForm.birthDate}
-                onChange={(e) => setEditForm((f) => ({ ...f, birthDate: e.target.value }))}
-                className="rounded-lg border border-border px-3 py-2 text-sm bg-background focus:outline-none"
-              />
-            </div>
-          </div>
-          <div className="grid grid-cols-2 gap-3">
-            <div className="flex flex-col gap-1.5">
-              <label className="text-xs text-muted-foreground">Ano letivo</label>
-              <input
-                value={editForm.schoolYear}
-                onChange={(e) => setEditForm((f) => ({ ...f, schoolYear: e.target.value }))}
-                placeholder="2025/2026"
-                className="rounded-lg border border-border px-3 py-2 text-sm bg-background focus:outline-none"
-              />
-            </div>
-            <div className="flex flex-col gap-1.5">
-              <label className="text-xs text-muted-foreground">Turma</label>
-              <input
-                value={editForm.className}
-                onChange={(e) => setEditForm((f) => ({ ...f, className: e.target.value }))}
-                placeholder="8A"
-                className="rounded-lg border border-border px-3 py-2 text-sm bg-background focus:outline-none"
-              />
-            </div>
-          </div>
-          <Button
-            onClick={handleSave}
-            loading={saving}
-            className="self-start"
+        <Form {...editForm}>
+          <form
+            onSubmit={editForm.handleSubmit(handleSave)}
+            className="bg-card rounded-xl border border-border p-5 flex flex-col gap-4 max-w-lg"
           >
-            Guardar altera\u00e7\u00f5es
-          </Button>
-        </div>
+            <h3 className="font-semibold text-sm">Editar dados do aluno</h3>
+            <FormField
+              control={editForm.control}
+              name="name"
+              render={({ field }) => (
+                <FormItem>
+                  <FormControl>
+                    <Input
+                      label="Nome"
+                      error={editForm.formState.errors.name?.message}
+                      {...field}
+                    />
+                  </FormControl>
+                </FormItem>
+              )}
+            />
+            <div className="grid grid-cols-2 gap-3">
+              <FormField
+                control={editForm.control}
+                name="sex"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormControl>
+                      <div className="flex flex-col gap-1.5">
+                        <label className="text-sm font-semibold tracking-tight text-foreground">Sexo</label>
+                        <select
+                          value={field.value}
+                          onChange={field.onChange}
+                          className="rounded-2xl border border-border/70 bg-background/65 px-4 py-3 text-sm text-foreground transition-all focus:outline-none focus:ring-2 focus:ring-gold-500/40"
+                        >
+                          <option value="M">Masculino</option>
+                          <option value="F">Feminino</option>
+                        </select>
+                      </div>
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={editForm.control}
+                name="birthDate"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormControl>
+                      <Input
+                        label="Data de nasc."
+                        type="date"
+                        {...field}
+                      />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <FormField
+                control={editForm.control}
+                name="schoolYear"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormControl>
+                      <Input
+                        label="Ano letivo"
+                        placeholder="2025/2026"
+                        {...field}
+                      />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={editForm.control}
+                name="className"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormControl>
+                      <Input
+                        label="Turma"
+                        placeholder="8A"
+                        {...field}
+                      />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
+            </div>
+            <Button
+              type="submit"
+              loading={editForm.formState.isSubmitting}
+              className="self-start"
+            >
+              Guardar altera\u00e7\u00f5es
+            </Button>
+          </form>
+        </Form>
       )}
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -373,4 +424,3 @@ function Stat({
 function Empty() {
   return <p className="text-sm text-muted-foreground">Sem dados registados.</p>;
 }
-

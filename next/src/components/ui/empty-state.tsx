@@ -14,17 +14,30 @@ export function EmptyState({
   action,
 }: EmptyStateProps) {
   return (
-    <div className="w-full max-w-2xl mx-auto rounded-3xl border border-border/60 bg-card/80 px-6 py-10 text-center shadow-card animate-fade-in-up">
-      <div className="mx-auto mb-5 flex size-16 items-center justify-center rounded-2xl border border-border/60 bg-muted/40 shadow-sm">
-        <Icon className="size-8 text-navy-700 dark:text-navy-200" strokeWidth={1.75} />
+    <section className="animate-fade-in-up relative overflow-hidden rounded-2xl border border-border/70 bg-card/85 p-6 text-center shadow-card sm:p-8">
+      <div className="absolute inset-x-10 top-0 h-px bg-gradient-to-r from-transparent via-gold-400/50 to-transparent" />
+      <div className="absolute right-0 top-0 h-36 w-36 rounded-full bg-gold-300/10 blur-3xl" />
+      <div className="absolute bottom-0 left-0 h-36 w-36 rounded-full bg-navy-300/10 blur-3xl" />
+
+      <div className="relative mx-auto flex max-w-xl flex-col items-center gap-5">
+        <div className="flex size-14 items-center justify-center rounded-xl border border-border/70 bg-background/80 shadow-[inset_0_1px_0_rgba(255,255,255,0.45)]">
+          <Icon className="size-6 text-navy-700 dark:text-gold-300" strokeWidth={1.8} />
+        </div>
+
+        <div className="space-y-2">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.26em] text-muted-foreground">
+            HealthyTech Atlântico
+          </p>
+          <h3 className="font-display text-xl font-semibold tracking-[-0.03em] text-foreground sm:text-2xl">
+            {title}
+          </h3>
+          <p className="mx-auto max-w-md text-sm leading-relaxed text-muted-foreground sm:text-base">
+            {description}
+          </p>
+        </div>
+
+        {action ? <div className="flex flex-wrap justify-center gap-3">{action}</div> : null}
       </div>
-      <h3 className="text-xl font-semibold text-foreground tracking-tight mb-2">
-        {title}
-      </h3>
-      <p className="text-sm text-muted-foreground max-w-md mx-auto leading-relaxed">
-        {description}
-      </p>
-      {action ? <div className="mt-6">{action}</div> : null}
-    </div>
+    </section>
   );
 }

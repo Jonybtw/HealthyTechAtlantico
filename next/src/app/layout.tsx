@@ -1,9 +1,31 @@
 import type { Metadata, Viewport } from "next";
+import { JetBrains_Mono, Manrope, Sora } from "next/font/google";
 import { SessionProvider } from "next-auth/react";
 import { NextIntlClientProvider } from "next-intl";
 import { getLocale, getMessages } from "next-intl/server";
+import { cookies } from "next/headers";
 import { Toaster } from "sonner";
+import { THEME_COOKIE_NAME } from "@/lib/theme-cookie";
+import { QueryProvider } from "@/components/query-provider";
 import "./globals.css";
+
+const sans = Manrope({
+  subsets: ["latin"],
+  variable: "--font-sans",
+  display: "swap",
+});
+
+const display = Sora({
+  subsets: ["latin"],
+  variable: "--font-display",
+  display: "swap",
+});
+
+const mono = JetBrains_Mono({
+  subsets: ["latin"],
+  variable: "--font-mono",
+  display: "swap",
+});
 
 export const metadata: Metadata = {
   title: "HealthyTech Atlantico",
@@ -17,10 +39,9 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#14304C",
+  themeColor: "#102a43",
   width: "device-width",
   initialScale: 1,
-  maximumScale: 1,
 };
 
 export default async function RootLayout({
@@ -28,43 +49,42 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const locale = await getLocale();
-  const messages = await getMessages();
+  const [locale, messages, cookieStore] = await Promise.all([
+    getLocale(),
+    getMessages(),
+    cookies(),
+  ]);
+  const theme =
+    cookieStore.get(THEME_COOKIE_NAME)?.value === "dark" ? "dark" : "light";
 
   return (
-    <html lang={locale} suppressHydrationWarning>
-      <head>
-        <script
-          dangerouslySetInnerHTML={{
-            __html:
-              "(function(){try{var t=localStorage.getItem('theme');if(t==='dark')document.documentElement.setAttribute('data-theme','dark');}catch(e){}})()",
-          }}
-        />
-      </head>
-      <body className="antialiased bg-background text-foreground">
+    <html
+      lang={locale}
+      data-theme={theme}
+      suppressHydrationWarning
+      className="scroll-smooth"
+    >
+      <body
+        className={`${sans.variable} ${display.variable} ${mono.variable} bg-background text-foreground antialiased`}
+      >
         <NextIntlClientProvider messages={messages}>
           <SessionProvider>
-            {children}
+            <QueryProvider>
+              {children}
+            </QueryProvider>
             <Toaster
               richColors
               position="top-right"
               toastOptions={{
-                className: "glass border shadow-float backdrop-blur-xl rounded-xl",
+                className:
+                  "border border-border/70 bg-card/95 text-foreground shadow-float backdrop-blur-xl",
                 style: {
                   fontFamily: "var(--font-sans)",
                 },
                 classNames: {
-                  toast: "bg-card/85 glass border-border/50",
-                  title: "font-semibold tracking-tight text-foreground",
+                  toast: "rounded-2xl",
+                  title: "font-semibold tracking-tight",
                   description: "text-muted-foreground",
-                  success:
-                    "border-success-500/30 bg-success-50/50 dark:bg-success-900/10 text-success-600 dark:text-success-400 [&_svg]:text-success-600 dark:[&_svg]:text-success-400",
-                  error:
-                    "border-danger-500/30 bg-danger-50/50 dark:bg-danger-900/10 text-danger-600 dark:text-danger-400 [&_svg]:text-danger-600 dark:[&_svg]:text-danger-400",
-                  warning:
-                    "border-warning-500/30 bg-warning-50/50 dark:bg-warning-900/10 text-warning-600 dark:text-warning-400 [&_svg]:text-warning-600 dark:[&_svg]:text-warning-400",
-                  info:
-                    "border-navy-500/30 bg-navy-50/50 dark:bg-navy-900/10 text-navy-600 dark:text-navy-400 [&_svg]:text-navy-600 dark:[&_svg]:text-navy-400",
                 },
               }}
             />

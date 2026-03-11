@@ -1,110 +1,167 @@
 # HealthyTech Atlantico
 
-Next.js school health platform for biometric tracking, fitness testing, guardian reporting, and student well-being workflows.
+Production-grade Next.js application for school health operations, including biometrics, fitness tests, SOS workflows, guardian reporting, and auditability.
 
 ## Stack
 
-- Next.js App Router
-- NextAuth credentials auth
-- Prisma + PostgreSQL
-- `next-intl` for `pt` / `en`
-- Serwist PWA support
+| Layer | Technology |
+| --- | --- |
+| Framework | Next.js 16 App Router |
+| Language | TypeScript 5 |
+| Auth | Auth.js / next-auth v5 with JWT sessions |
+| Data | Prisma 7 + PostgreSQL |
+| Styling | Tailwind CSS v4 |
+| i18n | next-intl (`pt`, `en`) |
+| Testing | Vitest + Testing Library + Playwright |
 
-## Roles
+## Role model
 
-- `ADMIN`
-  Full platform administration, staff management, audit log access, and school-wide views.
-- `PROFESSOR`
-  Student/class workflows, biometrics, tests, reports, guardians, and exemptions.
-- `PSICOLOGO`
-  SOS and questionnaire review workflows only.
-- `PAIS`
-  Read-only access to linked student data.
-- `ALUNO`
-  Self-service access to their own linked student profile only.
+| Role | Scope |
+| --- | --- |
+| `ADMIN` | Full platform access, audit, staff management |
+| `PROFESSOR` | Student operations, reports, guardians, class views, SOS inbox |
+| `PSICOLOGO` | SOS inbox and questionnaire review |
+| `PAIS` | Read-only access to linked students only |
+| `ALUNO` | Self-service only for the linked student profile |
 
-## Student model
+Important security rules:
 
-Student profiles are no longer required to be the same thing as login accounts.
+- `ALUNO` and `PAIS` never access global SOS inbox data.
+- Student-level routes are enforced with ownership / guardian linkage checks in `src/lib/student-access.ts`.
+- Consent updates are pushed into the active JWT session through `useSession().update(...)`.
 
-- `Student.linkedUserId`
-  Optional one-to-one link to a student login.
-- `Student.createdById`
-  Staff/admin user who created the profile.
-- Staff can create standalone student profiles without creating login accounts first.
-- Self-registered student accounts remain valid user accounts, but they only gain self-service data access after being linked to a student profile.
+## Environment
 
-## Setup
+Copy `next/.env.example` to `next/.env` and set the required values.
 
-1. Install dependencies:
+### Required variables
+
+```env
+DATABASE_URL="postgresql://user:password@host:5432/dbname"
+AUTH_SECRET="replace_with_a_strong_random_secret"
+NEXTAUTH_SECRET="replace_with_a_strong_random_secret"
+NEXTAUTH_URL="http://localhost:3000"
+NEXT_PUBLIC_APP_URL="http://localhost:3000"
+ADMIN_SECRET="replace_with_a_bootstrap_secret"
+```
+
+### Database TLS
+
+SSL is environment-driven through `src/lib/database-ssl.ts`.
+
+```env
+PGSSLMODE="require"
+PGSSL_REJECT_UNAUTHORIZED="true"
+# Optional:
+# DATABASE_SSL="disable"
+# PGSSL_CA="-----BEGIN CERTIFICATE-----\n...\n-----END CERTIFICATE-----"
+```
+
+Defaults:
+
+- production enables certificate verification
+- `PGSSLMODE=disable` or `DATABASE_SSL=disable` disables SSL
+- `PGSSL_CA` / `DATABASE_CA_CERT` injects a custom CA bundle
+
+### SMTP
+
+```env
+SMTP_HOST="smtp.office365.com"
+SMTP_PORT=587
+SMTP_USER="your_mailbox@yourdomain.pt"
+SMTP_FROM="HealthyTech Atlantico <your_mailbox@yourdomain.pt>"
+SMTP_AUTH_TYPE="login"
+SMTP_PASS="your_mailbox_password_or_app_password"
+```
+
+OAuth2 is also supported through `SMTP_CLIENT_ID`, `SMTP_CLIENT_SECRET`, `SMTP_REFRESH_TOKEN`, and `SMTP_ACCESS_TOKEN`.
+
+## Local development
 
 ```bash
 npm install
-```
-
-2. Configure environment variables:
-
-```bash
 copy .env.example .env
-```
-
-3. Prepare the database:
-
-- Fresh database:
-
-```bash
-psql -U postgres -d atlanticofit -f init.sql
-```
-
-- Existing database upgrade:
-
-```bash
-psql -U postgres -d atlanticofit -f prisma/migrations/20260306_security_hardening_step1/migration.sql
-```
-
-After verification, remove the legacy `students.user_id` column:
-
-```bash
-psql -U postgres -d atlanticofit -f prisma/migrations/20260306_security_hardening_step2_cleanup/migration.sql
-```
-
-4. Generate Prisma client and seed sample data if needed:
-
-```bash
-npx prisma generate
+npm exec prisma generate
 npx prisma db seed
-```
-
-5. Start the app:
-
-```bash
 npm run dev
 ```
 
-## Admin bootstrap
-
-The old HTTP bootstrap endpoint was removed. Use the local ops script instead.
-
-- Promote an existing user:
+Useful commands:
 
 ```bash
-npm run bootstrap:admin -- --email admin@school.pt
+npm run lint
+npm run typecheck
+npm test
+npm run build
 ```
 
-- Create a new admin:
+## Health checks
+
+`GET /api/health` validates process readiness and database connectivity.
+
+Response shape:
+
+```json
+{
+  "status": "ready",
+  "database": "up",
+  "latencyMs": 8,
+  "timestamp": "2026-03-10T12:00:00.000Z"
+}
+```
+
+When the database is unavailable, the endpoint returns `503` with `status: "degraded"`.
+
+## Tests
+
+Unit and component coverage lives under `next/tests/`.
 
 ```bash
-npm run bootstrap:admin -- --email admin@school.pt --name "School Admin" --password "StrongPass123"
+npm test
+npm run test:smoke
 ```
 
-## Email reporting
+Current automated coverage includes:
 
-- Server-side report emails are restricted to `ADMIN` and `PROFESSOR`.
-- Reports can only be sent to guardians already linked to the student.
-- Email content is rendered on the server; arbitrary HTML input is not accepted.
-- Students and parents can still generate local PDFs.
+- RBAC rules and owner / guardian access checks
+- SOS inbox protection for non-staff roles
+- consent refresh in the profile flow
+- authenticated shell navigation rendering
+- public auth pages and protected-route smoke checks
+
+## Docker
+
+```bash
+docker build -t healthytech-atlantico .
+docker run -p 3000:3000 \
+  -e DATABASE_URL="..." \
+  -e AUTH_SECRET="..." \
+  -e NEXTAUTH_SECRET="..." \
+  -e NEXTAUTH_URL="https://your-domain.com" \
+  healthytech-atlantico
+```
+
+The Docker image:
+
+- uses a multi-stage build
+- generates Prisma Client during the build stage
+- runs the standalone Next.js output
+- uses a non-root runtime user
+
+## CI
+
+GitHub Actions runs:
+
+1. Prisma Client generation
+2. lint
+3. type-check
+4. Vitest suite
+5. production build
+6. Playwright smoke tests
 
 ## Notes
 
-- `reset_and_init.sql` recreates the schema from scratch for local/dev reset flows.
-- The active app lives in `next/`. The `old/` directory is legacy and not part of the current runtime.
+- Active application code lives in `next/`.
+- `old/` is legacy archive code and should not track secrets or `node_modules`.
+- Security headers are applied in `src/proxy.ts`.
+- For multi-instance production rate limiting, replace the in-memory limiter in `src/proxy.ts` with Redis or another shared backend.

@@ -1,124 +1,156 @@
 "use client";
 
-import { useState } from "react";
-import { signIn } from "next-auth/react";
-import { useRouter } from "next/navigation";
-import Link from "next/link";
 import Image from "next/image";
-import { LogIn } from "lucide-react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { signIn } from "next-auth/react";
+import { useState } from "react";
+import { ArrowRight, LogIn } from "lucide-react";
 import { useTranslations } from "next-intl";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import type { z } from "zod";
+import { loginSchema } from "@/lib/validations";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import {
+  Form,
+  FormField,
+  FormItem,
+  FormControl,
+  FormMessage,
+} from "@/components/ui/form";
+
+type LoginValues = z.infer<typeof loginSchema>;
 
 export default function LoginPage() {
   const router = useRouter();
   const t = useTranslations("auth");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
+  const [apiError, setApiError] = useState<string | null>(null);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError(null);
-    setLoading(true);
+  const form = useForm<LoginValues>({
+    resolver: zodResolver(loginSchema),
+    defaultValues: { email: "", password: "" },
+  });
+
+  const onSubmit = async (values: LoginValues) => {
+    setApiError(null);
 
     try {
-      const res = await signIn("credentials", {
-        email,
-        password,
+      const result = await signIn("credentials", {
+        email: values.email,
+        password: values.password,
         redirect: false,
       });
 
-      if (res?.error) {
-        setError(t("wrongCredentials"));
-      } else {
-        router.push("/dashboard");
-        router.refresh();
+      if (result?.error) {
+        setApiError(t("wrongCredentials"));
+        return;
       }
+
+      router.push("/dashboard");
+      router.refresh();
     } catch {
-      setError(t("connectionError"));
-    } finally {
-      setLoading(false);
+      setApiError(t("connectionError"));
     }
   };
 
   return (
-    <div className="w-full max-w-sm mx-auto">
-      {/* Logo */}
-      <div className="text-center mb-8 animate-fade-in-up">
-        <div className="inline-flex items-center justify-center mb-4">
-          <Image
-            src="/logo.png"
-            alt="HealthyTech Atlântico"
-            width={200}
-            height={60}
-            className="object-contain drop-shadow-md"
-            priority
-          />
+    <div className="animate-fade-in-up overflow-hidden rounded-2xl border border-border/70 bg-card/90 shadow-[0_28px_90px_rgba(15,23,42,0.18)]">
+      <div className="border-b border-border/70 bg-[linear-gradient(135deg,rgba(8,22,43,0.98),rgba(28,48,74,0.94))] px-6 py-6 text-white">
+        <div className="flex items-center justify-between gap-4">
+          <div>
+            <p className="text-[11px] font-semibold uppercase tracking-[0.26em] text-gold-200/80">
+              HealthyTech Atlântico
+            </p>
+            <h1 className="mt-3 font-display text-2xl font-semibold tracking-tight">
+              {t("login")}
+            </h1>
+            <p className="mt-2 max-w-sm text-sm leading-relaxed text-navy-100/75">
+              Acede ao painel institucional para acompanhar alunos, alertas e relatórios.
+            </p>
+          </div>
+          <div className="hidden rounded-xl border border-white/10 bg-white/8 p-2.5 sm:block">
+            <Image
+              src="/logo.png"
+              alt="HealthyTech Atlantico"
+              width={64}
+              height={64}
+              className="object-contain brightness-0 invert"
+              priority
+            />
+          </div>
         </div>
       </div>
 
-      {/* Card */}
-      <form
-        onSubmit={handleSubmit}
-        className="animate-fade-in-up delay-100 bg-card/85 glass rounded-2xl border border-border/50 shadow-float p-6 flex flex-col gap-4 relative"
-      >
-        <div className="absolute top-0 left-0 right-0 h-[3px] bg-gradient-to-r from-navy-600 to-gold-500 opacity-90 shadow-[0_0_10px_rgba(194,151,13,0.5)]" />
-        <h2 className="text-xl font-bold tracking-tight text-center">{t("login")}</h2>
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5 p-6">
+          {apiError ? (
+            <div className="rounded-2xl border border-danger-300/60 bg-danger-50/80 px-4 py-3 text-sm text-danger-700 dark:border-danger-900/30 dark:bg-danger-950/20 dark:text-danger-200">
+              {apiError}
+            </div>
+          ) : null}
 
-        {error && (
-          <div className="animate-scale-in rounded-lg bg-danger-50 border border-danger-200 text-danger-700 text-sm px-4 py-2.5">
-            {error}
-          </div>
-        )}
-
-        <div className="animate-fade-in-up delay-150">
-          <Input
-            label={t("email")}
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            placeholder="exemplo@escola.pt"
-            required
-            autoComplete="email"
-            autoFocus
+          <FormField
+            control={form.control}
+            name="email"
+            render={({ field }) => (
+              <FormItem>
+                <FormControl>
+                  <Input
+                    label={t("email")}
+                    type="email"
+                    placeholder="exemplo@escola.pt"
+                    autoComplete="email"
+                    autoFocus
+                    error={form.formState.errors.email?.message}
+                    {...field}
+                  />
+                </FormControl>
+              </FormItem>
+            )}
           />
-        </div>
 
-        <div className="animate-fade-in-up delay-200">
-          <Input
-            label={t("password")}
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            placeholder="••••••••"
-            required
-            autoComplete="current-password"
+          <FormField
+            control={form.control}
+            name="password"
+            render={({ field }) => (
+              <FormItem>
+                <FormControl>
+                  <Input
+                    label={t("password")}
+                    type="password"
+                    placeholder="Password"
+                    autoComplete="current-password"
+                    error={form.formState.errors.password?.message}
+                    {...field}
+                  />
+                </FormControl>
+              </FormItem>
+            )}
           />
-        </div>
 
-        <div className="animate-fade-in-up delay-300">
           <Button
             type="submit"
-            loading={loading}
+            loading={form.formState.isSubmitting}
             icon={<LogIn className="size-4" />}
-            className="w-full mt-2"
+            className="w-full justify-center"
           >
             {t("enter")}
           </Button>
-        </div>
 
-        <p className="text-center text-xs text-muted-foreground mt-1 animate-fade-in delay-400">
-          {t("noAccount")}{" "}
-          <Link
-            href="/register"
-            className="text-navy-700 dark:text-navy-300 font-medium hover:underline transition-colors"
-          >
-            {t("createAccount")}
-          </Link>
-        </p>
-      </form>
+          <div className="flex items-center justify-between gap-3 border-t border-border/70 pt-4 text-sm">
+            <p className="text-muted-foreground">{t("noAccount")}</p>
+            <Link
+              href="/register"
+              className="inline-flex items-center gap-2 font-semibold text-navy-700 transition-colors hover:text-gold-700 dark:text-gold-300"
+            >
+              {t("createAccount")}
+              <ArrowRight className="size-4" />
+            </Link>
+          </div>
+        </form>
+      </Form>
     </div>
   );
 }

@@ -136,7 +136,7 @@ CREATE TABLE "sos_alerts" (
 CREATE TABLE "reports" (
     "id" TEXT NOT NULL,
     "student_id" TEXT NOT NULL,
-    "title" TEXT NOT NULL DEFAULT 'Relat├│rio AtlanticoFit',
+    "title" TEXT NOT NULL DEFAULT 'Relat├│rio HealthyTech Altântico',
     "emailed_to" TEXT NOT NULL,
     "school_year" TEXT,
     "created_by" TEXT,

@@ -1,54 +1,85 @@
-"use client";
-
+import * as React from "react";
+import { Slot } from "@radix-ui/react-slot";
+import { cva, type VariantProps } from "class-variance-authority";
 import { Loader2 } from "lucide-react";
+import { cn } from "@/lib/utils";
 
-type Variant = "primary" | "secondary" | "danger" | "ghost";
-type Size = "sm" | "md" | "lg";
+const buttonVariants = cva(
+  "inline-flex items-center justify-center gap-2 rounded-full font-semibold tracking-tight whitespace-nowrap transition-all duration-300 " +
+    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400/40 focus-visible:ring-offset-2 " +
+    "disabled:pointer-events-none disabled:opacity-55 active:translate-y-px " +
+    "[&_svg]:pointer-events-none [&_svg]:shrink-0",
+  {
+    variants: {
+      variant: {
+        primary:
+          "border border-navy-900/70 bg-gradient-to-b from-navy-800 to-navy-950 text-white shadow-card hover:-translate-y-0.5 hover:shadow-card-hover",
+        secondary:
+          "border border-gold-500/30 bg-gradient-to-b from-gold-200 to-gold-400 text-navy-950 shadow-card hover:-translate-y-0.5 hover:shadow-card-hover",
+        danger:
+          "border border-danger-700/30 bg-gradient-to-b from-danger-500 to-danger-700 text-white shadow-card hover:-translate-y-0.5 hover:shadow-card-hover",
+        ghost:
+          "border border-border/70 bg-card/60 text-foreground shadow-none hover:border-navy-300/50 hover:bg-card",
+        outline:
+          "border border-border bg-transparent text-foreground shadow-sm hover:bg-accent/10 hover:border-accent/40",
+        link: "text-accent underline-offset-4 hover:underline border-0 shadow-none",
+      },
+      size: {
+        sm: "h-9 px-4 py-2 text-xs",
+        md: "h-10 px-5 py-2.5 text-sm",
+        lg: "h-11 px-6 py-3 text-base",
+        icon: "h-10 w-10 p-0",
+      },
+    },
+    defaultVariants: {
+      variant: "primary",
+      size: "md",
+    },
+  }
+);
 
-interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: Variant;
-  size?: Size;
+interface ButtonProps
+  extends React.ButtonHTMLAttributes<HTMLButtonElement>,
+    VariantProps<typeof buttonVariants> {
+  asChild?: boolean;
   loading?: boolean;
   icon?: React.ReactNode;
 }
 
-const base =
-  "inline-flex items-center justify-center gap-2 font-semibold rounded-xl transition-all duration-300 " +
-  "focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 " +
-  "disabled:opacity-50 disabled:pointer-events-none " +
-  "active:scale-[0.98] active:translate-y-[1px] hover:scale-[1.03] hover:-translate-y-[1px] shadow-sm relative overflow-hidden transition-transform ease-out";
+const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
+  (
+    {
+      className,
+      variant,
+      size,
+      asChild = false,
+      loading = false,
+      icon,
+      children,
+      disabled,
+      ...props
+    },
+    ref
+  ) => {
+    const Comp = asChild ? Slot : "button";
 
-const variants: Record<Variant, string> = {
-  primary: "bg-gradient-to-b from-navy-700 to-navy-900 hover:from-navy-600 hover:to-navy-800 text-white shadow-[0_4px_14px_rgba(20,48,76,0.39)] hover:shadow-[0_6px_20px_rgba(20,48,76,0.23)] active:shadow-[inset_0_3px_6px_rgba(0,0,0,0.4)] ring-1 ring-navy-900 inset-shadow-sm focus-visible:ring-navy-600",
-  secondary: "bg-gradient-to-b from-gold-300 to-gold-500 hover:from-gold-200 hover:to-gold-400 text-navy-950 shadow-[0_4px_14px_rgba(224,180,40,0.39)] hover:shadow-[0_6px_20px_rgba(224,180,40,0.23)] active:shadow-[inset_0_3px_6px_rgba(0,0,0,0.2)] ring-1 ring-gold-600/50 inset-shadow-sm focus-visible:ring-gold-400",
-  danger: "bg-gradient-to-b from-danger-500 to-danger-700 hover:from-danger-400 hover:to-danger-600 text-white shadow-[0_4px_14px_rgba(220,38,38,0.39)] hover:shadow-[0_6px_20px_rgba(220,38,38,0.23)] active:shadow-[inset_0_3px_6px_rgba(0,0,0,0.4)] ring-1 ring-danger-800 inset-shadow-sm focus-visible:ring-danger-500",
-  ghost: "bg-transparent text-muted-foreground hover:bg-muted/50 hover:text-foreground focus-visible:ring-navy-400 shadow-none hover:shadow-sm active:-translate-y-0 active:scale-[0.97] active:shadow-inner",
-};
+    return (
+      <Comp
+        className={cn(buttonVariants({ variant, size, className }))}
+        ref={ref}
+        disabled={loading || disabled}
+        {...props}
+      >
+        {loading ? (
+          <Loader2 className="size-4 animate-spin" />
+        ) : icon ? (
+          <span className="flex items-center">{icon}</span>
+        ) : null}
+        {children ? <span>{children}</span> : null}
+      </Comp>
+    );
+  }
+);
+Button.displayName = "Button";
 
-const sizes: Record<Size, string> = {
-  sm: "text-xs px-3.5 py-1.5",
-  md: "text-sm px-4.5 py-2.5",
-  lg: "text-base px-6 py-3.5",
-};
-
-export function Button({
-  variant = "primary",
-  size = "md",
-  loading = false,
-  icon,
-  children,
-  className = "",
-  ...props
-}: ButtonProps) {
-  return (
-    <button
-      className={`${base} ${variants[variant]} ${sizes[size]} ${className}`}
-      disabled={loading || props.disabled}
-      {...props}
-    >
-      <div className="absolute inset-0 bg-white/10 opacity-0 group-active:opacity-100 transition-opacity" />
-      {loading ? <Loader2 className="size-4 animate-spin relative z-10" /> : <span className="relative z-10 flex">{icon}</span>}
-      <span className="relative z-10 drop-shadow-sm">{children}</span>
-    </button>
-  );
-}
+export { Button, buttonVariants };

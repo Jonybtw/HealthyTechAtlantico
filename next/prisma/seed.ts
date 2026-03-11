@@ -1,11 +1,12 @@
-import { PrismaClient, Role, Sex, QuestionnaireType } from "@prisma/client";
+﻿import { PrismaClient, Role, Sex, QuestionnaireType } from "@prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
 import pg from "pg";
 import bcrypt from "bcryptjs";
+import { getPgSslConfig } from "../src/lib/database-ssl";
 
 const pool = new pg.Pool({
   connectionString: process.env.DATABASE_URL!,
-  ssl: { rejectUnauthorized: false },
+  ssl: getPgSslConfig(),
 });
 const adapter = new PrismaPg(pool);
 const prisma = new PrismaClient({ adapter });
@@ -36,10 +37,10 @@ async function main() {
   const hash = await bcrypt.hash("Password1", 12);
 
   const admin = await prisma.user.upsert({
-    where: { email: "admin@atlanticofit.pt" },
+    where: { email: "admin@colegioatlantico.pt" },
     update: {},
     create: {
-      email: "admin@atlanticofit.pt",
+      email: "admin@colegioatlantico.pt",
       name: "Admin Atlântico",
       passwordHash: hash,
       role: Role.ADMIN,
@@ -49,10 +50,10 @@ async function main() {
   });
 
   const professor = await prisma.user.upsert({
-    where: { email: "professor@atlanticofit.pt" },
+    where: { email: "professor@colegioatlantico.pt" },
     update: {},
     create: {
-      email: "professor@atlanticofit.pt",
+      email: "professor@colegioatlantico.pt",
       name: "Prof. Carlos Silva",
       passwordHash: hash,
       role: Role.PROFESSOR,
@@ -61,10 +62,10 @@ async function main() {
   });
 
   await prisma.user.upsert({
-    where: { email: "psicologo@atlanticofit.pt" },
+    where: { email: "psicologo@colegioatlantico.pt" },
     update: {},
     create: {
-      email: "psicologo@atlanticofit.pt",
+      email: "psicologo@colegioatlantico.pt",
       name: "Dr. Ana Rodrigues",
       passwordHash: hash,
       role: Role.PSICOLOGO,
@@ -73,10 +74,10 @@ async function main() {
   });
 
   const parentUser = await prisma.user.upsert({
-    where: { email: "pai@atlanticofit.pt" },
+    where: { email: "pai@colegioatlantico.pt" },
     update: {},
     create: {
-      email: "pai@atlanticofit.pt",
+      email: "pai@colegioatlantico.pt",
       name: "João Ferreira",
       passwordHash: hash,
       role: Role.PAIS,
@@ -102,7 +103,7 @@ async function main() {
 
   for (let i = 0; i < studentNames.length; i++) {
     const s = studentNames[i];
-    const email = `aluno${i + 1}@atlanticofit.pt`;
+    const email = `aluno${i + 1}@colegioatlantico.pt`;
     const className = i < 5 ? class7A.name : class8B.name;
 
     const user = await prisma.user.upsert({
@@ -217,8 +218,8 @@ async function main() {
         studentId: students[0].id,
         psych: "Dr. Ana Rodrigues",
         teacher: "Prof. Carlos Silva",
-        psychEmail: "psicologo@atlanticofit.pt",
-        teacherEmail: "professor@atlanticofit.pt",
+        psychEmail: "psicologo@colegioatlantico.pt",
+        teacherEmail: "professor@colegioatlantico.pt",
         resolved: false,
       },
     });
@@ -230,8 +231,8 @@ async function main() {
         studentId: students[3].id,
         psych: "Dr. Ana Rodrigues",
         teacher: "Prof. Carlos Silva",
-        psychEmail: "psicologo@atlanticofit.pt",
-        teacherEmail: "professor@atlanticofit.pt",
+        psychEmail: "psicologo@colegioatlantico.pt",
+        teacherEmail: "professor@colegioatlantico.pt",
         resolved: false,
       },
     });

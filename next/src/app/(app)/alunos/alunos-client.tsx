@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { UserPlus } from "lucide-react";
+import { PageTransition, FadeIn, AnimatePresence } from "@/components/ui/motion";
 import { PageHeader } from "@/components/ui/page-header";
 import { DataTable, type Column } from "@/components/ui/data-table";
 import { Button } from "@/components/ui/button";
@@ -74,8 +75,8 @@ export function AlunosClient({ initialStudents }: AlunosClientProps) {
     ];
 
     return (
-        <div className="flex flex-col gap-6">
-            <PageHeader title={t("title")} description={t("description")}>
+        <PageTransition className="flex flex-col gap-5">
+            <PageHeader title={t("title")} description={t("description")}>    
                 <Button
                     size="sm"
                     icon={<UserPlus className="size-4" />}
@@ -85,10 +86,12 @@ export function AlunosClient({ initialStudents }: AlunosClientProps) {
                 </Button>
             </PageHeader>
 
+            <AnimatePresence>
             {showCreate && (
+                <FadeIn key="create-form" className="bg-card glass rounded-xl border border-border p-5 flex flex-col gap-4 max-w-lg shadow-card">
                 <form
                     action={formAction}
-                    className="bg-card glass rounded-xl border border-border p-6 flex flex-col gap-4 max-w-lg shadow-card animate-fade-in-up"
+                    className="flex flex-col gap-4"
                 >
                     <Input
                         name="name"
@@ -122,7 +125,9 @@ export function AlunosClient({ initialStudents }: AlunosClientProps) {
                         {t("create")}
                     </Button>
                 </form>
+                </FadeIn>
             )}
+            </AnimatePresence>
 
             <DataTable
                 columns={columns}
@@ -131,6 +136,6 @@ export function AlunosClient({ initialStudents }: AlunosClientProps) {
                 onRowClick={(r) => router.push(`/alunos/${r.id}`)}
                 emptyMessage={t("emptyMessage")}
             />
-        </div>
+        </PageTransition>
     );
 }

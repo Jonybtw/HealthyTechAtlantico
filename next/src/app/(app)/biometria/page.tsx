@@ -2,15 +2,16 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useTranslations } from "next-intl";
-import { useSession } from "next-auth/react";
 import { toast } from "sonner";
 import { Link2, Ruler } from "lucide-react";
+import { PageTransition, ScaleIn } from "@/components/ui/motion";
 import { PageHeader } from "@/components/ui/page-header";
 import { StudentPicker } from "@/components/ui/student-picker";
 import { UnitInput } from "@/components/ui/unit-input";
 import { Button } from "@/components/ui/button";
 import { ZoneBadge } from "@/components/ui/zone-badge";
 import { EmptyState } from "@/components/ui/empty-state";
+import { useUser } from "@/components/user-context";
 import { classifyBmi, classifyWaist, calcAgeFromBirthDate } from "@/lib/zaf";
 import type { Sex } from "@prisma/client";
 
@@ -30,8 +31,7 @@ interface Classification {
 
 export default function BiometriaPage() {
   const t = useTranslations("biometria");
-  const { data: session } = useSession();
-  const role = (session?.user as Record<string, unknown>)?.role as string;
+  const { role } = useUser();
 
   const [students, setStudents] = useState<StudentOption[]>([]);
   const [studentId, setStudentId] = useState<string | null>(null);
@@ -55,7 +55,7 @@ export default function BiometriaPage() {
           name: s.name as string,
           birthDate: (s.birthDate as string | null) ?? null,
           sex: (s.sex as Sex) ?? "M",
-          age: s.age != null ? Number(s.age) : null,
+          age: s.age !== null && s.age !== undefined ? Number(s.age) : null,
         }))
       );
       // auto-select for aluno
@@ -106,7 +106,7 @@ export default function BiometriaPage() {
 
   if (role === "ALUNO" && students.length === 0) {
     return (
-      <div className="flex flex-col gap-6">
+      <div className="flex flex-col gap-5">
         <PageHeader title={t("title")} description={t("description")} />
         <EmptyState
           icon={Link2}
@@ -176,7 +176,7 @@ export default function BiometriaPage() {
   };
 
   return (
-    <div className="flex flex-col gap-6">
+    <PageTransition className="flex flex-col gap-5">
       <PageHeader
         title={t("title")}
         description={t("description")}
@@ -184,7 +184,7 @@ export default function BiometriaPage() {
 
       <form
         onSubmit={handleSubmit}
-        className="bg-card rounded-xl border border-border p-6 flex flex-col gap-5 max-w-lg"
+        className="bg-card rounded-xl border border-border p-5 flex flex-col gap-5 max-w-lg"
       >
         {/* Student Picker — hidden for ALUNOs */}
         {role !== "ALUNO" && (
@@ -255,7 +255,7 @@ export default function BiometriaPage() {
 
             <div className="flex flex-col relative z-10">
               <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-0.5">{t("bmi")}</span>
-              <strong className="text-3xl font-bold tracking-tighter tabular-nums text-foreground">{classification.imc}</strong>
+              <strong className="text-2xl font-bold tracking-tighter tabular-nums text-foreground">{classification.imc}</strong>
             </div>
 
             <div className="w-px h-10 bg-border mx-1 hidden sm:block relative z-10" />
@@ -285,6 +285,6 @@ export default function BiometriaPage() {
           {t("save")}
         </Button>
       </form>
-    </div>
+    </PageTransition>
   );
 }

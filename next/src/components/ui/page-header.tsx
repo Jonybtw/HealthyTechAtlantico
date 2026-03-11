@@ -6,14 +6,18 @@ interface PageHeaderProps {
 
 export function PageHeader({ title, description, children }: PageHeaderProps) {
   return (
-    <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between mb-6 animate-fade-in-up">
-      <div>
-        <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tighter text-gradient-gold drop-shadow-sm pb-1">{title}</h1>
-        {description && (
-          <p className="text-sm sm:text-base text-muted-foreground mt-0.5 font-medium animate-fade-in delay-100">{description}</p>
-        )}
+    <div className="animate-fade-in-up flex flex-col gap-3 pb-1 lg:flex-row lg:items-end lg:justify-between">
+      <div className="max-w-3xl space-y-1.5">
+        <h1 className="font-display text-balance text-2xl font-semibold leading-[0.98] tracking-[-0.03em] text-gradient-gold sm:text-3xl">
+          {title}
+        </h1>
+        {description ? (
+          <p className="max-w-2xl text-sm leading-relaxed text-muted-foreground">
+            {description}
+          </p>
+        ) : null}
       </div>
-      {children && <div className="mt-3 sm:mt-0 animate-fade-in delay-150">{children}</div>}
+      {children ? <div className="flex flex-wrap gap-2">{children}</div> : null}
     </div>
   );
 }

@@ -5,26 +5,42 @@ interface ZoneBadgeProps {
   size?: "sm" | "md";
 }
 
-export function ZoneBadge({ zone, size = "md" }: ZoneBadgeProps) {
-  if (!zone) return <span className="text-muted-foreground">—</span>;
+function normalizeZone(zone: string) {
+  return zone
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase();
+}
 
-  const isOk =
-    zone.toLowerCase().includes("saudável") ||
-    zone.toLowerCase().includes("saudavel");
+export function ZoneBadge({ zone, size = "md" }: ZoneBadgeProps) {
+  if (!zone) {
+    return <span className="text-muted-foreground">N/A</span>;
+  }
+
+  const normalizedZone = normalizeZone(zone);
+  const isPositive =
+    normalizedZone.includes("saudavel") ||
+    normalizedZone.includes("healthy") ||
+    normalizedZone.includes("zsaf");
 
   const sizeClasses =
     size === "sm"
-      ? "text-xs px-2 py-0.5 gap-1"
-      : "text-sm px-3 py-1 gap-1.5";
+      ? "gap-1 px-2.5 py-1 text-[11px]"
+      : "gap-1.5 px-3 py-1.5 text-sm";
 
   return (
     <span
-      className={`inline-flex items-center rounded-full font-semibold tracking-tight shadow-sm ${sizeClasses} ${isOk
-        ? "bg-gradient-to-r from-success-50 to-success-100/50 text-success-700 dark:from-success-900/40 dark:to-success-900/20 dark:text-success-300 ring-1 ring-success-500/30"
-        : "bg-gradient-to-r from-danger-50 to-danger-100/50 text-danger-700 dark:from-danger-900/40 dark:to-danger-900/20 dark:text-danger-300 ring-1 ring-danger-500/30 animate-[pulse_3s_ease-in-out_infinite]"
-        }`}
+      className={`inline-flex items-center rounded-full border font-semibold tracking-tight shadow-sm ${sizeClasses} ${
+        isPositive
+          ? "border-success-500/25 bg-success-100/80 text-success-700 dark:border-success-500/20 dark:bg-success-500/10 dark:text-success-300"
+          : "border-danger-500/25 bg-danger-100/80 text-danger-700 dark:border-danger-500/20 dark:bg-danger-500/10 dark:text-danger-300"
+      }`}
     >
-      <span className={`h-1.5 w-1.5 rounded-full shadow-[0_0_6px_currentColor] ${isOk ? "bg-success-500" : "bg-danger-500"}`} />
+      <span
+        className={`size-2 rounded-full ${
+          isPositive ? "bg-success-500" : "bg-danger-500"
+        }`}
+      />
       {zone}
     </span>
   );

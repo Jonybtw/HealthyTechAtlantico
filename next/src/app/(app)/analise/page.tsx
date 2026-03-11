@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
-import { useSession } from "next-auth/react";
 import {
   LineChart,
   Line,
@@ -20,6 +19,7 @@ import { StudentPicker } from "@/components/ui/student-picker";
 import { PillSelect } from "@/components/ui/pill-select";
 import { EmptyState } from "@/components/ui/empty-state";
 import { LineChart as ChartIcon, Users, Activity, Link2 } from "lucide-react";
+import { useUser } from "@/components/user-context";
 
 type ChartType = "bmi" | "tests" | "class";
 
@@ -72,8 +72,7 @@ function ChartTooltip({
 export default function AnalisePage() {
   const t = useTranslations("analise");
   const common = useTranslations("common");
-  const { data: session } = useSession();
-  const role = (session?.user as Record<string, unknown>)?.role as string;
+  const { role } = useUser();
 
   const [students, setStudents] = useState<{ id: string; name: string }[]>([]);
   const [studentId, setStudentId] = useState<string | null>(null);
@@ -263,7 +262,7 @@ export default function AnalisePage() {
 
   if (isStudent && students.length === 0) {
     return (
-      <div className="flex flex-col gap-6">
+      <div className="flex flex-col gap-5">
         <PageHeader title={t("title")} description={t("descriptionStudent")} />
         <EmptyState
           icon={Link2}
@@ -275,10 +274,10 @@ export default function AnalisePage() {
   }
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-5">
       <PageHeader title={t("title")} description={t("description")} />
 
-      <div className="bg-card rounded-xl border border-border p-6 flex flex-col gap-5">
+      <div className="bg-card rounded-xl border border-border p-5 flex flex-col gap-5 max-w-3xl">
         <div className="flex flex-wrap items-end gap-4">
           {chart !== "class" && !isStudent && (
             <div className="w-64">
@@ -379,7 +378,7 @@ export default function AnalisePage() {
                 <Legend wrapperStyle={{ paddingTop: "20px" }} />
                 <Bar dataKey="ZSAF" name="Zona Saudável" fill="#10b981" stackId="a" radius={[0, 0, 0, 0]} animationDuration={1000} />
                 <Bar dataKey="ZMF" name="Zona de Melhoria" fill="#f59e0b" stackId="a" radius={[0, 0, 0, 0]} animationDuration={1000} />
-                <Bar dataKey="Sem dados" name="Sem dados" fill="var(--color-muted)" stackId="a" radius={[0, 4, 4, 0]} animationDuration={1000} />
+                <Bar dataKey="Sem dados" name="Sem dados" fill="#64748b" stackId="a" radius={[0, 4, 4, 0]} animationDuration={1000} />
               </BarChart>
             </ResponsiveContainer>
           </div>

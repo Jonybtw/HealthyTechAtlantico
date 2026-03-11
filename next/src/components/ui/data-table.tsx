@@ -1,7 +1,13 @@
 "use client";
 
-import { useState, useMemo } from "react";
-import { ChevronUp, ChevronDown, ChevronLeft, ChevronRight, Search } from "lucide-react";
+import { useMemo, useState } from "react";
+import {
+  ChevronDown,
+  ChevronLeft,
+  ChevronRight,
+  ChevronUp,
+  Search,
+} from "lucide-react";
 
 export interface Column<T> {
   key: string;
@@ -27,7 +33,7 @@ export function DataTable<T extends object>({
   data,
   pageSize = 15,
   searchable = true,
-  searchPlaceholder = "Pesquisar…",
+  searchPlaceholder = "Pesquisar...",
   emptyMessage = "Sem registos.",
   onRowClick,
   rowKey,
@@ -38,164 +44,178 @@ export function DataTable<T extends object>({
   const [page, setPage] = useState(1);
 
   const filtered = useMemo(() => {
-    if (!search.trim()) return data;
-    const q = search.toLowerCase();
+    if (!search.trim()) {
+      return data;
+    }
+
+    const query = search.toLowerCase();
     return data.filter((row) =>
-      columns.some((col) => {
-        const val = (row as Record<string, unknown>)[col.key];
-        return val != null && String(val).toLowerCase().includes(q);
+      columns.some((column) => {
+        const value = Reflect.get(row, column.key);
+        return (
+          value !== null &&
+          value !== undefined &&
+          String(value).toLowerCase().includes(query)
+        );
       })
     );
-  }, [data, search, columns]);
+  }, [columns, data, search]);
 
   const sorted = useMemo(() => {
-    if (!sortKey) return filtered;
-    const copy = [...filtered];
-    copy.sort((a, b) => {
-      const av = (a as Record<string, unknown>)[sortKey] ?? "";
-      const bv = (b as Record<string, unknown>)[sortKey] ?? "";
-      if (typeof av === "number" && typeof bv === "number")
-        return sortDir === "asc" ? av - bv : bv - av;
+    if (!sortKey) {
+      return filtered;
+    }
+
+    const sortedRows = [...filtered];
+    sortedRows.sort((left, right) => {
+      const leftValue = Reflect.get(left, sortKey) ?? "";
+      const rightValue = Reflect.get(right, sortKey) ?? "";
+
+      if (typeof leftValue === "number" && typeof rightValue === "number") {
+        return sortDir === "asc"
+          ? leftValue - rightValue
+          : rightValue - leftValue;
+      }
+
       return sortDir === "asc"
-        ? String(av).localeCompare(String(bv), "pt")
-        : String(bv).localeCompare(String(av), "pt");
+        ? String(leftValue).localeCompare(String(rightValue), "pt")
+        : String(rightValue).localeCompare(String(leftValue), "pt");
     });
-    return copy;
-  }, [filtered, sortKey, sortDir]);
+
+    return sortedRows;
+  }, [filtered, sortDir, sortKey]);
 
   const totalPages = Math.max(1, Math.ceil(sorted.length / pageSize));
   const safePage = Math.min(page, totalPages);
   const paged = sorted.slice((safePage - 1) * pageSize, safePage * pageSize);
 
-  const toggleSort = (key: string) => {
-    if (sortKey === key) setSortDir((d) => (d === "asc" ? "desc" : "asc"));
-    else { setSortKey(key); setSortDir("asc"); }
+  function toggleSort(key: string) {
+    if (sortKey === key) {
+      setSortDir((current) => (current === "asc" ? "desc" : "asc"));
+    } else {
+      setSortKey(key);
+      setSortDir("asc");
+    }
     setPage(1);
-  };
+  }
 
   return (
-    <div className="flex flex-col gap-4 animate-fade-in-up">
-      {/* Search bar */}
-      {searchable && (
-        <div className="relative max-w-sm">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground pointer-events-none" />
+    <div className="animate-fade-in-up flex flex-col gap-4">
+      {searchable ? (
+        <div className="relative max-w-md">
+          <Search className="absolute left-4 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
           <input
             value={search}
-            onChange={(e) => { setSearch(e.target.value); setPage(1); }}
+            onChange={(event) => {
+              setSearch(event.target.value);
+              setPage(1);
+            }}
             placeholder={searchPlaceholder}
-            className="w-full pl-9 pr-3 py-2 rounded-xl border border-border bg-card/60 glass text-sm text-foreground
-                       placeholder:text-muted-foreground shadow-inner
-                       focus:outline-none focus:ring-2 focus:ring-navy-600/30 focus:border-navy-400
-                       hover:border-navy-300 transition-all duration-300"
+            className="w-full rounded-full border border-border/80 bg-card/75 py-3 pl-11 pr-4 text-sm text-foreground outline-none transition-all focus:border-gold-500/50 focus:ring-4 focus:ring-gold-400/10"
           />
         </div>
-      )}
+      ) : null}
 
-      {/* Table */}
-      <div className="relative overflow-x-auto overflow-y-auto max-h-[600px] rounded-2xl border border-border shadow-card bg-card/70 glass scrollbar-thin">
-        <table className="w-full text-sm">
-          <thead className="sticky top-0 z-20">
-            <tr className="border-b border-border/50 bg-card shadow-[0_1px_3px_rgba(0,0,0,0.02)]">
-              {columns.map((col) => (
-                <th
-                  key={col.key}
-                  onClick={col.sortable ? () => toggleSort(col.key) : undefined}
-                  className={`px-5 py-4 text-left text-xs font-bold text-navy-800 dark:text-navy-200 uppercase tracking-widest select-none
-                              ${col.sortable ? "cursor-pointer hover:bg-navy-900/5 dark:hover:bg-navy-100/5 transition-colors" : ""}
-                              ${col.className ?? ""}`}
-                >
-                  <span className="inline-flex items-center gap-1.5">
-                    {col.header}
-                    {col.sortable && (
-                      <span className="text-muted-foreground/40">
-                        {sortKey === col.key
-                          ? (sortDir === "asc" ? <ChevronUp className="size-3.5" /> : <ChevronDown className="size-3.5" />)
-                          : <ChevronUp className="size-3 opacity-30" />
-                        }
-                      </span>
-                    )}
-                  </span>
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-border/50">
-            {paged.length === 0 ? (
+      <div className="glass overflow-hidden rounded-[30px] shadow-card">
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead className="border-b border-border/70 bg-muted/28">
               <tr>
-                <td colSpan={columns.length} className="px-5 py-14 text-center text-muted-foreground text-sm">
-                  {emptyMessage}
-                </td>
+                {columns.map((column) => (
+                  <th
+                    key={column.key}
+                    onClick={
+                      column.sortable ? () => toggleSort(column.key) : undefined
+                    }
+                    className={`px-5 py-4 text-left text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground ${
+                      column.sortable
+                        ? "cursor-pointer transition-colors hover:text-foreground"
+                        : ""
+                    } ${column.className ?? ""}`}
+                  >
+                    <span className="inline-flex items-center gap-2">
+                      {column.header}
+                      {column.sortable ? (
+                        sortKey === column.key ? (
+                          sortDir === "asc" ? (
+                            <ChevronUp className="size-3.5" />
+                          ) : (
+                            <ChevronDown className="size-3.5" />
+                          )
+                        ) : (
+                          <ChevronUp className="size-3.5 opacity-30" />
+                        )
+                      ) : null}
+                    </span>
+                  </th>
+                ))}
               </tr>
-            ) : (
-              paged.map((row, rowIdx) => (
-                <tr
-                  key={rowKey(row)}
-                  onClick={onRowClick ? () => onRowClick(row) : undefined}
-                  className={`transition-all duration-300 group ${onRowClick ? "cursor-pointer hover:bg-gold-500/5 dark:hover:bg-gold-400/10 hover:shadow-[inset_0_1px_0_rgba(224,180,40,0.2),inset_0_-1px_0_rgba(224,180,40,0.2)]" : ""
-                    } ${rowIdx % 2 === 0 ? "bg-transparent" : "bg-muted/30"}`}
-                >
-                  {columns.map((col) => (
-                    <td key={col.key} className={`px-5 py-3.5 text-foreground transition-colors ${col.className ?? ""}`}>
-                      {col.render
-                        ? col.render(row)
-                        : ((row as Record<string, unknown>)[col.key] as React.ReactNode)}
-                    </td>
-                  ))}
+            </thead>
+            <tbody className="divide-y divide-border/55">
+              {paged.length === 0 ? (
+                <tr>
+                  <td
+                    colSpan={columns.length}
+                    className="px-6 py-16 text-center text-sm text-muted-foreground"
+                  >
+                    {emptyMessage}
+                  </td>
                 </tr>
-              ))
-            )}
-          </tbody>
-        </table>
+              ) : (
+                paged.map((row, index) => (
+                  <tr
+                    key={rowKey(row)}
+                    onClick={onRowClick ? () => onRowClick(row) : undefined}
+                    className={`transition-colors ${
+                      onRowClick ? "cursor-pointer hover:bg-muted/28" : ""
+                    } ${index % 2 === 0 ? "bg-transparent" : "bg-card/35"}`}
+                  >
+                    {columns.map((column) => (
+                      <td
+                        key={column.key}
+                        className={`px-5 py-4 align-middle text-foreground ${column.className ?? ""}`}
+                      >
+                        {column.render
+                          ? column.render(row)
+                          : (Reflect.get(row, column.key) as React.ReactNode)}
+                      </td>
+                    ))}
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
 
-      {/* Pagination */}
-      {totalPages > 1 && (
-        <div className="flex items-center justify-between text-sm text-muted-foreground px-1">
-          <span>{sorted.length} resultado{sorted.length !== 1 ? "s" : ""}</span>
-          <div className="flex items-center gap-1">
+      {totalPages > 1 ? (
+        <div className="flex items-center justify-between px-1 text-sm text-muted-foreground">
+          <span>
+            {sorted.length} resultado{sorted.length === 1 ? "" : "s"}
+          </span>
+          <div className="flex items-center gap-2">
             <button
+              type="button"
               disabled={safePage <= 1}
-              onClick={() => setPage((p) => p - 1)}
-              className="p-1.5 rounded-lg hover:bg-muted disabled:opacity-30 transition-colors duration-150"
+              onClick={() => setPage((current) => current - 1)}
+              className="rounded-full border border-border/70 bg-card/70 p-2 transition-colors hover:bg-card disabled:opacity-35"
             >
               <ChevronLeft className="size-4" />
             </button>
-            <div className="flex items-center gap-1 px-1">
-              {Array.from({ length: totalPages }, (_, i) => i + 1)
-                .filter(p => p === 1 || p === totalPages || Math.abs(p - safePage) <= 1)
-                .reduce<(number | "...")[]>((acc, p, idx, arr) => {
-                  if (idx > 0 && arr[idx - 1] !== p - 1) acc.push("...");
-                  acc.push(p);
-                  return acc;
-                }, [])
-                .map((p, i) =>
-                  p === "..." ? (
-                    <span key={`ellipsis-${i}`} className="px-1 text-muted-foreground/50">…</span>
-                  ) : (
-                    <button
-                      key={p}
-                      onClick={() => setPage(p as number)}
-                      className={`w-7 h-7 rounded-lg text-xs font-medium transition-all duration-150 ${safePage === p
-                        ? "bg-navy-800 text-white"
-                        : "hover:bg-muted text-muted-foreground"
-                        }`}
-                    >
-                      {p}
-                    </button>
-                  )
-                )
-              }
-            </div>
+            <span className="min-w-16 text-center text-xs font-semibold uppercase tracking-[0.16em]">
+              {safePage} / {totalPages}
+            </span>
             <button
+              type="button"
               disabled={safePage >= totalPages}
-              onClick={() => setPage((p) => p + 1)}
-              className="p-1.5 rounded-lg hover:bg-muted disabled:opacity-30 transition-colors duration-150"
+              onClick={() => setPage((current) => current + 1)}
+              className="rounded-full border border-border/70 bg-card/70 p-2 transition-colors hover:bg-card disabled:opacity-35"
             >
               <ChevronRight className="size-4" />
             </button>
           </div>
         </div>
-      )}
+      ) : null}
     </div>
   );
 }

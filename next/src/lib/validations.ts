@@ -15,7 +15,15 @@ export const registerSchema = z.object({
   consentRgpd: z.literal(true, { message: "Consentimento RGPD obrigatório" }),
 });
 
+export const registerFormSchema = registerSchema
+  .extend({ confirmPassword: z.string().min(1, "Confirmação obrigatória") })
+  .refine((d) => d.password === d.confirmPassword, {
+    message: "As palavras-passe não coincidem",
+    path: ["confirmPassword"],
+  });
+
 export const createStaffSchema = z.object({
+  name: z.string().min(2, "Nome obrigatório").max(100),
   email: z.string().email("Email inválido"),
   password: z.string().min(6, "Mínimo 6 caracteres"),
   role: z.enum(["PROFESSOR", "PSICOLOGO"]),
@@ -29,9 +37,16 @@ export const updateConsentSchema = z.object({
 });
 
 export const changePasswordSchema = z.object({
-  currentPassword: z.string().min(1),
+  currentPassword: z.string().min(1, "Palavra-passe actual obrigatória"),
   newPassword: z.string().min(6, "Mínimo 6 caracteres"),
 });
+
+export const changePasswordFormSchema = changePasswordSchema
+  .extend({ confirmPassword: z.string().min(1, "Confirmação obrigatória") })
+  .refine((d) => d.newPassword === d.confirmPassword, {
+    message: "As palavras-passe não coincidem",
+    path: ["confirmPassword"],
+  });
 
 // ── Student ──────────────────────────────────────────────────────────────────
 
@@ -83,11 +98,16 @@ export const questionnaireSchema = z.object({
 
 // ── SOS ──────────────────────────────────────────────────────────────────────
 
+const optionalEmailSchema = z
+  .union([z.string().trim().email("Email inválido"), z.literal("")])
+  .optional()
+  .transform((value) => (value ? value : undefined));
+
 export const sosSchema = z.object({
-  psych: z.string().min(1),
-  teacher: z.string().min(1),
-  psychEmail: z.string().email().optional(),
-  teacherEmail: z.string().email().optional(),
+  psych: z.string().trim().min(1, "Psicólogo obrigatório").max(120),
+  teacher: z.string().trim().min(1, "Professor obrigatório").max(120),
+  psychEmail: optionalEmailSchema,
+  teacherEmail: optionalEmailSchema,
 });
 
 // ── Dispensa ─────────────────────────────────────────────────────────────────
@@ -103,7 +123,7 @@ export const dispensaSchema = z.object({
 
 export const reportEmailSchema = z.object({
   guardianUserId: z.string().min(1),
-  title: z.string().default("Relatório AtlanticoFit"),
+  title: z.string().default("Relatório HealthyTech Atlântico"),
   schoolYear: z.string().optional(),
 });
 

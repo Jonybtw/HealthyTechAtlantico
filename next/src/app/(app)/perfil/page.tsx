@@ -1,196 +1,300 @@
 "use client";
 
 import { useState } from "react";
-import { useTranslations } from "next-intl";
 import { useSession } from "next-auth/react";
+import { useTranslations } from "next-intl";
+import { Lock, ShieldCheck, Share2, User } from "lucide-react";
+import { PageTransition, FadeIn } from "@/components/ui/motion";
 import { toast } from "sonner";
-import { User, Lock, Sun, Moon } from "lucide-react";
-import { PageHeader } from "@/components/ui/page-header";
-import { Input } from "@/components/ui/input";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import type { z } from "zod";
+import { changePasswordFormSchema } from "@/lib/validations";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { PageHeader } from "@/components/ui/page-header";
+
+import {
+  Form,
+  FormField,
+  FormItem,
+  FormControl,
+} from "@/components/ui/form";
+
+type PasswordValues = z.infer<typeof changePasswordFormSchema>;
 
 export default function PerfilPage() {
   const t = useTranslations("perfil");
   const { data: session, update } = useSession();
-  const user = session?.user as Record<string, unknown> | undefined;
+  const user = session?.user;
 
-  const [theme, setTheme] = useState<"light" | "dark">(
-    typeof window !== "undefined" && document.documentElement.dataset.theme === "dark"
-      ? "dark"
-      : "light"
-  );
+  const [updatingConsent, setUpdatingConsent] = useState<"rgpd" | "share" | null>(null);
 
-  /* ── Password change ── */
-  const [pw, setPw] = useState({ current: "", newPw: "", confirm: "" });
-  const [changingPw, setChangingPw] = useState(false);
+  const pwForm = useForm<PasswordValues>({
+    resolver: zodResolver(changePasswordFormSchema),
+    defaultValues: { currentPassword: "", newPassword: "", confirmPassword: "" },
+  });
 
-  const toggleTheme = () => {
-    const next = theme === "light" ? "dark" : "light";
-    document.documentElement.dataset.theme = next;
-    localStorage.setItem("theme", next);
-    setTheme(next);
-  };
-
-  const handlePasswordChange = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (pw.newPw !== pw.confirm) {
-      toast.error(t("passwordMismatch"));
-      return;
-    }
-    if (pw.newPw.length < 8) {
-      toast.error(t("passwordShort"));
-      return;
-    }
-    setChangingPw(true);
+  const onPasswordSubmit = async (values: PasswordValues) => {
     try {
-      const res = await fetch("/api/users/me/password", {
+      const response = await fetch("/api/users/me/password", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          currentPassword: pw.current,
-          newPassword: pw.newPw,
+          currentPassword: values.currentPassword,
+          newPassword: values.newPassword,
         }),
       });
 
-      if (!res.ok) {
-        const body = await res.json().catch(() => ({}));
-        toast.error(body.error ?? "Erro ao alterar palavra-passe.");
+      if (!response.ok) {
+        const body = await response.json().catch(() => ({}));
+        toast.error(body.error ?? "Nao foi possivel atualizar a palavra-passe.");
         return;
       }
 
       toast.success(t("passwordSuccess"));
-      setPw({ current: "", newPw: "", confirm: "" });
+      pwForm.reset();
     } catch {
-      toast.error("Erro de ligação.");
-    } finally {
-      setChangingPw(false);
+      toast.error("Erro de ligacao.");
     }
   };
 
-  /* ── RGPD consent ── */
-  const [updatingConsent, setUpdatingConsent] = useState(false);
-  const consentRgpd = user?.consentRgpd as boolean | undefined;
+  const syncConsent = async (
+    field: "consentRgpd" | "consentShare",
+    value: boolean
+  ) => {
+    setUpdatingConsent(field === "consentRgpd" ? "rgpd" : "share");
 
-  const handleConsent = async (value: boolean) => {
-    setUpdatingConsent(true);
     try {
-      const res = await fetch("/api/users/me", {
+      const response = await fetch("/api/users/me", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ consentRgpd: value }),
+        body: JSON.stringify({ [field]: value }),
       });
-      if (res.ok) {
+
+      const body = await response.json().catch(() => ({}));
+
+      if (!response.ok) {
+        toast.error(body.error ?? "Nao foi possivel atualizar as definicoes.");
+        return;
+      }
+
+      await update({
+        name: body.name,
+        email: body.email,
+        role: body.role,
+        consentRgpd: body.consentRgpd,
+        consentShare: body.consentShare,
+      });
+
+      if (field === "consentRgpd") {
         toast.success(value ? t("rgpdGrant") : t("rgpdRevoke"));
-        update(); // refresh session
+      } else {
+        toast.success(value ? "Partilha ativada." : "Partilha desativada.");
       }
     } catch {
-      toast.error("Erro ao atualizar consentimento.");
+      toast.error("Erro de ligacao.");
     } finally {
-      setUpdatingConsent(false);
+      setUpdatingConsent(null);
     }
   };
 
   return (
-    <div className="flex flex-col gap-6 max-w-lg">
+    <PageTransition className="flex flex-col gap-5">
       <PageHeader title={t("title")} description={t("description")} />
 
-      {/* User info */}
-      <div className="bg-card/85 glass rounded-2xl border border-border/50 shadow-float p-6 flex items-center gap-4 animate-fade-in-up">
-        <div className="flex items-center justify-center size-14 rounded-full bg-navy-100 dark:bg-navy-900/50 text-navy-700 dark:text-navy-300 ring-4 ring-navy-50 dark:ring-navy-900/20">
-          <User className="size-6" />
-        </div>
-        <div>
-          <p className="font-semibold">{(user?.name as string) ?? (user?.email as string)}</p>
-          <p className="text-sm text-muted-foreground">{user?.email as string}</p>
-          <span className="inline-block mt-1 px-2 py-0.5 text-xs font-medium rounded-full bg-navy-100 text-navy-700">
-            {user?.role as string}
-          </span>
-        </div>
-      </div>
+      <div className="grid gap-5 xl:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)]">
+        <FadeIn delay={0.1} className="overflow-hidden rounded-2xl border border-border/70 bg-card/85 p-5 shadow-card sm:p-6">
+          <div className="flex flex-col gap-5">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
+              <div className="flex size-14 items-center justify-center rounded-xl bg-gradient-to-br from-navy-800 via-navy-900 to-navy-950 text-white shadow-card">
+                <User className="size-6" />
+              </div>
+              <div className="space-y-1">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-muted-foreground">
+                  Conta ativa
+                </p>
+                <h2 className="font-display text-2xl font-semibold tracking-tight text-foreground">
+                  {user?.name || user?.email || "Utilizador"}
+                </h2>
+                <p className="text-sm text-muted-foreground">{user?.email}</p>
+              </div>
+            </div>
 
-      {/* Theme toggle */}
-      <div className="bg-card/85 glass rounded-2xl border border-border/50 shadow-float p-6 flex items-center justify-between animate-fade-in-up delay-75">
-        <div>
-          <p className="font-medium">{t("themeLabel")}</p>
-          <p className="text-sm text-muted-foreground">
-            {theme === "light" ? t("lightMode") : t("darkMode")}
-          </p>
-        </div>
-        <button
-          onClick={toggleTheme}
-          className="p-3 rounded-lg bg-muted hover:bg-navy-100 transition-colors"
-        >
-          {theme === "light" ? <Moon className="size-5" /> : <Sun className="size-5" />}
-        </button>
-      </div>
+            <div className="rounded-xl border border-border/70 bg-background/65 p-3.5">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-muted-foreground">
+                Perfil
+              </p>
+              <p className="mt-2 text-lg font-semibold text-foreground">{user?.role}</p>
+            </div>
 
-      {/* RGPD consent */}
-      <div className="bg-card/85 glass rounded-2xl border border-border/50 shadow-float p-6 flex flex-col gap-3 animate-fade-in-up delay-100">
-        <div>
-          <p className="font-medium">{t("rgpdTitle")}</p>
-          <p className="text-sm text-muted-foreground">
-            Autorização para tratamento de dados de saúde
-          </p>
-        </div>
-        <div className="flex gap-3">
-          <Button
-            size="sm"
-            variant={consentRgpd ? "primary" : "ghost"}
-            onClick={() => handleConsent(true)}
-            loading={updatingConsent}
+            <div className="rounded-xl border border-border/70 bg-background/65 p-4">
+              <div className="flex items-start gap-3">
+                <div className="flex size-9 items-center justify-center rounded-xl bg-gold-100 text-gold-700 dark:bg-gold-400/10 dark:text-gold-300">
+                  <ShieldCheck className="size-5" />
+                </div>
+                <div className="space-y-4">
+                  <div>
+                    <h3 className="text-lg font-semibold tracking-tight text-foreground">
+                      {t("rgpdTitle")}
+                    </h3>
+                    <p className="text-sm leading-relaxed text-muted-foreground">
+                      Controla o acesso ao tratamento dos teus dados de saude e atualiza a sessao de imediato.
+                    </p>
+                  </div>
+
+                  <div className="flex flex-wrap gap-3">
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant={user?.consentRgpd ? "primary" : "ghost"}
+                      loading={updatingConsent === "rgpd"}
+                      onClick={() => syncConsent("consentRgpd", true)}
+                    >
+                      {t("rgpdGrant")}
+                    </Button>
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant={!user?.consentRgpd ? "danger" : "ghost"}
+                      loading={updatingConsent === "rgpd"}
+                      onClick={() => syncConsent("consentRgpd", false)}
+                    >
+                      {t("rgpdRevoke")}
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="rounded-xl border border-border/70 bg-background/65 p-4">
+              <div className="flex items-start gap-3">
+                <div className="flex size-9 items-center justify-center rounded-xl bg-navy-100 text-navy-700 dark:bg-navy-500/10 dark:text-navy-200">
+                  <Share2 className="size-5" />
+                </div>
+                <div className="space-y-4">
+                  <div>
+                    <h3 className="text-lg font-semibold tracking-tight text-foreground">
+                      Partilha controlada
+                    </h3>
+                    <p className="text-sm leading-relaxed text-muted-foreground">
+                      Define se os teus dados podem ser partilhados com os encarregados associados.
+                    </p>
+                  </div>
+                  <div className="flex flex-wrap gap-3">
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant={user?.consentShare ? "secondary" : "ghost"}
+                      loading={updatingConsent === "share"}
+                      onClick={() => syncConsent("consentShare", true)}
+                    >
+                      Ativar
+                    </Button>
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant={!user?.consentShare ? "ghost" : "danger"}
+                      loading={updatingConsent === "share"}
+                      onClick={() => syncConsent("consentShare", false)}
+                    >
+                      Desativar
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </FadeIn>
+
+        <Form {...pwForm}>
+          <form
+            onSubmit={pwForm.handleSubmit(onPasswordSubmit)}
+            className="overflow-hidden rounded-2xl border border-border/70 bg-card/85 p-5 shadow-card sm:p-6"
           >
-            {t("rgpdGrant")}
-          </Button>
-          <Button
-            size="sm"
-            variant={!consentRgpd ? "danger" : "ghost"}
-            onClick={() => handleConsent(false)}
-            loading={updatingConsent}
-          >
-            {t("rgpdRevoke")}
-          </Button>
-        </div>
+            <div className="flex h-full flex-col gap-5">
+              <div className="space-y-2">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-muted-foreground">
+                  Segurança
+                </p>
+                <div className="flex items-center gap-3">
+                  <div className="flex size-9 items-center justify-center rounded-xl bg-danger-100 text-danger-700 dark:bg-danger-500/10 dark:text-danger-300">
+                    <Lock className="size-5" />
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-semibold tracking-tight text-foreground">
+                      {t("changePassword")}
+                    </h3>
+                    <p className="text-sm text-muted-foreground">
+                      Atualiza a palavra-passe da tua conta com requisitos de producao.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="grid gap-4">
+                <FormField
+                  control={pwForm.control}
+                  name="currentPassword"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormControl>
+                        <Input
+                          label={t("currentPassword")}
+                          type="password"
+                          autoComplete="current-password"
+                          error={pwForm.formState.errors.currentPassword?.message}
+                          {...field}
+                        />
+                      </FormControl>
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={pwForm.control}
+                  name="newPassword"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormControl>
+                        <Input
+                          label={t("newPassword")}
+                          type="password"
+                          autoComplete="new-password"
+                          error={pwForm.formState.errors.newPassword?.message}
+                          {...field}
+                        />
+                      </FormControl>
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={pwForm.control}
+                  name="confirmPassword"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormControl>
+                        <Input
+                          label={t("confirmPassword")}
+                          type="password"
+                          autoComplete="new-password"
+                          error={pwForm.formState.errors.confirmPassword?.message}
+                          {...field}
+                        />
+                      </FormControl>
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              <div className="mt-auto flex justify-start">
+                <Button type="submit" loading={pwForm.formState.isSubmitting}>
+                  {t("savePassword")}
+                </Button>
+              </div>
+            </div>
+          </form>
+        </Form>
       </div>
-
-      {/* Password change */}
-      <form
-        onSubmit={handlePasswordChange}
-        className="bg-card/85 glass rounded-2xl border border-border/50 shadow-float p-6 flex flex-col gap-4 animate-fade-in-up delay-150"
-      >
-        <h3 className="font-medium flex items-center gap-2">
-          <Lock className="size-4" />
-          {t("changePassword")}
-        </h3>
-
-        <Input
-          label={t("currentPassword")}
-          type="password"
-          value={pw.current}
-          onChange={(e) => setPw((p) => ({ ...p, current: e.target.value }))}
-          required
-          autoComplete="current-password"
-        />
-        <Input
-          label={t("newPassword")}
-          type="password"
-          value={pw.newPw}
-          onChange={(e) => setPw((p) => ({ ...p, newPw: e.target.value }))}
-          required
-          autoComplete="new-password"
-        />
-        <Input
-          label={t("confirmPassword")}
-          type="password"
-          value={pw.confirm}
-          onChange={(e) => setPw((p) => ({ ...p, confirm: e.target.value }))}
-          required
-          autoComplete="new-password"
-        />
-
-        <Button type="submit" loading={changingPw} className="self-start">
-          {t("savePassword")}
-        </Button>
-      </form>
-    </div>
+    </PageTransition>
   );
 }

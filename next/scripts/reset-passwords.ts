@@ -13,9 +13,9 @@ const prisma = new PrismaClient({ adapter });
 async function main() {
   const hash = await bcrypt.hash("Password1", 12);
   const emails = [
-    "professor@atlanticofit.pt",
-    "psicologo@atlanticofit.pt",
-    "pai@atlanticofit.pt",
+    "professor@colegioatlantico.pt",
+    "psicologo@colegioatlantico.pt",
+    "pai@colegioatlantico.pt",
   ];
   for (const email of emails) {
     try {

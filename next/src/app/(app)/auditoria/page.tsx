@@ -4,10 +4,10 @@ import { useState, useEffect, useCallback } from "react";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { FileSearch, RefreshCw } from "lucide-react";
-import { useSession } from "next-auth/react";
 import { PageHeader } from "@/components/ui/page-header";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useUser } from "@/components/user-context";
 
 interface AuditEntry {
   id: string;
@@ -46,8 +46,7 @@ function labelAction(action: string) {
 
 export default function AuditoriaPage() {
   const t = useTranslations("auditoria");
-  const { data: session } = useSession();
-  const role = (session?.user as Record<string, unknown>)?.role as string;
+  const { role } = useUser();
 
   const [logs, setLogs] = useState<AuditEntry[]>([]);
   const [loading, setLoading] = useState(false);
@@ -78,7 +77,7 @@ export default function AuditoriaPage() {
   }
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-5">
       <PageHeader
         title={t("title")}
         description={t("description")}

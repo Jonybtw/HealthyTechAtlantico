@@ -9,8 +9,12 @@ interface RangeSliderProps {
   step?: number;
   value: number;
   onChange: (val: number) => void;
-  labels?: string[];                   // e.g. ["Nenhum","Baixo","Moderado","Elevado","Extremo"]
-  colorStops?: string[];               // tailwind bg classes per stop
+  labels?: string[];
+  colorStops?: string[];
+}
+
+function clamp(value: number, min: number, max: number) {
+  return Math.min(Math.max(value, min), max);
 }
 
 export function RangeSlider({
@@ -24,68 +28,74 @@ export function RangeSlider({
   colorStops,
 }: RangeSliderProps) {
   const [hovered, setHovered] = useState(false);
-  const pct = ((value - min) / (max - min)) * 100;
-
-  const activeLabel = labels
-    ? labels[Math.round((value / max) * (labels.length - 1))]
+  const safeValue = clamp(value, min, max);
+  const scale = max - min || 1;
+  const percentage = ((safeValue - min) / scale) * 100;
+  const labelIndex = labels
+    ? Math.round(((safeValue - min) / scale) * (labels.length - 1))
     : undefined;
-
+  const activeLabel = labelIndex !== undefined ? labels?.[labelIndex] : undefined;
   const activeColor =
-    colorStops?.[Math.round((value / max) * (colorStops.length - 1))] ??
-    "bg-navy-600";
+    colorStops?.[labelIndex ?? 0] ??
+    "bg-gradient-to-r from-navy-600 via-navy-700 to-navy-900";
 
   return (
-    <div className="flex flex-col gap-1.5">
-      <div className="flex items-center justify-between">
-        <label className="text-sm font-medium">{label}</label>
-        <span className="text-xs text-muted-foreground">
-          {value}
-          {activeLabel ? ` — ${activeLabel}` : ""}
-        </span>
+    <div className="space-y-3">
+      <div className="flex items-start justify-between gap-3">
+        <label className="text-sm font-semibold tracking-tight text-foreground">
+          {label}
+        </label>
+        <div className="text-right">
+          <p className="text-sm font-semibold tabular-nums text-foreground">{safeValue}</p>
+          {activeLabel ? (
+            <p className="text-xs text-muted-foreground">{activeLabel}</p>
+          ) : null}
+        </div>
       </div>
 
       <div
-        className="relative h-6 flex items-center"
+        className="relative flex h-6 items-center"
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}
       >
-        {/* track background */}
-        <div className="absolute inset-x-0 h-2 rounded-full bg-muted" />
-
-        {/* filled track */}
+        <div className="absolute inset-x-0 h-2 rounded-full bg-muted/80 shadow-[inset_0_1px_2px_rgba(0,0,0,0.14)]" />
         <div
-          className={`absolute h-2 rounded-full transition-all ${activeColor}`}
-          style={{ width: `${pct}%` }}
+          className={`absolute h-2 rounded-full transition-all duration-300 ${activeColor}`}
+          style={{ width: `${percentage}%` }}
         />
-
-        {/* native range */}
         <input
           type="range"
           min={min}
           max={max}
           step={step}
-          value={value}
-          onChange={(e) => onChange(Number(e.target.value))}
-          className="absolute inset-0 w-full opacity-0 cursor-pointer"
+          value={safeValue}
+          onChange={(event) => onChange(Number(event.target.value))}
+          aria-label={label}
+          aria-valuetext={activeLabel ? `${safeValue} ${activeLabel}` : String(safeValue)}
+          className="absolute inset-0 z-10 h-full w-full cursor-pointer opacity-0"
         />
-
-        {/* thumb */}
         <div
-          className={`absolute -translate-x-1/2 size-5 rounded-full border-2 border-white shadow-md transition-transform ${activeColor} ${
-            hovered ? "scale-125" : ""
+          className={`absolute z-0 flex size-5 -translate-x-1/2 items-center justify-center rounded-full border border-white/70 bg-card shadow-[0_10px_24px_rgba(15,23,42,0.22)] transition-all duration-300 ${
+            hovered ? "scale-110" : ""
           }`}
-          style={{ left: `${pct}%` }}
-        />
+          style={{ left: `${percentage}%` }}
+        >
+          <div className={`size-3 rounded-full ${activeColor}`} />
+        </div>
       </div>
 
-      {/* tick labels */}
-      {labels && (
-        <div className="flex justify-between text-[10px] text-muted-foreground px-0.5">
-          {labels.map((l) => (
-            <span key={l}>{l}</span>
+      {labels ? (
+        <div className="grid grid-cols-5 gap-2 text-[11px] font-medium text-muted-foreground">
+          {labels.map((item, index) => (
+            <span
+              key={item}
+              className={index === labelIndex ? "text-foreground" : undefined}
+            >
+              {item}
+            </span>
           ))}
         </div>
-      )}
+      ) : null}
     </div>
   );
 }

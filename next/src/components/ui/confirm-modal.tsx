@@ -1,5 +1,16 @@
 "use client";
 
+import { AlertTriangle, ShieldAlert } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+
 interface ConfirmModalProps {
   open: boolean;
   title: string;
@@ -21,57 +32,56 @@ export function ConfirmModal({
   onConfirm,
   onCancel,
 }: ConfirmModalProps) {
-  if (!open) return null;
+  const isDanger = variant === "danger";
+  const Icon = isDanger ? ShieldAlert : AlertTriangle;
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-      {/* Backdrop */}
-      <div
-        className="absolute inset-0 bg-navy-950/80 animate-fade-in"
-        style={{ animationDuration: "0.4s" }}
-        onClick={onCancel}
-      />
-      {/* Card with Spring Physics */}
-      <div
-        role="alertdialog"
-        aria-modal="true"
-        aria-labelledby="modal-title"
-        aria-describedby="modal-desc"
-        className="relative bg-card/85 glass rounded-2xl border border-border/50 shadow-float
-                      max-w-sm w-full p-6 flex flex-col gap-4 animate-in fade-in zoom-in-95 duration-500 will-change-transform"
-        style={{
-          animationTimingFunction: "cubic-bezier(0.175, 0.885, 0.32, 1.275)"
-        }}>
-        {/* Variant accent line */}
-        <div className={`absolute top-0 left-0 right-0 h-[3px] opacity-90 ${variant === "danger" ? "bg-gradient-to-r from-danger-400 to-danger-600" : "bg-gradient-to-r from-navy-500 to-navy-800"
-          }`} />
-        <div className="absolute top-0 left-1/4 right-1/4 h-[1px] bg-white opacity-40 blur-[1px]" />
+    <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onCancel()}>
+      <DialogContent hideClose>
+        <div
+          className={`absolute inset-x-0 top-0 h-1 ${
+            isDanger
+              ? "bg-gradient-to-r from-danger-500 via-rose-500 to-danger-700"
+              : "bg-gradient-to-r from-gold-300 via-gold-500 to-navy-800"
+          }`}
+        />
+        <div className="absolute right-0 top-0 h-24 w-24 rounded-full bg-gold-300/10 blur-3xl" />
 
-        <div className="pt-1">
-          <h3 id="modal-title" className="text-base font-bold text-foreground">{title}</h3>
-          <p id="modal-desc" className="text-sm text-muted-foreground mt-1.5 leading-relaxed">{message}</p>
-        </div>
-
-        <div className="flex gap-3 justify-end pt-2">
-          <button
-            onClick={onCancel}
-            className="px-4 py-2 rounded-xl text-sm font-medium bg-muted/50 text-muted-foreground
-                       hover:bg-muted/80 hover:text-foreground active:scale-95 transition-all duration-300"
-          >
-            {cancelLabel}
-          </button>
-          <button
-            onClick={onConfirm}
-            className={`px-5 py-2 rounded-xl text-sm font-semibold text-white
-                        active:scale-[0.98] active:translate-y-[1px] transition-all duration-300 shadow-sm hover:-translate-y-[1px] ring-1 inset-shadow-sm ${variant === "danger"
-                ? "bg-gradient-to-b from-danger-500 to-danger-700 hover:from-danger-400 hover:to-danger-600 shadow-[0_4px_14px_rgba(220,38,38,0.39)] active:shadow-[inset_0_3px_6px_rgba(0,0,0,0.4)] ring-danger-800"
-                : "bg-gradient-to-b from-navy-700 to-navy-900 hover:from-navy-600 hover:to-navy-800 shadow-[0_4px_14px_rgba(20,48,76,0.39)] active:shadow-[inset_0_3px_6px_rgba(0,0,0,0.4)] ring-navy-900"
+        <div className="relative space-y-4">
+          <DialogHeader className="flex-row items-start gap-4 text-left">
+            <div
+              className={`flex size-10 shrink-0 items-center justify-center rounded-xl ring-1 ${
+                isDanger
+                  ? "bg-danger-100/80 text-danger-700 ring-danger-500/20 dark:bg-danger-500/10 dark:text-danger-300"
+                  : "bg-gold-100/80 text-gold-700 ring-gold-500/20 dark:bg-gold-400/10 dark:text-gold-300"
               }`}
-          >
-            {confirmLabel}
-          </button>
+            >
+              <Icon className="size-5" />
+            </div>
+            <div className="space-y-1">
+              <DialogTitle className="font-display text-xl font-semibold tracking-tight">
+                {title}
+              </DialogTitle>
+              <DialogDescription className="text-sm leading-relaxed">
+                {message}
+              </DialogDescription>
+            </div>
+          </DialogHeader>
+
+          <DialogFooter>
+            <Button type="button" variant="ghost" onClick={onCancel}>
+              {cancelLabel}
+            </Button>
+            <Button
+              type="button"
+              variant={isDanger ? "danger" : "primary"}
+              onClick={onConfirm}
+            >
+              {confirmLabel}
+            </Button>
+          </DialogFooter>
         </div>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }

@@ -1,37 +1,54 @@
-import { forwardRef } from "react";
+import * as React from "react";
+import { cn } from "@/lib/utils";
 
 interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   label?: string;
   error?: string;
+  hint?: string;
 }
 
-export const Input = forwardRef<HTMLInputElement, InputProps>(
-  ({ label, error, className = "", id, ...props }, ref) => {
+const Input = React.forwardRef<HTMLInputElement, InputProps>(
+  ({ label, error, hint, className, id, type, ...props }, ref) => {
     const uid = id ?? props.name;
+
     return (
-      <div className="flex flex-col gap-1">
-        {label && (
-          <label htmlFor={uid} className="text-sm font-medium text-foreground">
+      <div className="flex flex-col gap-1.5">
+        {label ? (
+          <label
+            htmlFor={uid}
+            className="text-sm font-semibold tracking-tight text-foreground"
+          >
             {label}
           </label>
-        )}
+        ) : null}
         <input
           ref={ref}
           id={uid}
-          className={`w-full rounded-xl border px-3.5 py-2.5 text-sm bg-muted/30 text-foreground
-            placeholder:text-muted-foreground shadow-[inset_0_2px_4px_rgba(0,0,0,0.02)]
-            transition-all duration-300 ease-out
-            focus:outline-none focus:bg-card focus:shadow-[inset_0_1px_2px_rgba(0,0,0,0.02),0_0_0_4px_rgba(194,151,13,0.15)] focus:border-gold-500
-            hover:border-navy-300 hover:shadow-[inset_0_2px_4px_rgba(0,0,0,0.02),0_2px_8px_rgba(0,0,0,0.04)]
-            dark:focus:shadow-[inset_0_1px_2px_rgba(0,0,0,0.02),0_0_0_4px_rgba(224,180,40,0.2)] dark:focus:border-gold-400
-            ${error ? "border-danger-500 focus:shadow-[inset_0_1px_2px_rgba(0,0,0,0.02),0_0_0_4px_rgba(220,38,38,0.15)] focus:border-danger-500" : "border-border/60"}
-            ${className}`}
+          type={type}
+          className={cn(
+            "flex h-10 w-full rounded-xl border bg-card/75 px-3.5 py-2 text-sm text-foreground shadow-[inset_0_1px_0_rgba(255,255,255,0.35)]",
+            "placeholder:text-muted-foreground transition-all duration-300",
+            "focus:border-gold-500/60 focus:bg-card focus:outline-none focus:ring-4 focus:ring-gold-400/15",
+            "hover:border-navy-300/40",
+            "file:border-0 file:bg-transparent file:text-sm file:font-medium",
+            "disabled:cursor-not-allowed disabled:opacity-50",
+            error
+              ? "border-danger-500/60 focus:border-danger-500 focus:ring-danger-500/15"
+              : "border-border/80",
+            className
+          )}
           {...props}
         />
-        {error && <p className="text-xs text-danger-600 animate-fade-in">{error}</p>}
+        {error ? (
+          <p className="text-xs font-medium text-danger-600">{error}</p>
+        ) : hint ? (
+          <p className="text-xs text-muted-foreground">{hint}</p>
+        ) : null}
       </div>
     );
   }
 );
 
 Input.displayName = "Input";
+
+export { Input };

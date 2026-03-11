@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useTranslations } from "next-intl";
-import { useSession } from "next-auth/react";
 import { toast } from "sonner";
 import { ClipboardList, Clock, Link2 } from "lucide-react";
 import { PageHeader } from "@/components/ui/page-header";
@@ -11,6 +10,7 @@ import { PillSelect } from "@/components/ui/pill-select";
 import { RangeSlider } from "@/components/ui/range-slider";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
+import { useUser } from "@/components/user-context";
 
 const MAX_DEFERRALS = 3;
 const STRESS_LABELS = ["Nenhum", "Baixo", "Moderado", "Elevado", "Extremo"];
@@ -40,8 +40,7 @@ const INITIAL_QUESTIONS = [
 export default function QuestionariosPage() {
   const t = useTranslations("questionarios");
   const common = useTranslations("common");
-  const { data: session } = useSession();
-  const role = (session?.user as Record<string, unknown>)?.role as string;
+  const { role } = useUser();
 
   const [students, setStudents] = useState<{ id: string; name: string }[]>([]);
   const [studentId, setStudentId] = useState<string | null>(null);
@@ -114,7 +113,7 @@ export default function QuestionariosPage() {
 
   if (role === "ALUNO" && students.length === 0) {
     return (
-      <div className="flex flex-col gap-6">
+      <div className="flex flex-col gap-5">
         <PageHeader title={t("title")} description={t("description")} />
         <EmptyState
           icon={Link2}
@@ -171,7 +170,7 @@ export default function QuestionariosPage() {
   };
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-5">
       <PageHeader
         title={t("title")}
         description={t("description")}
@@ -179,7 +178,7 @@ export default function QuestionariosPage() {
 
       <form
         onSubmit={handleSubmit}
-        className="animate-fade-in-up bg-card/85 glass rounded-2xl border border-border/50 shadow-float p-6 flex flex-col gap-6 max-w-lg"
+        className="animate-fade-in-up bg-card/85 glass rounded-2xl border border-border/50 shadow-float p-5 flex flex-col gap-5 max-w-lg"
       >
         {role !== "ALUNO" && (
           <StudentPicker students={students} value={studentId} onChange={setStudentId} />

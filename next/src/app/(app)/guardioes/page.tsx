@@ -4,7 +4,6 @@ import { useState, useEffect, useCallback } from "react";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { UserCheck, UserPlus, Trash2, Loader2 } from "lucide-react";
-import { useSession } from "next-auth/react";
 import { PageHeader } from "@/components/ui/page-header";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,6 +11,7 @@ import { PillSelect } from "@/components/ui/pill-select";
 import { StudentPicker } from "@/components/ui/student-picker";
 import { ConfirmModal } from "@/components/ui/confirm-modal";
 import { EmptyState } from "@/components/ui/empty-state";
+import { useUser } from "@/components/user-context";
 
 interface Student {
   id: string;
@@ -34,8 +34,7 @@ const RELATIONSHIP_OPTIONS = [
 
 export default function GuardioesPage() {
   const t = useTranslations("guardioes");
-  const { data: session } = useSession();
-  const role = (session?.user as Record<string, unknown>)?.role as string;
+  const { role } = useUser();
 
   const [students, setStudents] = useState<Student[]>([]);
   const [selectedStudentId, setSelectedStudentId] = useState<string | null>(null);
@@ -139,14 +138,13 @@ export default function GuardioesPage() {
   const selectedStudent = students.find((s) => s.id === selectedStudentId);
 
   return (
-    <div className="flex flex-col gap-8">
+    <div className="flex flex-col gap-5">
       <PageHeader
         title={t("title")}
         description={t("description")}
       />
 
-      {/* ── View guardians for a student ─────────────────────── */}
-      <div className="animate-fade-in-up bg-card/85 glass border border-border/50 shadow-float rounded-2xl p-6 flex flex-col gap-5">
+      <div className="animate-fade-in-up relative z-20 flex max-w-2xl flex-col gap-5 overflow-visible rounded-2xl border border-border/50 bg-card/85 p-5 shadow-float glass">
         <h2 className="text-lg font-bold tracking-tight flex items-center gap-2">
           <UserCheck size={18} className="text-navy-600" />
           {t("viewTitle")}
@@ -155,12 +153,12 @@ export default function GuardioesPage() {
           students={students}
           value={selectedStudentId}
           onChange={setSelectedStudentId}
-          placeholder="Selecionar aluno…"
+          placeholder="Selecionar aluno..."
         />
 
         {loadingGuardians && (
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <Loader2 size={16} className="animate-spin" /> A carregar…
+            <Loader2 size={16} className="animate-spin" /> A carregar...
           </div>
         )}
 
@@ -186,7 +184,7 @@ export default function GuardioesPage() {
               <tbody>
                 {guardians.map((g) => (
                   <tr key={g.id} className="border-b border-border/50 hover:bg-muted/50 transition-colors">
-                    <td className="py-3 px-4 font-medium">{g.guardian.name ?? "—"}</td>
+                    <td className="py-3 px-4 font-medium">{g.guardian.name ?? "-"}</td>
                     <td className="py-3 px-4 text-muted-foreground">{g.guardian.email}</td>
                     <td className="py-3 px-4">
                       <span className="inline-block rounded-md px-2.5 py-1 text-xs font-semibold bg-navy-100 dark:bg-navy-900/50 text-navy-700 dark:text-navy-300 border border-navy-200 dark:border-navy-800/50 tracking-wide uppercase">
@@ -210,8 +208,7 @@ export default function GuardioesPage() {
         )}
       </div>
 
-      {/* ── Add guardian ─────────────────────────────────────── */}
-      <div className="animate-fade-in-up delay-100 bg-card/85 glass border border-border/50 shadow-float rounded-2xl p-6 flex flex-col gap-5">
+      <div className="animate-fade-in-up delay-100 relative z-10 flex max-w-lg flex-col gap-5 overflow-visible rounded-2xl border border-border/50 bg-card/85 p-5 shadow-float glass">
         <h2 className="text-lg font-bold tracking-tight flex items-center gap-2">
           <UserPlus size={18} className="text-navy-600" />
           {t("addTitle")}
@@ -223,7 +220,7 @@ export default function GuardioesPage() {
               students={students}
               value={addStudentId}
               onChange={setAddStudentId}
-              placeholder="Selecionar aluno…"
+              placeholder="Selecionar aluno..."
             />
           </div>
           <Input
@@ -253,7 +250,6 @@ export default function GuardioesPage() {
         </form>
       </div>
 
-      {/* ── Confirm delete ───────────────────────────────────── */}
       <ConfirmModal
         open={!!deleteTarget}
         title={t("removeTitle")}

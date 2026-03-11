@@ -1,23 +1,29 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { Settings, UserPlus, Trash2, Loader2, RefreshCw } from "lucide-react";
-import { useSession } from "next-auth/react";
+import { PageTransition, FadeIn } from "@/components/ui/motion";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import type { z } from "zod";
+import { createStaffSchema } from "@/lib/validations";
 import { PageHeader } from "@/components/ui/page-header";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { PillSelect } from "@/components/ui/pill-select";
 import { ConfirmModal } from "@/components/ui/confirm-modal";
+import { useUser } from "@/components/user-context";
+import { useStaff, useDeleteStaff, type StaffUser } from "@/hooks/use-queries";
+import {
+  Form,
+  FormField,
+  FormItem,
+  FormControl,
+} from "@/components/ui/form";
 
-interface StaffUser {
-  id: string;
-  name: string | null;
-  email: string;
-  role: "PROFESSOR" | "PSICOLOGO";
-  createdAt: string;
-}
+type StaffValues = z.infer<typeof createStaffSchema>;
 
 const ROLE_OPTIONS = [
   { value: "PROFESSOR", label: "Professor" },
@@ -26,55 +32,30 @@ const ROLE_OPTIONS = [
 
 export default function AdminPage() {
   const t = useTranslations("admin");
-  const { data: session } = useSession();
-  const role = (session?.user as Record<string, unknown>)?.role as string;
+  const { role } = useUser();
 
-  const [staff, setStaff] = useState<StaffUser[]>([]);
-  const [loading, setLoading] = useState(false);
+  const { data: staff = [], isLoading: loading, refetch: loadStaff } = useStaff();
+  const deleteStaffMutation = useDeleteStaff();
 
-  // Create form
-  const [form, setForm] = useState({ name: "", email: "", password: "", role: "PROFESSOR" });
-  const [formErrors, setFormErrors] = useState<Record<string, string>>({});
-  const [creating, setCreating] = useState(false);
+  const form = useForm<StaffValues>({
+    resolver: zodResolver(createStaffSchema),
+    defaultValues: { name: "", email: "", password: "", role: "PROFESSOR" },
+  });
 
   // Delete
   const [deleteTarget, setDeleteTarget] = useState<StaffUser | null>(null);
 
-  const loadStaff = useCallback(async () => {
-    setLoading(true);
-    try {
-      const r = await fetch("/api/admin/staff");
-      if (!r.ok) throw new Error();
-      setStaff(await r.json());
-    } catch {
-      toast.error("Erro ao carregar lista de funcionários.");
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    if (role === "ADMIN") loadStaff();
-  }, [role, loadStaff]);
-
-  function validateForm() {
-    const errs: Record<string, string> = {};
-    if (form.name.trim().length < 2) errs.name = t("nameTooShort");
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) errs.email = t("invalidEmail");
-    if (form.password.length < 6) errs.password = t("passwordMin6");
-    setFormErrors(errs);
-    return Object.keys(errs).length === 0;
-  }
-
-  async function handleCreate(e: React.FormEvent) {
-    e.preventDefault();
-    if (!validateForm()) return;
-    setCreating(true);
+  async function handleCreate(values: StaffValues) {
     try {
       const res = await fetch("/api/admin/staff", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: form.email.trim().toLowerCase(), password: form.password, role: form.role, name: form.name.trim() }),
+        body: JSON.stringify({
+          email: values.email.trim().toLowerCase(),
+          password: values.password,
+          role: values.role,
+          name: values.name.trim(),
+        }),
       });
       if (!res.ok) {
         const { error } = await res.json().catch(() => ({ error: "Erro desconhecido." }));
@@ -82,34 +63,21 @@ export default function AdminPage() {
         return;
       }
       toast.success(t("createSuccess"));
-      setForm({ name: "", email: "", password: "", role: "PROFESSOR" });
-      setFormErrors({});
+      form.reset();
       loadStaff();
     } catch {
       toast.error("Erro de ligação.");
-    } finally {
-      setCreating(false);
     }
   }
 
   async function handleDelete() {
     if (!deleteTarget) return;
     try {
-      const res = await fetch("/api/admin/staff", {
-        method: "DELETE",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId: deleteTarget.id }),
-      });
-      if (!res.ok) {
-        const { error } = await res.json().catch(() => ({ error: "Erro desconhecido." }));
-        toast.error(error);
-        return;
-      }
+      await deleteStaffMutation.mutateAsync(deleteTarget.id);
       toast.success(t("deleteSuccess"));
       setDeleteTarget(null);
-      loadStaff();
-    } catch {
-      toast.error("Erro de ligação.");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Erro de ligação.");
     }
   }
 
@@ -122,75 +90,101 @@ export default function AdminPage() {
   }
 
   return (
-    <div className="flex flex-col gap-8">
+    <PageTransition className="flex flex-col gap-5">
       <PageHeader
         title={t("title")}
         description={t("description")}
       />
 
       {/* ── Create staff ──────────────────────────────────────── */}
-      <div className="bg-card border border-border rounded-2xl p-6 flex flex-col gap-4">
+      <FadeIn delay={0.1} className="bg-card border border-border rounded-2xl p-5 flex flex-col gap-4">
         <h2 className="text-base font-semibold flex items-center gap-2">
           <UserPlus size={18} className="text-navy-600" />
           {t("createTitle")}
         </h2>
-        <form onSubmit={handleCreate} className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <Input
-            label={t("nameLabel")}
-            value={form.name}
-            onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
-            placeholder="Ana Ferreira"
-            required
-            error={formErrors.name}
-          />
-          <Input
-            label={t("emailLabel")}
-            type="email"
-            value={form.email}
-            onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))}
-            placeholder="ana.ferreira@escola.pt"
-            required
-            error={formErrors.email}
-          />
-          <Input
-            label={t("passwordLabel")}
-            type="password"
-            value={form.password}
-            onChange={(e) => setForm((f) => ({ ...f, password: e.target.value }))}
-            placeholder="••••••••"
-            required
-            error={formErrors.password}
-          />
-          <div>
-            <label className="block text-sm font-medium mb-1">{t("roleLabel")}</label>
-            <PillSelect
-              options={ROLE_OPTIONS}
-              value={form.role}
-              onChange={(v) => setForm((f) => ({ ...f, role: v }))}
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(handleCreate)} className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <FormField
+              control={form.control}
+              name="name"
+              render={({ field }) => (
+                <FormItem>
+                  <FormControl>
+                    <Input
+                      label={t("nameLabel")}
+                      placeholder="Ana Ferreira"
+                      error={form.formState.errors.name?.message}
+                      {...field}
+                    />
+                  </FormControl>
+                </FormItem>
+              )}
             />
-          </div>
-          <div className="sm:col-span-2">
-            <Button
-              type="submit"
-              loading={creating}
-              icon={<UserPlus size={16} />}
-              className="self-start"
-            >
-              {t("createBtn")}
-            </Button>
-          </div>
-        </form>
-      </div>
+            <FormField
+              control={form.control}
+              name="email"
+              render={({ field }) => (
+                <FormItem>
+                  <FormControl>
+                    <Input
+                      label={t("emailLabel")}
+                      type="email"
+                      placeholder="ana.ferreira@escola.pt"
+                      error={form.formState.errors.email?.message}
+                      {...field}
+                    />
+                  </FormControl>
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="password"
+              render={({ field }) => (
+                <FormItem>
+                  <FormControl>
+                    <Input
+                      label={t("passwordLabel")}
+                      type="password"
+                      placeholder="••••••••"
+                      error={form.formState.errors.password?.message}
+                      {...field}
+                    />
+                  </FormControl>
+                </FormItem>
+              )}
+            />
+            <div>
+              <label className="block text-sm font-medium mb-1">{t("roleLabel")}</label>
+              <PillSelect
+                options={ROLE_OPTIONS}
+                value={form.watch("role")}
+                onChange={(v) => form.setValue("role", v as "PROFESSOR" | "PSICOLOGO")}
+              />
+            </div>
+            <div className="sm:col-span-2">
+              <Button
+                type="submit"
+                loading={form.formState.isSubmitting}
+                icon={<UserPlus size={16} />}
+                className="self-start"
+              >
+                {t("createBtn")}
+              </Button>
+            </div>
+          </form>
+        </Form>
+      </FadeIn>
 
       {/* ── Staff list ────────────────────────────────────────── */}
-      <div className="bg-card border border-border rounded-2xl p-6 flex flex-col gap-4">
+      <FadeIn delay={0.2} className="bg-card border border-border rounded-2xl p-5 flex flex-col gap-4">
         <div className="flex items-center justify-between">
           <h2 className="text-base font-semibold flex items-center gap-2">
             <Settings size={18} className="text-navy-600" />
             Funcionários registados
           </h2>
           <button
-            onClick={loadStaff}
+            onClick={() => loadStaff()}
             className="p-1.5 rounded-md hover:bg-muted text-muted-foreground"
             title="Atualizar lista"
           >
@@ -254,7 +248,7 @@ export default function AdminPage() {
             </table>
           </div>
         )}
-      </div>
+      </FadeIn>
 
       {/* ── Confirm delete ───────────────────────────────────── */}
       <ConfirmModal
@@ -266,6 +260,6 @@ export default function AdminPage() {
         onCancel={() => setDeleteTarget(null)}
         variant="danger"
       />
-    </div>
+    </PageTransition>
   );
 }
