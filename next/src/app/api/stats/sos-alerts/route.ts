@@ -17,6 +17,7 @@ export async function GET() {
 
     const alerts = await prisma.sosAlert.findMany({
       orderBy: { createdAt: "desc" },
+      take: 200,
       include: {
         student: {
           select: {

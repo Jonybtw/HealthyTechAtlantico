@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { Ruler, Timer, ClipboardList, ShieldOff, Users, Pencil, Trash2 } from "lucide-react";
 import { useForm } from "react-hook-form";
@@ -71,6 +72,8 @@ interface Props {
 export function StudentDetailClient({ student }: Props) {
   const router = useRouter();
   const { role } = useUser();
+  const t = useTranslations("studentDetail");
+  const common = useTranslations("common");
   const canManageStudent = role === "PROFESSOR" || role === "ADMIN";
 
   const age = student.birthDate
@@ -114,14 +117,14 @@ export function StudentDetailClient({ student }: Props) {
       });
       if (!res.ok) {
         const body = await res.json().catch(() => ({}));
-        toast.error(body.error ?? "Erro ao guardar.");
+        toast.error(body.error ?? t("saveError"));
         return;
       }
-      toast.success("Dados actualizados.");
+      toast.success(t("saveSuccess"));
       setEditing(false);
       router.refresh();
     } catch {
-      toast.error("Erro de liga\u00e7\u00e3o.");
+      toast.error(common("connectionError"));
     }
   };
 
@@ -130,13 +133,13 @@ export function StudentDetailClient({ student }: Props) {
       const res = await fetch(`/api/students/${student.id}`, { method: "DELETE" });
       if (!res.ok) {
         const body = await res.json().catch(() => ({}));
-        toast.error(body.error ?? "Erro ao eliminar.");
+        toast.error(body.error ?? t("deleteError"));
         return;
       }
-      toast.success("Aluno eliminado.");
+      toast.success(t("deleteSuccess"));
       router.push("/alunos");
     } catch {
-      toast.error("Erro de liga\u00e7\u00e3o.");
+      toast.error(common("connectionError"));
     }
   };
 
@@ -144,10 +147,10 @@ export function StudentDetailClient({ student }: Props) {
     <div className="flex flex-col gap-5">
       <PageHeader
         title={student.name}
-        description={`${student.sex === "M" ? "Masculino" : "Feminino"}${age !== null && age !== undefined ? " \u00b7 " + age + " anos" : ""} \u00b7 ${
+        description={`${student.sex === "M" ? t("male") : t("female")}${age !== null && age !== undefined ? " \u00b7 " + age + " " + t("years") : ""} \u00b7 ${
           student.className
             ? student.className + " (" + (student.schoolYear ?? "") + ")"
-            : "Sem turma"
+            : t("noClass")
         }`}
       >
         {canManageStudent && (
@@ -158,7 +161,7 @@ export function StudentDetailClient({ student }: Props) {
               icon={<Pencil className="size-4" />}
               onClick={() => setEditing((e) => !e)}
             >
-              {editing ? "Cancelar" : "Editar"}
+              {editing ? t("cancelBtn") : t("editBtn")}
             </Button>
             <Button
               size="sm"
@@ -166,7 +169,7 @@ export function StudentDetailClient({ student }: Props) {
               icon={<Trash2 className="size-4" />}
               onClick={() => setConfirmDelete(true)}
             >
-              Eliminar
+              {t("deleteBtn")}
             </Button>
           </div>
         )}
@@ -177,9 +180,9 @@ export function StudentDetailClient({ student }: Props) {
         <Form {...editForm}>
           <form
             onSubmit={editForm.handleSubmit(handleSave)}
-            className="bg-card rounded-xl border border-border p-5 flex flex-col gap-4 max-w-lg"
+            className="bg-card/85 glass rounded-2xl border border-border/50 shadow-float p-5 flex flex-col gap-4 max-w-lg"
           >
-            <h3 className="font-semibold text-sm">Editar dados do aluno</h3>
+            <h3 className="font-semibold text-sm">{t("editTitle")}</h3>
             <FormField
               control={editForm.control}
               name="name"
@@ -187,7 +190,7 @@ export function StudentDetailClient({ student }: Props) {
                 <FormItem>
                   <FormControl>
                     <Input
-                      label="Nome"
+                      label={t("nameLabel")}
                       error={editForm.formState.errors.name?.message}
                       {...field}
                     />
@@ -203,14 +206,14 @@ export function StudentDetailClient({ student }: Props) {
                   <FormItem>
                     <FormControl>
                       <div className="flex flex-col gap-1.5">
-                        <label className="text-sm font-semibold tracking-tight text-foreground">Sexo</label>
+                        <label className="text-sm font-semibold tracking-tight text-foreground">{t("sexLabel")}</label>
                         <select
                           value={field.value}
                           onChange={field.onChange}
                           className="rounded-2xl border border-border/70 bg-background/65 px-4 py-3 text-sm text-foreground transition-all focus:outline-none focus:ring-2 focus:ring-gold-500/40"
                         >
-                          <option value="M">Masculino</option>
-                          <option value="F">Feminino</option>
+                          <option value="M">{t("male")}</option>
+                          <option value="F">{t("female")}</option>
                         </select>
                       </div>
                     </FormControl>
@@ -224,7 +227,7 @@ export function StudentDetailClient({ student }: Props) {
                   <FormItem>
                     <FormControl>
                       <Input
-                        label="Data de nasc."
+                        label={t("birthDateLabel")}
                         type="date"
                         {...field}
                       />
@@ -241,7 +244,7 @@ export function StudentDetailClient({ student }: Props) {
                   <FormItem>
                     <FormControl>
                       <Input
-                        label="Ano letivo"
+                        label={t("schoolYearLabel")}
                         placeholder="2025/2026"
                         {...field}
                       />
@@ -256,7 +259,7 @@ export function StudentDetailClient({ student }: Props) {
                   <FormItem>
                     <FormControl>
                       <Input
-                        label="Turma"
+                        label={t("classNameLabel")}
                         placeholder="8A"
                         {...field}
                       />
@@ -270,33 +273,33 @@ export function StudentDetailClient({ student }: Props) {
               loading={editForm.formState.isSubmitting}
               className="self-start"
             >
-              Guardar altera\u00e7\u00f5es
+              {t("saveChanges")}
             </Button>
           </form>
         </Form>
       )}
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <Section icon={<Ruler className="size-4" />} title="Última biometria">
+        <Section icon={<Ruler className="size-4" />} title={t("recentBiometrics")}>
           {lastBio ? (
             <div className="grid grid-cols-2 gap-2 text-sm">
-              <Stat label="Altura" value={lastBio.heightM + " m"} />
-              <Stat label="Peso" value={lastBio.weightKg + " kg"} />
+              <Stat label={t("height")} value={lastBio.heightM + " m"} />
+              <Stat label={t("weight")} value={lastBio.weightKg + " kg"} />
               <Stat
-                label="IMC"
+                label={t("bmi")}
                 value={lastBio.imc.toFixed(1)}
                 extra={<ZoneBadge zone={lastBio.imcZone} />}
               />
-              <Stat label="Cintura" value={lastBio.waistCm ? lastBio.waistCm + " cm" : "\u2014"} />
-              <Stat label="Massa gorda" value={lastBio.fatPct ? lastBio.fatPct + "%" : "\u2014"} />
-              <Stat label="Data" value={new Date(lastBio.recordedAt).toLocaleDateString("pt-PT")} />
+              <Stat label={t("waist")} value={lastBio.waistCm ? lastBio.waistCm + " cm" : "\u2014"} />
+              <Stat label={t("fatPct")} value={lastBio.fatPct ? lastBio.fatPct + "%" : "\u2014"} />
+              <Stat label={t("date")} value={new Date(lastBio.recordedAt).toLocaleDateString("pt-PT")} />
             </div>
           ) : (
             <Empty />
           )}
         </Section>
 
-        <Section icon={<Timer className="size-4" />} title="Últimos testes">
+        <Section icon={<Timer className="size-4" />} title={t("recentTests")}>
           {student.tests.length > 0 ? (
             <div className="flex flex-col gap-1.5 text-sm">
               {student.tests.map((t, i) => (
@@ -314,7 +317,7 @@ export function StudentDetailClient({ student }: Props) {
           )}
         </Section>
 
-        <Section icon={<ClipboardList className="size-4" />} title="Questionários">
+        <Section icon={<ClipboardList className="size-4" />} title={t("questionnaires")}>
           {student.questionnaires.length > 0 ? (
             <ul className="text-sm space-y-1">
               {student.questionnaires.map((q, i) => (
@@ -331,7 +334,7 @@ export function StudentDetailClient({ student }: Props) {
           )}
         </Section>
 
-        <Section icon={<ShieldOff className="size-4" />} title="Dispensas">
+        <Section icon={<ShieldOff className="size-4" />} title={t("dispensas")}>
           {student.dispensas.length > 0 ? (
             <ul className="text-sm space-y-1">
               {student.dispensas.map((d) => (
@@ -349,7 +352,7 @@ export function StudentDetailClient({ student }: Props) {
           )}
         </Section>
 
-        <Section icon={<Users className="size-4" />} title="Encarregados de educação">
+        <Section icon={<Users className="size-4" />} title={t("guardians")}>
           {student.guardians.length > 0 ? (
             <ul className="text-sm space-y-1">
               {student.guardians.map((g) => (
@@ -370,9 +373,9 @@ export function StudentDetailClient({ student }: Props) {
 
       <ConfirmModal
         open={confirmDelete}
-        title="Eliminar aluno"
-        message={`Tem a certeza que pretende eliminar "${student.name}"? Esta acção é irreversível.`}
-        confirmLabel="Eliminar"
+        title={t("deleteTitle")}
+        message={t("deleteConfirm", { name: student.name })}
+        confirmLabel={t("deleteConfirmBtn")}
         variant="danger"
         onConfirm={handleDelete}
         onCancel={() => setConfirmDelete(false)}
@@ -391,7 +394,7 @@ function Section({
   children: React.ReactNode;
 }) {
   return (
-    <div className="bg-card rounded-xl border border-border p-5 flex flex-col gap-3">
+    <div className="bg-card/85 glass rounded-2xl border border-border/50 shadow-float p-5 flex flex-col gap-3">
       <h3 className="flex items-center gap-2 font-semibold text-sm">
         {icon}
         {title}
@@ -422,5 +425,5 @@ function Stat({
 }
 
 function Empty() {
-  return <p className="text-sm text-muted-foreground">Sem dados registados.</p>;
+  return <p className="text-sm text-muted-foreground">—</p>;
 }

@@ -54,7 +54,7 @@ export default function RelatorioPage() {
     role === "PAIS";
   const canSendEmail = role === "ADMIN" || role === "PROFESSOR";
 
-  const [students, setStudents] = useState<{ id: string; name: string }[]>([]);
+  const [students, setStudents] = useState<{ id: string; name: string; className?: string | null }[]>([]);
   const [studentId, setStudentId] = useState<string | null>(null);
   const [guardians, setGuardians] = useState<GuardianOption[]>([]);
   const [guardianUserId, setGuardianUserId] = useState("");
@@ -77,9 +77,10 @@ export default function RelatorioPage() {
     if (res.ok) {
       const body = await res.json();
       setStudents(
-        body.students.map((s: { id: string; name: string }) => ({
+        body.students.map((s: { id: string; name: string; className?: string | null }) => ({
           id: s.id,
           name: s.name,
+          className: s.className ?? null,
         }))
       );
       if (role === "ALUNO" && body.students.length === 1) {
@@ -173,162 +174,219 @@ export default function RelatorioPage() {
       const { jsPDF } = await import("jspdf");
       const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
 
-      const pageW = doc.internal.pageSize.getWidth();
+      const W = doc.internal.pageSize.getWidth();   // 210
+      const H = doc.internal.pageSize.getHeight();  // 297
 
-      // ── Header band ──────────────────────────────────────────────
-      doc.setFillColor(20, 48, 76); // Azul Escuro
-      doc.rect(0, 0, pageW, 36, "F");
+      // ── Colour palette ──────────────────────────────────────────
+      const navy950 = [9,  21, 35]  as [number, number, number];
+      const navy800 = [20, 48, 76]  as [number, number, number];
+      const navy600 = [54, 85, 109] as [number, number, number];
+      const navy100 = [221, 231, 240] as [number, number, number];
+      const gold400 = [216, 173, 52] as [number, number, number];
+      const gold600 = [147, 110, 15] as [number, number, number];
+      const white   = [255, 255, 255] as [number, number, number];
+      const green   = [16, 185, 129] as [number, number, number];
+      const red     = [239, 68, 68]  as [number, number, number];
+      const amber   = [245, 158, 11] as [number, number, number];
+      const gray50  = [248, 249, 250] as [number, number, number];
+      const gray200 = [226, 232, 240] as [number, number, number];
+      const gray600 = [75, 85, 99]    as [number, number, number];
 
-      // Add actual logo to PDF
+      const fill  = (c: [number,number,number]) => doc.setFillColor(...c);
+      const stroke= (c: [number,number,number]) => doc.setDrawColor(...c);
+      const text  = (c: [number,number,number]) => doc.setTextColor(...c);
+
+      // ── Header ──────────────────────────────────────────────────
+      fill(navy950); doc.rect(0, 0, W, 42, "F");
+      // Subtle gold glow top-left
+      fill([30, 55, 85]); doc.roundedRect(-10, -10, 80, 55, 8, 8, "F");
+      // Gold accent line
+      fill(gold400); doc.rect(0, 42, W, 2.5, "F");
+
+      // Logo
       try {
         const logoImg = new window.Image();
         logoImg.src = "/logo.png";
-        await new Promise((resolve, reject) => {
-          logoImg.onload = resolve;
-          logoImg.onerror = reject;
-        });
-        doc.addImage(logoImg, "PNG", 14, 10, 40, 10.27);
-      } catch {
-        doc.setTextColor(255, 255, 255);
-        doc.setFontSize(18);
-        doc.setFont("helvetica", "bold");
-        doc.text("HealthyTech Atlântico", 14, 18);
-      }
+        await new Promise((res, rej) => { logoImg.onload = res; logoImg.onerror = rej; });
+        doc.addImage(logoImg, "PNG", 14, 9, 36, 9.26);
+      } catch { /* skip */ }
 
-      doc.setTextColor(176, 198, 211); // Azul Claro
-      doc.setFontSize(11);
-      doc.setFont("helvetica", "bold");
-      doc.text("HealthyTech Atlântico — Relatório Individual", 14, 25);
+      // Title + date
+      text([200, 215, 230]);
+      doc.setFontSize(13); doc.setFont("helvetica", "bold");
+      doc.text("HealthyTech Atlântico  ·  Relatório Individual", 14, 29);
+      const today = new Date().toLocaleDateString("pt-PT", { day: "2-digit", month: "long", year: "numeric" });
+      text([150, 170, 190]);
+      doc.setFontSize(8); doc.setFont("helvetica", "normal");
+      doc.text(`Emitido em ${today}`, 14, 36);
 
-      const today = new Date().toLocaleDateString("pt-PT", {
-        day: "2-digit",
-        month: "long",
-        year: "numeric",
-      });
-      doc.setTextColor(255, 255, 255);
-      doc.setFontSize(9);
-      doc.setFont("helvetica", "normal");
-      doc.text(`Emitido em ${today}`, 14, 30);
+      // Page number placeholder
+      text([120, 145, 165]);
+      doc.setFontSize(7);
+      doc.text("1 / 1", W - 14, 36, { align: "right" });
 
-      // Accent gold line
-      doc.setFillColor(194, 151, 13); // Dourado
-      doc.rect(0, 36, pageW, 2, "F");
+      // ── Student banner ───────────────────────────────────────────
+      fill(navy100); doc.rect(0, 44.5, W, 22, "F");
+      // student initial circle
+      fill(navy800); doc.circle(14 + 8, 44.5 + 11, 8, "F");
+      const initials = (selectedStudent?.name ?? "?")
+        .split(" ").map((p) => p[0]).filter(Boolean).slice(0,2).join("").toUpperCase();
+      text(white);
+      doc.setFontSize(9); doc.setFont("helvetica", "bold");
+      doc.text(initials, 14 + 8, 44.5 + 13.5, { align: "center" });
 
-      // ── Student name block ────────────────────────────────────────
-      doc.setFillColor(176, 198, 211); // Azul Claro
-      doc.rect(0, 38, pageW, 20, "F");
-      doc.setTextColor(20, 48, 76); // Azul Escuro
-      doc.setFontSize(14);
-      doc.setFont("helvetica", "bold");
-      doc.text(selectedStudent?.name ?? "—", 14, 50);
-      doc.setFontSize(9);
-      doc.setFont("helvetica", "normal");
-      doc.setTextColor(20, 48, 76); // Azul Escuro
-      doc.text("Aluno", 14, 55);
+      text(navy800);
+      doc.setFontSize(14); doc.setFont("helvetica", "bold");
+      doc.text(selectedStudent?.name ?? "—", 33, 52.5);
+      text(navy600);
+      doc.setFontSize(8); doc.setFont("helvetica", "normal");
+      const studentMeta = [
+        selectedStudent?.className ? `Turma ${selectedStudent.className}` : null,
+      ].filter(Boolean).join("  ·  ") || "Aluno";
+      doc.text(studentMeta, 33, 58);
 
-      let y = 68;
+      let y = 76;
 
-      // ── Biometria section ─────────────────────────────────────────
-      doc.setTextColor(20, 48, 76); // Azul Escuro
-      doc.setFontSize(12);
-      doc.setFont("helvetica", "bold");
-      doc.text("Biometria", 14, y);
-      y += 2;
-      doc.setDrawColor(194, 151, 13); // Dourado
-      doc.setLineWidth(0.5);
-      doc.line(14, y, pageW - 14, y);
-      y += 6;
+      // ── Section helper ───────────────────────────────────────────
+      const section = (title: string, iconLabel: string) => {
+        text(navy800);
+        doc.setFontSize(10); doc.setFont("helvetica", "bold");
+        doc.text(iconLabel + "  " + title, 14, y);
+        y += 1.5;
+        stroke(gold400); doc.setLineWidth(0.6);
+        doc.line(14, y, W - 14, y);
+        y += 6;
+      };
+
+      // ── Biometria ─────────────────────────────────────────────────
+      section("Biometria", "◉");
 
       if (Array.isArray(bio) && bio.length) {
         const b = bio[0] as BiometricEntry;
 
-        // small metric boxes
+        // IMC zone
+        const imc = b.imc ?? 0;
+        let imcZoneColor = green;
+        let imcZoneLabel = "Normal";
+        if (imc < 18.5) { imcZoneColor = amber; imcZoneLabel = "Baixo peso"; }
+        else if (imc >= 25 && imc < 30) { imcZoneColor = amber; imcZoneLabel = "Excesso de peso"; }
+        else if (imc >= 30) { imcZoneColor = red; imcZoneLabel = "Obesidade"; }
+
         const metrics = [
-          { label: "Altura", value: b.heightM ? `${b.heightM} m` : "—" },
-          { label: "Peso", value: b.weightKg ? `${b.weightKg} kg` : "—" },
-          { label: "IMC", value: b.imc ? `${b.imc}` : "—" },
-          { label: "Cin. (cm)", value: b.waistCm ? `${b.waistCm}` : "—" },
+          { label: "Altura", value: b.heightM ? `${b.heightM} m` : "—", badge: null },
+          { label: "Peso",   value: b.weightKg ? `${b.weightKg} kg` : "—", badge: null },
+          { label: "IMC",    value: b.imc ? String(b.imc) : "—", badge: { label: imcZoneLabel, color: imcZoneColor } },
+          { label: "Cintura", value: b.waistCm ? `${b.waistCm} cm` : "—", badge: null },
         ];
-        const boxW = (pageW - 28 - 9) / 4;
+
+        const boxW = (W - 28 - 9) / 4;
         metrics.forEach((m, i) => {
           const bx = 14 + i * (boxW + 3);
-          doc.setFillColor(176, 198, 211); // Azul Claro
-          doc.roundedRect(bx, y, boxW, 16, 2, 2, "F");
-          doc.setTextColor(20, 48, 76); // Azul Escuro
-          doc.setFontSize(8);
-          doc.setFont("helvetica", "normal");
-          doc.text(m.label, bx + 3, y + 6);
-          doc.setFontSize(11);
-          doc.setFont("helvetica", "bold");
-          doc.text(m.value, bx + 3, y + 13);
+          // Card shadow simulation
+          fill([210, 220, 228]); doc.roundedRect(bx + 0.5, y + 0.8, boxW, 20, 3, 3, "F");
+          fill(white);          doc.roundedRect(bx, y, boxW, 20, 3, 3, "F");
+          // Top accent line
+          fill(navy800); doc.roundedRect(bx, y, boxW, 2, 3, 3, "F");
+          fill(navy800); doc.rect(bx, y + 0.5, boxW, 1.5, "F");
+
+          text(gray600);
+          doc.setFontSize(6.5); doc.setFont("helvetica", "normal");
+          doc.text(m.label.toUpperCase(), bx + 4, y + 7);
+
+          text(navy950);
+          doc.setFontSize(12); doc.setFont("helvetica", "bold");
+          doc.text(m.value, bx + 4, y + 14);
+
+          if (m.badge) {
+            fill(m.badge.color); doc.roundedRect(bx + 4, y + 15.5, boxW - 8, 3.2, 1, 1, "F");
+            text(white); doc.setFontSize(5.5); doc.setFont("helvetica", "bold");
+            doc.text(m.badge.label, bx + boxW / 2, y + 17.8, { align: "center" });
+          }
         });
-        y += 22;
+        y += 26;
       } else {
-        doc.setFontSize(9);
-        doc.setFont("helvetica", "normal");
-        doc.setTextColor(176, 198, 211); // Azul Claro
-        doc.text("Sem dados de biometria registados.", 14, y);
-        y += 10;
+        fill(gray50); doc.roundedRect(14, y, W - 28, 10, 2, 2, "F");
+        text(gray600); doc.setFontSize(8); doc.setFont("helvetica", "normal");
+        doc.text("Sem dados de biometria registados.", 14 + (W - 28) / 2, y + 6.5, { align: "center" });
+        y += 16;
       }
 
-      // ── Testes Físicos section ────────────────────────────────────
-      y += 4;
-      doc.setTextColor(20, 48, 76); // Azul Escuro
-      doc.setFontSize(12);
-      doc.setFont("helvetica", "bold");
-      doc.text("Testes Físicos", 14, y);
-      y += 2;
-      doc.setDrawColor(194, 151, 13); // Dourado
-      doc.line(14, y, pageW - 14, y);
+      // ── Testes Físicos ────────────────────────────────────────────
       y += 6;
+      section("Testes Físicos", "▶");
+
+      const TEST_LABELS: Record<string, string> = {
+        vai: "Vai e Vem", cooper: "Cooper", milha: "Milha 1609m",
+        velocidade: "Velocidade 40m", agilidade: "Agilidade 4×10m",
+        abd: "Abdominais", abdominais: "Abdominais",
+        bracos: "Extensões de braços", extensoes: "Extensões de braços",
+        senta: "Senta e alcança", senta_alcanca: "Senta e alcança",
+        vaivem: "Vai e Vem",
+      };
 
       if (Array.isArray(tests) && tests.length) {
         // Table header
-        doc.setFillColor(20, 48, 76); // Azul Escuro
-        doc.rect(14, y, pageW - 28, 8, "F");
-        doc.setTextColor(255, 255, 255);
-        doc.setFontSize(8);
-        doc.setFont("helvetica", "bold");
-        doc.text("Teste", 16, y + 5.5);
-        doc.text("Resultado", pageW - 50, y + 5.5);
-        y += 8;
+        const rowH = 8;
+        fill(navy800); doc.roundedRect(14, y, W - 28, rowH + 1, 3, 3, "F");
+        fill(navy800); doc.rect(14, y + 3, W - 28, rowH - 2, "F"); // square bottom
+        text(white);
+        doc.setFontSize(7.5); doc.setFont("helvetica", "bold");
+        doc.text("Teste", 20, y + 5.8);
+        doc.text("Categoria", W / 2 - 10, y + 5.8);
+        doc.text("Resultado", W - 20, y + 5.8, { align: "right" });
+        y += rowH + 1;
+
+        const CATEGORIES: Record<string, string> = {
+          vai: "Capacidade Aeróbia", cooper: "Capacidade Aeróbia", milha: "Capacidade Aeróbia",
+          vaivem: "Capacidade Aeróbia",
+          velocidade: "Velocidade", agilidade: "Agilidade",
+          abd: "Força", abdominais: "Força", bracos: "Força", extensoes: "Força",
+          senta: "Flexibilidade", senta_alcanca: "Flexibilidade",
+        };
 
         (tests as TestEntry[]).forEach((test, i) => {
-          if (i % 2 === 0) {
-            // Using a slightly lighter version of Azul Claro for row striping so text is readable
-            // 210, 222, 230 is approx 40% transparent Azul Claro over white
-            doc.setFillColor(210, 222, 230);
-            doc.rect(14, y, pageW - 28, 7, "F");
-          }
-          doc.setTextColor(20, 48, 76); // Azul Escuro
-          doc.setFontSize(8);
-          doc.setFont("helvetica", "normal");
-          doc.text(test.testId, 16, y + 5);
+          const isEven = i % 2 === 0;
+          fill(isEven ? white : gray50);
+          doc.rect(14, y, W - 28, rowH, "F");
+
+          const label = TEST_LABELS[test.testId] ?? test.testId;
+          const cat   = CATEGORIES[test.testId] ?? "—";
+          const result= `${test.valueText} ${test.unit}`.trim();
+
+          // Category pill
+          fill(navy100); doc.roundedRect(W / 2 - 22, y + 1.5, 44, 5, 2, 2, "F");
+          text(navy800); doc.setFontSize(6); doc.setFont("helvetica", "normal");
+          doc.text(cat, W / 2, y + 5.3, { align: "center" });
+
+          text(navy950); doc.setFontSize(7.5); doc.setFont("helvetica", "normal");
+          doc.text(label, 20, y + 5.5);
           doc.setFont("helvetica", "bold");
-          doc.text(`${test.valueText} ${test.unit}`, pageW - 50, y + 5);
-          y += 7;
+          doc.text(result, W - 20, y + 5.5, { align: "right" });
+
+          // Bottom border
+          stroke(gray200); doc.setLineWidth(0.2);
+          doc.line(14, y + rowH, W - 14, y + rowH);
+
+          y += rowH;
         });
+
+        // Table bottom radius cap
+        fill(navy100); doc.rect(14, y, W - 28, 0.5, "F");
+        y += 8;
       } else {
-        doc.setFontSize(9);
-        doc.setFont("helvetica", "normal");
-        doc.setTextColor(176, 198, 211); // Azul Claro
-        doc.text("Sem dados de testes registados.", 14, y);
-        y += 10;
+        fill(gray50); doc.roundedRect(14, y, W - 28, 10, 2, 2, "F");
+        text(gray600); doc.setFontSize(8); doc.setFont("helvetica", "normal");
+        doc.text("Sem dados de testes registados.", 14 + (W - 28) / 2, y + 6.5, { align: "center" });
+        y += 16;
       }
 
       // ── Footer ────────────────────────────────────────────────────
-      const pageH = doc.internal.pageSize.getHeight();
-      doc.setFillColor(20, 48, 76); // Azul Escuro
-      doc.rect(0, pageH - 14, pageW, 14, "F");
-      doc.setTextColor(176, 198, 211); // Azul Claro
-      doc.setFontSize(7);
-      doc.setFont("helvetica", "normal");
-      doc.text(
-        "HealthyTech Atlântico · Documento gerado automaticamente",
-        pageW / 2,
-        pageH - 5,
-        { align: "center" }
-      );
+      fill(navy950); doc.rect(0, H - 16, W, 16, "F");
+      fill(gold400); doc.rect(0, H - 16, W, 1.5, "F");
+      text([120, 145, 165]); doc.setFontSize(6.5); doc.setFont("helvetica", "normal");
+      doc.text("HealthyTech Atlântico  ·  Documento gerado automaticamente", W / 2, H - 7.5, { align: "center" });
+      text(gold400); doc.setFontSize(6); doc.setFont("helvetica", "bold");
+      doc.text("CONFIDENCIAL — USO INTERNO", W / 2, H - 3.5, { align: "center" });
 
       doc.save(
         `relatorio_${selectedStudent?.name?.replace(/\s+/g, "_") ?? "aluno"}.pdf`

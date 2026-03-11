@@ -94,7 +94,7 @@ function NavLink({
       href={item.href}
       onClick={onClick}
       className={cn(
-        "group relative flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-300",
+        "group relative flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400/40 focus-visible:ring-offset-2 focus-visible:ring-offset-navy-900",
         active
           ? "bg-[linear-gradient(135deg,rgba(255,255,255,0.14),rgba(255,255,255,0.06))] text-white shadow-[0_16px_32px_rgba(4,10,18,0.22)]"
           : "text-navy-200/75 hover:bg-white/6 hover:text-white"
@@ -200,11 +200,21 @@ export function AppShell({ user, children }: AppShellProps) {
   return (
     <TooltipProvider delayDuration={300}>
       <div className="relative min-h-screen bg-background">
-        <div className="bg-mesh" />
-        <div className="bg-noise" />
+        {/* Skip-to-content link for keyboard/screen-reader users */}
+        <a
+          href="#main-content"
+          className="fixed left-4 top-4 z-50 -translate-y-16 rounded-xl bg-gold-400 px-4 py-2.5 text-sm font-semibold text-navy-950 shadow-float transition-transform focus:translate-y-0 focus:outline-none focus:ring-2 focus:ring-gold-400/40"
+        >
+          {t("nav.skipToContent")}
+        </a>
+        <div className="bg-mesh" aria-hidden="true" />
+        <div className="bg-noise" aria-hidden="true" />
 
         {/* ── Desktop Sidebar ── */}
-        <aside className="fixed inset-y-0 left-0 z-30 hidden w-64 border-r border-border/70 bg-[linear-gradient(180deg,rgba(8,22,43,0.98),rgba(8,22,43,0.92))] lg:flex lg:flex-col">
+        <aside
+          aria-label={t("nav.sidebarNavigation")}
+          className="fixed inset-y-0 left-0 z-30 hidden w-64 border-r border-border/70 bg-[linear-gradient(180deg,rgba(8,22,43,0.98),rgba(8,22,43,0.92))] lg:flex lg:flex-col"
+        >
           <div className="border-b border-white/10 px-4 py-4">
             <div className="rounded-xl border border-white/10 bg-white/5 p-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]">
               <div className="flex items-center justify-center">
@@ -247,7 +257,10 @@ export function AppShell({ user, children }: AppShellProps) {
         {/* ── Main area ── */}
         <div className="relative flex min-h-screen flex-col lg:ml-64">
           {/* ── Top header bar ── */}
-          <header className="sticky top-0 z-20 border-b border-border/70 bg-background/80 backdrop-blur-xl">
+          <header
+            aria-label={t("nav.topBar")}
+            className="sticky top-0 z-20 border-b border-border/70 bg-background/80 backdrop-blur-xl"
+          >
             <div className="mx-auto flex w-full max-w-[1600px] items-center justify-between gap-3 px-4 py-2.5 sm:px-6 lg:justify-end lg:px-8">
               {/* Mobile: hamburger + logo */}
               <div className="flex items-center gap-2 lg:hidden">
@@ -256,7 +269,8 @@ export function AppShell({ user, children }: AppShellProps) {
                   size="icon"
                   className="rounded-xl"
                   onClick={() => setMobileOpen(true)}
-                  aria-label="Open menu"
+                  aria-label={t("nav.openMenu")}
+                  aria-expanded={mobileOpen}
                 >
                   <Menu className="size-5" />
                 </Button>
@@ -270,6 +284,7 @@ export function AppShell({ user, children }: AppShellProps) {
                     <button
                       type="button"
                       onClick={() => setCmdOpen(true)}
+                      aria-haspopup="dialog"
                       className="hidden items-center gap-2 rounded-xl border border-border/70 bg-card/60 px-3 py-1.5 text-sm text-muted-foreground transition-colors hover:bg-card hover:text-foreground sm:flex"
                     >
                       <Search className="size-3.5" />
@@ -412,7 +427,10 @@ export function AppShell({ user, children }: AppShellProps) {
           </Sheet>
 
           {/* ── Page content ── */}
-          <main className="mx-auto flex w-full max-w-[1600px] flex-1 flex-col gap-5 px-4 py-4 pb-24 sm:px-6 lg:px-8 lg:py-5 lg:pb-8">
+          <main
+            id="main-content"
+            className="mx-auto flex w-full max-w-[1600px] flex-1 flex-col gap-5 px-4 py-4 pb-24 sm:px-6 lg:px-8 lg:py-5 lg:pb-8"
+          >
             {children}
           </main>
 

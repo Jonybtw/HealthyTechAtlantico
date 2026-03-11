@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { signIn } from "next-auth/react";
@@ -56,30 +55,18 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="animate-fade-in-up overflow-hidden rounded-2xl border border-border/70 bg-card/90 shadow-[0_28px_90px_rgba(15,23,42,0.18)]">
-      <div className="border-b border-border/70 bg-[linear-gradient(135deg,rgba(8,22,43,0.98),rgba(28,48,74,0.94))] px-6 py-6 text-white">
-        <div className="flex items-center justify-between gap-4">
-          <div>
-            <p className="text-[11px] font-semibold uppercase tracking-[0.26em] text-gold-200/80">
-              HealthyTech Atlântico
-            </p>
-            <h1 className="mt-3 font-display text-2xl font-semibold tracking-tight">
-              {t("login")}
-            </h1>
-            <p className="mt-2 max-w-sm text-sm leading-relaxed text-navy-100/75">
-              Acede ao painel institucional para acompanhar alunos, alertas e relatórios.
-            </p>
-          </div>
-          <div className="hidden rounded-xl border border-white/10 bg-white/8 p-2.5 sm:block">
-            <Image
-              src="/logo.png"
-              alt="HealthyTech Atlantico"
-              width={64}
-              height={64}
-              className="object-contain brightness-0 invert"
-              priority
-            />
-          </div>
+    <div className="animate-fade-in-up overflow-hidden rounded-2xl border border-border/60 bg-card shadow-[0_32px_80px_-12px_rgba(9,21,35,0.22),0_2px_12px_rgba(9,21,35,0.08)]">
+      <div className="flex items-center gap-3 border-b border-border/60 px-6 py-5">
+        <div className="flex size-9 items-center justify-center rounded-xl bg-navy-900 text-gold-300">
+          <LogIn className="size-4" />
+        </div>
+        <div>
+          <h1 className="font-display text-lg font-semibold tracking-tight">
+            {t("login")}
+          </h1>
+          <p className="text-xs text-muted-foreground">
+            Acede ao painel institucional
+          </p>
         </div>
       </div>
 

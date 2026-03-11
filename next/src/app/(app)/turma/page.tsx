@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { Download, Users } from "lucide-react";
@@ -22,12 +22,8 @@ import { ZoneBadge } from "@/components/ui/zone-badge";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useUser } from "@/components/user-context";
-
-interface ClassOption {
-  id: string;
-  name: string;
-  year: string;
-}
+import { ChartTooltip } from "@/components/ui/chart-tooltip";
+import { useClasses } from "@/hooks/use-queries";
 
 interface StudentRow {
   id: string;
@@ -38,84 +34,19 @@ interface StudentRow {
   testCount: number;
 }
 
-interface TooltipEntry {
-  color?: string;
-  name?: string;
-  value?: string | number;
-}
-
-function ChartTooltip({
-  active,
-  payload,
-  label,
-}: {
-  active?: boolean;
-  payload?: TooltipEntry[];
-  label?: string | number;
-}) {
-  if (!active || !payload?.length) return null;
-
-  return (
-    <div className="bg-card/90 glass p-3 border border-border/50 shadow-float rounded-xl text-sm">
-      <p className="font-semibold mb-2 tracking-tight text-foreground">{label}</p>
-      <div className="flex flex-col gap-1.5">
-        {payload.map((entry, index) => (
-          <div key={`${entry.name}-${index}`} className="flex items-center gap-2">
-            <div
-              className="size-2.5 rounded-full"
-              style={{ backgroundColor: entry.color }}
-            />
-            <span className="text-muted-foreground mr-2">{entry.name}:</span>
-            <span className="font-bold text-foreground">{entry.value}</span>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
 export default function TurmaPage() {
   const t = useTranslations("turma");
   const common = useTranslations("common");
   const { role } = useUser();
   const canViewClassReports = role === "ADMIN" || role === "PROFESSOR";
-  const [classes, setClasses] = useState<ClassOption[]>([]);
+  const { data: classes = [], error: classesError } = useClasses({ enabled: canViewClassReports });
   const [classId, setClassId] = useState<string>("");
   const [students, setStudents] = useState<StudentRow[]>([]);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (!canViewClassReports) return;
-
-    let active = true;
-
-    (async () => {
-      const res = await fetch("/api/classes");
-      if (!res.ok) return;
-
-      const body = (await res.json()) as {
-        label: string;
-        classes: { id: string; name: string }[];
-      }[];
-
-      if (!active) return;
-
-      const allClasses: ClassOption[] = body.flatMap((academicYear) =>
-        academicYear.classes.map((schoolClass) => ({
-          id: schoolClass.id,
-          name: schoolClass.name,
-          year: academicYear.label,
-        }))
-      );
-      setClasses(allClasses);
-    })().catch(() => {
-      if (active) toast.error(t("loadError"));
-    });
-
-    return () => {
-      active = false;
-    };
-  }, [canViewClassReports, t]);
+    if (classesError) toast.error(t("loadError"));
+  }, [classesError, t]);
 
   useEffect(() => {
     if (!canViewClassReports || !classId) return;
@@ -172,7 +103,7 @@ export default function TurmaPage() {
     toast.success(t("exportCsv"));
   };
 
-  const zoneChartData = (() => {
+  const zoneChartData = useMemo(() => {
     if (!students.length) return [];
     let zsaf = 0;
     let zmf = 0;
@@ -191,7 +122,7 @@ export default function TurmaPage() {
         "Sem dados": noData,
       },
     ];
-  })();
+  }, [students]);
 
   const columns: Column<StudentRow>[] = [
     { key: "name", header: t("colName"), sortable: true },

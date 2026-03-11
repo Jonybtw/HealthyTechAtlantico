@@ -25,13 +25,12 @@ import {
 
 type StaffValues = z.infer<typeof createStaffSchema>;
 
-const ROLE_OPTIONS = [
-  { value: "PROFESSOR", label: "Professor" },
-  { value: "PSICOLOGO", label: "Psicólogo" },
-];
+const ROLE_VALUES = ["PROFESSOR", "PSICOLOGO"] as const;
 
 export default function AdminPage() {
   const t = useTranslations("admin");
+  const common = useTranslations("common");
+  const roles = useTranslations("roles");
   const { role } = useUser();
 
   const { data: staff = [], isLoading: loading, refetch: loadStaff } = useStaff();
@@ -58,7 +57,7 @@ export default function AdminPage() {
         }),
       });
       if (!res.ok) {
-        const { error } = await res.json().catch(() => ({ error: "Erro desconhecido." }));
+        const { error } = await res.json().catch(() => ({ error: common("connectionError") }));
         toast.error(error);
         return;
       }
@@ -66,7 +65,7 @@ export default function AdminPage() {
       form.reset();
       loadStaff();
     } catch {
-      toast.error("Erro de ligação.");
+      toast.error(common("connectionError"));
     }
   }
 
@@ -77,7 +76,7 @@ export default function AdminPage() {
       toast.success(t("deleteSuccess"));
       setDeleteTarget(null);
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Erro de ligação.");
+      toast.error(error instanceof Error ? error.message : common("connectionError"));
     }
   }
 
@@ -157,7 +156,7 @@ export default function AdminPage() {
             <div>
               <label className="block text-sm font-medium mb-1">{t("roleLabel")}</label>
               <PillSelect
-                options={ROLE_OPTIONS}
+                options={ROLE_VALUES.map((v) => ({ value: v, label: roles(v) }))}
                 value={form.watch("role")}
                 onChange={(v) => form.setValue("role", v as "PROFESSOR" | "PSICOLOGO")}
               />
@@ -181,12 +180,13 @@ export default function AdminPage() {
         <div className="flex items-center justify-between">
           <h2 className="text-base font-semibold flex items-center gap-2">
             <Settings size={18} className="text-navy-600" />
-            Funcionários registados
+            {t("listTitle")}
           </h2>
           <button
             onClick={() => loadStaff()}
             className="p-1.5 rounded-md hover:bg-muted text-muted-foreground"
-            title="Atualizar lista"
+            title={t("refreshList")}
+            aria-label={t("refreshList")}
           >
             <RefreshCw size={15} className={loading ? "animate-spin" : ""} />
           </button>
@@ -194,12 +194,12 @@ export default function AdminPage() {
 
         {loading && (
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <Loader2 size={16} className="animate-spin" /> A carregar…
+            <Loader2 size={16} className="animate-spin" /> {common("loading")}
           </div>
         )}
 
         {!loading && staff.length === 0 && (
-          <p className="text-sm text-muted-foreground">Nenhum funcionário registado.</p>
+          <p className="text-sm text-muted-foreground">{t("noStaff")}</p>
         )}
 
         {!loading && staff.length > 0 && (
@@ -227,7 +227,7 @@ export default function AdminPage() {
                             : "bg-gold-100 text-gold-800"
                         }`}
                       >
-                        {s.role === "PROFESSOR" ? "Professor" : "Psicólogo"}
+                        {roles(s.role)}
                       </span>
                     </td>
                     <td className="py-2 px-3 text-muted-foreground">
@@ -237,7 +237,7 @@ export default function AdminPage() {
                       <button
                         onClick={() => setDeleteTarget(s)}
                         className="p-1.5 rounded-md hover:bg-danger-50 text-muted-foreground hover:text-danger-600"
-                        title="Remover conta"
+                        aria-label={t("deleteBtn")}
                       >
                         <Trash2 size={15} />
                       </button>

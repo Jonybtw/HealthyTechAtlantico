@@ -6,6 +6,7 @@ import { PERMISSIONS } from "@/lib/rbac";
 import { sosSchema } from "@/lib/validations";
 import { sendMail } from "@/lib/mailer";
 import { auditLog } from "@/lib/audit";
+import { escapeHtml } from "@/lib/utils";
 import type { Role } from "@prisma/client";
 import { getStudentAccessContext } from "@/lib/student-access";
 
@@ -137,18 +138,18 @@ export async function POST(
       userId: session.user.id,
       action: "trigger_sos",
       targetId: alert.id,
-    }).catch(() => {});
+    }).catch(console.error);
 
     const emails = [data.psychEmail, data.teacherEmail].filter(Boolean) as string[];
     if (emails.length > 0) {
-      const classLabel = student.className ? ` (${student.className})` : "";
+      const classLabel = student.className ? ` (${escapeHtml(student.className)})` : "";
 
       await Promise.allSettled(
         emails.map((to) =>
           sendMail({
             to,
             subject: `SOS alert - ${student.name}`,
-            html: `<p>Foi ativado um alerta SOS para o/a aluno/a <strong>${student.name}</strong>${classLabel}.</p><p>Por favor verifique a situacao na plataforma HealthyTech Atlantico.</p>`,
+            html: `<p>Foi ativado um alerta SOS para o/a aluno/a <strong>${escapeHtml(student.name)}</strong>${classLabel}.</p><p>Por favor verifique a situacao na plataforma HealthyTech Atlantico.</p>`,
           })
         )
       );

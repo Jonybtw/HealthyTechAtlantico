@@ -30,7 +30,7 @@ export async function GET(
       return NextResponse.json({ error: access.error }, { status: access.status });
     }
 
-    await auditLog({ userId: session.user.id, action: "read_questionnaires", targetId: id }).catch(() => {});
+    await auditLog({ userId: session.user.id, action: "read_questionnaires", targetId: id }).catch(console.error);
 
     const questionnaires = await prisma.questionnaire.findMany({
       where: { studentId: id },
@@ -69,7 +69,7 @@ export async function POST(
     const body = await req.json();
     const data = questionnaireSchema.parse(body);
 
-    await auditLog({ userId: session.user.id, action: "submit_questionnaire", targetId: id }).catch(() => {});
+    await auditLog({ userId: session.user.id, action: "submit_questionnaire", targetId: id }).catch(console.error);
 
     const questionnaire = await prisma.questionnaire.create({
       data: {

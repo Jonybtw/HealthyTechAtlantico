@@ -21,7 +21,11 @@
     "auditoria": "Auditoria",
     "logout": "Sair",
     "changeLanguage": "Mudar idioma",
-    "changeTheme": "Alternar tema"
+    "changeTheme": "Alternar tema",
+    "skipToContent": "Saltar para o conteúdo",
+    "sidebarNavigation": "Navegação principal",
+    "topBar": "Barra superior",
+    "openMenu": "Abrir menu"
   },
   "roles": {
     "ADMIN": "Administrador",
@@ -237,7 +241,10 @@
     "colZone": "Zona",
     "colTests": "Testes",
     "noStudents": "Nenhum aluno neste ano.",
-    "loadError": "Erro ao carregar turma."
+    "loadError": "Erro ao carregar turma.",
+    "noClassSelected": "Nenhuma Turma Selecionada",
+    "noClassSelectedDesc": "Selecione uma turma para ver os dados.",
+    "zafDistribution": "Distribuição ZAF"
   },
   "dispensas": {
     "title": "Dispensas",
@@ -299,6 +306,43 @@
     "viewDetail": "Ver detalhes",
     "emptyMessage": "Sem alunos registados."
   },
+  "studentDetail": {
+    "editBtn": "Editar",
+    "cancelBtn": "Cancelar",
+    "deleteBtn": "Eliminar",
+    "editTitle": "Editar dados do aluno",
+    "nameLabel": "Nome",
+    "sexLabel": "Sexo",
+    "male": "Masculino",
+    "female": "Feminino",
+    "birthDateLabel": "Data de nasc.",
+    "schoolYearLabel": "Ano letivo",
+    "classNameLabel": "Turma",
+    "saveChanges": "Guardar alterações",
+    "saveSuccess": "Dados atualizados.",
+    "saveError": "Erro ao guardar.",
+    "deleteTitle": "Eliminar aluno",
+    "deleteConfirm": "Tem a certeza que pretende eliminar \"{name}\"? Esta ação é irreversível.",
+    "deleteConfirmBtn": "Eliminar",
+    "deleteSuccess": "Aluno eliminado.",
+    "deleteError": "Erro ao eliminar.",
+    "recentBiometrics": "Última biometria",
+    "recentTests": "Últimos testes",
+    "questionnaires": "Questionários",
+    "dispensas": "Dispensas",
+    "guardians": "Encarregados de educação",
+    "noClass": "Sem turma",
+    "years": "anos",
+    "height": "Altura",
+    "weight": "Peso",
+    "bmi": "IMC",
+    "waist": "Cintura",
+    "fatPct": "Massa gorda",
+    "date": "Data",
+    "noRecords": "Sem dados registados.",
+    "removeDispensa": "Remover dispensa",
+    "removeGuardian": "Remover encarregado"
+  },
   "perfil": {
     "title": "Perfil",
     "description": "Definições da sua conta",
@@ -318,7 +362,13 @@
     "rgpdTitle": "Consentimento RGPD",
     "rgpdGranted": "Consentimento ativo",
     "rgpdRevoke": "Revogar",
-    "rgpdGrant": "Conceder"
+    "rgpdGrant": "Conceder",
+    "activeAccount": "Conta ativa",
+    "shareTitle": "Partilha de dados",
+    "shareControlled": "Partilha controlada.",
+    "activate": "Ativar",
+    "deactivate": "Desativar",
+    "securityTitle": "Segurança"
   },
   "guardioes": {
     "title": "Encarregados de Educação",
@@ -342,7 +392,16 @@
     "rel_EE": "Enc. Educação",
     "rel_OUTRO": "Outro",
     "noPermission": "Sem permissão para aceder a esta página.",
-    "selectStudentFirst": "Selecione um aluno."
+    "selectStudentFirst": "Selecione um aluno.",
+    "selectStudent": "Selecionar aluno...",
+    "student": "Aluno",
+    "relationship": "Relação",
+    "loadingGuardians": "A carregar...",
+    "noGuardiansFor": "{name} não tem encarregados associados neste momento.",
+    "noGuardiansTitle": "Sem Encarregados",
+    "loadError": "Erro ao carregar encarregados.",
+    "addError": "Selecione um aluno.",
+    "unknownError": "Erro desconhecido."
   },
   "admin": {
     "title": "Administração",
@@ -360,6 +419,8 @@
     "deleteBtn": "Remover",
     "deleteSuccess": "Conta removida.",
     "noStaff": "Nenhum funcionário registado.",
+    "staffCount": "{count} funcionários registados.",
+    "refreshList": "Atualizar lista",
     "noPermission": "Sem permissão para aceder a esta página.",
     "nameTooShort": "Nome demasiado curto.",
     "invalidEmail": "E-mail inválido.",

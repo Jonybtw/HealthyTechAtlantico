@@ -120,7 +120,7 @@ async function main() {
 
     const student = await prisma.student.upsert({
       where: { linkedUserId: user.id },
-      update: {},
+      update: { className, schoolYear: "2025/2026" },
       create: {
         name: s.name,
         sex: s.sex,

@@ -30,7 +30,7 @@ export async function GET(
       return NextResponse.json({ error: access.error }, { status: access.status });
     }
 
-    await auditLog({ userId: session.user.id, action: "read_tests", targetId: id }).catch(() => { });
+    await auditLog({ userId: session.user.id, action: "read_tests", targetId: id }).catch(console.error);
 
     const url = new URL(_req.url);
     const latestOnly = url.searchParams.get("latest") === "true";
@@ -85,7 +85,7 @@ export async function POST(
     const body = await req.json();
     const data = testsSchema.parse(body);
 
-    await auditLog({ userId: session.user.id, action: "record_tests", targetId: id }).catch(() => { });
+    await auditLog({ userId: session.user.id, action: "record_tests", targetId: id }).catch(console.error);
 
     const created = await prisma.test.createMany({
       data: data.tests.map((t) => ({

@@ -20,10 +20,10 @@ export async function createStudentAction(
         const user = await requirePermission(PERMISSIONS.CREATE_STUDENT);
 
         const payload = {
-            name: formData.get("name") as string,
-            sex: formData.get("sex") as string,
-            birthDate: formData.get("birthDate") as string,
-            className: formData.get("className") as string,
+            name: String(formData.get("name") ?? ""),
+            sex: String(formData.get("sex") ?? ""),
+            birthDate: String(formData.get("birthDate") ?? ""),
+            className: String(formData.get("className") ?? ""),
         };
 
         const data = createStudentSchema.parse(payload);

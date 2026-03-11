@@ -12,7 +12,8 @@ import {
 } from "lucide-react";
 import { signOut } from "next-auth/react";
 import { useTheme, writeTheme } from "@/lib/theme";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+import * as VisuallyHidden from "@radix-ui/react-visually-hidden";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { NAV_ITEMS } from "@/lib/nav-items";
 
 interface CommandPaletteProps {
@@ -47,7 +48,10 @@ export function CommandPalette({ open, onOpenChange, userRole }: CommandPaletteP
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="overflow-hidden p-0 max-w-lg" aria-label="Command palette">
+      <DialogContent className="overflow-hidden p-0 max-w-lg">
+        <VisuallyHidden.Root>
+          <DialogTitle>Paleta de comandos</DialogTitle>
+        </VisuallyHidden.Root>
         <Command
           className="flex flex-col"
           loop

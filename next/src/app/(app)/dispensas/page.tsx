@@ -26,7 +26,7 @@ export default function DispensasPage() {
   const canManageDispensas = role === "ADMIN" || role === "PROFESSOR";
 
   const { data: studentsList = [] } = useStudents();
-  const students = studentsList.map((s) => ({ id: s.id, name: s.name }));
+  const students = studentsList.map((s) => ({ id: s.id, name: s.name, className: s.className ?? null }));
   const [studentId, setStudentId] = useState<string | null>(null);
   const { data: dispensas = [], isLoading: loading } = useDispensas(studentId);
   const createMutation = useCreateDispensa(studentId);
@@ -165,6 +165,7 @@ export default function DispensasPage() {
               </div>
               <button
                 onClick={() => setDeleteId(dispensa.id)}
+                aria-label={t("deleteBtn")}
                 className="p-2.5 rounded-xl text-muted-foreground hover:text-danger-600 hover:bg-danger-50 dark:hover:bg-danger-900/20 transition-all border border-transparent hover:border-danger-200 dark:hover:border-danger-800/30 shadow-sm"
               >
                 <Trash2 className="size-4" />

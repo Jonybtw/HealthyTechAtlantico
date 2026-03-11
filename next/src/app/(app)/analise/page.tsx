@@ -20,53 +20,13 @@ import { PillSelect } from "@/components/ui/pill-select";
 import { EmptyState } from "@/components/ui/empty-state";
 import { LineChart as ChartIcon, Users, Activity, Link2 } from "lucide-react";
 import { useUser } from "@/components/user-context";
+import { ChartTooltip } from "@/components/ui/chart-tooltip";
+import { useClasses } from "@/hooks/use-queries";
 
 type ChartType = "bmi" | "tests" | "class";
 
-interface ClassOption {
-  id: string;
-  name: string;
-  year: string;
-}
-
 interface ClassStudent {
   latestBiometric: { imc: number | string; imcZone: string } | null;
-}
-
-interface TooltipEntry {
-  color?: string;
-  name?: string;
-  value?: string | number;
-}
-
-function ChartTooltip({
-  active,
-  payload,
-  label,
-}: {
-  active?: boolean;
-  payload?: TooltipEntry[];
-  label?: string | number;
-}) {
-  if (!active || !payload?.length) return null;
-
-  return (
-    <div className="bg-card/90 glass p-3 border border-border/50 shadow-float rounded-xl text-sm">
-      <p className="font-semibold mb-2 tracking-tight text-foreground">{label}</p>
-      <div className="flex flex-col gap-1.5">
-        {payload.map((entry, index) => (
-          <div key={`${entry.name}-${index}`} className="flex items-center gap-2">
-            <div
-              className="size-2.5 rounded-full"
-              style={{ backgroundColor: entry.color }}
-            />
-            <span className="text-muted-foreground mr-2">{entry.name}:</span>
-            <span className="font-bold text-foreground">{entry.value}</span>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
 }
 
 export default function AnalisePage() {
@@ -74,19 +34,19 @@ export default function AnalisePage() {
   const common = useTranslations("common");
   const { role } = useUser();
 
-  const [students, setStudents] = useState<{ id: string; name: string }[]>([]);
+  const isStudent = role === "ALUNO";
+  const canViewAnalysis = role === "ADMIN" || role === "PROFESSOR" || isStudent;
+
+  const [students, setStudents] = useState<{ id: string; name: string; className?: string | null }[]>([]);
   const [studentId, setStudentId] = useState<string | null>(null);
   const [chart, setChart] = useState<ChartType>("bmi");
   const [bmiData, setBmiData] = useState<{ date: string; imc: number }[]>([]);
-  const [testData, setTestData] = useState<Record<string, unknown>[]>([]);
-  const [classes, setClasses] = useState<ClassOption[]>([]);
+  const [testData, setTestData] = useState<Record<string, string | number>[]>([]);
+  const { data: classes = [] } = useClasses({ enabled: !isStudent && canViewAnalysis });
   const [classId, setClassId] = useState<string>("");
   const [classData, setClassData] = useState<
     { name: string; ZSAF: number; ZMF: number; "Sem dados": number }[]
   >([]);
-
-  const isStudent = role === "ALUNO";
-  const canViewAnalysis = role === "ADMIN" || role === "PROFESSOR" || isStudent;
 
   useEffect(() => {
     if (!canViewAnalysis) return;
@@ -101,45 +61,16 @@ export default function AnalisePage() {
       if (!active) return;
 
       const nextStudents = body.students.map(
-        (student: { id: string; name: string }) => ({
+        (student: { id: string; name: string; className?: string | null }) => ({
           id: student.id,
           name: student.name,
+          className: student.className ?? null,
         })
       );
       setStudents(nextStudents);
       if (isStudent && nextStudents.length === 1) {
         setStudentId(nextStudents[0].id);
       }
-    })();
-
-    return () => {
-      active = false;
-    };
-  }, [canViewAnalysis, isStudent]);
-
-  useEffect(() => {
-    if (isStudent || !canViewAnalysis) return;
-
-    let active = true;
-
-    (async () => {
-      const res = await fetch("/api/classes");
-      if (!res.ok) return;
-
-      const body = (await res.json()) as {
-        label: string;
-        classes: { id: string; name: string }[];
-      }[];
-      if (!active) return;
-
-      const allClasses: ClassOption[] = body.flatMap((academicYear) =>
-        academicYear.classes.map((schoolClass) => ({
-          id: schoolClass.id,
-          name: schoolClass.name,
-          year: academicYear.label,
-        }))
-      );
-      setClasses(allClasses);
     })();
 
     return () => {
@@ -186,7 +117,7 @@ export default function AnalisePage() {
           valueNum: number | null;
           recordedAt: string;
         }[];
-        const grouped = new Map<string, Record<string, unknown>>();
+        const grouped = new Map<string, Record<string, string | number>>();
         for (const test of body) {
           const dateKey = new Date(test.recordedAt).toLocaleDateString("pt-PT", {
             month: "short",
@@ -277,7 +208,7 @@ export default function AnalisePage() {
     <div className="flex flex-col gap-5">
       <PageHeader title={t("title")} description={t("description")} />
 
-      <div className="bg-card rounded-xl border border-border p-5 flex flex-col gap-5 max-w-3xl">
+      <div className="bg-card/85 glass rounded-2xl border border-border/50 shadow-float p-5 flex flex-col gap-5 max-w-3xl">
         <div className="flex flex-wrap items-end gap-4">
           {chart !== "class" && !isStudent && (
             <div className="w-64">

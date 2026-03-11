@@ -38,7 +38,7 @@ export async function PUT(req: NextRequest) {
       userId: session.user.id,
       action: "change_password",
       targetId: session.user.id,
-    }).catch(() => {});
+    }).catch(console.error);
 
     return NextResponse.json({ ok: true });
   } catch (error: unknown) {

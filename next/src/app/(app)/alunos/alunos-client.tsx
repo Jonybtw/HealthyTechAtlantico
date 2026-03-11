@@ -20,7 +20,6 @@ interface StudentRow {
     birthDate: Date | null;
     className: string | null;
     schoolYear: string | null;
-    [key: string]: unknown;
 }
 
 interface AlunosClientProps {

@@ -42,7 +42,7 @@ export default function QuestionariosPage() {
   const common = useTranslations("common");
   const { role } = useUser();
 
-  const [students, setStudents] = useState<{ id: string; name: string }[]>([]);
+  const [students, setStudents] = useState<{ id: string; name: string; className?: string | null }[]>([]);
   const [studentId, setStudentId] = useState<string | null>(null);
   const [qType, setQType] = useState<"AUTOCONCEITO" | "AUTOESTIMA">("AUTOCONCEITO");
   const [saving, setSaving] = useState(false);
@@ -75,7 +75,7 @@ export default function QuestionariosPage() {
     const res = await fetch("/api/students?limit=500");
     if (res.ok) {
       const body = await res.json();
-      setStudents(body.students.map((s: { id: string; name: string }) => ({ id: s.id, name: s.name })));
+      setStudents(body.students.map((s: { id: string; name: string; className?: string | null }) => ({ id: s.id, name: s.name, className: s.className ?? null })));
       if (role === "ALUNO" && body.students.length === 1) {
         setStudentId(body.students[0].id);
       }

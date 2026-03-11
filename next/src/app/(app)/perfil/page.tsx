@@ -25,6 +25,7 @@ type PasswordValues = z.infer<typeof changePasswordFormSchema>;
 
 export default function PerfilPage() {
   const t = useTranslations("perfil");
+  const common = useTranslations("common");
   const { data: session, update } = useSession();
   const user = session?.user;
 
@@ -48,14 +49,14 @@ export default function PerfilPage() {
 
       if (!response.ok) {
         const body = await response.json().catch(() => ({}));
-        toast.error(body.error ?? "Nao foi possivel atualizar a palavra-passe.");
+        toast.error(body.error ?? common("connectionError"));
         return;
       }
 
       toast.success(t("passwordSuccess"));
       pwForm.reset();
     } catch {
-      toast.error("Erro de ligacao.");
+      toast.error(common("connectionError"));
     }
   };
 
@@ -75,7 +76,7 @@ export default function PerfilPage() {
       const body = await response.json().catch(() => ({}));
 
       if (!response.ok) {
-        toast.error(body.error ?? "Nao foi possivel atualizar as definicoes.");
+        toast.error(body.error ?? common("connectionError"));
         return;
       }
 
@@ -90,10 +91,10 @@ export default function PerfilPage() {
       if (field === "consentRgpd") {
         toast.success(value ? t("rgpdGrant") : t("rgpdRevoke"));
       } else {
-        toast.success(value ? "Partilha ativada." : "Partilha desativada.");
+        toast.success(value ? t("activate") : t("deactivate"));
       }
     } catch {
-      toast.error("Erro de ligacao.");
+      toast.error(common("connectionError"));
     } finally {
       setUpdatingConsent(null);
     }
@@ -112,10 +113,10 @@ export default function PerfilPage() {
               </div>
               <div className="space-y-1">
                 <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-muted-foreground">
-                  Conta ativa
+                  {t("activeAccount")}
                 </p>
                 <h2 className="font-display text-2xl font-semibold tracking-tight text-foreground">
-                  {user?.name || user?.email || "Utilizador"}
+                  {user?.name || user?.email || "—"}
                 </h2>
                 <p className="text-sm text-muted-foreground">{user?.email}</p>
               </div>
@@ -123,7 +124,7 @@ export default function PerfilPage() {
 
             <div className="rounded-xl border border-border/70 bg-background/65 p-3.5">
               <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-muted-foreground">
-                Perfil
+                {t("roleLabel")}
               </p>
               <p className="mt-2 text-lg font-semibold text-foreground">{user?.role}</p>
             </div>
@@ -175,7 +176,7 @@ export default function PerfilPage() {
                 <div className="space-y-4">
                   <div>
                     <h3 className="text-lg font-semibold tracking-tight text-foreground">
-                      Partilha controlada
+                      {t("shareTitle")}
                     </h3>
                     <p className="text-sm leading-relaxed text-muted-foreground">
                       Define se os teus dados podem ser partilhados com os encarregados associados.
@@ -189,7 +190,7 @@ export default function PerfilPage() {
                       loading={updatingConsent === "share"}
                       onClick={() => syncConsent("consentShare", true)}
                     >
-                      Ativar
+                      {t("activate")}
                     </Button>
                     <Button
                       type="button"
@@ -198,7 +199,7 @@ export default function PerfilPage() {
                       loading={updatingConsent === "share"}
                       onClick={() => syncConsent("consentShare", false)}
                     >
-                      Desativar
+                      {t("deactivate")}
                     </Button>
                   </div>
                 </div>
@@ -215,7 +216,7 @@ export default function PerfilPage() {
             <div className="flex h-full flex-col gap-5">
               <div className="space-y-2">
                 <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-muted-foreground">
-                  Segurança
+                  {t("securityTitle")}
                 </p>
                 <div className="flex items-center gap-3">
                   <div className="flex size-9 items-center justify-center rounded-xl bg-danger-100 text-danger-700 dark:bg-danger-500/10 dark:text-danger-300">

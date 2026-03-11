@@ -6,6 +6,7 @@ import { canRole, PERMISSIONS } from "@/lib/rbac";
 import { reportEmailSchema } from "@/lib/validations";
 import { sendMail } from "@/lib/mailer";
 import { auditLog } from "@/lib/audit";
+import { escapeHtml } from "@/lib/utils";
 import type { Role } from "@prisma/client";
 
 function buildReportHtml(params: {
@@ -26,7 +27,7 @@ function buildReportHtml(params: {
     ? `
       <p><strong>Altura:</strong> ${params.latestBiometric.heightM} m</p>
       <p><strong>Peso:</strong> ${params.latestBiometric.weightKg} kg</p>
-      <p><strong>IMC:</strong> ${params.latestBiometric.imc} (${params.latestBiometric.imcZone})</p>
+      <p><strong>IMC:</strong> ${params.latestBiometric.imc} (${escapeHtml(params.latestBiometric.imcZone)})</p>
     `
     : "<p>Sem dados biométricos recentes.</p>";
 
@@ -34,17 +35,17 @@ function buildReportHtml(params: {
     ? `<ul>${params.latestTests
         .map(
           (test) =>
-            `<li><strong>${test.testId}</strong>: ${test.valueText} ${test.unit} (${test.zone})</li>`
+            `<li><strong>${escapeHtml(test.testId)}</strong>: ${escapeHtml(test.valueText)} ${escapeHtml(test.unit)} (${escapeHtml(test.zone)})</li>`
         )
         .join("")}</ul>`
     : "<p>Sem testes físicos recentes.</p>";
 
   return `
     <div style="font-family: Arial, sans-serif; color: #14304c; line-height: 1.5;">
-      <h2>${params.title}</h2>
-      <p>Olá${params.guardianName ? ` ${params.guardianName}` : ""},</p>
-      <p>Segue o resumo mais recente do aluno <strong>${params.studentName}</strong>.</p>
-      <p><strong>Turma:</strong> ${params.className ?? "Sem turma"}<br /><strong>Ano letivo:</strong> ${params.schoolYear ?? "N/D"}</p>
+      <h2>${escapeHtml(params.title)}</h2>
+      <p>Olá${params.guardianName ? ` ${escapeHtml(params.guardianName)}` : ""},</p>
+      <p>Segue o resumo mais recente do aluno <strong>${escapeHtml(params.studentName)}</strong>.</p>
+      <p><strong>Turma:</strong> ${escapeHtml(params.className ?? "Sem turma")}<br /><strong>Ano letivo:</strong> ${escapeHtml(params.schoolYear ?? "N/D")}</p>
       <h3>Biometria</h3>
       ${biometricBlock}
       <h3>Testes físicos</h3>
@@ -106,7 +107,7 @@ export async function POST(
       );
     }
 
-    await auditLog({ userId: session.user.id, action: "send_report", targetId: id }).catch(() => {});
+    await auditLog({ userId: session.user.id, action: "send_report", targetId: id }).catch(console.error);
 
     // Save report metadata
     const report = await prisma.report.create({

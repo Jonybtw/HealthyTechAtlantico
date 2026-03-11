@@ -69,7 +69,7 @@ export async function PUT(req: NextRequest) {
       userId: session.user.id,
       action: "update_consent",
       targetId: session.user.id,
-    }).catch(() => {});
+    }).catch(console.error);
 
     return NextResponse.json(user);
   } catch (error: unknown) {

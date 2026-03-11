@@ -8,6 +8,7 @@ interface Student {
   id: string;
   name: string;
   className?: string | null;
+  schoolYear?: string | null;
   sex?: string;
 }
 
@@ -176,7 +177,7 @@ export function StudentPicker({
                         {student.name}
                       </span>
                       <span className="block truncate text-xs text-muted-foreground">
-                        {student.className ?? "Sem turma atribuída"}
+                        {student.className ?? student.schoolYear ?? "Sem turma atribuída"}
                       </span>
                     </span>
                     {student.id === value ? (
@@ -226,12 +227,13 @@ export function StudentPicker({
                 {selected.name}
               </span>
               <span className="block truncate text-xs text-muted-foreground">
-                {selected.className ?? "Sem turma atribuída"}
+                {selected.className ?? selected.schoolYear ?? "Sem turma atribuída"}
               </span>
             </span>
             <div className="flex items-center gap-1">
-              <button
-                type="button"
+              <span
+                role="button"
+                tabIndex={0}
                 aria-label="Limpar seleção"
                 className="rounded-full p-2 text-muted-foreground transition-colors hover:bg-muted/70 hover:text-foreground"
                 onClick={(event) => {
@@ -240,9 +242,18 @@ export function StudentPicker({
                   setOpen(false);
                   setSearch("");
                 }}
+                onKeyDown={(event) => {
+                  if (event.key === "Enter" || event.key === " ") {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    onChange(null);
+                    setOpen(false);
+                    setSearch("");
+                  }
+                }}
               >
                 <X className="size-4" />
-              </button>
+              </span>
               <ChevronDown
                 className={`size-4 text-muted-foreground transition-transform ${
                   open ? "rotate-180" : ""

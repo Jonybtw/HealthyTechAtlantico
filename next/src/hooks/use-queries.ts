@@ -73,11 +73,12 @@ export const queryKeys = {
   dispensas: (studentId: string) => ["dispensas", studentId] as const,
   sosAlerts: () => ["sos-alerts"] as const,
   studentSos: (studentId: string) => ["student-sos", studentId] as const,
+  classes: () => ["classes"] as const,
 } as const;
 
 // ── Hooks ────────────────────────────────────────────────────────
 
-export function useStudents(limit = 500) {
+export function useStudents(limit = 100) {
   return useQuery({
     queryKey: queryKeys.students(limit),
     queryFn: async () => {
@@ -86,6 +87,29 @@ export function useStudents(limit = 500) {
       );
       return body.students;
     },
+    staleTime: 2 * 60 * 1000, // 2 min
+  });
+}
+
+export interface ClassOption {
+  id: string;
+  name: string;
+  year: string;
+}
+
+export function useClasses(options?: { enabled?: boolean }) {
+  return useQuery({
+    queryKey: queryKeys.classes(),
+    queryFn: async () => {
+      const body = await fetchJson<
+        { label: string; classes: { id: string; name: string }[] }[]
+      >("/api/classes");
+      return body.flatMap((ay) =>
+        ay.classes.map((c) => ({ id: c.id, name: c.name, year: ay.label }))
+      ) satisfies ClassOption[];
+    },
+    enabled: options?.enabled,
+    staleTime: 5 * 60 * 1000, // 5 min
   });
 }
 
@@ -94,6 +118,7 @@ export function useStudent(id: string) {
     queryKey: queryKeys.student(id),
     queryFn: () => fetchJson<Record<string, unknown>>(`/api/students/${id}`),
     enabled: !!id,
+    staleTime: 2 * 60 * 1000,
   });
 }
 
@@ -101,6 +126,7 @@ export function useStaff() {
   return useQuery({
     queryKey: queryKeys.staff(),
     queryFn: () => fetchJson<StaffUser[]>("/api/admin/staff"),
+    staleTime: 5 * 60 * 1000, // 5 min
   });
 }
 
@@ -115,6 +141,7 @@ export function useDashboard() {
 export function useDispensas(studentId: string | null) {
   return useQuery({
     queryKey: queryKeys.dispensas(studentId ?? ""),
+    staleTime: 60 * 1000, // 1 min
     queryFn: async () => {
       const body = await fetchJson<
         { id: string; reason: string; startDate: string; endDate: string; createdAt: string }[]
@@ -139,6 +166,7 @@ export function useSosAlerts(options?: { enabled?: boolean; refetchInterval?: nu
     },
     enabled: options?.enabled,
     refetchInterval: options?.refetchInterval,
+    staleTime: 30 * 1000, // 30 s
   });
 }
 

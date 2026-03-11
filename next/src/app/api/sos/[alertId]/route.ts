@@ -68,7 +68,7 @@ export async function PATCH(
       userId: session.user.id,
       action: "resolve_sos",
       targetId: alertId,
-    }).catch(() => {});
+    }).catch(console.error);
 
     return NextResponse.json(alert);
   } catch (error) {

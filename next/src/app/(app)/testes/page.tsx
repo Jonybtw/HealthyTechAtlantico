@@ -11,6 +11,7 @@ import { PillSelect } from "@/components/ui/pill-select";
 import { Button } from "@/components/ui/button";
 import { ZoneBadge } from "@/components/ui/zone-badge";
 import { EmptyState } from "@/components/ui/empty-state";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useUser } from "@/components/user-context";
 import { TEST_OPTIONS, classifyTest } from "@/lib/fitness-tests";
 import { calcAgeFromBirthDate } from "@/lib/zaf";
@@ -21,6 +22,7 @@ interface StudentOption {
   name: string;
   sex: Sex;
   birthDate: string | null;
+  className?: string | null;
 }
 
 export default function TestesPage() {
@@ -28,6 +30,7 @@ export default function TestesPage() {
   const { role } = useUser();
 
   const [students, setStudents] = useState<StudentOption[]>([]);
+  const [loadingStudents, setLoadingStudents] = useState(true);
   const [studentId, setStudentId] = useState<string | null>(null);
   const [selectedTest, setSelectedTest] = useState(TEST_OPTIONS[0].id);
   const [value, setValue] = useState("");
@@ -35,21 +38,28 @@ export default function TestesPage() {
   const [lastResult, setLastResult] = useState<{ zone: string } | null>(null);
 
   const loadStudents = useCallback(async () => {
-    const res = await fetch("/api/students?limit=500");
-    if (res.ok) {
+    setLoadingStudents(true);
+    try {
+      const res = await fetch("/api/students?limit=500");
+      if (!res.ok) { toast.error("Erro ao carregar lista de alunos."); return; }
       const body = await res.json();
       const mapped: StudentOption[] = body.students.map(
-        (s: { id: string; name: string; sex: string; birthDate: string | null }) => ({
+        (s: { id: string; name: string; sex: string; birthDate: string | null; className?: string | null }) => ({
           id: s.id,
           name: s.name,
           sex: s.sex as Sex,
           birthDate: s.birthDate ?? null,
+          className: s.className ?? null,
         })
       );
       setStudents(mapped);
       if (role === "ALUNO" && mapped.length === 1) {
         setStudentId(mapped[0].id);
       }
+    } catch {
+      toast.error("Erro de ligação ao carregar alunos.");
+    } finally {
+      setLoadingStudents(false);
     }
   }, [role]);
 
@@ -142,10 +152,18 @@ export default function TestesPage() {
         description={t("description")}
       />
 
-      <form
-        onSubmit={handleSubmit}
-        className="animate-fade-in-up bg-card/85 glass rounded-2xl border border-border/50 shadow-float p-5 flex flex-col gap-5 max-w-lg"
-      >
+      {loadingStudents ? (
+        <div className="bg-card/85 glass rounded-2xl border border-border/50 shadow-float p-5 flex flex-col gap-5 max-w-lg">
+          <Skeleton className="h-14 w-full rounded-2xl" />
+          <Skeleton className="h-10 w-full rounded-xl" />
+          <Skeleton className="h-16 w-full rounded-xl" />
+          <Skeleton className="h-10 w-32 rounded-full" />
+        </div>
+      ) : (
+        <form
+          onSubmit={handleSubmit}
+          className="animate-fade-in-up bg-card/85 glass rounded-2xl border border-border/50 shadow-float p-5 flex flex-col gap-5 max-w-lg"
+        >
         {role !== "ALUNO" && (
           <StudentPicker
             students={students}
@@ -193,6 +211,8 @@ export default function TestesPage() {
           {t("save")}
         </Button>
       </form>
+      )}
     </div>
   );
 }
+

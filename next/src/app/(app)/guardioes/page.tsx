@@ -26,10 +26,10 @@ interface Guardian {
 }
 
 const RELATIONSHIP_OPTIONS = [
-  { value: "PAI", label: "Pai" },
-  { value: "MAE", label: "Mãe" },
-  { value: "EE", label: "Enc. Educação" },
-  { value: "OUTRO", label: "Outro" },
+  { value: "PAI", labelKey: "rel_PAI" },
+  { value: "MAE", labelKey: "rel_MAE" },
+  { value: "EE", labelKey: "rel_EE" },
+  { value: "OUTRO", labelKey: "rel_OUTRO" },
 ];
 
 export default function GuardioesPage() {
@@ -63,7 +63,7 @@ export default function GuardioesPage() {
       const data = await r.json();
       setGuardians(Array.isArray(data) ? data : []);
     } catch {
-      toast.error("Erro ao carregar encarregados.");
+      toast.error(t("loadError"));
     } finally {
       setLoadingGuardians(false);
     }
@@ -77,7 +77,7 @@ export default function GuardioesPage() {
   async function handleAdd(e: React.FormEvent) {
     e.preventDefault();
     if (!addStudentId) {
-      toast.error("Selecione um aluno.");
+      toast.error(t("addError"));
       return;
     }
     setSubmitting(true);
@@ -88,7 +88,7 @@ export default function GuardioesPage() {
         body: JSON.stringify({ guardianEmail, relationship }),
       });
       if (!res.ok) {
-        const { error } = await res.json().catch(() => ({ error: "Erro desconhecido." }));
+        const { error } = await res.json().catch(() => ({ error: t("unknownError") }));
         toast.error(error);
         return;
       }
@@ -101,7 +101,7 @@ export default function GuardioesPage() {
         setSelectedStudentId(addStudentId);
       }
     } catch {
-      toast.error("Erro de ligação.");
+      toast.error(t("loadError"));
     } finally {
       setSubmitting(false);
     }
@@ -116,7 +116,7 @@ export default function GuardioesPage() {
         body: JSON.stringify({ guardianUserId: deleteTarget.guardianUserId }),
       });
       if (!res.ok) {
-        toast.error("Erro ao remover encarregado.");
+        toast.error(t("loadError"));
         return;
       }
       toast.success(t("removeSuccess"));
@@ -153,20 +153,20 @@ export default function GuardioesPage() {
           students={students}
           value={selectedStudentId}
           onChange={setSelectedStudentId}
-          placeholder="Selecionar aluno..."
+          placeholder={t("selectStudent")}
         />
 
         {loadingGuardians && (
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <Loader2 size={16} className="animate-spin" /> A carregar...
+            <Loader2 size={16} className="animate-spin" /> {t("loadingGuardians")}
           </div>
         )}
 
         {!loadingGuardians && selectedStudentId && guardians.length === 0 && (
           <EmptyState
             icon={UserCheck}
-            title="Sem Encarregados"
-            description={`${selectedStudent?.name} não tem encarregados associados neste momento.`}
+            title={t("noGuardiansTitle")}
+            description={t("noGuardiansFor", { name: selectedStudent?.name ?? "" })}
           />
         )}
 
@@ -188,14 +188,14 @@ export default function GuardioesPage() {
                     <td className="py-3 px-4 text-muted-foreground">{g.guardian.email}</td>
                     <td className="py-3 px-4">
                       <span className="inline-block rounded-md px-2.5 py-1 text-xs font-semibold bg-navy-100 dark:bg-navy-900/50 text-navy-700 dark:text-navy-300 border border-navy-200 dark:border-navy-800/50 tracking-wide uppercase">
-                        {RELATIONSHIP_OPTIONS.find((r) => r.value === g.relationship)?.label ?? g.relationship}
+                        {RELATIONSHIP_OPTIONS.find((r) => r.value === g.relationship)?.labelKey ? t(RELATIONSHIP_OPTIONS.find((r) => r.value === g.relationship)!.labelKey as Parameters<typeof t>[0]) : g.relationship}
                       </span>
                     </td>
                     <td className="py-3 px-4 text-right">
                       <button
                         onClick={() => setDeleteTarget({ guardianUserId: g.id, studentId: selectedStudentId! })}
                         className="p-2 rounded-xl text-muted-foreground hover:text-danger-600 hover:bg-danger-50 dark:hover:bg-danger-900/20 transition-all border border-transparent hover:border-danger-200 dark:hover:border-danger-800/30 shadow-sm"
-                        title="Remover"
+                        aria-label={t("removeBtn")}
                       >
                         <Trash2 size={16} />
                       </button>
@@ -215,12 +215,12 @@ export default function GuardioesPage() {
         </h2>
         <form onSubmit={handleAdd} className="flex flex-col gap-4">
           <div>
-            <label className="block text-sm font-medium mb-1">Aluno</label>
+            <label className="block text-sm font-medium mb-1">{t("student")}</label>
             <StudentPicker
               students={students}
               value={addStudentId}
               onChange={setAddStudentId}
-              placeholder="Selecionar aluno..."
+              placeholder={t("selectStudent")}
             />
           </div>
           <Input
@@ -232,9 +232,9 @@ export default function GuardioesPage() {
             required
           />
           <div>
-            <label className="block text-sm font-medium mb-1">Relação</label>
+            <label className="block text-sm font-medium mb-1">{t("relationship")}</label>
             <PillSelect
-              options={RELATIONSHIP_OPTIONS}
+              options={RELATIONSHIP_OPTIONS.map((r) => ({ value: r.value, label: t(r.labelKey as Parameters<typeof t>[0]) }))}
               value={relationship}
               onChange={setRelationship}
             />

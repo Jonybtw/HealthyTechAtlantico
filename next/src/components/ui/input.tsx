@@ -25,6 +25,8 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
           ref={ref}
           id={uid}
           type={type}
+          aria-invalid={error ? true : undefined}
+          aria-describedby={error ? `${uid}-error` : hint ? `${uid}-hint` : undefined}
           className={cn(
             "flex h-10 w-full rounded-xl border bg-card/75 px-3.5 py-2 text-sm text-foreground shadow-[inset_0_1px_0_rgba(255,255,255,0.35)]",
             "placeholder:text-muted-foreground transition-all duration-300",
@@ -40,9 +42,9 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
           {...props}
         />
         {error ? (
-          <p className="text-xs font-medium text-danger-600">{error}</p>
+          <p id={`${uid}-error`} role="alert" className="text-xs font-medium text-danger-600">{error}</p>
         ) : hint ? (
-          <p className="text-xs text-muted-foreground">{hint}</p>
+          <p id={`${uid}-hint`} className="text-xs text-muted-foreground">{hint}</p>
         ) : null}
       </div>
     );

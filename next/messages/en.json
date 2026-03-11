@@ -21,7 +21,11 @@
     "auditoria": "Audit Log",
     "logout": "Sign Out",
     "changeLanguage": "Change language",
-    "changeTheme": "Toggle theme"
+    "changeTheme": "Toggle theme",
+    "skipToContent": "Skip to content",
+    "sidebarNavigation": "Main navigation",
+    "topBar": "Top bar",
+    "openMenu": "Open menu"
   },
   "roles": {
     "ADMIN": "Administrator",
@@ -197,7 +201,10 @@
     "colZone": "Zone",
     "colTests": "Tests",
     "noStudents": "No students in this year.",
-    "loadError": "Error loading class data."
+    "loadError": "Error loading class data.",
+    "noClassSelected": "No Class Selected",
+    "noClassSelectedDesc": "Select a class to view its data.",
+    "zafDistribution": "ZAF Distribution"
   },
   "dispensas": {
     "title": "Exemptions",
@@ -259,6 +266,43 @@
     "viewDetail": "View details",
     "emptyMessage": "No students registered."
   },
+  "studentDetail": {
+    "editBtn": "Edit",
+    "cancelBtn": "Cancel",
+    "deleteBtn": "Delete",
+    "editTitle": "Edit student details",
+    "nameLabel": "Name",
+    "sexLabel": "Sex",
+    "male": "Male",
+    "female": "Female",
+    "birthDateLabel": "Birth date",
+    "schoolYearLabel": "School year",
+    "classNameLabel": "Class",
+    "saveChanges": "Save changes",
+    "saveSuccess": "Data updated.",
+    "saveError": "Error saving.",
+    "deleteTitle": "Delete student",
+    "deleteConfirm": "Are you sure you want to delete \"{name}\"? This action cannot be undone.",
+    "deleteConfirmBtn": "Delete",
+    "deleteSuccess": "Student deleted.",
+    "deleteError": "Error deleting.",
+    "recentBiometrics": "Latest biometrics",
+    "recentTests": "Latest tests",
+    "questionnaires": "Questionnaires",
+    "dispensas": "Exemptions",
+    "guardians": "Guardians",
+    "noClass": "No class",
+    "years": "years",
+    "height": "Height",
+    "weight": "Weight",
+    "bmi": "BMI",
+    "waist": "Waist",
+    "fatPct": "Body fat",
+    "date": "Date",
+    "noRecords": "No data recorded.",
+    "removeDispensa": "Remove exemption",
+    "removeGuardian": "Remove guardian"
+  },
   "perfil": {
     "title": "Profile",
     "description": "Account settings",
@@ -278,7 +322,13 @@
     "rgpdTitle": "GDPR Consent",
     "rgpdGranted": "Consent active",
     "rgpdRevoke": "Revoke",
-    "rgpdGrant": "Grant"
+    "rgpdGrant": "Grant",
+    "activeAccount": "Account active",
+    "shareTitle": "Data sharing",
+    "shareControlled": "Controlled sharing.",
+    "activate": "Enable",
+    "deactivate": "Disable",
+    "securityTitle": "Security"
   },
   "guardioes": {
     "title": "Guardians",
@@ -302,7 +352,16 @@
     "rel_EE": "Parent / Guardian",
     "rel_OUTRO": "Other",
     "noPermission": "You don't have permission to access this page.",
-    "selectStudentFirst": "Select a student."
+    "selectStudentFirst": "Select a student.",
+    "selectStudent": "Select student...",
+    "student": "Student",
+    "relationship": "Relationship",
+    "loadingGuardians": "Loading...",
+    "noGuardiansFor": "{name} has no guardians linked at this time.",
+    "noGuardiansTitle": "No Guardians",
+    "loadError": "Error loading guardians.",
+    "addError": "Select a student.",
+    "unknownError": "Unknown error."
   },
   "admin": {
     "title": "Administration",
@@ -320,6 +379,8 @@
     "deleteBtn": "Remove",
     "deleteSuccess": "Account removed.",
     "noStaff": "No staff registered.",
+    "staffCount": "{count} staff registered.",
+    "refreshList": "Refresh list",
     "noPermission": "You don't have permission to access this page.",
     "nameTooShort": "Name too short.",
     "invalidEmail": "Invalid email.",

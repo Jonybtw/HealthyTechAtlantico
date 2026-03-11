@@ -510,3 +510,28 @@ html[data-theme="dark"] .text-gradient-gold {
 .slide-in-from-right-2 {
   --tw-enter-translate-x: 0.5rem;
 }
+
+/* ── Respect user motion preferences ── */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .animate-fade-in-up,
+  .animate-fade-in,
+  .animate-slide-left,
+  .animate-scale-in,
+  .animate-progress,
+  .animate-pulse-ring,
+  .animate-in,
+  .animate-out,
+  .page-enter,
+  .skeleton {
+    animation: none !important;
+  }
+}

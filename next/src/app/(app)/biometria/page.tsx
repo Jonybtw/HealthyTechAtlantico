@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { Link2, Ruler } from "lucide-react";
@@ -11,6 +11,7 @@ import { UnitInput } from "@/components/ui/unit-input";
 import { Button } from "@/components/ui/button";
 import { ZoneBadge } from "@/components/ui/zone-badge";
 import { EmptyState } from "@/components/ui/empty-state";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useUser } from "@/components/user-context";
 import { classifyBmi, classifyWaist, calcAgeFromBirthDate } from "@/lib/zaf";
 import type { Sex } from "@prisma/client";
@@ -21,6 +22,8 @@ interface StudentOption {
   birthDate: string | null;
   sex: Sex;
   age: number | null;
+  className?: string | null;
+  schoolYear?: string | null;
 }
 
 interface Classification {
@@ -34,6 +37,7 @@ export default function BiometriaPage() {
   const { role } = useUser();
 
   const [students, setStudents] = useState<StudentOption[]>([]);
+  const [loadingStudents, setLoadingStudents] = useState(true);
   const [studentId, setStudentId] = useState<string | null>(null);
   const [form, setForm] = useState({
     heightM: "",
@@ -44,10 +48,17 @@ export default function BiometriaPage() {
   const [classification, setClassification] = useState<Classification | null>(null);
   const [saving, setSaving] = useState(false);
 
+  const pickerStudents = useMemo(
+    () => students.map((s) => ({ id: s.id, name: s.name, className: s.className, schoolYear: s.schoolYear })),
+    [students],
+  );
+
   /* load student list (teachers) or own student (alunos) */
   const loadStudents = useCallback(async () => {
-    const res = await fetch("/api/students?limit=500");
-    if (res.ok) {
+    setLoadingStudents(true);
+    try {
+      const res = await fetch("/api/students?limit=500");
+      if (!res.ok) { toast.error("Erro ao carregar lista de alunos."); return; }
       const body = await res.json();
       setStudents(
         body.students.map((s: Record<string, unknown>) => ({
@@ -56,12 +67,17 @@ export default function BiometriaPage() {
           birthDate: (s.birthDate as string | null) ?? null,
           sex: (s.sex as Sex) ?? "M",
           age: s.age !== null && s.age !== undefined ? Number(s.age) : null,
+          className: (s.className as string | null) ?? null,
+          schoolYear: (s.schoolYear as string | null) ?? null,
         }))
       );
-      // auto-select for aluno
       if (role === "ALUNO" && body.students.length === 1) {
         setStudentId(body.students[0].id);
       }
+    } catch {
+      toast.error("Erro de ligação ao carregar alunos.");
+    } finally {
+      setLoadingStudents(false);
     }
   }, [role]);
 
@@ -182,20 +198,29 @@ export default function BiometriaPage() {
         description={t("description")}
       />
 
-      <form
-        onSubmit={handleSubmit}
-        className="bg-card rounded-xl border border-border p-5 flex flex-col gap-5 max-w-lg"
-      >
+      {loadingStudents ? (
+        <div className="bg-card/85 glass rounded-2xl border border-border/50 shadow-float p-5 flex flex-col gap-5 max-w-lg">
+          <Skeleton className="h-14 w-full rounded-2xl" />
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {[1,2,3,4].map(i => <Skeleton key={i} className="h-16 w-full rounded-xl" />)}
+          </div>
+          <Skeleton className="h-10 w-32 rounded-full" />
+        </div>
+      ) : (
+        <form
+          onSubmit={handleSubmit}
+          className="bg-card/85 glass rounded-2xl border border-border/50 shadow-float p-5 flex flex-col gap-5 max-w-lg"
+        >
         {/* Student Picker — hidden for ALUNOs */}
         {role !== "ALUNO" && (
           <StudentPicker
-            students={students.map((s) => ({ id: s.id, name: s.name }))}
+            students={pickerStudents}
             value={studentId}
             onChange={setStudentId}
           />
         )}
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <UnitInput
             label={t("height")}
             unit="m"
@@ -285,6 +310,7 @@ export default function BiometriaPage() {
           {t("save")}
         </Button>
       </form>
+      )}
     </PageTransition>
   );
 }

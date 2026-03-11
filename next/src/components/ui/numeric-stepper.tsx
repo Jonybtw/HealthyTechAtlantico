@@ -32,6 +32,7 @@ export function NumericStepper({
           type="button"
           onClick={dec}
           disabled={value <= min}
+          aria-label={label ? `Diminuir ${label}` : "Diminuir"}
           className="px-2.5 py-2 text-muted-foreground hover:bg-card hover:text-foreground hover:shadow-sm disabled:opacity-30 disabled:hover:bg-transparent transition-all rounded-l-xl active:scale-95"
         >
           <Minus className="size-4" />
@@ -46,6 +47,7 @@ export function NumericStepper({
           type="button"
           onClick={inc}
           disabled={value >= max}
+          aria-label={label ? `Aumentar ${label}` : "Aumentar"}
           className="px-2.5 py-2 text-muted-foreground hover:bg-card hover:text-foreground hover:shadow-sm disabled:opacity-30 disabled:hover:bg-transparent transition-all rounded-r-xl active:scale-95"
         >
           <Plus className="size-4" />
