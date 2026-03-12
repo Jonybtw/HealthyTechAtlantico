@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
-import { UserCheck, UserPlus, Trash2, Loader2 } from "lucide-react";
+import { UserCheck, UserPlus, Trash2 } from "lucide-react";
 import { PageHeader } from "@/components/ui/page-header";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,7 +11,10 @@ import { PillSelect } from "@/components/ui/pill-select";
 import { StudentPicker } from "@/components/ui/student-picker";
 import { ConfirmModal } from "@/components/ui/confirm-modal";
 import { EmptyState } from "@/components/ui/empty-state";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useUser } from "@/components/user-context";
+import { usePageTitle } from "@/hooks/use-page-title";
+import { PageTransition } from "@/components/ui/motion";
 
 interface Student {
   id: string;
@@ -34,6 +37,7 @@ const RELATIONSHIP_OPTIONS = [
 
 export default function GuardioesPage() {
   const t = useTranslations("guardioes");
+  usePageTitle(t("title"));
   const { role } = useUser();
 
   const [students, setStudents] = useState<Student[]>([]);
@@ -52,9 +56,13 @@ export default function GuardioesPage() {
 
   useEffect(() => {
     fetch("/api/students")
-      .then((r) => r.json())
-      .then((data) => setStudents(Array.isArray(data) ? data : data.students ?? []));
-  }, []);
+      .then((r) => {
+        if (!r.ok) throw new Error();
+        return r.json();
+      })
+      .then((data) => setStudents(Array.isArray(data) ? data : data.students ?? []))
+      .catch(() => toast.error(t("loadError")));
+  }, [t]);
 
   const loadGuardians = useCallback(async (studentId: string) => {
     setLoadingGuardians(true);
@@ -67,7 +75,7 @@ export default function GuardioesPage() {
     } finally {
       setLoadingGuardians(false);
     }
-  }, []);
+  }, [t]);
 
   useEffect(() => {
     if (selectedStudentId) loadGuardians(selectedStudentId);
@@ -123,7 +131,7 @@ export default function GuardioesPage() {
       setDeleteTarget(null);
       loadGuardians(deleteTarget.studentId);
     } catch {
-      toast.error("Erro de ligação.");
+      toast.error(t("loadError"));
     }
   }
 
@@ -138,7 +146,7 @@ export default function GuardioesPage() {
   const selectedStudent = students.find((s) => s.id === selectedStudentId);
 
   return (
-    <div className="flex flex-col gap-5">
+    <PageTransition className="flex flex-col gap-5">
       <PageHeader
         title={t("title")}
         description={t("description")}
@@ -157,8 +165,9 @@ export default function GuardioesPage() {
         />
 
         {loadingGuardians && (
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <Loader2 size={16} className="animate-spin" /> {t("loadingGuardians")}
+          <div className="flex flex-col gap-2">
+            <Skeleton className="h-12 w-full rounded-xl" />
+            <Skeleton className="h-12 w-full rounded-xl" />
           </div>
         )}
 
@@ -208,7 +217,7 @@ export default function GuardioesPage() {
         )}
       </div>
 
-      <div className="animate-fade-in-up delay-100 relative z-10 flex max-w-lg flex-col gap-5 overflow-visible rounded-2xl border border-border/50 bg-card/85 p-5 shadow-float glass">
+      <div className="animate-fade-in-up delay-100 relative z-10 flex max-w-2xl flex-col gap-5 overflow-visible rounded-2xl border border-border/50 bg-card/85 p-5 shadow-float glass">
         <h2 className="text-lg font-bold tracking-tight flex items-center gap-2">
           <UserPlus size={18} className="text-navy-600" />
           {t("addTitle")}
@@ -259,6 +268,6 @@ export default function GuardioesPage() {
         onCancel={() => setDeleteTarget(null)}
         variant="danger"
       />
-    </div>
+    </PageTransition>
   );
 }

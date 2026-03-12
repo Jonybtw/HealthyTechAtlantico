@@ -30,8 +30,10 @@ export function NotificationCenter({ userRole }: NotificationCenterProps) {
 
   // Track which alerts have been seen via localStorage
   const [seenCount, setSeenCount] = useState(0);
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    setMounted(true);
     const stored = localStorage.getItem("ht-notif-seen-count");
     if (stored) setSeenCount(parseInt(stored, 10));
   }, []);
@@ -41,7 +43,7 @@ export function NotificationCenter({ userRole }: NotificationCenterProps) {
     localStorage.setItem("ht-notif-seen-count", String(pendingCount));
   }, [pendingCount]);
 
-  if (!isStaff) return null;
+  if (!isStaff || !mounted) return null;
 
   const unreadCount = Math.max(0, pendingCount - seenCount);
 
@@ -62,7 +64,7 @@ export function NotificationCenter({ userRole }: NotificationCenterProps) {
           )}
         </Button>
       </PopoverTrigger>
-      <PopoverContent align="end" className="w-72 p-0">
+      <PopoverContent align="end" className="w-[min(320px,calc(100vw-2rem))] p-0">
         <div className="border-b border-border px-4 py-3">
           <h3 className="text-sm font-semibold">{t("title")}</h3>
         </div>

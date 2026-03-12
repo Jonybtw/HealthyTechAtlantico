@@ -17,14 +17,15 @@ import {
   FormField,
   FormItem,
   FormControl,
-  FormMessage,
 } from "@/components/ui/form";
+import { usePageTitle } from "@/hooks/use-page-title";
 
 type LoginValues = z.infer<typeof loginSchema>;
 
 export default function LoginPage() {
   const router = useRouter();
   const t = useTranslations("auth");
+  usePageTitle(t("login"));
   const [apiError, setApiError] = useState<string | null>(null);
 
   const form = useForm<LoginValues>({
@@ -65,7 +66,7 @@ export default function LoginPage() {
             {t("login")}
           </h1>
           <p className="text-xs text-muted-foreground">
-            Acede ao painel institucional
+            {t("loginSubtitle")}
           </p>
         </div>
       </div>
@@ -107,7 +108,7 @@ export default function LoginPage() {
                   <Input
                     label={t("password")}
                     type="password"
-                    placeholder="Password"
+                    placeholder={t("password")}
                     autoComplete="current-password"
                     error={form.formState.errors.password?.message}
                     {...field}

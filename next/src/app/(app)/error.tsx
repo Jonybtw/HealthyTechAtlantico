@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import { useTranslations } from "next-intl";
 import { AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -11,6 +12,8 @@ export default function AppError({
   error: Error & { digest?: string };
   reset: () => void;
 }) {
+  const t = useTranslations("errorPage");
+
   useEffect(() => {
     if (process.env.NODE_ENV === "production") {
       console.error("[AppError]", error);
@@ -24,19 +27,19 @@ export default function AppError({
       </div>
 
       <div className="flex flex-col gap-2 max-w-md">
-        <h2 className="text-xl font-semibold text-foreground">Algo correu mal</h2>
+        <h2 className="text-xl font-semibold text-foreground">{t("title")}</h2>
         <p className="text-sm text-muted-foreground">
-          Ocorreu um erro inesperado. Tenta novamente ou contacta o suporte se o problema persistir.
+          {t("description")}
         </p>
         {error.digest && (
           <p className="text-xs text-muted-foreground/60 font-mono">
-            Referência: {error.digest}
+            {t("reference")}: {error.digest}
           </p>
         )}
       </div>
 
       <Button onClick={reset} variant="outline">
-        Tentar novamente
+        {t("retry")}
       </Button>
     </div>
   );

@@ -21,6 +21,9 @@ import { PageHeader } from "@/components/ui/page-header";
 import { StudentPicker } from "@/components/ui/student-picker";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
+import { usePageTitle } from "@/hooks/use-page-title";
+import { PageTransition } from "@/components/ui/motion";
+import { Skeleton } from "@/components/ui/skeleton";
 
 type BiometricEntry = {
   heightM?: number;
@@ -46,6 +49,7 @@ type GuardianOption = {
 export default function RelatorioPage() {
   const t = useTranslations("relatorio");
   const common = useTranslations("common");
+  usePageTitle(t("title"));
   const { role } = useUser();
   const canViewReports =
     role === "ADMIN" ||
@@ -157,7 +161,7 @@ export default function RelatorioPage() {
   /* ── Generate PDF ── */
   const handleGeneratePdf = async () => {
     if (!studentId) {
-      toast.error("Selecione um aluno.");
+      toast.error(t("selectStudent"));
       return;
     }
     setGeneratingPdf(true);
@@ -402,11 +406,11 @@ export default function RelatorioPage() {
   /* ── Send by email ── */
   const handleSendEmail = async () => {
     if (!studentId) {
-      toast.error("Selecione um aluno.");
+      toast.error(t("selectStudent"));
       return;
     }
     if (!guardianUserId) {
-      toast.error("Selecione um encarregado.");
+      toast.error(t("selectGuardianError"));
       return;
     }
     setSendingEmail(true);
@@ -418,12 +422,12 @@ export default function RelatorioPage() {
       });
       if (!res.ok) {
         const body = await res.json().catch(() => ({}));
-        toast.error(body.error ?? "Erro ao enviar e-mail.");
+        toast.error(body.error ?? t("emailSendError"));
         return;
       }
-      toast.success("Relatório enviado por e-mail!");
+      toast.success(t("emailSuccess"));
     } catch {
-      toast.error("Erro de ligação.");
+      toast.error(t("connectionError"));
     } finally {
       setSendingEmail(false);
     }
@@ -432,10 +436,10 @@ export default function RelatorioPage() {
   /* ── IMC classification helper ── */
   const imcLabel = (imc?: number) => {
     if (!imc) return null;
-    if (imc < 18.5) return { text: "Baixo peso", color: "text-gold-500" };
-    if (imc < 25) return { text: "Normal", color: "text-success-600" };
-    if (imc < 30) return { text: "Excesso de peso", color: "text-gold-500" };
-    return { text: "Obesidade", color: "text-danger-500" };
+    if (imc < 18.5) return { text: t("lowWeight"), color: "text-gold-500" };
+    if (imc < 25) return { text: t("normal"), color: "text-success-600" };
+    if (imc < 30) return { text: t("overweight"), color: "text-gold-500" };
+    return { text: t("obesity"), color: "text-danger-500" };
   };
 
   const bio0 = bioData[0] as BiometricEntry | undefined;
@@ -455,22 +459,22 @@ export default function RelatorioPage() {
         <PageHeader title={t("title")} description={t("description")} />
         <EmptyState
           icon={Link2}
-          title="Perfil não associado"
-          description="A tua conta ainda não está associada a um perfil de aluno. Contacta a escola para concluírem a ligação."
+          title={t("unlinkedTitle")}
+          description={t("unlinkedDescription")}
         />
       </div>
     );
   }
 
   return (
-    <div className="flex flex-col gap-5 max-w-4xl">
+    <PageTransition className="flex flex-col gap-5 max-w-4xl">
       <PageHeader title={t("title")} description={t("description")} />
 
       {/* Document preview card */}
       <div className="bg-card rounded-2xl border border-border shadow-card">
-        {/* Card header — mimics PDF header */}
+        {/* Card header \u2014 mimics PDF header */}
         <div className="bg-navy-800 rounded-t-2xl px-6 py-5 border-b-[3px] border-gold-400">
-          <p className="text-navy-200 text-xs font-medium uppercase tracking-wider">Relatório Individual</p>
+          <p className="text-navy-200 text-xs font-medium uppercase tracking-wider">{t("previewHeader")}</p>
         </div>
 
         {/* Student selector */}
@@ -502,15 +506,12 @@ export default function RelatorioPage() {
             <div className="px-6 py-5">
               <div className="flex items-center gap-2 mb-4">
                 <Activity className="size-4 text-navy-600 dark:text-navy-300" />
-                <h3 className="text-sm font-semibold text-foreground">Biometria</h3>
+                <h3 className="text-sm font-semibold text-foreground">{t("biometricsSection")}</h3>
               </div>
               {loadingPreview ? (
                 <div className="flex gap-3">
                   {[1, 2, 3].map((i) => (
-                    <div
-                      key={i}
-                      className="flex-1 h-16 bg-muted rounded-xl animate-pulse"
-                    />
+                    <Skeleton key={i} className="flex-1 h-16" />
                   ))}
                 </div>
               ) : bio0 ? (
@@ -518,17 +519,17 @@ export default function RelatorioPage() {
                   {[
                     {
                       icon: <Ruler className="size-3.5" />,
-                      label: "Altura",
+                      label: t("heightLabel"),
                       value: bio0.heightM ? `${bio0.heightM} m` : "—",
                     },
                     {
                       icon: <Weight className="size-3.5" />,
-                      label: "Peso",
+                      label: t("weightLabel"),
                       value: bio0.weightKg ? `${bio0.weightKg} kg` : "—",
                     },
                     {
                       icon: <Activity className="size-3.5" />,
-                      label: "IMC",
+                      label: t("imcLabel"),
                       value: bio0.imc ? `${bio0.imc}` : "—",
                       extra: classification ? (
                         <span className={`text-[10px] font-medium ${classification.color}`}>
@@ -538,7 +539,7 @@ export default function RelatorioPage() {
                     },
                     {
                       icon: <ChevronRight className="size-3.5" />,
-                      label: "Cin. (cm)",
+                      label: t("waistLabel"),
                       value: bio0.waistCm ? `${bio0.waistCm} cm` : "—",
                     },
                   ].map((m) => (
@@ -561,7 +562,7 @@ export default function RelatorioPage() {
                 </div>
               ) : (
                 <p className="text-sm text-muted-foreground">
-                  Sem dados de biometria registados.
+                  {t("noBiometrics")}
                 </p>
               )}
             </div>
@@ -571,21 +572,21 @@ export default function RelatorioPage() {
               <div className="flex items-center gap-2 mb-4">
                 <CheckCircle2 className="size-4 text-navy-600 dark:text-navy-300" />
                 <h3 className="text-sm font-semibold text-foreground">
-                  Testes Físicos
+                  {t("testsSection")}
                 </h3>
               </div>
               {loadingPreview ? (
-                <div className="h-24 bg-muted rounded-xl animate-pulse" />
+                <Skeleton className="h-24 w-full" />
               ) : testData.length ? (
                 <div className="rounded-xl border border-border overflow-hidden">
                   <table className="w-full text-sm">
                     <thead>
                       <tr className="bg-muted/60">
                         <th className="text-left px-4 py-2.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                          Teste
+                          {t("testHeader")}
                         </th>
                         <th className="text-right px-4 py-2.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                          Resultado
+                          {t("resultHeader")}
                         </th>
                       </tr>
                     </thead>
@@ -611,7 +612,7 @@ export default function RelatorioPage() {
                 </div>
               ) : (
                 <p className="text-sm text-muted-foreground">
-                  Sem dados de testes registados.
+                  {t("noTests")}
                 </p>
               )}
             </div>
@@ -621,8 +622,8 @@ export default function RelatorioPage() {
             <FileText className="size-8 text-muted-foreground/40" />
             <p className="text-sm text-muted-foreground">
               {role !== "ALUNO"
-                ? "Selecione um aluno para pré-visualizar o relatório."
-                : "A carregar dados…"}
+                ? t("previewInstruction")
+                : t("loadingData")}
             </p>
           </div>
         )}
@@ -641,7 +642,7 @@ export default function RelatorioPage() {
                 {t("generate")}
               </h3>
               <p className="text-xs text-muted-foreground">
-                Documento PDF com logo e tabelas
+                {t("pdfSubtitle")}
               </p>
             </div>
           </div>
@@ -664,10 +665,10 @@ export default function RelatorioPage() {
               </div>
               <div>
                 <h3 className="text-sm font-semibold text-foreground">
-                  Enviar por e-mail
+                  {t("emailTitle")}
                 </h3>
                 <p className="text-xs text-muted-foreground">
-                  Apenas para encarregados associados ao aluno
+                  {t("emailDescription")}
                 </p>
               </div>
             </div>
@@ -694,18 +695,18 @@ export default function RelatorioPage() {
                     variant="secondary"
                     className="w-full justify-center"
                   >
-                    Enviar relatório
+                    {t("emailButton")}
                   </Button>
                 </>
               ) : (
                 <p className="text-sm text-muted-foreground">
-                  Este aluno não tem encarregados associados para envio por e-mail.
+                  {t("noGuardiansEmail")}
                 </p>
               )}
             </div>
           </div>
         )}
       </div>
-    </div>
+    </PageTransition>
   );
 }

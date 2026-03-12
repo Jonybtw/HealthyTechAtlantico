@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import {
   LineChart,
   Line,
@@ -22,6 +22,8 @@ import { LineChart as ChartIcon, Users, Activity, Link2 } from "lucide-react";
 import { useUser } from "@/components/user-context";
 import { ChartTooltip } from "@/components/ui/chart-tooltip";
 import { useClasses } from "@/hooks/use-queries";
+import { usePageTitle } from "@/hooks/use-page-title";
+import { PageTransition } from "@/components/ui/motion";
 
 type ChartType = "bmi" | "tests" | "class";
 
@@ -32,7 +34,10 @@ interface ClassStudent {
 export default function AnalisePage() {
   const t = useTranslations("analise");
   const common = useTranslations("common");
+  usePageTitle(t("title"));
   const { role } = useUser();
+
+  const locale = useLocale();
 
   const isStudent = role === "ALUNO";
   const canViewAnalysis = role === "ADMIN" || role === "PROFESSOR" || isStudent;
@@ -45,7 +50,7 @@ export default function AnalisePage() {
   const { data: classes = [] } = useClasses({ enabled: !isStudent && canViewAnalysis });
   const [classId, setClassId] = useState<string>("");
   const [classData, setClassData] = useState<
-    { name: string; ZSAF: number; ZMF: number; "Sem dados": number }[]
+    { name: string; ZSAF: number; ZMF: number; noData: number }[]
   >([]);
 
   useEffect(() => {
@@ -99,7 +104,7 @@ export default function AnalisePage() {
         setBmiData(
           body
             .map((entry) => ({
-              date: new Date(entry.recordedAt).toLocaleDateString("pt-PT", {
+              date: new Date(entry.recordedAt).toLocaleDateString(locale, {
                 month: "short",
                 year: "2-digit",
               }),
@@ -119,7 +124,7 @@ export default function AnalisePage() {
         }[];
         const grouped = new Map<string, Record<string, string | number>>();
         for (const test of body) {
-          const dateKey = new Date(test.recordedAt).toLocaleDateString("pt-PT", {
+          const dateKey = new Date(test.recordedAt).toLocaleDateString(locale, {
             month: "short",
             year: "2-digit",
           });
@@ -167,7 +172,7 @@ export default function AnalisePage() {
           name: selectedClass?.name ?? "Turma",
           ZSAF: zsaf,
           ZMF: zmf,
-          "Sem dados": noData,
+          noData: noData,
         },
       ]);
     })();
@@ -178,9 +183,9 @@ export default function AnalisePage() {
   }, [chart, classId, classes]);
 
   const chartOptions = [
-    { value: "bmi", label: "IMC" },
-    { value: "tests", label: "Testes" },
-    ...(!isStudent ? [{ value: "class", label: "Média Turma" }] : []),
+    { value: "bmi", label: t("chartBmi") },
+    { value: "tests", label: t("chartTests") },
+    ...(!isStudent ? [{ value: "class", label: t("chartClass") }] : []),
   ];
 
   if (!canViewAnalysis) {
@@ -197,15 +202,15 @@ export default function AnalisePage() {
         <PageHeader title={t("title")} description={t("descriptionStudent")} />
         <EmptyState
           icon={Link2}
-          title="Perfil não associado"
-          description="A tua conta ainda não está associada a um perfil de aluno. Contacta a escola para concluírem a ligação."
+          title={t("unlinkedTitle")}
+          description={t("unlinkedDescription")}
         />
       </div>
     );
   }
 
   return (
-    <div className="flex flex-col gap-5">
+    <PageTransition className="flex flex-col gap-5">
       <PageHeader title={t("title")} description={t("description")} />
 
       <div className="bg-card/85 glass rounded-2xl border border-border/50 shadow-float p-5 flex flex-col gap-5 max-w-3xl">
@@ -247,13 +252,13 @@ export default function AnalisePage() {
         {chart !== "class" && !studentId ? (
           <EmptyState
             icon={ChartIcon}
-            title="Nenhum Aluno Selecionado"
-            description="Selecione um aluno da lista acima para visualizar o histórico de avaliações biométricas e físicas."
+            title={t("noStudentSelected")}
+            description={t("noStudentSelectedDesc")}
           />
         ) : chart === "bmi" ? (
           <div className="h-80 w-full animate-fade-in">
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={bmiData} margin={{ top: 20, right: 20, left: -20, bottom: 0 }}>
+              <LineChart data={bmiData} margin={{ top: 20, right: 20, left: 0, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" vertical={false} />
                 <XAxis dataKey="date" tick={{ fill: "var(--color-muted-foreground)", fontSize: 12 }} axisLine={false} tickLine={false} dy={10} />
                 <YAxis domain={["auto", "auto"]} tick={{ fill: "var(--color-muted-foreground)", fontSize: 12 }} axisLine={false} tickLine={false} dx={-10} />
@@ -262,7 +267,7 @@ export default function AnalisePage() {
                 <Line
                   type="monotone"
                   dataKey="imc"
-                  name="IMC"
+                  name={t("chartBmi")}
                   stroke="var(--color-navy-600)"
                   strokeWidth={3}
                   activeDot={{ r: 6, strokeWidth: 0 }}
@@ -276,23 +281,23 @@ export default function AnalisePage() {
         ) : chart === "tests" ? (
           <div className="h-80 w-full animate-fade-in">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={testData} margin={{ top: 20, right: 20, left: -20, bottom: 0 }} barSize={32}>
+              <BarChart data={testData} margin={{ top: 20, right: 20, left: 0, bottom: 0 }} barSize={32}>
                 <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" vertical={false} />
                 <XAxis dataKey="date" tick={{ fill: "var(--color-muted-foreground)", fontSize: 12 }} axisLine={false} tickLine={false} dy={10} />
                 <YAxis tick={{ fill: "var(--color-muted-foreground)", fontSize: 12 }} axisLine={false} tickLine={false} dx={-10} />
                 <Tooltip content={<ChartTooltip />} cursor={{ fill: "var(--color-muted)", opacity: 0.4 }} />
                 <Legend wrapperStyle={{ paddingTop: "20px" }} />
-                <Bar dataKey="vai" name="Vai e Vem" fill="var(--color-navy-600)" radius={[4, 4, 0, 0]} animationDuration={1000} />
-                <Bar dataKey="abd" name="Abdominais" fill="var(--color-gold-500)" radius={[4, 4, 0, 0]} animationDuration={1000} />
-                <Bar dataKey="bracos" name="Extensões" fill="var(--color-blue-400)" radius={[4, 4, 0, 0]} animationDuration={1000} />
+                <Bar dataKey="vai" name={t("barVaiVem")} fill="var(--color-navy-600)" radius={[4, 4, 0, 0]} animationDuration={1000} />
+                <Bar dataKey="abd" name={t("barAbdominais")} fill="var(--color-gold-500)" radius={[4, 4, 0, 0]} animationDuration={1000} />
+                <Bar dataKey="bracos" name={t("barExtensoes")} fill="var(--color-blue-400)" radius={[4, 4, 0, 0]} animationDuration={1000} />
               </BarChart>
             </ResponsiveContainer>
           </div>
         ) : !classId ? (
           <EmptyState
             icon={Users}
-            title="Nenhuma Turma Selecionada"
-            description="Selecione uma turma para visualizar a distribuição atualizada das Zonas de Aptidão Física dos alunos."
+            title={t("noClassSelected")}
+            description={t("noClassSelectedDesc")}
           />
         ) : classData.length === 0 ? (
           <div className="flex justify-center items-center h-40">
@@ -307,14 +312,14 @@ export default function AnalisePage() {
                 <YAxis type="category" dataKey="name" tick={{ fill: "var(--color-foreground)", fontSize: 12, fontWeight: 600 }} axisLine={false} tickLine={false} />
                 <Tooltip content={<ChartTooltip />} cursor={{ fill: "var(--color-muted)", opacity: 0.4 }} />
                 <Legend wrapperStyle={{ paddingTop: "20px" }} />
-                <Bar dataKey="ZSAF" name="Zona Saudável" fill="#10b981" stackId="a" radius={[0, 0, 0, 0]} animationDuration={1000} />
-                <Bar dataKey="ZMF" name="Zona de Melhoria" fill="#f59e0b" stackId="a" radius={[0, 0, 0, 0]} animationDuration={1000} />
-                <Bar dataKey="Sem dados" name="Sem dados" fill="#64748b" stackId="a" radius={[0, 4, 4, 0]} animationDuration={1000} />
+                <Bar dataKey="ZSAF" name={t("healthyZone")} fill="var(--color-success-500)" stackId="a" radius={[0, 0, 0, 0]} animationDuration={1000} />
+                <Bar dataKey="ZMF" name={t("improvementZone")} fill="var(--color-warning-500)" stackId="a" radius={[0, 0, 0, 0]} animationDuration={1000} />
+                <Bar dataKey="noData" name={t("noDataLabel")} fill="var(--color-muted-foreground)" stackId="a" radius={[0, 4, 4, 0]} animationDuration={1000} />
               </BarChart>
             </ResponsiveContainer>
           </div>
         )}
       </div>
-    </div>
+    </PageTransition>
   );
 }

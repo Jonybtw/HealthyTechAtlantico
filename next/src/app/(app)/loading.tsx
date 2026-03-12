@@ -2,7 +2,7 @@ import Image from "next/image";
 
 export default function Loading() {
   return (
-    <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-navy-950 overflow-hidden animate-fade-in">
+    <div role="status" aria-label="A carregar" className="absolute inset-0 z-30 flex flex-col items-center justify-center bg-navy-950 overflow-hidden animate-fade-in">
       {/* Radial gold glow */}
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_60%_40%_at_50%_50%,rgba(217,166,28,0.14),transparent)]" />
 

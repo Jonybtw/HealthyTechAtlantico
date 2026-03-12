@@ -28,13 +28,19 @@ const mono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "HealthyTech Atlantico",
+  title: {
+    default: "HealthyTech Atlântico",
+    template: "%s · HTA",
+  },
   description: "School health platform for FitEscola and ZAF workflows.",
   manifest: "/manifest.json",
   icons: {
-    icon: "/logo.png",
-    apple: "/logo.png",
-    shortcut: "/logo.png",
+    icon: [
+      { url: "/favicon.ico", sizes: "32x32" },
+      { url: "/icons/icon-192.png", sizes: "192x192", type: "image/png" },
+    ],
+    apple: "/apple-touch-icon.png",
+    shortcut: "/favicon.ico",
   },
 };
 

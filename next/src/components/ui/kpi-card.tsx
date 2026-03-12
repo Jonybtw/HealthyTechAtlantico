@@ -64,7 +64,7 @@ export function KpiCard({
   const animatedValue = useAnimatedNumber(isNumeric ? value : 0);
 
   return (
-    <div className="glass group relative overflow-hidden rounded-2xl p-5 shadow-card transition-all duration-300 hover:-translate-y-1 hover:shadow-card-hover">
+    <div className="glass group relative overflow-hidden rounded-2xl p-4 sm:p-5 shadow-card transition-all duration-300 hover:-translate-y-1 hover:shadow-card-hover">
       <div className={`absolute inset-x-0 top-0 h-1 bg-gradient-to-r ${styles.bar}`} />
       <div className="flex items-start justify-between gap-4">
         <div className="space-y-2">

@@ -24,6 +24,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useUser } from "@/components/user-context";
 import { ChartTooltip } from "@/components/ui/chart-tooltip";
 import { useClasses } from "@/hooks/use-queries";
+import { usePageTitle } from "@/hooks/use-page-title";
+import { PageTransition } from "@/components/ui/motion";
 
 interface StudentRow {
   id: string;
@@ -37,6 +39,7 @@ interface StudentRow {
 export default function TurmaPage() {
   const t = useTranslations("turma");
   const common = useTranslations("common");
+  usePageTitle(t("title"));
   const { role } = useUser();
   const canViewClassReports = role === "ADMIN" || role === "PROFESSOR";
   const { data: classes = [], error: classesError } = useClasses({ enabled: canViewClassReports });
@@ -82,13 +85,19 @@ export default function TurmaPage() {
 
   const exportCsv = () => {
     if (!students.length) return;
-    const headers = ["Nome", "Sexo", "IMC", "Zona", "Testes"];
+    const escapeCsv = (v: string | number) => {
+      const s = String(v);
+      return s.includes(",") || s.includes('"') || s.includes("\n")
+        ? `"${s.replace(/"/g, '""')}"`
+        : s;
+    };
+    const headers = [t("colName"), t("colSex"), t("colBmi"), t("colZone"), t("colTests")];
     const rows = students.map((student) =>
       [
-        student.name,
-        student.sex,
+        escapeCsv(student.name),
+        escapeCsv(student.sex),
         student.latestBiometric ? Number(student.latestBiometric.imc).toFixed(1) : "",
-        student.latestBiometric?.imcZone ?? "",
+        escapeCsv(student.latestBiometric?.imcZone ?? ""),
         student.testCount,
       ].join(",")
     );
@@ -116,13 +125,13 @@ export default function TurmaPage() {
     }
     return [
       {
-        name: "Turma",
-        "Zona Saudável": zsaf,
-        "Zona de Melhoria": zmf,
-        "Sem dados": noData,
+        name: t("className"),
+        [t("healthyZone")]: zsaf,
+        [t("improvementZone")]: zmf,
+        [t("noDataLabel")]: noData,
       },
     ];
-  }, [students]);
+  }, [students, t]);
 
   const columns: Column<StudentRow>[] = [
     { key: "name", header: t("colName"), sortable: true },
@@ -164,7 +173,7 @@ export default function TurmaPage() {
   }
 
   return (
-    <div className="flex flex-col gap-5">
+    <PageTransition className="flex flex-col gap-5">
       <PageHeader title={t("title")} description={t("description")}>
         <Button
           size="sm"
@@ -198,8 +207,8 @@ export default function TurmaPage() {
       {!classId ? (
         <EmptyState
           icon={Users}
-          title="Nenhuma Turma Selecionada"
-          description={t("selectYear")}
+          title={t("noClassSelected")}
+          description={t("noClassSelectedDesc")}
         />
       ) : loading ? (
         <div className="flex flex-col gap-5 animate-fade-in">
@@ -211,7 +220,7 @@ export default function TurmaPage() {
           {zoneChartData.length > 0 && (
             <div className="bg-card/85 glass rounded-2xl border border-border/50 shadow-float p-5 animate-fade-in-up">
               <h3 className="text-base font-bold tracking-tight mb-4">
-                Distribuição ZAF
+                {t("zafDistribution")}
               </h3>
               <div className="h-40 w-full">
                 <ResponsiveContainer width="100%" height="100%">
@@ -251,22 +260,22 @@ export default function TurmaPage() {
                     />
                     <Legend wrapperStyle={{ paddingTop: "10px" }} />
                     <Bar
-                      dataKey="Zona Saudável"
-                      fill="#10b981"
+                      dataKey={t("healthyZone")}
+                      fill="var(--color-success-500)"
                       stackId="a"
                       radius={[0, 0, 0, 0]}
                       animationDuration={1000}
                     />
                     <Bar
-                      dataKey="Zona de Melhoria"
-                      fill="#f59e0b"
+                      dataKey={t("improvementZone")}
+                      fill="var(--color-warning-500)"
                       stackId="a"
                       radius={[0, 0, 0, 0]}
                       animationDuration={1000}
                     />
                     <Bar
-                      dataKey="Sem dados"
-                      fill="#64748b"
+                      dataKey={t("noDataLabel")}
+                      fill="var(--color-muted-foreground)"
                       stackId="a"
                       radius={[0, 4, 4, 0]}
                       animationDuration={1000}
@@ -286,6 +295,6 @@ export default function TurmaPage() {
           </div>
         </>
       )}
-    </div>
+    </PageTransition>
   );
 }

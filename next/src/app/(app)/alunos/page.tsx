@@ -1,8 +1,11 @@
+import type { Metadata } from "next";
 import { requireAuth } from "@/lib/auth-guard";
 import { prisma } from "@/lib/prisma";
 import { isStaffRole } from "@/lib/rbac";
 import { redirect } from "next/navigation";
 import { AlunosClient } from "./alunos-client";
+
+export const metadata: Metadata = { title: "Alunos" };
 
 export default async function AlunosPage() {
   const user = await requireAuth();

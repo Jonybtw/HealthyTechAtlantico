@@ -15,7 +15,7 @@ import {
   Sun,
   User,
 } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useTheme, writeTheme } from "@/lib/theme";
 import { cn } from "@/lib/utils";
 import { NAV_ITEMS, type NavItem } from "@/lib/nav-items";
@@ -93,6 +93,7 @@ function NavLink({
     <Link
       href={item.href}
       onClick={onClick}
+      aria-current={active ? "page" : undefined}
       className={cn(
         "group relative flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400/40 focus-visible:ring-offset-2 focus-visible:ring-offset-navy-900",
         active
@@ -126,10 +127,30 @@ export function AppShell({ user, children }: AppShellProps) {
   const [locale, setLocale] = useState(getInitialLocale);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [cmdOpen, setCmdOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useHotkeys([
     { key: "k", mods: ["ctrl"], handler: () => setCmdOpen((v) => !v) },
   ]);
+
+  // Tab visibility: swap title when user leaves tab
+  const savedTitle = useRef("");
+  useEffect(() => {
+    function onVisibility() {
+      if (document.hidden) {
+        savedTitle.current = document.title;
+        document.title = "👋 Volta! · HTA";
+      } else {
+        document.title = savedTitle.current || "HealthyTech Atlântico";
+      }
+    }
+    document.addEventListener("visibilitychange", onVisibility);
+    return () => document.removeEventListener("visibilitychange", onVisibility);
+  }, []);
 
   const visibleItems = NAV_ITEMS.filter((item) => item.roles.includes(user.role));
   const groupedItems = visibleItems.reduce<Record<NavItem["section"], NavItem[]>>(
@@ -152,7 +173,7 @@ export function AppShell({ user, children }: AppShellProps) {
   const initials =
     displayName
       .split(" ")
-      .filter(Boolean)
+      .filter((chunk) => Boolean(chunk) && !/^(prof|dr|dra|sr|sra)\.*$/i.test(chunk))
       .slice(0, 2)
       .map((chunk) => chunk[0]?.toUpperCase())
       .join("") || user.email.charAt(0).toUpperCase();
@@ -168,11 +189,7 @@ export function AppShell({ user, children }: AppShellProps) {
     router.refresh();
   };
 
-  const mobileItems = visibleItems
-    .filter((item) =>
-      ["/dashboard", "/biometria", "/testes", "/sos"].includes(item.href)
-    )
-    .slice(0, 4);
+  const mobileItems = visibleItems.slice(0, 4);
 
   const sidebarNav = (onNav?: () => void) => (
     <>
@@ -213,7 +230,7 @@ export function AppShell({ user, children }: AppShellProps) {
         {/* ── Desktop Sidebar ── */}
         <aside
           aria-label={t("nav.sidebarNavigation")}
-          className="fixed inset-y-0 left-0 z-30 hidden w-64 border-r border-border/70 bg-[linear-gradient(180deg,rgba(8,22,43,0.98),rgba(8,22,43,0.92))] lg:flex lg:flex-col"
+          className="fixed inset-y-0 left-0 z-30 hidden w-64 border-r border-white/10 bg-gradient-to-b from-navy-950 to-navy-900 lg:flex lg:flex-col"
         >
           <div className="border-b border-white/10 px-4 py-4">
             <div className="rounded-xl border border-white/10 bg-white/5 p-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]">
@@ -242,7 +259,6 @@ export function AppShell({ user, children }: AppShellProps) {
                 </Avatar>
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-sm font-semibold">{displayName}</p>
-                  <p className="truncate text-xs text-navy-200/70">{user.email}</p>
                   <p className="mt-0.5 text-[11px] font-semibold uppercase tracking-[0.2em] text-gold-200/80">
                     {roleLabels[user.role]}
                   </p>
@@ -281,8 +297,9 @@ export function AppShell({ user, children }: AppShellProps) {
                 {/* Command palette trigger */}
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <button
+                    <Button
                       type="button"
+                      variant="ghost"
                       onClick={() => setCmdOpen(true)}
                       aria-haspopup="dialog"
                       className="hidden items-center gap-2 rounded-xl border border-border/70 bg-card/60 px-3 py-1.5 text-sm text-muted-foreground transition-colors hover:bg-card hover:text-foreground sm:flex"
@@ -290,9 +307,9 @@ export function AppShell({ user, children }: AppShellProps) {
                       <Search className="size-3.5" />
                       <span className="max-w-[100px] truncate">{t("commandPalette.placeholder")}</span>
                       <kbd className="ml-1 inline-flex h-5 items-center rounded border border-border bg-muted px-1 text-[10px] font-medium">
-                        ⌘K
+                        Ctrl+K
                       </kbd>
-                    </button>
+                    </Button>
                   </TooltipTrigger>
                   <TooltipContent>{t("commandPalette.placeholder")}</TooltipContent>
                 </Tooltip>
@@ -327,11 +344,12 @@ export function AppShell({ user, children }: AppShellProps) {
                   <TooltipContent>{t("nav.changeLanguage")}</TooltipContent>
                 </Tooltip>
 
-                {/* User dropdown (desktop) */}
-                <DropdownMenu>
+                {/* User dropdown (desktop) — only rendered after mount to avoid Radix ID hydration mismatch */}
+                {mounted && <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <button
+                    <Button
                       type="button"
+                      variant="ghost"
                       className="hidden items-center gap-2 rounded-2xl border border-border/70 bg-card/60 px-3 py-1.5 transition-colors hover:bg-card lg:flex"
                     >
                       <Avatar className="size-7">
@@ -340,15 +358,16 @@ export function AppShell({ user, children }: AppShellProps) {
                       <span className="max-w-[120px] truncate text-sm font-medium text-foreground">
                         {displayName}
                       </span>
-                    </button>
+                    </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" className="w-56">
-                    <DropdownMenuLabel className="font-normal">
+                    <div className="px-3 py-2">
                       <div className="flex flex-col space-y-1">
                         <p className="text-sm font-medium text-foreground">{displayName}</p>
                         <p className="text-xs text-muted-foreground">{user.email}</p>
+                        <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground/70">{roleLabels[user.role]}</p>
                       </div>
-                    </DropdownMenuLabel>
+                    </div>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem asChild>
                       <Link href="/perfil">
@@ -365,7 +384,7 @@ export function AppShell({ user, children }: AppShellProps) {
                       {t("nav.logout")}
                     </DropdownMenuItem>
                   </DropdownMenuContent>
-                </DropdownMenu>
+                </DropdownMenu>}
 
                 {/* Mobile sign-out button */}
                 <Tooltip>
@@ -390,7 +409,7 @@ export function AppShell({ user, children }: AppShellProps) {
           <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
             <SheetContent
               side="left"
-              className="w-64 bg-[linear-gradient(180deg,rgba(8,22,43,0.98),rgba(8,22,43,0.92))] p-0 border-r-0"
+              className="w-64 bg-gradient-to-b from-navy-950 to-navy-900 p-0 border-r-0"
             >
               <div className="border-b border-white/10 px-4 py-4">
                 <div className="rounded-xl border border-white/10 bg-white/5 p-3">

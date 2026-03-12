@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useActionState, useEffect } from "react";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { UserPlus } from "lucide-react";
@@ -28,6 +28,7 @@ interface AlunosClientProps {
 
 export function AlunosClient({ initialStudents }: AlunosClientProps) {
     const t = useTranslations("alunos");
+    const locale = useLocale();
     const router = useRouter();
 
     const [showCreate, setShowCreate] = useState(false);
@@ -35,7 +36,6 @@ export function AlunosClient({ initialStudents }: AlunosClientProps) {
         name: "",
         sex: "M",
         birthDate: "",
-        className: "",
     });
 
     const [state, formAction, isPending] = useActionState(createStudentAction, null);
@@ -50,7 +50,7 @@ export function AlunosClient({ initialStudents }: AlunosClientProps) {
             toast.success(t("createSuccess"));
             const frame = requestAnimationFrame(() => {
                 setShowCreate(false);
-                setForm({ name: "", sex: "M", birthDate: "", className: "" });
+                setForm({ name: "", sex: "M", birthDate: "" });
                 router.refresh();
             });
             return () => cancelAnimationFrame(frame);
@@ -64,7 +64,7 @@ export function AlunosClient({ initialStudents }: AlunosClientProps) {
             key: "birthDate",
             header: t("colBirth"),
             sortable: true,
-            render: (r) => (r.birthDate ? new Date(r.birthDate).toLocaleDateString("pt-PT") : "—"),
+            render: (r) => (r.birthDate ? new Date(r.birthDate).toLocaleDateString(locale) : "—"),
         },
         {
             key: "className",
@@ -87,7 +87,7 @@ export function AlunosClient({ initialStudents }: AlunosClientProps) {
 
             <AnimatePresence>
             {showCreate && (
-                <FadeIn key="create-form" className="bg-card glass rounded-xl border border-border p-5 flex flex-col gap-4 max-w-lg shadow-card">
+                <FadeIn key="create-form" className="bg-card/85 glass rounded-2xl border border-border/50 shadow-float p-5 flex flex-col gap-4 max-w-lg">
                 <form
                     action={formAction}
                     className="flex flex-col gap-4"
@@ -105,8 +105,8 @@ export function AlunosClient({ initialStudents }: AlunosClientProps) {
                         <input type="hidden" name="sex" value={form.sex} />
                         <PillSelect
                             options={[
-                                { value: "M", label: "Masculino" },
-                                { value: "F", label: "Feminino" },
+                                { value: "M", label: t("male") },
+                                { value: "F", label: t("female") },
                             ]}
                             value={form.sex}
                             onChange={(v) => setForm((f) => ({ ...f, sex: v }))}
@@ -114,13 +114,13 @@ export function AlunosClient({ initialStudents }: AlunosClientProps) {
                     </div>
                     <Input
                         name="birthDate"
-                        label="Data de nascimento"
+                        label={t("birthDateLabel")}
                         type="date"
                         value={form.birthDate}
                         onChange={(e) => setForm((f) => ({ ...f, birthDate: e.target.value }))}
                         required
                     />
-                    <Button type="submit" loading={isPending} className="self-start">
+                    <Button type="submit" loading={isPending} icon={<UserPlus className="size-4" />} className="self-start">
                         {t("create")}
                     </Button>
                 </form>

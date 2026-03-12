@@ -19,12 +19,14 @@ import {
   FormItem,
   FormControl,
 } from "@/components/ui/form";
+import { usePageTitle } from "@/hooks/use-page-title";
 
 type RegisterValues = z.infer<typeof registerFormSchema>;
 
 export default function RegisterPage() {
   const router = useRouter();
   const t = useTranslations("auth");
+  usePageTitle(t("register"));
   const [apiError, setApiError] = useState<string | null>(null);
 
   const form = useForm<RegisterValues>({
@@ -35,7 +37,7 @@ export default function RegisterPage() {
       password: "",
       confirmPassword: "",
       role: "ALUNO",
-      consentRgpd: true as const,
+      consentRgpd: false,
     },
   });
 
@@ -51,7 +53,7 @@ export default function RegisterPage() {
           email: values.email.trim().toLowerCase(),
           password: values.password,
           role: values.role,
-          consentRgpd: true,
+          consentRgpd: values.consentRgpd,
         }),
       });
 
@@ -79,7 +81,7 @@ export default function RegisterPage() {
               {t("register")}
             </h1>
             <p className="mt-2 max-w-sm text-sm leading-relaxed text-navy-100/75">
-              Cria uma conta segura para acompanhar o teu percurso ou o dos teus educandos.
+              {t("registerSubtitle")}
             </p>
           </div>
           <div className="hidden rounded-xl border border-white/10 bg-white/8 p-2.5 sm:block">
@@ -112,7 +114,7 @@ export default function RegisterPage() {
                   <FormControl>
                     <Input
                       label={t("name")}
-                      placeholder="Maria Silva"
+                      placeholder={t("name")}
                       autoFocus
                       error={form.formState.errors.name?.message}
                       {...field}
@@ -150,7 +152,7 @@ export default function RegisterPage() {
                     <Input
                       label={t("password")}
                       type="password"
-                      placeholder="Password"
+                    placeholder={t("password")}
                       autoComplete="new-password"
                       error={form.formState.errors.password?.message}
                       {...field}
@@ -169,7 +171,7 @@ export default function RegisterPage() {
                     <Input
                       label={t("confirmPassword")}
                       type="password"
-                      placeholder="Repeat password"
+                    placeholder={t("confirmPassword")}
                       autoComplete="new-password"
                       error={form.formState.errors.confirmPassword?.message}
                       {...field}
@@ -200,11 +202,13 @@ export default function RegisterPage() {
             <label className="flex cursor-pointer items-start gap-3">
               <input
                 type="checkbox"
+                id="register-rgpd"
+                aria-describedby="register-rgpd-error"
                 checked={form.watch("consentRgpd") === true}
                 onChange={(e) =>
                   form.setValue(
                     "consentRgpd",
-                    e.target.checked ? true : (false as unknown as true),
+                    e.target.checked,
                     { shouldValidate: true }
                   )
                 }
@@ -215,7 +219,7 @@ export default function RegisterPage() {
               </span>
             </label>
             {form.formState.errors.consentRgpd ? (
-              <p className="mt-2 text-xs font-medium text-danger-600">
+              <p id="register-rgpd-error" className="mt-2 text-xs font-medium text-danger-600">
                 {form.formState.errors.consentRgpd.message}
               </p>
             ) : null}

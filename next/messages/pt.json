@@ -57,7 +57,9 @@
     "invalidEmail": "E-mail inválido.",
     "passwordMin8": "Mínimo 8 caracteres.",
     "passwordNoMatch": "Palavras-passe não coincidem.",
-    "createError": "Erro ao criar conta."
+    "createError": "Erro ao criar conta.",
+    "loginSubtitle": "Acede ao painel institucional",
+    "registerSubtitle": "Cria uma conta segura para acompanhar o teu percurso ou o dos teus educandos."
   },
   "common": {
     "save": "Gravar",
@@ -77,6 +79,7 @@
     "refresh": "Atualizar"
   },
   "dashboard": {
+    "title": "Painel",
     "activitySummary": "Resumo da tua atividade",
     "platformOverview": "Visão geral da plataforma HealthyTech Atlântico",
     "lastBiometric": "Última biometria",
@@ -112,7 +115,8 @@
     "analyzeZaf": "Análise ZAF",
     "greetingMorning": "Bom dia",
     "greetingAfternoon": "Boa tarde",
-    "greetingEvening": "Boa noite"
+    "greetingEvening": "Boa noite",
+    "studentsUnit": "alunos"
   },
   "biometria": {
     "title": "Biometria",
@@ -130,7 +134,17 @@
     "selectStudent": "Selecione um aluno primeiro.",
     "success": "Biometria registada com sucesso.",
     "historyTitle": "Histórico de Biometria",
-    "noHistory": "Sem registos anteriores."
+    "noHistory": "Sem registos anteriores.",
+    "loadError": "Erro ao carregar lista de alunos.",
+    "loadConnectionError": "Erro de ligação ao carregar alunos.",
+    "saveError": "Erro ao gravar biometria.",
+    "connectionError": "Erro de ligação.",
+    "healthyZone": "Zona Saudável",
+    "improvementZone": "Zona de Melhoria",
+    "unlinkedTitle": "Perfil não associado",
+    "unlinkedDescription": "A tua conta ainda não está associada a um perfil de aluno. Contacta a escola para concluírem a ligação.",
+    "imcLabel": "IMC:",
+    "enterValuesHint": "Introduza altura e peso para ver a classificação em tempo real."
   },
   "testes": {
     "title": "Testes Físicos",
@@ -142,7 +156,16 @@
     "success": "Teste registado com sucesso.",
     "selectStudent": "Selecione um aluno.",
     "fillValue": "Introduza o valor do teste.",
-    "lastResult": "Resultado:"
+    "lastResult": "Resultado:",
+    "resultPanel": "Resultado ZAF",
+    "fillFormHint": "Preencha o formulário para ver a classificação ZAF.",
+    "loadError": "Erro ao carregar lista de alunos.",
+    "loadConnectionError": "Erro de ligação ao carregar alunos.",
+    "saveError": "Erro ao gravar teste.",
+    "connectionError": "Erro de ligação.",
+    "improvementZone": "Zona de Melhoria",
+    "unlinkedTitle": "Perfil não associado",
+    "unlinkedDescription": "A tua conta ainda não está associada a um perfil de aluno. Contacta a escola para concluírem a ligação."
   },
   "questionarios": {
     "title": "Questionários",
@@ -156,7 +179,41 @@
     "deferCount": "Adiamentos",
     "success": "Questionário submetido com sucesso.",
     "maxDeferred": "Atingiu o limite de adiamentos (3).",
-    "noPending": "Nenhum questionário pendente."
+    "noPending": "Nenhum questionário pendente.",
+    "sleepHoursLabel": "Horas de sono (noite anterior)",
+    "screenHoursLabel": "Horas de ecrã (dia anterior)",
+    "waterGlassesLabel": "Copos de água (dia anterior)",
+    "mealsCountLabel": "Refeições no dia anterior",
+    "energyLevelLabel": "Nível de energia",
+    "stressLevelLabel": "Nível de stress",
+    "wellnessLevelLabel": "Nível de bem-estar",
+    "physicalActivityLabel": "Frequência de atividade física semanal",
+    "sportsPracticeLabel": "Pratica desporto organizado?",
+    "hasAllergiesLabel": "Tem alergias?",
+    "hasMedicationLabel": "Toma medicação?",
+    "hasInjuriesLabel": "Tem lesões?",
+    "eatsBreakfastLabel": "Toma pequeno-almoço habitualmente?",
+    "eatsFruitsVegetablesLabel": "Come fruta/vegetais diariamente?",
+    "drinksWaterEnoughLabel": "Bebe água suficiente?",
+    "stressNone": "Nenhum",
+    "stressLow": "Baixo",
+    "stressModerate": "Moderado",
+    "stressHigh": "Elevado",
+    "stressExtreme": "Extremo",
+    "unitHours": "h",
+    "unitGlasses": "copos",
+    "unitMeals": "refeições",
+    "unitDays": "dias",
+    "yes": "Sim",
+    "no": "Não",
+    "deferralsUsed": "Adiamentos usados: {used} / {max}",
+    "limitReached": "Limite atingido",
+    "remaining": "{count} restantes",
+    "selectStudentError": "Selecione um aluno.",
+    "submitError": "Erro ao submeter questionário.",
+    "connectionError": "Erro de ligação.",
+    "unlinkedTitle": "Perfil não associado",
+    "unlinkedDescription": "A tua conta ainda não está associada a um perfil de aluno. Contacta a escola para concluírem a ligação."
   },
   "sos": {
     "title": "Alerta SOS",
@@ -212,6 +269,7 @@
     "filterPending": "Pendentes",
     "filterResolved": "Resolvidos",
     "filterAll": "Todos",
+    "filterLabel": "Filtrar alertas",
     "emptyInboxTitle": "Sem alertas SOS",
     "emptyInboxDescription": "A caixa de entrada esta limpa. Nao existem pedidos SOS registados neste momento.",
     "noFilteredTitle": "Nada neste filtro",
@@ -228,7 +286,33 @@
     "success": "Relatório gerado com sucesso.",
     "biometricsSection": "Biometria",
     "testsSection": "Testes Físicos",
-    "selectStudent": "Selecione um aluno."
+    "selectStudent": "Selecione um aluno.",
+    "selectGuardianError": "Selecione um encarregado.",
+    "emailSendError": "Erro ao enviar e-mail.",
+    "emailSuccess": "Relatório enviado por e-mail!",
+    "connectionError": "Erro de ligação.",
+    "previewHeader": "Relatório Individual",
+    "heightLabel": "Altura",
+    "weightLabel": "Peso",
+    "imcLabel": "IMC",
+    "waistLabel": "Cin. (cm)",
+    "lowWeight": "Baixo peso",
+    "normal": "Normal",
+    "overweight": "Excesso de peso",
+    "obesity": "Obesidade",
+    "noBiometrics": "Sem dados de biometria registados.",
+    "noTests": "Sem dados de testes registados.",
+    "testHeader": "Teste",
+    "resultHeader": "Resultado",
+    "previewInstruction": "Selecione um aluno para pré-visualizar o relatório.",
+    "loadingData": "A carregar dados\u2026",
+    "pdfSubtitle": "Documento PDF com logo e tabelas",
+    "emailTitle": "Enviar por e-mail",
+    "emailDescription": "Apenas para encarregados associados ao aluno",
+    "emailButton": "Enviar relatório",
+    "noGuardiansEmail": "Este aluno não tem encarregados associados para envio por e-mail.",
+    "unlinkedTitle": "Perfil não associado",
+    "unlinkedDescription": "A tua conta ainda não está associada a um perfil de aluno. Contacta a escola para concluírem a ligação."
   },
   "turma": {
     "title": "Turma",
@@ -244,7 +328,11 @@
     "loadError": "Erro ao carregar turma.",
     "noClassSelected": "Nenhuma Turma Selecionada",
     "noClassSelectedDesc": "Selecione uma turma para ver os dados.",
-    "zafDistribution": "Distribuição ZAF"
+    "zafDistribution": "Distribuição ZAF",
+    "healthyZone": "Zona Saudável",
+    "improvementZone": "Zona de Melhoria",
+    "noDataLabel": "Sem dados",
+    "className": "Turma"
   },
   "dispensas": {
     "title": "Dispensas",
@@ -264,8 +352,14 @@
     "deleteBtn": "Remover",
     "deleteSuccess": "Dispensa removida.",
     "noDispensas": "Sem dispensas registadas.",
+    "noDispensasTitle": "Sem Dispensas",
     "selectStudent": "Selecione um aluno.",
-    "errorCreate": "Erro ao criar dispensa."
+    "errorCreate": "Erro ao criar dispensa.",
+    "connectionError": "Erro de ligação.",
+    "removeError": "Erro ao remover dispensa.",
+    "noStudentSelected": "Nenhum Aluno Selecionado",
+    "noStudentSelectedDesc": "Selecione um aluno para ver ou gerir dispensas.",
+    "cancelBtn": "Cancelar"
   },
   "analise": {
     "title": "Análise",
@@ -277,7 +371,22 @@
     "zsaf": "Zona Saudável",
     "zmf": "Zona Melhoria",
     "noData": "Sem dados suficientes para análise.",
-    "selectYear": "Selecionar ano"
+    "selectYear": "Selecionar ano",
+    "chartBmi": "IMC",
+    "chartTests": "Testes",
+    "chartClass": "Média Turma",
+    "noStudentSelected": "Nenhum Aluno Selecionado",
+    "noStudentSelectedDesc": "Selecione um aluno da lista acima para visualizar o histórico de avaliações biométricas e físicas.",
+    "noClassSelected": "Nenhuma Turma Selecionada",
+    "noClassSelectedDesc": "Selecione uma turma para visualizar a distribuição atualizada das Zonas de Aptidão Física dos alunos.",
+    "healthyZone": "Zona Saudável",
+    "improvementZone": "Zona de Melhoria",
+    "noDataLabel": "Sem dados",
+    "barVaiVem": "Vai e Vem",
+    "barAbdominais": "Abdominais",
+    "barExtensoes": "Extensões",
+    "unlinkedTitle": "Perfil não associado",
+    "unlinkedDescription": "A tua conta ainda não está associada a um perfil de aluno. Contacta a escola para concluírem a ligação."
   },
   "protocolos": {
     "title": "Protocolos",
@@ -287,7 +396,35 @@
     "testTable": "Testes de Aptidão Física  -  Limites",
     "age": "Idade",
     "male": "Masculino (M)",
-    "female": "Feminino (F)"
+    "female": "Feminino (F)",
+    "bmiTableTitle": "IMC \u2014 Valores de corte (Zona Saud\u00e1vel)",
+    "waistTableTitle": "Per\u00edmetro da Cintura \u2014 Valores de corte (Zona Saud\u00e1vel)",
+    "fitnessTitle": "Testes de Aptid\u00e3o F\u00edsica",
+    "unitLabel": "Unidade",
+    "testVaiVem": "Vai e Vem",
+    "testVaiVemUnit": "percursos",
+    "testVaiVemDesc": "Corrida de vai e vem 20m (PACER)",
+    "testCooper": "Cooper",
+    "testCooperUnit": "metros",
+    "testCooperDesc": "Corrida de 12 minutos",
+    "testMilha": "Milha",
+    "testMilhaUnit": "mm:ss",
+    "testMilhaDesc": "Corrida de 1 milha",
+    "testVelocidade": "Velocidade",
+    "testVelocidadeUnit": "segundos",
+    "testVelocidadeDesc": "Sprint 40 jardas",
+    "testAgilidade": "Agilidade",
+    "testAgilidadeUnit": "segundos",
+    "testAgilidadeDesc": "Corrida de agilidade 4\u00d710m",
+    "testAbdominais": "Abdominais",
+    "testAbdominaisUnit": "repeti\u00e7\u00f5es",
+    "testAbdominaisDesc": "Abdominais em 60 segundos",
+    "testExtensoes": "Extens\u00f5es de bra\u00e7os",
+    "testExtensoesUnit": "repeti\u00e7\u00f5es",
+    "testExtensoesDesc": "Extens\u00f5es sem cad\u00eancia",
+    "testSentaAlcanca": "Senta e Alcan\u00e7a",
+    "testSentaAlcancaUnit": "cm",
+    "testSentaAlcancaDesc": "Flexibilidade do tronco"
   },
   "alunos": {
     "title": "Alunos",
@@ -304,7 +441,10 @@
     "createSuccess": "Aluno criado com sucesso.",
     "deleteSuccess": "Aluno removido com sucesso.",
     "viewDetail": "Ver detalhes",
-    "emptyMessage": "Sem alunos registados."
+    "emptyMessage": "Sem alunos registados.",
+    "male": "Masculino",
+    "female": "Feminino",
+    "birthDateLabel": "Data de nascimento"
   },
   "studentDetail": {
     "editBtn": "Editar",
@@ -368,7 +508,10 @@
     "shareControlled": "Partilha controlada.",
     "activate": "Ativar",
     "deactivate": "Desativar",
-    "securityTitle": "Segurança"
+    "securityTitle": "Segurança",
+    "rgpdDescription": "Controla o acesso ao tratamento dos teus dados de sa\u00fade e atualiza a sess\u00e3o de imediato.",
+    "shareDescription": "Define se os teus dados podem ser partilhados com os encarregados associados.",
+    "passwordDescription": "Atualiza a palavra-passe da tua conta com requisitos de produ\u00e7\u00e3o."
   },
   "guardioes": {
     "title": "Encarregados de Educação",
@@ -419,6 +562,7 @@
     "deleteBtn": "Remover",
     "deleteSuccess": "Conta removida.",
     "noStaff": "Nenhum funcionário registado.",
+    "noStaffDesc": "Crie a primeira conta de professor ou psicólogo.",
     "staffCount": "{count} funcionários registados.",
     "refreshList": "Atualizar lista",
     "noPermission": "Sem permissão para aceder a esta página.",
@@ -436,8 +580,29 @@
     "colTarget": "Alvo",
     "colIp": "IP",
     "noLogs": "Sem registos de auditoria.",
+    "emptyTitle": "Grelha Vazia",
     "noPermission": "Sem permissão para aceder a esta página.",
-    "loadError": "Erro ao carregar registos de auditoria."
+    "loadError": "Erro ao carregar registos de auditoria.",
+    "actions": {
+      "login": "Início de sessão",
+      "logout": "Fim de sessão",
+      "register": "Registo",
+      "create_student": "Criar aluno",
+      "update_student": "Editar aluno",
+      "delete_student": "Remover aluno",
+      "record_biometrics": "Registar biometria",
+      "record_tests": "Registar testes",
+      "submit_questionnaire": "Submeter questionário",
+      "trigger_sos": "Alerta SOS",
+      "resolve_sos": "Resolver SOS",
+      "export_report": "Exportar relatório",
+      "create_dispensa": "Criar dispensa",
+      "delete_dispensa": "Remover dispensa",
+      "add_guardian": "Adicionar encarregado",
+      "remove_guardian": "Remover encarregado",
+      "change_password": "Alterar palavra-passe",
+      "update_consent": "Atualizar consentimento"
+    }
   },
   "commandPalette": {
     "placeholder": "Procurar páginas e ações…",
@@ -453,5 +618,20 @@
     "allClear": "Tudo em ordem — sem alertas pendentes.",
     "pendingAlerts": "{count, plural, one {# alerta SOS pendente} other {# alertas SOS pendentes}}",
     "pendingDescription": "Visite a página SOS para resolver."
+  },
+  "authLayout": {
+    "department": "Departamento de Educação Física — Colégio Atlântico",
+    "highlightSecurity": "Segurança institucional",
+    "highlightMonitoring": "Acompanhamento contínuo",
+    "highlightExperience": "Experiência premium",
+    "headline": "Saúde escolar com critério e resposta imediata.",
+    "subtitle": "Plataforma institucional para monitorização física, questionários e alertas com acompanhamento seguro.",
+    "copyright": "© {year} HealthyTech Atlântico. Todos os direitos reservados."
+  },
+  "errorPage": {
+    "title": "Algo correu mal",
+    "description": "Ocorreu um erro inesperado. Tenta novamente ou contacta o suporte se o problema persistir.",
+    "reference": "Referência",
+    "retry": "Tentar novamente"
   }
 }

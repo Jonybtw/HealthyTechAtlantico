@@ -8,38 +8,41 @@ import { PageHeader } from "@/components/ui/page-header";
 import { StudentPicker } from "@/components/ui/student-picker";
 import { PillSelect } from "@/components/ui/pill-select";
 import { RangeSlider } from "@/components/ui/range-slider";
+import { NumericStepper } from "@/components/ui/numeric-stepper";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
 import { useUser } from "@/components/user-context";
+import { usePageTitle } from "@/hooks/use-page-title";
+import { PageTransition } from "@/components/ui/motion";
 
 const MAX_DEFERRALS = 3;
-const STRESS_LABELS = ["Nenhum", "Baixo", "Moderado", "Elevado", "Extremo"];
 const STRESS_COLORS = ["bg-green-500", "bg-lime-500", "bg-yellow-500", "bg-orange-500", "bg-red-500"];
 
 const ROUTINE_QUESTIONS = [
-  { key: "sleepHours", label: "Horas de sono (noite anterior)", min: 0, max: 12, step: 0.5, unit: "h" },
-  { key: "screenHours", label: "Horas de ecrã (dia anterior)", min: 0, max: 16, step: 0.5, unit: "h" },
-  { key: "waterGlasses", label: "Copos de água (dia anterior)", min: 0, max: 15, step: 1, unit: "copos" },
-  { key: "mealsCount", label: "Refeições no dia anterior", min: 0, max: 8, step: 1, unit: "refeições" },
-  { key: "energyLevel", label: "Nível de energia", min: 0, max: 10, step: 1, slider: true },
-  { key: "stressLevel", label: "Nível de stress", min: 0, max: 10, step: 1, slider: true },
-  { key: "wellnessLevel", label: "Nível de bem-estar", min: 0, max: 10, step: 1, slider: true },
+  { key: "sleepHours", labelKey: "sleepHoursLabel", min: 0, max: 12, step: 0.5, unitKey: "unitHours" },
+  { key: "screenHours", labelKey: "screenHoursLabel", min: 0, max: 16, step: 0.5, unitKey: "unitHours" },
+  { key: "waterGlasses", labelKey: "waterGlassesLabel", min: 0, max: 15, step: 1, unitKey: "unitGlasses" },
+  { key: "mealsCount", labelKey: "mealsCountLabel", min: 0, max: 8, step: 1, unitKey: "unitMeals" },
+  { key: "energyLevel", labelKey: "energyLevelLabel", min: 0, max: 10, step: 1, slider: true },
+  { key: "stressLevel", labelKey: "stressLevelLabel", min: 0, max: 10, step: 1, slider: true },
+  { key: "wellnessLevel", labelKey: "wellnessLevelLabel", min: 0, max: 10, step: 1, slider: true },
 ];
 
 const INITIAL_QUESTIONS = [
-  { key: "physicalActivityFreq", label: "Frequência de atividade física semanal", min: 0, max: 7, step: 1, unit: "dias" },
-  { key: "sportsPractice", label: "Pratica desporto organizado?", type: "yesno" as const },
-  { key: "hasAllergies", label: "Tem alergias?", type: "yesno" as const },
-  { key: "hasMedication", label: "Toma medicação?", type: "yesno" as const },
-  { key: "hasInjuries", label: "Tem lesões?", type: "yesno" as const },
-  { key: "eatsBreakfast", label: "Toma pequeno-almoço habitualmente?", type: "yesno" as const },
-  { key: "eatsFruitsVegetables", label: "Come fruta/vegetais diariamente?", type: "yesno" as const },
-  { key: "drinksWaterEnough", label: "Bebe água suficiente?", type: "yesno" as const },
+  { key: "physicalActivityFreq", labelKey: "physicalActivityLabel", min: 0, max: 7, step: 1, unitKey: "unitDays" },
+  { key: "sportsPractice", labelKey: "sportsPracticeLabel", type: "yesno" as const },
+  { key: "hasAllergies", labelKey: "hasAllergiesLabel", type: "yesno" as const },
+  { key: "hasMedication", labelKey: "hasMedicationLabel", type: "yesno" as const },
+  { key: "hasInjuries", labelKey: "hasInjuriesLabel", type: "yesno" as const },
+  { key: "eatsBreakfast", labelKey: "eatsBreakfastLabel", type: "yesno" as const },
+  { key: "eatsFruitsVegetables", labelKey: "eatsFruitsVegetablesLabel", type: "yesno" as const },
+  { key: "drinksWaterEnough", labelKey: "drinksWaterEnoughLabel", type: "yesno" as const },
 ];
 
 export default function QuestionariosPage() {
   const t = useTranslations("questionarios");
   const common = useTranslations("common");
+  usePageTitle(t("title"));
   const { role } = useUser();
 
   const [students, setStudents] = useState<{ id: string; name: string; className?: string | null }[]>([]);
@@ -117,8 +120,8 @@ export default function QuestionariosPage() {
         <PageHeader title={t("title")} description={t("description")} />
         <EmptyState
           icon={Link2}
-          title="Perfil não associado"
-          description="A tua conta ainda não está associada a um perfil de aluno. Contacta a escola para concluírem a ligação."
+          title={t("unlinkedTitle")}
+          description={t("unlinkedDescription")}
         />
       </div>
     );
@@ -131,7 +134,7 @@ export default function QuestionariosPage() {
 
   const submitQuestionnaire = async (deferred: boolean) => {
     if (!studentId) {
-      toast.error("Selecione um aluno.");
+      toast.error(t("selectStudentError"));
       return;
     }
     if (deferred && deferralsLeft <= 0) {
@@ -152,7 +155,7 @@ export default function QuestionariosPage() {
       });
       if (!res.ok) {
         const body = await res.json().catch(() => ({}));
-        toast.error(body.error ?? "Erro ao submeter questionário.");
+        toast.error(body.error ?? t("submitError"));
         return;
       }
       if (deferred) {
@@ -163,51 +166,31 @@ export default function QuestionariosPage() {
         toast.success(t("success"));
       }
     } catch {
-      toast.error("Erro de ligação.");
+      toast.error(t("connectionError"));
     } finally {
       setSaving(false);
     }
   };
 
   return (
-    <div className="flex flex-col gap-5">
+    <PageTransition className="flex flex-col gap-5">
       <PageHeader
         title={t("title")}
         description={t("description")}
       />
 
-      <form
-        onSubmit={handleSubmit}
-        className="animate-fade-in-up bg-card/85 glass rounded-2xl border border-border/50 shadow-float p-5 flex flex-col gap-5 max-w-lg"
-      >
-        {role !== "ALUNO" && (
-          <StudentPicker students={students} value={studentId} onChange={setStudentId} />
-        )}
+      <div className="grid grid-cols-1 lg:grid-cols-[1fr_340px] gap-5 items-start">
 
-        {/* Deferral progress */}
-        {studentId && (
-          <div className="flex flex-col gap-1.5">
-            <div className="flex items-center justify-between text-xs text-muted-foreground">
-              <span>Adiamentos usados: {deferredCount} / {MAX_DEFERRALS}</span>
-              <span className={deferralsLeft === 0 ? "text-red-500 font-medium" : ""}>
-                {deferralsLeft === 0 ? "Limite atingido" : `${deferralsLeft} restantes`}
-              </span>
-            </div>
-            <div className="h-2 rounded-full bg-muted/50 overflow-hidden shadow-inner">
-              <div
-                className={`h-full rounded-full transition-all duration-1000 ease-out-expo ${deferredCount >= MAX_DEFERRALS
-                    ? "bg-red-500"
-                    : deferredCount >= 2
-                      ? "bg-amber-500"
-                      : "bg-green-500"
-                  }`}
-                style={{ width: `${Math.min((deferredCount / MAX_DEFERRALS) * 100, 100)}%` }}
-              />
-            </div>
-          </div>
-        )}
+        {/* LEFT — Form */}
+        <form
+          onSubmit={handleSubmit}
+          className="animate-fade-in-up bg-card/85 glass rounded-2xl border border-border/50 shadow-float p-6 flex flex-col gap-5"
+        >
+          {role !== "ALUNO" && (
+            <StudentPicker students={students} value={studentId} onChange={setStudentId} />
+          )}
 
-        <PillSelect
+          <PillSelect
           options={[
             { value: "AUTOCONCEITO", label: t("autoconceito") },
             { value: "AUTOESTIMA", label: t("autoestima") },
@@ -223,52 +206,42 @@ export default function QuestionariosPage() {
               q.slider ? (
                 <RangeSlider
                   key={q.key}
-                  label={q.label}
+                  label={t(q.labelKey)}
                   min={q.min}
                   max={q.max}
                   step={q.step}
                   value={routineData[q.key as keyof typeof routineData] as number}
                   onChange={(v) => setRoutineData((d) => ({ ...d, [q.key]: v }))}
-                  labels={q.key === "stressLevel" ? STRESS_LABELS : undefined}
+                  labels={q.key === "stressLevel" ? [t("stressNone"), t("stressLow"), t("stressModerate"), t("stressHigh"), t("stressExtreme")] : undefined}
                   colorStops={q.key === "stressLevel" ? STRESS_COLORS : undefined}
                 />
               ) : (
-                <div key={q.key} className="flex flex-col gap-1.5">
-                  <label className="text-sm font-medium">{q.label}</label>
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="number"
-                      min={q.min}
-                      max={q.max}
-                      step={q.step}
-                      value={routineData[q.key as keyof typeof routineData]}
-                      onChange={(e) =>
-                        setRoutineData((d) => ({
-                          ...d,
-                          [q.key]: parseFloat(e.target.value) || 0,
-                        }))
-                      }
-                      className="w-24 rounded-xl border border-border/50 px-4 py-2 text-sm bg-background/50 focus:outline-none focus:ring-2 focus:ring-gold-500/40 focus:bg-background transition-all shadow-inner inset-shadow-sm text-center font-medium"
-                    />
-                    {q.unit && <span className="text-sm font-medium text-muted-foreground bg-muted/50 px-2 py-1 rounded-md">{q.unit}</span>}
-                  </div>
-                </div>
+                <NumericStepper
+                  key={q.key}
+                  label={t(q.labelKey)}
+                  min={q.min}
+                  max={q.max}
+                  step={q.step}
+                  value={routineData[q.key as keyof typeof routineData] as number}
+                  onChange={(v) => setRoutineData((d) => ({ ...d, [q.key]: v }))}
+                  unit={q.unitKey ? t(q.unitKey) : undefined}
+                />
               )
             )}
           </div>
         )}
 
-        {/* ── Autoestima questions ── */}
+        {/* \u2500\u2500 Autoestima questions \u2500\u2500 */}
         {qType === "AUTOESTIMA" && (
           <div className="flex flex-col gap-4">
             {INITIAL_QUESTIONS.map((q) =>
               q.type === "yesno" ? (
                 <div key={q.key} className="flex items-center justify-between">
-                  <label className="text-sm font-medium">{q.label}</label>
+                  <label className="text-sm font-medium">{t(q.labelKey)}</label>
                   <PillSelect
                     options={[
-                      { value: "true", label: "Sim" },
-                      { value: "false", label: "Não" },
+                      { value: "true", label: t("yes") },
+                      { value: "false", label: t("no") },
                     ]}
                     value={String(initialData[q.key as keyof typeof initialData])}
                     onChange={(v) =>
@@ -277,26 +250,16 @@ export default function QuestionariosPage() {
                   />
                 </div>
               ) : (
-                <div key={q.key} className="flex flex-col gap-1.5">
-                  <label className="text-sm font-medium">{q.label}</label>
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="number"
-                      min={q.min}
-                      max={q.max}
-                      step={q.step}
-                      value={initialData[q.key as keyof typeof initialData] as number}
-                      onChange={(e) =>
-                        setInitialData((d) => ({
-                          ...d,
-                          [q.key]: parseInt(e.target.value) || 0,
-                        }))
-                      }
-                      className="w-24 rounded-xl border border-border/50 px-4 py-2 text-sm bg-background/50 focus:outline-none focus:ring-2 focus:ring-gold-500/40 focus:bg-background transition-all shadow-inner inset-shadow-sm text-center font-medium"
-                    />
-                    {q.unit && <span className="text-sm font-medium text-muted-foreground bg-muted/50 px-2 py-1 rounded-md">{q.unit}</span>}
-                  </div>
-                </div>
+                <NumericStepper
+                  key={q.key}
+                  label={t(q.labelKey)}
+                  min={q.min}
+                  max={q.max}
+                  step={q.step}
+                  value={initialData[q.key as keyof typeof initialData] as number}
+                  onChange={(v) => setInitialData((d) => ({ ...d, [q.key]: v }))}
+                  unit={q.unitKey ? t(q.unitKey) : undefined}
+                />
               )
             )}
           </div>
@@ -322,8 +285,106 @@ export default function QuestionariosPage() {
           >
             {t("submit")}
           </Button>
+        </form>
+
+        {/* RIGHT — Wellness Summary */}
+        <div className="lg:sticky lg:top-6 flex flex-col gap-4">
+          <div className="bg-card/85 glass rounded-2xl border border-border/50 shadow-float p-6 flex flex-col gap-5">
+            <div className="flex items-center gap-2">
+              <ClipboardList className="size-4 text-navy-600 dark:text-gold-400" />
+              <h3 className="text-sm font-semibold tracking-tight">{t(qType === "AUTOCONCEITO" ? "autoconceito" : "autoestima")}</h3>
+            </div>
+
+            {qType === "AUTOCONCEITO" ? (
+              <div className="flex flex-col gap-4">
+                {[
+                  { key: "energyLevel", labelKey: "energyLevelLabel", invert: false },
+                  { key: "stressLevel", labelKey: "stressLevelLabel", invert: true },
+                  { key: "wellnessLevel", labelKey: "wellnessLevelLabel", invert: false },
+                ].map(({ key, labelKey, invert }) => {
+                  const val = routineData[key as keyof typeof routineData] as number;
+                  const color = invert
+                    ? val >= 7 ? "bg-danger-500" : val >= 4 ? "bg-warning-500" : "bg-success-500"
+                    : val >= 7 ? "bg-success-500" : val >= 4 ? "bg-warning-500" : "bg-danger-400";
+                  return (
+                    <div key={key} className="flex flex-col gap-1.5">
+                      <div className="flex justify-between items-center">
+                        <span className="text-xs text-muted-foreground">{t(labelKey)}</span>
+                        <span className="text-xs font-bold tabular-nums">{val}/10</span>
+                      </div>
+                      <div className="h-2 rounded-full bg-muted/50 overflow-hidden">
+                        <div className={`h-full rounded-full transition-all duration-500 ${color}`} style={{ width: `${val * 10}%` }} />
+                      </div>
+                    </div>
+                  );
+                })}
+                <div className="pt-2 border-t border-border/50 grid grid-cols-2 gap-3">
+                  {[
+                    { key: "sleepHours", labelKey: "sleepHoursLabel", unitKey: "unitHours" },
+                    { key: "screenHours", labelKey: "screenHoursLabel", unitKey: "unitHours" },
+                    { key: "waterGlasses", labelKey: "waterGlassesLabel", unitKey: "unitGlasses" },
+                    { key: "mealsCount", labelKey: "mealsCountLabel", unitKey: "unitMeals" },
+                  ].map(({ key, labelKey, unitKey }) => (
+                    <div key={key} className="flex flex-col gap-0.5">
+                      <span className="text-[10px] text-muted-foreground truncate">{t(labelKey)}</span>
+                      <span className="text-base font-bold tabular-nums">
+                        {routineData[key as keyof typeof routineData]}
+                        <span className="text-xs font-normal text-muted-foreground ml-1">{t(unitKey)}</span>
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ) : (
+              <div className="flex flex-col gap-2.5">
+                {INITIAL_QUESTIONS.filter((q) => q.type === "yesno").map((q) => {
+                  const val = initialData[q.key as keyof typeof initialData] as boolean;
+                  return (
+                    <div key={q.key} className="flex items-center justify-between">
+                      <span className="text-xs text-muted-foreground truncate max-w-[160px]">{t(q.labelKey)}</span>
+                      <span className={`text-xs font-semibold ${val ? "text-success-600 dark:text-success-400" : "text-muted-foreground"}`}>
+                        {val ? t("yes") : t("no")}
+                      </span>
+                    </div>
+                  );
+                })}
+                <div className="pt-2 border-t border-border/50 flex flex-col gap-1.5">
+                  <span className="text-[10px] text-muted-foreground uppercase tracking-wider">{t("physicalActivityLabel")}</span>
+                  <div className="flex items-center gap-1">
+                    {[0,1,2,3,4,5,6].map((day) => (
+                      <div
+                        key={day}
+                        className={`flex-1 h-2 rounded-sm transition-colors ${day < initialData.physicalActivityFreq ? "bg-success-500" : "bg-muted/50"}`}
+                      />
+                    ))}
+                  </div>
+                  <span className="text-xs font-bold tabular-nums">{initialData.physicalActivityFreq} <span className="text-xs font-normal text-muted-foreground">{t("unitDays")}</span></span>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {studentId && (
+            <div className="rounded-2xl border border-border/50 bg-card/60 p-4 flex flex-col gap-2">
+              <div className="flex items-center justify-between text-xs">
+                <span className="text-muted-foreground font-medium">{t("deferralsUsed", { used: deferredCount, max: MAX_DEFERRALS })}</span>
+                <span className={deferralsLeft === 0 ? "text-danger-500 font-semibold" : "text-muted-foreground"}>
+                  {deferralsLeft === 0 ? t("limitReached") : t("remaining", { count: deferralsLeft })}
+                </span>
+              </div>
+              <div className="h-2 rounded-full bg-muted/50 overflow-hidden shadow-inner">
+                <div
+                  className={`h-full rounded-full transition-all duration-1000 ease-out-expo ${
+                    deferredCount >= MAX_DEFERRALS ? "bg-danger-500" : deferredCount >= 2 ? "bg-warning-500" : "bg-success-500"
+                  }`}
+                  style={{ width: `${Math.min((deferredCount / MAX_DEFERRALS) * 100, 100)}%` }}
+                />
+              </div>
+            </div>
+          )}
         </div>
-      </form>
-    </div>
+
+      </div>
+    </PageTransition>
   );
 }

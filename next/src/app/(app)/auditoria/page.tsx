@@ -1,13 +1,16 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import { toast } from "sonner";
 import { FileSearch, RefreshCw } from "lucide-react";
 import { PageHeader } from "@/components/ui/page-header";
+import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useUser } from "@/components/user-context";
+import { usePageTitle } from "@/hooks/use-page-title";
+import { PageTransition } from "@/components/ui/motion";
 
 interface AuditEntry {
   id: string;
@@ -19,37 +22,31 @@ interface AuditEntry {
   userName: string | null;
 }
 
-const ACTION_LABELS: Record<string, string> = {
-  login: "Início de sessão",
-  logout: "Fim de sessão",
-  register: "Registo",
-  create_student: "Criar aluno",
-  update_student: "Editar aluno",
-  delete_student: "Remover aluno",
-  record_biometrics: "Registar biometria",
-  record_tests: "Registar testes",
-  submit_questionnaire: "Submeter questionário",
-  trigger_sos: "Alerta SOS",
-  resolve_sos: "Resolver SOS",
-  export_report: "Exportar relatório",
-  create_dispensa: "Criar dispensa",
-  delete_dispensa: "Remover dispensa",
-  add_guardian: "Adicionar encarregado",
-  remove_guardian: "Remover encarregado",
-  change_password: "Alterar palavra-passe",
-  update_consent: "Atualizar consentimento",
-};
-
-function labelAction(action: string) {
-  return ACTION_LABELS[action] ?? action;
-}
+const ACTION_KEYS = [
+  "login", "logout", "register",
+  "create_student", "update_student", "delete_student",
+  "record_biometrics", "record_tests", "submit_questionnaire",
+  "trigger_sos", "resolve_sos", "export_report",
+  "create_dispensa", "delete_dispensa",
+  "add_guardian", "remove_guardian",
+  "change_password", "update_consent",
+] as const;
 
 export default function AuditoriaPage() {
   const t = useTranslations("auditoria");
+  usePageTitle(t("title"));
+  const locale = useLocale();
   const { role } = useUser();
 
   const [logs, setLogs] = useState<AuditEntry[]>([]);
   const [loading, setLoading] = useState(false);
+
+  function labelAction(action: string) {
+    if (ACTION_KEYS.includes(action as (typeof ACTION_KEYS)[number])) {
+      return t(`actions.${action}` as Parameters<typeof t>[0]);
+    }
+    return action;
+  }
 
   const loadLogs = useCallback(async () => {
     setLoading(true);
@@ -77,24 +74,26 @@ export default function AuditoriaPage() {
   }
 
   return (
-    <div className="flex flex-col gap-5">
+    <PageTransition className="flex flex-col gap-5">
       <PageHeader
         title={t("title")}
         description={t("description")}
       >
-        <button
+        <Button
+          size="sm"
+          variant="ghost"
+          icon={<RefreshCw size={14} />}
+          loading={loading}
           onClick={loadLogs}
-          className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground px-3 py-1.5 rounded-lg hover:bg-muted"
-          title={t("refresh")}
+          aria-label={t("refresh")}
         >
-          <RefreshCw size={14} className={loading ? "animate-spin" : ""} />
           {t("refresh")}
-        </button>
+        </Button>
       </PageHeader>
 
-      <div className="animate-fade-in-up bg-card/85 glass border border-border/50 shadow-float rounded-2xl overflow-hidden p-1">
+      <div className="animate-fade-in-up bg-card/85 glass border border-border/50 shadow-float rounded-2xl overflow-hidden">
         {loading && (
-          <div className="p-4 flex flex-col gap-3 animate-fade-in">
+          <div className="p-5 flex flex-col gap-3 animate-fade-in">
             <Skeleton className="h-12 w-full rounded-xl" />
             <Skeleton className="h-12 w-full rounded-xl" />
             <Skeleton className="h-12 w-full rounded-xl" />
@@ -107,14 +106,14 @@ export default function AuditoriaPage() {
           <div className="py-10">
             <EmptyState
               icon={FileSearch}
-              title="Grelha Vazia"
+              title={t("emptyTitle")}
               description={t("noLogs")}
             />
           </div>
         )}
 
         {!loading && logs.length > 0 && (
-          <div className="overflow-x-auto rounded-xl border border-border/50 m-2">
+          <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-border/50 bg-navy-50/50 dark:bg-navy-900/30">
@@ -129,7 +128,7 @@ export default function AuditoriaPage() {
                 {logs.map((entry) => (
                   <tr key={entry.id} className="border-b border-border/50 hover:bg-muted/50 transition-colors">
                     <td className="py-3 px-5 whitespace-nowrap text-muted-foreground text-xs font-medium">
-                      {new Date(entry.createdAt).toLocaleString("pt-PT", {
+                      {new Date(entry.createdAt).toLocaleString(locale, {
                         day: "2-digit",
                         month: "2-digit",
                         year: "numeric",
@@ -158,6 +157,6 @@ export default function AuditoriaPage() {
           </div>
         )}
       </div>
-    </div>
+    </PageTransition>
   );
 }

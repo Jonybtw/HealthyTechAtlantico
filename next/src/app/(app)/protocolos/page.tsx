@@ -1,5 +1,8 @@
+import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 import { PageHeader } from "@/components/ui/page-header";
+
+export const metadata: Metadata = { title: "Protocolos" };
 
 /* ── Static ZAF reference tables (server component) ── */
 
@@ -29,15 +32,15 @@ const WAIST_TABLE = [
   { age: "18", male: "≤83.2", female: "≤74.7" },
 ];
 
-const TEST_ZONES = [
-  { test: "Vai e Vem", unit: "percursos", description: "Corrida de vai e vem 20m (PACER)" },
-  { test: "Cooper", unit: "metros", description: "Corrida de 12 minutos" },
-  { test: "Milha", unit: "mm:ss", description: "Corrida de 1 milha" },
-  { test: "Velocidade", unit: "segundos", description: "Sprint 40 jardas" },
-  { test: "Agilidade", unit: "segundos", description: "Corrida de agilidade 4×10m" },
-  { test: "Abdominais", unit: "repetições", description: "Abdominais em 60 segundos" },
-  { test: "Extensões de braços", unit: "repetições", description: "Extensões sem cadência" },
-  { test: "Senta e Alcança", unit: "cm", description: "Flexibilidade do tronco" },
+const TEST_ZONE_KEYS = [
+  { testKey: "testVaiVem", unitKey: "testVaiVemUnit", descKey: "testVaiVemDesc" },
+  { testKey: "testCooper", unitKey: "testCooperUnit", descKey: "testCooperDesc" },
+  { testKey: "testMilha", unitKey: "testMilhaUnit", descKey: "testMilhaDesc" },
+  { testKey: "testVelocidade", unitKey: "testVelocidadeUnit", descKey: "testVelocidadeDesc" },
+  { testKey: "testAgilidade", unitKey: "testAgilidadeUnit", descKey: "testAgilidadeDesc" },
+  { testKey: "testAbdominais", unitKey: "testAbdominaisUnit", descKey: "testAbdominaisDesc" },
+  { testKey: "testExtensoes", unitKey: "testExtensoesUnit", descKey: "testExtensoesDesc" },
+  { testKey: "testSentaAlcanca", unitKey: "testSentaAlcancaUnit", descKey: "testSentaAlcancaDesc" },
 ];
 
 function ReferenceTable({
@@ -91,8 +94,8 @@ export default async function ProtocolosPage() {
 
       {/* BMI table */}
       <ReferenceTable
-        title="IMC — Valores de corte (Zona Saudável)"
-        headers={["Idade", "Masculino (≤)", "Feminino (≤)"]}
+        title={t("bmiTableTitle")}
+        headers={[t("age"), t("male"), t("female")]}
         rows={BMI_TABLE.map((r) => ({
           cells: [r.age, r.male, r.female],
         }))}
@@ -100,8 +103,8 @@ export default async function ProtocolosPage() {
 
       {/* Waist table */}
       <ReferenceTable
-        title="Perímetro da Cintura — Valores de corte (Zona Saudável)"
-        headers={["Idade", "Masculino (≤)", "Feminino (≤)"]}
+        title={t("waistTableTitle")}
+        headers={[t("age"), t("male"), t("female")]}
         rows={WAIST_TABLE.map((r) => ({
           cells: [r.age, r.male, r.female],
         }))}
@@ -109,17 +112,17 @@ export default async function ProtocolosPage() {
 
       {/* Fitness tests overview */}
       <div className="flex flex-col gap-4 mb-10 animate-fade-in-up delay-100">
-        <h3 className="text-lg font-bold tracking-tight">Testes de Aptidão Física</h3>
+        <h3 className="text-lg font-bold tracking-tight">{t("fitnessTitle")}</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {TEST_ZONES.map((t) => (
+          {TEST_ZONE_KEYS.map((tz) => (
             <div
-              key={t.test}
+              key={tz.testKey}
               className="bg-card/85 glass rounded-2xl border border-border/50 shadow-sm p-5 flex flex-col gap-1.5 transition-all duration-300 hover:shadow-float hover:-translate-y-1"
             >
-              <span className="font-semibold">{t.test}</span>
-              <span className="text-xs text-muted-foreground">{t.description}</span>
+              <span className="font-semibold">{t(tz.testKey)}</span>
+              <span className="text-xs text-muted-foreground">{t(tz.descKey)}</span>
               <span className="text-xs text-navy-600 font-medium mt-1">
-                Unidade: {t.unit}
+                {t("unitLabel")}: {t(tz.unitKey)}
               </span>
             </div>
           ))}

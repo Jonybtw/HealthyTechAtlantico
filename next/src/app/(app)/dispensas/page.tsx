@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ConfirmModal } from "@/components/ui/confirm-modal";
 import { EmptyState } from "@/components/ui/empty-state";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useUser } from "@/components/user-context";
 import {
   useStudents,
@@ -18,10 +19,12 @@ import {
   useCreateDispensa,
   useDeleteDispensa,
 } from "@/hooks/use-queries";
+import { usePageTitle } from "@/hooks/use-page-title";
 
 export default function DispensasPage() {
   const t = useTranslations("dispensas");
   const common = useTranslations("common");
+  usePageTitle(t("title"));
   const { role } = useUser();
   const canManageDispensas = role === "ADMIN" || role === "PROFESSOR";
 
@@ -54,7 +57,7 @@ export default function DispensasPage() {
       setShowForm(false);
       setForm({ reason: "", startDate: "", endDate: "" });
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Connection error.");
+      toast.error(error instanceof Error ? error.message : t("connectionError"));
     }
   };
 
@@ -65,7 +68,7 @@ export default function DispensasPage() {
       await deleteMutation.mutateAsync(deleteId);
       toast.success(t("deleteSuccess"));
     } catch {
-      toast.error("Failed to remove dispensa.");
+      toast.error(t("removeError"));
     } finally {
       setDeleteId(null);
     }
@@ -87,7 +90,7 @@ export default function DispensasPage() {
           icon={<Plus className="size-4" />}
           onClick={() => setShowForm((value) => !value)}
         >
-          {showForm ? t("deleteBtn") : t("newBtn")}
+          {showForm ? t("cancelBtn") : t("newBtn")}
         </Button>
       </PageHeader>
 
@@ -125,7 +128,7 @@ export default function DispensasPage() {
               }
             />
           </div>
-          <Button type="submit" loading={createMutation.isPending} className="self-start">
+          <Button type="submit" loading={createMutation.isPending} icon={<ShieldOff className="size-4" />} className="self-start">
             {t("createBtn")}
           </Button>
         </form>
@@ -136,25 +139,44 @@ export default function DispensasPage() {
       {!studentId ? (
         <EmptyState
           icon={ShieldOff}
-          title="No Student Selected"
-          description="Select a student to view or manage dispensas."
+          title={t("noStudentSelected")}
+          description={t("noStudentSelectedDesc")}
         />
       ) : loading ? (
-        <p className="text-sm text-muted-foreground animate-pulse py-10 text-center">
-          Loading...
-        </p>
+        <div className="flex flex-col gap-3">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <div key={i} className="bg-card/85 rounded-2xl border border-border/50 p-5 flex items-center justify-between">
+              <div className="flex flex-col gap-2">
+                <Skeleton className="h-4 w-48" />
+                <Skeleton className="h-3 w-32" />
+              </div>
+              <Skeleton className="h-8 w-8 rounded-xl" />
+            </div>
+          ))}
+        </div>
       ) : dispensas.length === 0 ? (
         <EmptyState
           icon={ShieldOff}
-          title="No Dispensas"
+          title={t("noDispensasTitle")}
           description={t("noDispensas")}
+          action={
+            canManageDispensas ? (
+              <Button
+                size="sm"
+                icon={<Plus className="size-4" />}
+                onClick={() => setShowForm(true)}
+              >
+                {t("createBtn")}
+              </Button>
+            ) : undefined
+          }
         />
       ) : (
         <StaggerList className="flex flex-col gap-3">
           {dispensas.map((dispensa) => (
             <StaggerItem
               key={dispensa.id}
-              className="bg-card/85 glass rounded-2xl border border-border/50 p-5 flex items-center justify-between transition-all duration-300 hover:shadow-float hover:-translate-y-1"
+              className="bg-card/85 glass rounded-2xl border border-border/50 shadow-float p-5 flex items-center justify-between transition-all duration-300 hover:-translate-y-1"
             >
               <div>
                 <p className="font-semibold">{dispensa.reason}</p>

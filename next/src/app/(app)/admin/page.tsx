@@ -1,9 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import { toast } from "sonner";
-import { Settings, UserPlus, Trash2, Loader2, RefreshCw } from "lucide-react";
+import { Settings, UserPlus, Trash2, RefreshCw } from "lucide-react";
 import { PageTransition, FadeIn } from "@/components/ui/motion";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -16,6 +16,9 @@ import { PillSelect } from "@/components/ui/pill-select";
 import { ConfirmModal } from "@/components/ui/confirm-modal";
 import { useUser } from "@/components/user-context";
 import { useStaff, useDeleteStaff, type StaffUser } from "@/hooks/use-queries";
+import { usePageTitle } from "@/hooks/use-page-title";
+import { Skeleton } from "@/components/ui/skeleton";
+import { EmptyState } from "@/components/ui/empty-state";
 import {
   Form,
   FormField,
@@ -31,6 +34,8 @@ export default function AdminPage() {
   const t = useTranslations("admin");
   const common = useTranslations("common");
   const roles = useTranslations("roles");
+  const locale = useLocale();
+  usePageTitle(t("title"));
   const { role } = useUser();
 
   const { data: staff = [], isLoading: loading, refetch: loadStaff } = useStaff();
@@ -96,7 +101,7 @@ export default function AdminPage() {
       />
 
       {/* ── Create staff ──────────────────────────────────────── */}
-      <FadeIn delay={0.1} className="bg-card border border-border rounded-2xl p-5 flex flex-col gap-4">
+      <FadeIn delay={0.1} className="bg-card/85 glass border border-border/50 shadow-float rounded-2xl p-5 flex flex-col gap-4">
         <h2 className="text-base font-semibold flex items-center gap-2">
           <UserPlus size={18} className="text-navy-600" />
           {t("createTitle")}
@@ -176,67 +181,73 @@ export default function AdminPage() {
       </FadeIn>
 
       {/* ── Staff list ────────────────────────────────────────── */}
-      <FadeIn delay={0.2} className="bg-card border border-border rounded-2xl p-5 flex flex-col gap-4">
+      <FadeIn delay={0.2} className="bg-card/85 glass border border-border/50 shadow-float rounded-2xl p-5 flex flex-col gap-4">
         <div className="flex items-center justify-between">
           <h2 className="text-base font-semibold flex items-center gap-2">
             <Settings size={18} className="text-navy-600" />
             {t("listTitle")}
           </h2>
-          <button
-            onClick={() => loadStaff()}
-            className="p-1.5 rounded-md hover:bg-muted text-muted-foreground"
-            title={t("refreshList")}
+          <Button
+            size="icon"
+            variant="ghost"
+            icon={<RefreshCw size={15} />}
+            loading={loading}
             aria-label={t("refreshList")}
-          >
-            <RefreshCw size={15} className={loading ? "animate-spin" : ""} />
-          </button>
+            onClick={() => loadStaff()}
+          />
         </div>
 
         {loading && (
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <Loader2 size={16} className="animate-spin" /> {common("loading")}
+          <div className="flex flex-col gap-2">
+            <Skeleton className="h-12 w-full rounded-xl" />
+            <Skeleton className="h-12 w-full rounded-xl" />
+            <Skeleton className="h-12 w-full rounded-xl" />
           </div>
         )}
 
         {!loading && staff.length === 0 && (
-          <p className="text-sm text-muted-foreground">{t("noStaff")}</p>
+          <EmptyState
+            icon={Settings}
+            title={t("noStaff")}
+            description={t("noStaffDesc")}
+          />
         )}
 
         {!loading && staff.length > 0 && (
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-border">
-                  <th className="text-left py-2 px-3 font-medium">{t("nameLabel")}</th>
-                  <th className="text-left py-2 px-3 font-medium">{t("emailLabel")}</th>
-                  <th className="text-left py-2 px-3 font-medium">{t("roleLabel")}</th>
-                  <th className="text-left py-2 px-3 font-medium">{t("createdAtLabel")}</th>
-                  <th className="py-2 px-3" />
+                <tr className="border-b border-border/50 bg-muted/30">
+                  <th className="text-left py-3 px-4 font-semibold text-muted-foreground">{t("nameLabel")}</th>
+                  <th className="text-left py-3 px-4 font-semibold text-muted-foreground">{t("emailLabel")}</th>
+                  <th className="text-left py-3 px-4 font-semibold text-muted-foreground">{t("roleLabel")}</th>
+                  <th className="text-left py-3 px-4 font-semibold text-muted-foreground">{t("createdAtLabel")}</th>
+                  <th className="py-3 px-4" />
                 </tr>
               </thead>
               <tbody>
                 {staff.map((s) => (
-                  <tr key={s.id} className="border-b border-border/50 hover:bg-muted/30">
-                    <td className="py-2 px-3">{s.name ?? "—"}</td>
-                    <td className="py-2 px-3 text-muted-foreground">{s.email}</td>
-                    <td className="py-2 px-3">
+                  <tr key={s.id} className="border-b border-border/50 hover:bg-muted/30 transition-colors">
+                    <td className="py-3 px-4">{s.name ?? "—"}</td>
+                    <td className="py-3 px-4 text-muted-foreground">{s.email}</td>
+                    <td className="py-3 px-4">
                       <span
                         className={`inline-block rounded-full px-2 py-0.5 text-xs font-medium ${
                           s.role === "PROFESSOR"
-                            ? "bg-navy-100 text-navy-800"
-                            : "bg-gold-100 text-gold-800"
+                            ? "bg-navy-100 dark:bg-navy-800/40 text-navy-800 dark:text-navy-200"
+                            : "bg-gold-100 dark:bg-gold-900/30 text-gold-800 dark:text-gold-300"
                         }`}
                       >
                         {roles(s.role)}
                       </span>
                     </td>
-                    <td className="py-2 px-3 text-muted-foreground">
-                      {new Date(s.createdAt).toLocaleDateString("pt-PT")}
+                    <td className="py-3 px-4 text-muted-foreground">
+                      {new Date(s.createdAt).toLocaleDateString(locale)}
                     </td>
-                    <td className="py-2 px-3 text-right">
+                    <td className="py-3 px-4 text-right">
                       <button
                         onClick={() => setDeleteTarget(s)}
-                        className="p-1.5 rounded-md hover:bg-danger-50 text-muted-foreground hover:text-danger-600"
+                        className="p-1.5 rounded-xl hover:bg-danger-50 dark:hover:bg-danger-900/20 text-muted-foreground hover:text-danger-600 transition-all border border-transparent hover:border-danger-200 dark:hover:border-danger-800/30"
                         aria-label={t("deleteBtn")}
                       >
                         <Trash2 size={15} />

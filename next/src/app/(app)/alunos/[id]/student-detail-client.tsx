@@ -2,9 +2,9 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import { toast } from "sonner";
-import { Ruler, Timer, ClipboardList, ShieldOff, Users, Pencil, Trash2 } from "lucide-react";
+import { Ruler, Timer, ClipboardList, ShieldOff, Users, Pencil, Trash2, Check } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import type { z } from "zod";
@@ -21,6 +21,14 @@ import {
   FormItem,
   FormControl,
 } from "@/components/ui/form";
+import { PageTransition } from "@/components/ui/motion";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface Props {
   student: {
@@ -74,6 +82,7 @@ export function StudentDetailClient({ student }: Props) {
   const { role } = useUser();
   const t = useTranslations("studentDetail");
   const common = useTranslations("common");
+  const locale = useLocale();
   const canManageStudent = role === "PROFESSOR" || role === "ADMIN";
 
   const age = student.birthDate
@@ -144,7 +153,7 @@ export function StudentDetailClient({ student }: Props) {
   };
 
   return (
-    <div className="flex flex-col gap-5">
+    <PageTransition className="flex flex-col gap-5">
       <PageHeader
         title={student.name}
         description={`${student.sex === "M" ? t("male") : t("female")}${age !== null && age !== undefined ? " \u00b7 " + age + " " + t("years") : ""} \u00b7 ${
@@ -207,14 +216,15 @@ export function StudentDetailClient({ student }: Props) {
                     <FormControl>
                       <div className="flex flex-col gap-1.5">
                         <label className="text-sm font-semibold tracking-tight text-foreground">{t("sexLabel")}</label>
-                        <select
-                          value={field.value}
-                          onChange={field.onChange}
-                          className="rounded-2xl border border-border/70 bg-background/65 px-4 py-3 text-sm text-foreground transition-all focus:outline-none focus:ring-2 focus:ring-gold-500/40"
-                        >
-                          <option value="M">{t("male")}</option>
-                          <option value="F">{t("female")}</option>
-                        </select>
+                        <Select value={field.value} onValueChange={field.onChange}>
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="M">{t("male")}</SelectItem>
+                            <SelectItem value="F">{t("female")}</SelectItem>
+                          </SelectContent>
+                        </Select>
                       </div>
                     </FormControl>
                   </FormItem>
@@ -271,6 +281,7 @@ export function StudentDetailClient({ student }: Props) {
             <Button
               type="submit"
               loading={editForm.formState.isSubmitting}
+              icon={<Check className="size-4" />}
               className="self-start"
             >
               {t("saveChanges")}
@@ -279,7 +290,7 @@ export function StudentDetailClient({ student }: Props) {
         </Form>
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
         <Section icon={<Ruler className="size-4" />} title={t("recentBiometrics")}>
           {lastBio ? (
             <div className="grid grid-cols-2 gap-2 text-sm">
@@ -292,7 +303,7 @@ export function StudentDetailClient({ student }: Props) {
               />
               <Stat label={t("waist")} value={lastBio.waistCm ? lastBio.waistCm + " cm" : "\u2014"} />
               <Stat label={t("fatPct")} value={lastBio.fatPct ? lastBio.fatPct + "%" : "\u2014"} />
-              <Stat label={t("date")} value={new Date(lastBio.recordedAt).toLocaleDateString("pt-PT")} />
+              <Stat label={t("date")} value={new Date(lastBio.recordedAt).toLocaleDateString(locale)} />
             </div>
           ) : (
             <Empty />
@@ -324,7 +335,7 @@ export function StudentDetailClient({ student }: Props) {
                 <li key={i} className="flex justify-between">
                   <span className="font-medium">{q.type}</span>
                   <span className="text-muted-foreground">
-                    {new Date(q.submittedAt).toLocaleDateString("pt-PT")}
+                    {new Date(q.submittedAt).toLocaleDateString(locale)}
                   </span>
                 </li>
               ))}
@@ -341,8 +352,8 @@ export function StudentDetailClient({ student }: Props) {
                 <li key={d.id}>
                   <span className="font-medium">{d.reason}</span>
                   <span className="text-muted-foreground ml-2">
-                    {new Date(d.startDate).toLocaleDateString("pt-PT")}
-                    {" \u2014 " + new Date(d.endDate).toLocaleDateString("pt-PT")}
+                    {new Date(d.startDate).toLocaleDateString(locale)}
+                    {" \u2014 " + new Date(d.endDate).toLocaleDateString(locale)}
                   </span>
                 </li>
               ))}
@@ -380,7 +391,7 @@ export function StudentDetailClient({ student }: Props) {
         onConfirm={handleDelete}
         onCancel={() => setConfirmDelete(false)}
       />
-    </div>
+    </PageTransition>
   );
 }
 

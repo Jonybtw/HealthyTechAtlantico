@@ -1,6 +1,6 @@
 "use client";
 
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import {
   Users,
   Activity,
@@ -14,10 +14,12 @@ import {
   ClipboardList,
   BarChart3,
 } from "lucide-react";
+import Link from "next/link";
 import { KpiCard } from "@/components/ui/kpi-card";
 import { PageHeader } from "@/components/ui/page-header";
 import { EmptyState } from "@/components/ui/empty-state";
 import { PageTransition, StaggerList, StaggerItem, FadeIn } from "@/components/ui/motion";
+import { usePageTitle } from "@/hooks/use-page-title";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
 import type { DashboardCardData, DashboardSummary } from "@/lib/dashboard";
 
@@ -37,6 +39,8 @@ const ICONS: Record<DashboardCardData["icon"], typeof Users> = {
 
 export function DashboardClient({ username, summary }: Props) {
   const t = useTranslations("dashboard");
+  const locale = useLocale();
+  usePageTitle(t("title"));
   const h = new Date().getHours();
   const greeting =
     h < 12
@@ -75,7 +79,7 @@ export function DashboardClient({ username, summary }: Props) {
             value={
               summary.studentSummary.lastBiometric
                 ? new Date(summary.studentSummary.lastBiometric).toLocaleDateString(
-                  "pt-PT"
+                  locale
                 )
                 : "—"
             }
@@ -88,7 +92,7 @@ export function DashboardClient({ username, summary }: Props) {
             value={
               summary.studentSummary.lastTest
                 ? new Date(summary.studentSummary.lastTest).toLocaleDateString(
-                  "pt-PT"
+                  locale
                 )
                 : "—"
             }
@@ -139,8 +143,8 @@ export function DashboardClient({ username, summary }: Props) {
         const totalZsaf = summary.zafByYear.reduce((s, y) => s + y.zsaf, 0);
         const totalZmf = summary.zafByYear.reduce((s, y) => s + y.zmf, 0);
         const donutData = [
-          { name: t("zsaf"), value: totalZsaf, color: "#10b981" },
-          { name: t("zmf"), value: totalZmf, color: "#f59e0b" },
+          { name: t("zsaf"), value: totalZsaf, color: "var(--color-success-500)" },
+          { name: t("zmf"), value: totalZmf, color: "var(--color-warning-500)" },
         ];
         const totalWithBio = totalZsaf + totalZmf;
         const overallPct = totalWithBio > 0 ? Math.round((totalZsaf / totalWithBio) * 100) : 0;
@@ -190,11 +194,11 @@ export function DashboardClient({ username, summary }: Props) {
                   </div>
                   <div className="flex gap-4 text-xs">
                     <div className="flex items-center gap-1.5">
-                      <span className="size-2.5 rounded-full bg-[#10b981]" />
+                      <span className="size-2.5 rounded-full bg-success-500" />
                       <span className="text-muted-foreground">{t("zsaf")}: {totalZsaf}</span>
                     </div>
                     <div className="flex items-center gap-1.5">
-                      <span className="size-2.5 rounded-full bg-[#f59e0b]" />
+                      <span className="size-2.5 rounded-full bg-warning-400" />
                       <span className="text-muted-foreground">{t("zmf")}: {totalZmf}</span>
                     </div>
                   </div>
@@ -218,7 +222,7 @@ export function DashboardClient({ username, summary }: Props) {
                       {academicYear.year}
                     </span>
                     <span className="text-xs text-muted-foreground bg-muted px-2 py-0.5 rounded-full">
-                      {academicYear.total} alunos
+                      {academicYear.total} {t("studentsUnit")}
                     </span>
                   </div>
                   {academicYear.withBio > 0 ? (
@@ -228,8 +232,8 @@ export function DashboardClient({ username, summary }: Props) {
                           className="absolute top-0 left-0 bottom-0 rounded-full animate-progress"
                           style={{
                             "--progress-width": `${pct}%`,
-                            background: "linear-gradient(90deg, #10b981, #34d399)",
-                            boxShadow: "0 0 10px rgba(16, 185, 129, 0.5)",
+                            background: "linear-gradient(90deg, var(--color-success-500), var(--color-success-400))",
+                            boxShadow: "0 0 10px var(--color-success-500)",
                           } as React.CSSProperties}
                         >
                           <div
@@ -301,7 +305,7 @@ export function DashboardClient({ username, summary }: Props) {
                 shadow: "shadow-sm",
               },
             ].map(({ href, label, icon: ActionIcon, gradient, text, shadow }) => (
-              <a
+              <Link
                 key={href}
                 href={href}
                 className={`group relative flex flex-col items-center gap-3 rounded-2xl border border-border/50 bg-gradient-to-b p-5 text-center transition-all duration-300
@@ -312,7 +316,7 @@ export function DashboardClient({ username, summary }: Props) {
                   <ActionIcon className="size-5" />
                 </span>
                 <span className="text-sm font-bold tracking-wide">{label}</span>
-              </a>
+              </Link>
             ))}
           </div>
         </FadeIn>

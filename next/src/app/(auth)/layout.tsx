@@ -1,21 +1,21 @@
+"use client";
+
 import Image from "next/image";
+import { useTranslations } from "next-intl";
 import { Activity, ShieldCheck, Sparkles } from "lucide-react";
 
 const HIGHLIGHTS = [
   {
     icon: ShieldCheck,
-    title: "Segurança institucional",
-    description: "Autenticação robusta e acesso controlado por perfil.",
+    titleKey: "highlightSecurity" as const,
   },
   {
     icon: Activity,
-    title: "Acompanhamento contínuo",
-    description: "Biometria, testes e SOS numa plataforma única.",
+    titleKey: "highlightMonitoring" as const,
   },
   {
     icon: Sparkles,
-    title: "Experiência premium",
-    description: "Fluxos claros e responsivos para operação diária.",
+    titleKey: "highlightExperience" as const,
   },
 ];
 
@@ -24,6 +24,7 @@ export default function AuthLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const t = useTranslations("authLayout");
   return (
     <main className="relative flex min-h-screen flex-col overflow-hidden bg-[linear-gradient(160deg,#091523_0%,#14304c_60%,#203f56_100%)]">
       {/* Gold glow — decorative */}
@@ -44,25 +45,29 @@ export default function AuthLayout({
           priority
         />
 
+        <p className="text-center text-[11px] font-medium uppercase tracking-[0.22em] text-navy-100/50">
+          {t("department")}
+        </p>
+
         {/* Headline */}
         <div className="space-y-2 text-center">
           <h1 className="font-display text-2xl font-semibold leading-tight tracking-tight text-white">
-            Saúde escolar com critério e resposta imediata.
+            {t("headline")}
           </h1>
           <p className="text-sm leading-relaxed text-navy-100/65">
-            Plataforma institucional para monitorização física, questionários e alertas com acompanhamento seguro.
+            {t("subtitle")}
           </p>
         </div>
 
         {/* Feature pills */}
         <div className="flex flex-wrap justify-center gap-2">
-          {HIGHLIGHTS.map(({ icon: Icon, title }) => (
+          {HIGHLIGHTS.map(({ icon: Icon, titleKey }) => (
             <span
-              key={title}
+              key={titleKey}
               className="inline-flex items-center gap-1.5 rounded-full border border-white/15 bg-white/8 px-3 py-1 text-xs font-medium text-white/80"
             >
               <Icon className="size-3.5 text-gold-300" />
-              {title}
+              {t(titleKey)}
             </span>
           ))}
         </div>
@@ -74,7 +79,7 @@ export default function AuthLayout({
 
         {/* Footer */}
         <p className="text-center text-xs text-navy-200/45">
-          {`© ${new Date().getFullYear()} HealthyTech Atlântico. Todos os direitos reservados.`}
+          {t("copyright", { year: new Date().getFullYear() })}
         </p>
       </div>
     </main>

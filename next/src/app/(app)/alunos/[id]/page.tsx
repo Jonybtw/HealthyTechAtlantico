@@ -1,8 +1,11 @@
+import type { Metadata } from "next";
 import { requireAuth } from "@/lib/auth-guard";
 import { prisma } from "@/lib/prisma";
 import { isStaffRole } from "@/lib/rbac";
 import { notFound, redirect } from "next/navigation";
 import { StudentDetailClient } from "./student-detail-client";
+
+export const metadata: Metadata = { title: "Detalhe do Aluno" };
 
 interface Props {
   params: Promise<{ id: string }>;

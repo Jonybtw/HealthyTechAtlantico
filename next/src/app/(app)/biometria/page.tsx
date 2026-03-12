@@ -3,8 +3,8 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
-import { Link2, Ruler } from "lucide-react";
-import { PageTransition, ScaleIn } from "@/components/ui/motion";
+import { Link2, Ruler, Activity } from "lucide-react";
+import { PageTransition } from "@/components/ui/motion";
 import { PageHeader } from "@/components/ui/page-header";
 import { StudentPicker } from "@/components/ui/student-picker";
 import { UnitInput } from "@/components/ui/unit-input";
@@ -15,6 +15,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useUser } from "@/components/user-context";
 import { classifyBmi, classifyWaist, calcAgeFromBirthDate } from "@/lib/zaf";
 import type { Sex } from "@prisma/client";
+import { usePageTitle } from "@/hooks/use-page-title";
 
 interface StudentOption {
   id: string;
@@ -34,6 +35,7 @@ interface Classification {
 
 export default function BiometriaPage() {
   const t = useTranslations("biometria");
+  usePageTitle(t("title"));
   const { role } = useUser();
 
   const [students, setStudents] = useState<StudentOption[]>([]);
@@ -58,7 +60,7 @@ export default function BiometriaPage() {
     setLoadingStudents(true);
     try {
       const res = await fetch("/api/students?limit=500");
-      if (!res.ok) { toast.error("Erro ao carregar lista de alunos."); return; }
+      if (!res.ok) { toast.error(t("loadError")); return; }
       const body = await res.json();
       setStudents(
         body.students.map((s: Record<string, unknown>) => ({
@@ -75,7 +77,7 @@ export default function BiometriaPage() {
         setStudentId(body.students[0].id);
       }
     } catch {
-      toast.error("Erro de ligação ao carregar alunos.");
+      toast.error(t("loadConnectionError"));
     } finally {
       setLoadingStudents(false);
     }
@@ -98,7 +100,7 @@ export default function BiometriaPage() {
           calcAgeFromBirthDate(student.birthDate) ??
           14;
         const imcResult = classifyBmi(bmi, student.sex, age);
-        const imcZone = imcResult?.zone ?? (bmi <= 25 ? "Zona Saudável" : "Zona de Melhoria");
+        const imcZone = imcResult?.zone ?? (bmi <= 25 ? t("healthyZone") : t("improvementZone"));
 
         let waistZone: string | null = null;
         if (form.waistCm) {
@@ -126,8 +128,8 @@ export default function BiometriaPage() {
         <PageHeader title={t("title")} description={t("description")} />
         <EmptyState
           icon={Link2}
-          title="Perfil não associado"
-          description="A tua conta ainda não está associada a um perfil de aluno. Contacta a escola para concluírem a ligação."
+          title={t("unlinkedTitle")}
+          description={t("unlinkedDescription")}
         />
       </div>
     );
@@ -153,7 +155,7 @@ export default function BiometriaPage() {
       const sex = student?.sex ?? "M";
 
       const imcResult = classifyBmi(bmi, sex, age);
-      const imcZone = imcResult?.zone ?? (bmi <= 25 ? "Zona Saudável" : "Zona de Melhoria");
+      const imcZone = imcResult?.zone ?? (bmi <= 25 ? t("healthyZone") : t("improvementZone"));
 
       let waistZone: string | undefined;
       if (form.waistCm) {
@@ -177,7 +179,7 @@ export default function BiometriaPage() {
 
       if (!res.ok) {
         const body = await res.json().catch(() => ({}));
-        toast.error(body.error ?? "Erro ao gravar biometria.");
+        toast.error(body.error ?? t("saveError"));
         return;
       }
 
@@ -185,7 +187,7 @@ export default function BiometriaPage() {
       setForm({ heightM: "", weightKg: "", waistCm: "", fatPct: "" });
       setClassification(null);
     } catch {
-      toast.error("Erro de ligação.");
+      toast.error(t("connectionError"));
     } finally {
       setSaving(false);
     }
@@ -199,117 +201,170 @@ export default function BiometriaPage() {
       />
 
       {loadingStudents ? (
-        <div className="bg-card/85 glass rounded-2xl border border-border/50 shadow-float p-5 flex flex-col gap-5 max-w-lg">
-          <Skeleton className="h-14 w-full rounded-2xl" />
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {[1,2,3,4].map(i => <Skeleton key={i} className="h-16 w-full rounded-xl" />)}
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_340px] gap-5 items-start">
+          <div className="bg-card/85 glass rounded-2xl border border-border/50 shadow-float p-6 flex flex-col gap-5">
+            <Skeleton className="h-14 w-full rounded-2xl" />
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {[1,2,3,4].map(i => <Skeleton key={i} className="h-16 w-full rounded-xl" />)}
+            </div>
+            <Skeleton className="h-10 w-36 rounded-full" />
           </div>
-          <Skeleton className="h-10 w-32 rounded-full" />
+          <Skeleton className="h-80 w-full rounded-2xl" />
         </div>
       ) : (
-        <form
-          onSubmit={handleSubmit}
-          className="bg-card/85 glass rounded-2xl border border-border/50 shadow-float p-5 flex flex-col gap-5 max-w-lg"
-        >
-        {/* Student Picker — hidden for ALUNOs */}
-        {role !== "ALUNO" && (
-          <StudentPicker
-            students={pickerStudents}
-            value={studentId}
-            onChange={setStudentId}
-          />
-        )}
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_340px] gap-5 items-start">
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <UnitInput
-            label={t("height")}
-            unit="m"
-            value={form.heightM}
-            onChange={set("heightM")}
-            placeholder="1.65"
-            step="0.01"
-            min="0.5"
-            max="2.5"
-            required
-          />
-          <UnitInput
-            label={t("weight")}
-            unit="kg"
-            value={form.weightKg}
-            onChange={set("weightKg")}
-            placeholder="60.0"
-            step="0.1"
-            min="10"
-            max="300"
-            required
-          />
-          <UnitInput
-            label={t("waist")}
-            unit="cm"
-            value={form.waistCm}
-            onChange={set("waistCm")}
-            placeholder="70"
-            step="0.1"
-          />
-          <UnitInput
-            label={t("fat")}
-            unit="%"
-            value={form.fatPct}
-            onChange={set("fatPct")}
-            placeholder="18.0"
-            step="0.1"
-          />
-        </div>
-
-        {/* Live classification */}
-        {classification && (
-          <div
-            className={`relative overflow-hidden flex flex-wrap items-center gap-4 p-5 rounded-xl border animate-scale-in transition-all duration-500 shadow-sm
-              ${classification.imcZone.includes("Saud") || classification.imcZone === "ZSAF"
-                ? "bg-success-50/50 dark:bg-success-900/10 border-success-200 dark:border-success-800/30"
-                : "bg-warning-50/50 dark:bg-warning-900/10 border-warning-200 dark:border-warning-800/30"
-              }
-            `}
+          {/* LEFT — Form */}
+          <form
+            onSubmit={handleSubmit}
+            className="bg-card/85 glass rounded-2xl border border-border/50 shadow-float p-6 flex flex-col gap-5"
           >
-            {/* Dynamic background pulse */}
-            <div
-              className={`absolute top-0 right-0 w-32 h-32 rounded-full blur-3xl opacity-20 -mr-16 -mt-16 animate-pulse-ring
-                ${classification.imcZone.includes("Saud") || classification.imcZone === "ZSAF" ? "bg-success-400" : "bg-warning-400"}
-              `}
-            />
+            {role !== "ALUNO" && (
+              <StudentPicker
+                students={pickerStudents}
+                value={studentId}
+                onChange={setStudentId}
+              />
+            )}
 
-            <div className="flex flex-col relative z-10">
-              <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-0.5">{t("bmi")}</span>
-              <strong className="text-2xl font-bold tracking-tighter tabular-nums text-foreground">{classification.imc}</strong>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <UnitInput
+                label={t("height")}
+                unit="m"
+                value={form.heightM}
+                onChange={set("heightM")}
+                placeholder="1.65"
+                step="0.01"
+                min="0.5"
+                max="2.5"
+                required
+              />
+              <UnitInput
+                label={t("weight")}
+                unit="kg"
+                value={form.weightKg}
+                onChange={set("weightKg")}
+                placeholder="60.0"
+                step="0.1"
+                min="10"
+                max="300"
+                required
+              />
+              <UnitInput
+                label={t("waist")}
+                unit="cm"
+                value={form.waistCm}
+                onChange={set("waistCm")}
+                placeholder="70"
+                step="0.1"
+              />
+              <UnitInput
+                label={t("fat")}
+                unit="%"
+                value={form.fatPct}
+                onChange={set("fatPct")}
+                placeholder="18.0"
+                step="0.1"
+              />
             </div>
 
-            <div className="w-px h-10 bg-border mx-1 hidden sm:block relative z-10" />
+            <Button
+              type="submit"
+              loading={saving}
+              icon={<Ruler className="size-4" />}
+              className="self-start"
+            >
+              {t("save")}
+            </Button>
+          </form>
 
-            <div className="flex flex-col gap-2 relative z-10">
+          {/* RIGHT — Live Classification Panel */}
+          <div className="lg:sticky lg:top-6 flex flex-col gap-4">
+            <div className="bg-card/85 glass rounded-2xl border border-border/50 shadow-float p-6 flex flex-col gap-5">
               <div className="flex items-center gap-2">
-                <span className="text-sm font-medium text-muted-foreground w-12">IMC:</span>
-                <ZoneBadge zone={classification.imcZone} />
+                <Activity className="size-4 text-navy-600 dark:text-gold-400" />
+                <h3 className="text-sm font-semibold tracking-tight">{t("classificationTitle")}</h3>
               </div>
 
-              {classification.waistZone && (
-                <div className="flex items-center gap-2">
-                  <span className="text-sm font-medium text-muted-foreground w-12">{t("waistClassLabel")}:</span>
-                  <ZoneBadge zone={classification.waistZone} />
+              {!classification ? (
+                <div className="flex flex-col items-center gap-3 py-6 text-center">
+                  <div className="relative">
+                    <svg width="120" height="120" viewBox="0 0 120 120" className="text-muted-foreground/20">
+                      <circle cx="60" cy="60" r="48" fill="none" stroke="currentColor" strokeWidth="8" strokeDasharray="6 4" />
+                    </svg>
+                    <div className="absolute inset-0 flex flex-col items-center justify-center">
+                      <span className="text-2xl font-bold text-muted-foreground/30">—</span>
+                      <span className="text-[10px] text-muted-foreground/40 font-semibold uppercase tracking-wider">IMC</span>
+                    </div>
+                  </div>
+                  <p className="text-sm text-muted-foreground leading-relaxed max-w-[200px]">{t("enterValuesHint")}</p>
                 </div>
-              )}
+              ) : (() => {
+                const r = 48;
+                const circ = 2 * Math.PI * r;
+                const bmiMin = 12, bmiMax = 38;
+                const pct = Math.min(Math.max((classification.imc - bmiMin) / (bmiMax - bmiMin), 0), 1);
+                const dashOffset = circ * (1 - pct);
+                const isHealthy = classification.imcZone.includes("Saud") || classification.imcZone === "ZSAF";
+                const trackColor = isHealthy ? "var(--color-success-500)" : "var(--color-warning-500)";
+
+                return (
+                  <>
+                    <div className="flex flex-col items-center gap-2">
+                      <div className="relative">
+                        <svg width="148" height="148" viewBox="0 0 148 148" className="-rotate-90">
+                          <circle cx="74" cy="74" r={r} fill="none" stroke="currentColor" strokeWidth="10" className="text-muted/25" />
+                          <circle
+                            cx="74" cy="74" r={r} fill="none"
+                            stroke={trackColor} strokeWidth="10"
+                            strokeDasharray={circ}
+                            strokeDashoffset={dashOffset}
+                            strokeLinecap="round"
+                            style={{ transition: "stroke-dashoffset 0.8s cubic-bezier(0.34,1.56,0.64,1), stroke 0.4s ease" }}
+                          />
+                        </svg>
+                        <div className="absolute inset-0 flex flex-col items-center justify-center">
+                          <span className="text-3xl font-bold tabular-nums tracking-tighter text-foreground">{classification.imc}</span>
+                          <span className="text-[10px] text-muted-foreground font-semibold uppercase tracking-wider">IMC</span>
+                        </div>
+                      </div>
+                      <ZoneBadge zone={classification.imcZone} />
+                    </div>
+
+                    <div className="flex flex-col gap-2.5 pt-3 border-t border-border/50">
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="text-muted-foreground font-medium">{t("bmi")}</span>
+                        <ZoneBadge zone={classification.imcZone} />
+                      </div>
+                      {classification.waistZone && (
+                        <div className="flex items-center justify-between text-sm">
+                          <span className="text-muted-foreground font-medium">{t("waist")}</span>
+                          <ZoneBadge zone={classification.waistZone} />
+                        </div>
+                      )}
+                    </div>
+                  </>
+                );
+              })()}
+            </div>
+
+            {/* ZAF reference legend */}
+            <div className="rounded-2xl border border-border/50 bg-card/60 p-4 flex flex-col gap-2">
+              <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-[0.18em]">Referência ZAF</p>
+              <div className="flex flex-col gap-1.5">
+                <div className="flex items-center gap-2">
+                  <span className="flex-shrink-0 w-2.5 h-2.5 rounded-full bg-success-500" />
+                  <span className="text-xs text-muted-foreground">ZSAF — {t("healthyZone")}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="flex-shrink-0 w-2.5 h-2.5 rounded-full bg-warning-400" />
+                  <span className="text-xs text-muted-foreground">ZMF — {t("improvementZone")}</span>
+                </div>
+              </div>
             </div>
           </div>
-        )}
 
-        <Button
-          type="submit"
-          loading={saving}
-          icon={<Ruler className="size-4" />}
-          className="self-start"
-        >
-          {t("save")}
-        </Button>
-      </form>
+        </div>
       )}
     </PageTransition>
   );

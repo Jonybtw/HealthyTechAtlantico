@@ -7,6 +7,7 @@ import {
   AlertTriangle,
   CheckCircle2,
   Clock3,
+  ExternalLink,
   Link2,
   Mail,
   RefreshCw,
@@ -17,7 +18,9 @@ import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Input } from "@/components/ui/input";
 import { useUser } from "@/components/user-context";
-import { PageTransition, FadeIn, StaggerList, StaggerItem } from "@/components/ui/motion";
+import { PageTransition, StaggerList, StaggerItem } from "@/components/ui/motion";
+import { Skeleton } from "@/components/ui/skeleton";
+import { usePageTitle } from "@/hooks/use-page-title";
 
 interface LinkedStudent {
   id: string;
@@ -88,6 +91,7 @@ function getErrorMessage(body: unknown): string | null {
 
 export default function SosPage() {
   const t = useTranslations("sos");
+  usePageTitle(t("title"));
   const locale = useLocale();
   const { role } = useUser();
 
@@ -284,7 +288,7 @@ export default function SosPage() {
       return (
         <div className="flex flex-col gap-5">
           <PageHeader title={t("title")} description={t("descriptionStudent")} />
-          <p className="text-sm text-muted-foreground animate-pulse">{t("loading")}</p>
+          <Skeleton className="h-4 w-32" />
         </div>
       );
     }
@@ -315,7 +319,7 @@ export default function SosPage() {
           </Button>
         </PageHeader>
 
-        <div className="grid gap-4 lg:grid-cols-[1.1fr_0.9fr]">
+        <div className="grid gap-4 lg:grid-cols-2">
           <form
             onSubmit={handleTrigger}
             className="bg-card/85 glass rounded-2xl border border-border/50 shadow-float p-5 flex flex-col gap-5"
@@ -447,7 +451,10 @@ export default function SosPage() {
           </div>
 
           {loadingAlerts ? (
-            <p className="text-sm text-muted-foreground animate-pulse">{t("loading")}</p>
+            <div className="flex flex-col gap-2">
+              <Skeleton className="h-24 w-full rounded-2xl" />
+              <Skeleton className="h-24 w-full rounded-2xl" />
+            </div>
           ) : alerts.length === 0 ? (
             <EmptyState
               icon={Clock3}
@@ -539,7 +546,7 @@ export default function SosPage() {
         ))}
       </StaggerList>
 
-      <div className="flex flex-wrap gap-2">
+      <div role="group" aria-label={t("filterLabel")} className="flex flex-wrap gap-2">
         {([
           ["pending", t("filterPending")],
           ["resolved", t("filterResolved")],
@@ -548,6 +555,7 @@ export default function SosPage() {
           <button
             key={value}
             type="button"
+            aria-pressed={filter === value}
             onClick={() => setFilter(value)}
             className={`rounded-full px-4 py-2 text-sm font-semibold transition-all border ${
               filter === value
@@ -561,7 +569,11 @@ export default function SosPage() {
       </div>
 
       {loadingAlerts ? (
-        <p className="text-sm text-muted-foreground animate-pulse">{t("loading")}</p>
+        <div className="flex flex-col gap-2">
+          <Skeleton className="h-24 w-full rounded-2xl" />
+          <Skeleton className="h-24 w-full rounded-2xl" />
+          <Skeleton className="h-24 w-full rounded-2xl" />
+        </div>
       ) : alerts.length === 0 ? (
         <EmptyState
           icon={CheckCircle2}
@@ -607,6 +619,7 @@ export default function SosPage() {
                     href={`/alunos/${alert.student.id}`}
                     className="inline-flex items-center gap-2 rounded-xl border border-border/60 px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:border-navy-300 hover:text-foreground"
                   >
+                    <ExternalLink className="size-3.5" />
                     {t("openStudentProfile")}
                   </Link>
                   {!alert.resolved ? (

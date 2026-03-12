@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
-import { Lock, ShieldCheck, Share2, User } from "lucide-react";
+import { Lock, ShieldCheck, Share2, User, Check, X, Save } from "lucide-react";
 import { PageTransition, FadeIn } from "@/components/ui/motion";
 import { toast } from "sonner";
 import { useForm } from "react-hook-form";
@@ -20,12 +20,15 @@ import {
   FormItem,
   FormControl,
 } from "@/components/ui/form";
+import { usePageTitle } from "@/hooks/use-page-title";
 
 type PasswordValues = z.infer<typeof changePasswordFormSchema>;
 
 export default function PerfilPage() {
   const t = useTranslations("perfil");
   const common = useTranslations("common");
+  const roles = useTranslations("roles");
+  usePageTitle(t("title"));
   const { data: session, update } = useSession();
   const user = session?.user;
 
@@ -104,8 +107,8 @@ export default function PerfilPage() {
     <PageTransition className="flex flex-col gap-5">
       <PageHeader title={t("title")} description={t("description")} />
 
-      <div className="grid gap-5 xl:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)]">
-        <FadeIn delay={0.1} className="overflow-hidden rounded-2xl border border-border/70 bg-card/85 p-5 shadow-card sm:p-6">
+      <div className="grid gap-5 xl:grid-cols-2">
+        <FadeIn delay={0.1} className="overflow-hidden rounded-2xl border border-border/50 bg-card/85 p-5 shadow-float sm:p-6">
           <div className="flex flex-col gap-5">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
               <div className="flex size-14 items-center justify-center rounded-xl bg-gradient-to-br from-navy-800 via-navy-900 to-navy-950 text-white shadow-card">
@@ -122,14 +125,14 @@ export default function PerfilPage() {
               </div>
             </div>
 
-            <div className="rounded-xl border border-border/70 bg-background/65 p-3.5">
+            <div className="rounded-xl border border-border/50 bg-background/65 p-3.5">
               <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-muted-foreground">
                 {t("roleLabel")}
               </p>
-              <p className="mt-2 text-lg font-semibold text-foreground">{user?.role}</p>
+              <p className="mt-2 text-lg font-semibold text-foreground">{roles(user?.role ?? "ALUNO")}</p>
             </div>
 
-            <div className="rounded-xl border border-border/70 bg-background/65 p-4">
+            <div className="rounded-xl border border-border/50 bg-background/65 p-4">
               <div className="flex items-start gap-3">
                 <div className="flex size-9 items-center justify-center rounded-xl bg-gold-100 text-gold-700 dark:bg-gold-400/10 dark:text-gold-300">
                   <ShieldCheck className="size-5" />
@@ -140,7 +143,7 @@ export default function PerfilPage() {
                       {t("rgpdTitle")}
                     </h3>
                     <p className="text-sm leading-relaxed text-muted-foreground">
-                      Controla o acesso ao tratamento dos teus dados de saude e atualiza a sessao de imediato.
+                      {t("rgpdDescription")}
                     </p>
                   </div>
 
@@ -150,6 +153,7 @@ export default function PerfilPage() {
                       size="sm"
                       variant={user?.consentRgpd ? "primary" : "ghost"}
                       loading={updatingConsent === "rgpd"}
+                      icon={<Check className="size-4" />}
                       onClick={() => syncConsent("consentRgpd", true)}
                     >
                       {t("rgpdGrant")}
@@ -159,6 +163,7 @@ export default function PerfilPage() {
                       size="sm"
                       variant={!user?.consentRgpd ? "danger" : "ghost"}
                       loading={updatingConsent === "rgpd"}
+                      icon={<X className="size-4" />}
                       onClick={() => syncConsent("consentRgpd", false)}
                     >
                       {t("rgpdRevoke")}
@@ -168,7 +173,7 @@ export default function PerfilPage() {
               </div>
             </div>
 
-            <div className="rounded-xl border border-border/70 bg-background/65 p-4">
+            <div className="rounded-xl border border-border/50 bg-background/65 p-4">
               <div className="flex items-start gap-3">
                 <div className="flex size-9 items-center justify-center rounded-xl bg-navy-100 text-navy-700 dark:bg-navy-500/10 dark:text-navy-200">
                   <Share2 className="size-5" />
@@ -179,7 +184,7 @@ export default function PerfilPage() {
                       {t("shareTitle")}
                     </h3>
                     <p className="text-sm leading-relaxed text-muted-foreground">
-                      Define se os teus dados podem ser partilhados com os encarregados associados.
+                      {t("shareDescription")}
                     </p>
                   </div>
                   <div className="flex flex-wrap gap-3">
@@ -188,6 +193,7 @@ export default function PerfilPage() {
                       size="sm"
                       variant={user?.consentShare ? "secondary" : "ghost"}
                       loading={updatingConsent === "share"}
+                      icon={<Check className="size-4" />}
                       onClick={() => syncConsent("consentShare", true)}
                     >
                       {t("activate")}
@@ -197,6 +203,7 @@ export default function PerfilPage() {
                       size="sm"
                       variant={!user?.consentShare ? "ghost" : "danger"}
                       loading={updatingConsent === "share"}
+                      icon={<X className="size-4" />}
                       onClick={() => syncConsent("consentShare", false)}
                     >
                       {t("deactivate")}
@@ -211,7 +218,7 @@ export default function PerfilPage() {
         <Form {...pwForm}>
           <form
             onSubmit={pwForm.handleSubmit(onPasswordSubmit)}
-            className="overflow-hidden rounded-2xl border border-border/70 bg-card/85 p-5 shadow-card sm:p-6"
+            className="overflow-hidden rounded-2xl border border-border/50 bg-card/85 p-5 shadow-float sm:p-6"
           >
             <div className="flex h-full flex-col gap-5">
               <div className="space-y-2">
@@ -227,7 +234,7 @@ export default function PerfilPage() {
                       {t("changePassword")}
                     </h3>
                     <p className="text-sm text-muted-foreground">
-                      Atualiza a palavra-passe da tua conta com requisitos de producao.
+                      {t("passwordDescription")}
                     </p>
                   </div>
                 </div>
@@ -288,7 +295,7 @@ export default function PerfilPage() {
               </div>
 
               <div className="mt-auto flex justify-start">
-                <Button type="submit" loading={pwForm.formState.isSubmitting}>
+                <Button type="submit" loading={pwForm.formState.isSubmitting} icon={<Save className="size-4" />}>
                   {t("savePassword")}
                 </Button>
               </div>
