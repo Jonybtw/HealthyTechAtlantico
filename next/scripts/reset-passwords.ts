@@ -2,6 +2,7 @@ import { PrismaClient } from "@prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
 import pg from "pg";
 import bcrypt from "bcryptjs";
+import { INTERNAL_EMAIL_DOMAIN } from "../src/lib/email-rules";
 
 const pool = new pg.Pool({
   connectionString: process.env.DATABASE_URL!,
@@ -13,9 +14,9 @@ const prisma = new PrismaClient({ adapter });
 async function main() {
   const hash = await bcrypt.hash("Password1", 12);
   const emails = [
-    "professor@colegioatlantico.pt",
-    "psicologo@colegioatlantico.pt",
-    "pai@colegioatlantico.pt",
+    `professor@${INTERNAL_EMAIL_DOMAIN}`,
+    `psicologo@${INTERNAL_EMAIL_DOMAIN}`,
+    "joao.ferreira@gmail.com",
   ];
   for (const email of emails) {
     try {

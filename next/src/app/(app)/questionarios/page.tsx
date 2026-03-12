@@ -285,6 +285,7 @@ export default function QuestionariosPage() {
           >
             {t("submit")}
           </Button>
+        </div>
         </form>
 
         {/* RIGHT — Wellness Summary */}

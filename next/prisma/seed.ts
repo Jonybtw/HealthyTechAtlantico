@@ -3,6 +3,7 @@ import { PrismaPg } from "@prisma/adapter-pg";
 import pg from "pg";
 import bcrypt from "bcryptjs";
 import { getPgSslConfig } from "../src/lib/database-ssl";
+import { INTERNAL_EMAIL_DOMAIN } from "../src/lib/email-rules";
 
 const pool = new pg.Pool({
   connectionString: process.env.DATABASE_URL!,
@@ -13,6 +14,10 @@ const prisma = new PrismaClient({ adapter });
 
 async function main() {
   console.log("🌱 Seeding database…");
+  const adminEmail = `admin@${INTERNAL_EMAIL_DOMAIN}`;
+  const professorEmail = `professor@${INTERNAL_EMAIL_DOMAIN}`;
+  const psychologistEmail = `psicologo@${INTERNAL_EMAIL_DOMAIN}`;
+  const parentEmail = "joao.ferreira@gmail.com";
 
   // ── Academic Year ──
   const year = await prisma.academicYear.upsert({
@@ -37,10 +42,10 @@ async function main() {
   const hash = await bcrypt.hash("Password1", 12);
 
   const admin = await prisma.user.upsert({
-    where: { email: "admin@colegioatlantico.pt" },
+    where: { email: adminEmail },
     update: {},
     create: {
-      email: "admin@colegioatlantico.pt",
+      email: adminEmail,
       name: "Admin Atlântico",
       passwordHash: hash,
       role: Role.ADMIN,
@@ -50,10 +55,10 @@ async function main() {
   });
 
   const professor = await prisma.user.upsert({
-    where: { email: "professor@colegioatlantico.pt" },
+    where: { email: professorEmail },
     update: {},
     create: {
-      email: "professor@colegioatlantico.pt",
+      email: professorEmail,
       name: "Prof. Carlos Silva",
       passwordHash: hash,
       role: Role.PROFESSOR,
@@ -62,10 +67,10 @@ async function main() {
   });
 
   await prisma.user.upsert({
-    where: { email: "psicologo@colegioatlantico.pt" },
+    where: { email: psychologistEmail },
     update: {},
     create: {
-      email: "psicologo@colegioatlantico.pt",
+      email: psychologistEmail,
       name: "Dr. Ana Rodrigues",
       passwordHash: hash,
       role: Role.PSICOLOGO,
@@ -74,10 +79,10 @@ async function main() {
   });
 
   const parentUser = await prisma.user.upsert({
-    where: { email: "pai@colegioatlantico.pt" },
+    where: { email: parentEmail },
     update: {},
     create: {
-      email: "pai@colegioatlantico.pt",
+      email: parentEmail,
       name: "João Ferreira",
       passwordHash: hash,
       role: Role.PAIS,
@@ -103,7 +108,7 @@ async function main() {
 
   for (let i = 0; i < studentNames.length; i++) {
     const s = studentNames[i];
-    const email = `aluno${i + 1}@colegioatlantico.pt`;
+    const email = `aluno${i + 1}@${INTERNAL_EMAIL_DOMAIN}`;
     const className = i < 5 ? class7A.name : class8B.name;
 
     const user = await prisma.user.upsert({
@@ -137,6 +142,11 @@ async function main() {
 
   // ── Evaluation Sessions (per student) + Biometrics + Tests ──
   for (const st of students) {
+    const existingSession = await prisma.evaluationSession.findFirst({
+      where: { studentId: st.id, label: "1ª Avaliação 2025/2026" },
+    });
+    if (existingSession) continue;
+
     const session = await prisma.evaluationSession.create({
       data: {
         studentId: st.id,
@@ -176,15 +186,15 @@ async function main() {
       { testId: "senta_alcanca", value: Math.round((15 + Math.random() * 20) * 10) / 10, unit: "cm" },
     ];
 
-    for (const t of testEntries) {
+    for (const entry of testEntries) {
       await prisma.test.create({
         data: {
           studentId: st.id,
           sessionId: session.id,
-          testId: t.testId,
-          valueNum: t.value,
-          valueText: String(t.value),
-          unit: t.unit,
+          testId: entry.testId,
+          valueNum: entry.value,
+          valueText: String(entry.value),
+          unit: entry.unit,
           zone: "ZSAF",
         },
       });
@@ -218,8 +228,8 @@ async function main() {
         studentId: students[0].id,
         psych: "Dr. Ana Rodrigues",
         teacher: "Prof. Carlos Silva",
-        psychEmail: "psicologo@colegioatlantico.pt",
-        teacherEmail: "professor@colegioatlantico.pt",
+        psychEmail: psychologistEmail,
+        teacherEmail: professorEmail,
         resolved: false,
       },
     });
@@ -231,8 +241,8 @@ async function main() {
         studentId: students[3].id,
         psych: "Dr. Ana Rodrigues",
         teacher: "Prof. Carlos Silva",
-        psychEmail: "psicologo@colegioatlantico.pt",
-        teacherEmail: "professor@colegioatlantico.pt",
+        psychEmail: psychologistEmail,
+        teacherEmail: professorEmail,
         resolved: false,
       },
     });

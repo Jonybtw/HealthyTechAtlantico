@@ -22,6 +22,7 @@
     "logout": "Sign Out",
     "changeLanguage": "Change language",
     "changeTheme": "Toggle theme",
+    "preferences": "Preferences",
     "skipToContent": "Skip to content",
     "sidebarNavigation": "Main navigation",
     "topBar": "Top bar",
@@ -59,7 +60,14 @@
     "passwordNoMatch": "Passwords do not match.",
     "createError": "Error creating account.",
     "loginSubtitle": "Access the institutional panel",
-    "registerSubtitle": "Create a secure account to track your progress or your children's."
+    "registerSubtitle": "Create a secure account to track your progress or your children's.",
+    "registeredSuccess": "Account created! Sign in to continue.",
+    "showPassword": "Show password",
+    "hidePassword": "Hide password",
+    "strengthWeak": "Weak",
+    "strengthFair": "Fair",
+    "strengthGood": "Good",
+    "strengthStrong": "Strong"
   },
   "common": {
     "save": "Save",

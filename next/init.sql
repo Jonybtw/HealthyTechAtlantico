@@ -1,4 +1,4 @@
-﻿-- CreateSchema
+-- CreateSchema
 CREATE SCHEMA IF NOT EXISTS "public";
 
 -- CreateEnum
@@ -22,6 +22,20 @@ CREATE TABLE "users" (
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP(3) NOT NULL,
 
+    CONSTRAINT "users_email_role_check" CHECK (
+        (
+            position('@' in "email") > 1
+            AND
+            "role" IN ('ADMIN', 'ALUNO', 'PROFESSOR', 'PSICOLOGO')
+            AND split_part(lower("email"), '@', 2) = 'colegioatlantico.pt'
+        )
+        OR (
+            position('@' in "email") > 1
+            AND
+            "role" = 'PAIS'
+            AND split_part(lower("email"), '@', 2) <> 'colegioatlantico.pt'
+        )
+    ),
     CONSTRAINT "users_pkey" PRIMARY KEY ("id")
 );
 
@@ -63,7 +77,7 @@ CREATE TABLE "school_classes" (
 CREATE TABLE "evaluation_sessions" (
     "id" TEXT NOT NULL,
     "student_id" TEXT NOT NULL,
-    "label" TEXT NOT NULL DEFAULT 'Avalia├º├úo',
+    "label" TEXT NOT NULL DEFAULT 'Avaliacao',
     "school_year" TEXT,
     "created_by" TEXT,
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -136,7 +150,7 @@ CREATE TABLE "sos_alerts" (
 CREATE TABLE "reports" (
     "id" TEXT NOT NULL,
     "student_id" TEXT NOT NULL,
-    "title" TEXT NOT NULL DEFAULT 'Relat├│rio HealthyTech Altântico',
+    "title" TEXT NOT NULL DEFAULT 'Relatorio HealthyTechAtlantico',
     "emailed_to" TEXT NOT NULL,
     "school_year" TEXT,
     "created_by" TEXT,
@@ -217,7 +231,13 @@ CREATE INDEX "tests_student_id_recorded_at_idx" ON "tests"("student_id", "record
 CREATE INDEX "tests_student_id_session_id_idx" ON "tests"("student_id", "session_id");
 
 -- CreateIndex
+CREATE INDEX "questionnaires_student_id_submitted_at_idx" ON "questionnaires"("student_id", "submitted_at" DESC);
+
+-- CreateIndex
 CREATE INDEX "sos_alerts_student_id_resolved_idx" ON "sos_alerts"("student_id", "resolved");
+
+-- CreateIndex
+CREATE INDEX "reports_student_id_created_at_idx" ON "reports"("student_id", "created_at" DESC);
 
 -- CreateIndex
 CREATE INDEX "student_guardians_student_id_idx" ON "student_guardians"("student_id");
@@ -230,6 +250,9 @@ CREATE UNIQUE INDEX "student_guardians_student_id_guardian_user_id_key" ON "stud
 
 -- CreateIndex
 CREATE INDEX "audit_log_user_id_created_at_idx" ON "audit_log"("user_id", "created_at" DESC);
+
+-- CreateIndex
+CREATE INDEX "audit_log_action_idx" ON "audit_log"("action");
 
 -- AddForeignKey
 ALTER TABLE "students" ADD CONSTRAINT "students_linked_user_id_fkey" FOREIGN KEY ("linked_user_id") REFERENCES "users"("id") ON DELETE SET NULL ON UPDATE CASCADE;
@@ -290,4 +313,3 @@ ALTER TABLE "student_guardians" ADD CONSTRAINT "student_guardians_created_by_fke
 
 -- AddForeignKey
 ALTER TABLE "audit_log" ADD CONSTRAINT "audit_log_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE SET NULL ON UPDATE CASCADE;
-

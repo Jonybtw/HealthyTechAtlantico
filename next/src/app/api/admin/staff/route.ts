@@ -7,10 +7,6 @@ import { createStaffSchema } from "@/lib/validations";
 import { canRole, PERMISSIONS } from "@/lib/rbac";
 import type { Role } from "@prisma/client";
 
-const createStaffWithNameSchema = createStaffSchema.extend({
-  name: z.string().min(2).optional(),
-});
-
 // GET /api/admin/staff — list all PROFESSOR and PSICOLOGO accounts
 export async function GET() {
   try {
@@ -47,7 +43,7 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json();
-    const data = createStaffWithNameSchema.parse(body);
+    const data = createStaffSchema.parse(body);
 
     const existing = await prisma.user.findUnique({ where: { email: data.email } });
     if (existing) {
@@ -58,7 +54,7 @@ export async function POST(req: NextRequest) {
     const user = await prisma.user.create({
       data: {
         email: data.email,
-        name: data.name ?? null,
+        name: data.name,
         passwordHash,
         role: data.role,
         consentRgpd: true,

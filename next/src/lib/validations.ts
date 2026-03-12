@@ -1,35 +1,77 @@
 import { z } from "zod";
+import { getEmailRuleMessage, isAllowedEmailForRole, isInternalEmail } from "@/lib/email-rules";
 
-// ── Auth ─────────────────────────────────────────────────────────────────────
+const emailSchema = z.string().trim().toLowerCase().email("Email invalido");
 
-export const loginSchema = z.object({
-  email: z.string().email("Email inválido"),
-  password: z.string().min(6, "Mínimo 6 caracteres"),
-});
+function validateRoleEmailRule(
+  data: { email: string; role: string },
+  ctx: z.RefinementCtx
+) {
+  if (!isAllowedEmailForRole(data.role, data.email)) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ["email"],
+      message: getEmailRuleMessage(data.role),
+    });
+  }
+}
 
-export const registerSchema = z.object({
-  name: z.string().min(2, "Nome obrigatório").max(100).optional(),
-  email: z.string().email("Email inválido"),
-  password: z.string().min(6, "Mínimo 6 caracteres"),
+function validateRegisterRule(
+  data: { email: string; role: string; consentRgpd: boolean },
+  ctx: z.RefinementCtx
+) {
+  validateRoleEmailRule(data, ctx);
+
+  if (!data.consentRgpd) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ["consentRgpd"],
+      message: "Consentimento RGPD obrigatorio",
+    });
+  }
+}
+
+const registerBaseSchema = z.object({
+  name: z.string().min(2, "Nome obrigatorio").max(100).optional(),
+  email: emailSchema,
+  password: z.string().min(6, "Minimo 6 caracteres"),
   role: z.enum(["ALUNO", "PAIS"]),
-  consentRgpd: z.literal(true, { message: "Consentimento RGPD obrigatório" }),
+  consentRgpd: z.boolean(),
 });
 
-export const registerFormSchema = registerSchema
-  .extend({ confirmPassword: z.string().min(1, "Confirmação obrigatória") })
-  .refine((d) => d.password === d.confirmPassword, {
-    message: "As palavras-passe não coincidem",
-    path: ["confirmPassword"],
-  });
-
-export const createStaffSchema = z.object({
-  name: z.string().min(2, "Nome obrigatório").max(100),
-  email: z.string().email("Email inválido"),
-  password: z.string().min(6, "Mínimo 6 caracteres"),
+const createStaffBaseSchema = z.object({
+  name: z.string().min(2, "Nome obrigatorio").max(100),
+  email: emailSchema,
+  password: z.string().min(6, "Minimo 6 caracteres"),
   role: z.enum(["PROFESSOR", "PSICOLOGO"]),
 });
 
-// ── User ─────────────────────────────────────────────────────────────────────
+const optionalInternalEmailSchema = z
+  .union([emailSchema, z.literal("")])
+  .optional()
+  .transform((value) => (value ? value : undefined))
+  .refine((value) => !value || isInternalEmail(value), {
+    message: getEmailRuleMessage("PROFESSOR"),
+  });
+
+export const loginSchema = z.object({
+  email: emailSchema,
+  password: z.string().min(6, "Minimo 6 caracteres"),
+});
+
+export const registerSchema = registerBaseSchema.superRefine(validateRegisterRule);
+
+export const registerFormSchema = registerBaseSchema
+  .extend({
+    confirmPassword: z.string().min(1, "Confirmacao obrigatoria"),
+  })
+  .superRefine(validateRegisterRule)
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "As palavras-passe nao coincidem",
+    path: ["confirmPassword"],
+  });
+
+export const createStaffSchema = createStaffBaseSchema.superRefine(validateRoleEmailRule);
 
 export const updateConsentSchema = z.object({
   consentRgpd: z.boolean().optional(),
@@ -37,29 +79,25 @@ export const updateConsentSchema = z.object({
 });
 
 export const changePasswordSchema = z.object({
-  currentPassword: z.string().min(1, "Palavra-passe actual obrigatória"),
-  newPassword: z.string().min(6, "Mínimo 6 caracteres"),
+  currentPassword: z.string().min(1, "Palavra-passe atual obrigatoria"),
+  newPassword: z.string().min(6, "Minimo 6 caracteres"),
 });
 
 export const changePasswordFormSchema = changePasswordSchema
-  .extend({ confirmPassword: z.string().min(1, "Confirmação obrigatória") })
-  .refine((d) => d.newPassword === d.confirmPassword, {
-    message: "As palavras-passe não coincidem",
+  .extend({ confirmPassword: z.string().min(1, "Confirmacao obrigatoria") })
+  .refine((data) => data.newPassword === data.confirmPassword, {
+    message: "As palavras-passe nao coincidem",
     path: ["confirmPassword"],
   });
 
-// ── Student ──────────────────────────────────────────────────────────────────
-
 export const createStudentSchema = z.object({
-  name: z.string().min(2, "Nome obrigatório").max(100),
+  name: z.string().min(2, "Nome obrigatorio").max(100),
   sex: z.enum(["M", "F"]),
   birthDate: z.string().optional(),
   age: z.number().int().min(5).max(25).optional(),
   schoolYear: z.string().optional(),
   className: z.string().optional(),
 });
-
-// ── Biometrics ───────────────────────────────────────────────────────────────
 
 export const biometricsSchema = z.object({
   heightM: z.number().min(0.5).max(2.5),
@@ -72,8 +110,6 @@ export const biometricsSchema = z.object({
   waistZone: z.string().optional().nullable(),
   sessionId: z.string().optional().nullable(),
 });
-
-// ── Tests ────────────────────────────────────────────────────────────────────
 
 export const testItemSchema = z.object({
   testId: z.string(),
@@ -88,48 +124,35 @@ export const testsSchema = z.object({
   sessionId: z.string().optional().nullable(),
 });
 
-// ── Questionnaire ────────────────────────────────────────────────────────────
-
 export const questionnaireSchema = z.object({
   type: z.enum(["AUTOCONCEITO", "AUTOESTIMA"]),
   payload: z.record(z.string(), z.unknown()),
   deferredCount: z.number().int().min(0).max(3).default(0),
 });
 
-// ── SOS ──────────────────────────────────────────────────────────────────────
-
-const optionalEmailSchema = z
-  .union([z.string().trim().email("Email inválido"), z.literal("")])
-  .optional()
-  .transform((value) => (value ? value : undefined));
-
 export const sosSchema = z.object({
-  psych: z.string().trim().min(1, "Psicólogo obrigatório").max(120),
-  teacher: z.string().trim().min(1, "Professor obrigatório").max(120),
-  psychEmail: optionalEmailSchema,
-  teacherEmail: optionalEmailSchema,
+  psych: z.string().trim().min(1, "Psicologo obrigatorio").max(120),
+  teacher: z.string().trim().min(1, "Professor obrigatorio").max(120),
+  psychEmail: optionalInternalEmailSchema,
+  teacherEmail: optionalInternalEmailSchema,
 });
 
-// ── Dispensa ─────────────────────────────────────────────────────────────────
-
 export const dispensaSchema = z.object({
-  reason: z.string().min(1, "Motivo obrigatório"),
+  reason: z.string().min(1, "Motivo obrigatorio"),
   startDate: z.string(),
   endDate: z.string(),
   medicalCertificate: z.boolean().default(false),
 });
 
-// ── Report Email ─────────────────────────────────────────────────────────────
-
 export const reportEmailSchema = z.object({
   guardianUserId: z.string().min(1),
-  title: z.string().default("Relatório HealthyTech Atlântico"),
+  title: z.string().default("Relatorio HealthyTechAtlantico"),
   schoolYear: z.string().optional(),
 });
 
-// ── Guardian ─────────────────────────────────────────────────────────────────
-
 export const guardianSchema = z.object({
-  guardianEmail: z.string().email(),
+  guardianEmail: emailSchema.refine((email) => !isInternalEmail(email), {
+    message: getEmailRuleMessage("PAIS"),
+  }),
   relationship: z.string().default("encarregado"),
 });

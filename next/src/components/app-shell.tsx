@@ -316,33 +316,8 @@ export function AppShell({ user, children }: AppShellProps) {
 
                 {/* Notification center */}
                 <NotificationCenter userRole={user.role} />
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="rounded-xl"
-                      onClick={toggleTheme}
-                    >
-                      {theme === "light" ? <Moon className="size-4" /> : <Sun className="size-4" />}
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>{t("nav.changeTheme")}</TooltipContent>
-                </Tooltip>
 
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="rounded-xl"
-                      onClick={toggleLocale}
-                    >
-                      <Globe className="size-4" />
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>{t("nav.changeLanguage")}</TooltipContent>
-                </Tooltip>
+                <Separator orientation="vertical" className="mx-1 h-5" />
 
                 {/* User dropdown (desktop) — only rendered after mount to avoid Radix ID hydration mismatch */}
                 {mounted && <DropdownMenu>
@@ -374,6 +349,23 @@ export function AppShell({ user, children }: AppShellProps) {
                         <User className="mr-2 size-4" />
                         {t("nav.perfil")}
                       </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuLabel>{t("nav.preferences")}</DropdownMenuLabel>
+                    <DropdownMenuItem onClick={toggleTheme}>
+                      {theme === "light" ? (
+                        <Moon className="size-4" />
+                      ) : (
+                        <Sun className="size-4" />
+                      )}
+                      {t("nav.changeTheme")}
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={toggleLocale}>
+                      <Globe className="size-4" />
+                      {t("nav.changeLanguage")}
+                      <span className="ml-auto text-xs font-medium text-muted-foreground">
+                        {locale.toUpperCase()}
+                      </span>
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem

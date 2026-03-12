@@ -6,8 +6,6 @@ datasource db {
   provider = "postgresql"
 }
 
-// ── Enums ────────────────────────────────────────────────────────────────────
-
 enum Role {
   ADMIN
   ALUNO
@@ -26,29 +24,26 @@ enum QuestionnaireType {
   AUTOESTIMA
 }
 
-// ── Models ───────────────────────────────────────────────────────────────────
-
 model User {
-  id            String   @id @default(cuid())
-  email         String   @unique
-  name          String?
-  passwordHash  String   @map("password_hash")
-  role          Role
-  consentRgpd   Boolean  @default(false) @map("consent_rgpd")
-  consentShare  Boolean  @default(false) @map("consent_share")
-  createdAt     DateTime @default(now()) @map("created_at")
-  updatedAt     DateTime @updatedAt @map("updated_at")
+  id           String   @id @default(cuid())
+  email        String   @unique
+  name         String?
+  passwordHash String   @map("password_hash")
+  role         Role
+  consentRgpd  Boolean  @default(false) @map("consent_rgpd")
+  consentShare Boolean  @default(false) @map("consent_share")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
 
-  // Relations
-  linkedStudent        Student?           @relation("LinkedStudentUser")
-  createdStudents      Student[]          @relation("StudentCreator")
-  guardianLinks       StudentGuardian[]  @relation("Guardian")
-  createdGuardians    StudentGuardian[]  @relation("GuardianCreator")
-  createdSessions     EvaluationSession[]
-  resolvedAlerts      SosAlert[]         @relation("Resolver")
-  createdReports      Report[]
-  createdDispensas    Dispensa[]
-  auditLogs           AuditLog[]
+  linkedStudent    Student?            @relation("LinkedStudentUser")
+  createdStudents  Student[]           @relation("StudentCreator")
+  guardianLinks    StudentGuardian[]   @relation("Guardian")
+  createdGuardians StudentGuardian[]   @relation("GuardianCreator")
+  createdSessions  EvaluationSession[]
+  resolvedAlerts   SosAlert[]          @relation("Resolver")
+  createdReports   Report[]
+  createdDispensas Dispensa[]
+  auditLogs        AuditLog[]
 
   @@map("users")
 }
@@ -66,7 +61,6 @@ model Student {
   createdAt    DateTime  @default(now()) @map("created_at")
   updatedAt    DateTime  @updatedAt @map("updated_at")
 
-  // Relations
   linkedUser     User?              @relation("LinkedStudentUser", fields: [linkedUserId], references: [id], onDelete: SetNull)
   createdBy      User?              @relation("StudentCreator", fields: [createdById], references: [id], onDelete: SetNull)
   biometrics     Biometric[]
@@ -86,7 +80,7 @@ model Student {
 
 model AcademicYear {
   id    String @id @default(cuid())
-  label String @unique // e.g. '2025/2026'
+  label String @unique
 
   classes SchoolClass[]
 
@@ -96,7 +90,7 @@ model AcademicYear {
 model SchoolClass {
   id             String @id @default(cuid())
   academicYearId String @map("academic_year_id")
-  name           String // e.g. '8A'
+  name           String
 
   academicYear AcademicYear @relation(fields: [academicYearId], references: [id], onDelete: Cascade)
 
@@ -105,15 +99,15 @@ model SchoolClass {
 }
 
 model EvaluationSession {
-  id         String   @id @default(cuid())
-  studentId  String   @map("student_id")
-  label      String   @default("Avaliação")
-  schoolYear String?  @map("school_year")
-  createdById String? @map("created_by")
-  createdAt  DateTime @default(now()) @map("created_at")
+  id          String   @id @default(cuid())
+  studentId   String   @map("student_id")
+  label       String   @default("Avaliacao")
+  schoolYear  String?  @map("school_year")
+  createdById String?  @map("created_by")
+  createdAt   DateTime @default(now()) @map("created_at")
 
-  student    Student    @relation(fields: [studentId], references: [id], onDelete: Cascade)
-  createdBy  User?      @relation(fields: [createdById], references: [id])
+  student    Student     @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  createdBy  User?       @relation(fields: [createdById], references: [id])
   biometrics Biometric[]
   tests      Test[]
 
@@ -197,7 +191,7 @@ model SosAlert {
 model Report {
   id          String   @id @default(cuid())
   studentId   String   @map("student_id")
-  title       String   @default("Relatório HealthyTech Altântico")
+  title       String   @default("Relatorio HealthyTechAtlantico")
   emailedTo   String   @map("emailed_to")
   schoolYear  String?  @map("school_year")
   createdById String?  @map("created_by")
@@ -227,12 +221,12 @@ model Dispensa {
 }
 
 model StudentGuardian {
-  id              String   @id @default(cuid())
-  studentId       String   @map("student_id")
-  guardianUserId  String   @map("guardian_user_id")
-  relationship    String   @default("encarregado")
-  createdById     String   @map("created_by")
-  createdAt       DateTime @default(now()) @map("created_at")
+  id             String   @id @default(cuid())
+  studentId      String   @map("student_id")
+  guardianUserId String   @map("guardian_user_id")
+  relationship   String   @default("encarregado")
+  createdById    String   @map("created_by")
+  createdAt      DateTime @default(now()) @map("created_at")
 
   student   Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
   guardian  User    @relation("Guardian", fields: [guardianUserId], references: [id], onDelete: Cascade)

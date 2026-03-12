@@ -349,6 +349,26 @@ html[data-theme="dark"] .text-gradient-gold {
   animation: slideInLeft 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
+@keyframes floatA {
+  0%, 100% { transform: translate(0, 0); }
+  33%       { transform: translate(20px, -28px); }
+  66%       { transform: translate(-14px, 16px); }
+}
+
+@keyframes floatB {
+  0%, 100% { transform: translate(0, 0); }
+  33%       { transform: translate(-24px, 20px); }
+  66%       { transform: translate(18px, -24px); }
+}
+
+.animate-float-a {
+  animation: floatA 18s ease-in-out infinite;
+}
+
+.animate-float-b {
+  animation: floatB 22s ease-in-out infinite;
+}
+
 .animate-scale-in {
   animation: scaleIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
 }

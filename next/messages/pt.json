@@ -22,6 +22,7 @@
     "logout": "Sair",
     "changeLanguage": "Mudar idioma",
     "changeTheme": "Alternar tema",
+    "preferences": "Preferências",
     "skipToContent": "Saltar para o conteúdo",
     "sidebarNavigation": "Navegação principal",
     "topBar": "Barra superior",
@@ -59,7 +60,14 @@
     "passwordNoMatch": "Palavras-passe não coincidem.",
     "createError": "Erro ao criar conta.",
     "loginSubtitle": "Acede ao painel institucional",
-    "registerSubtitle": "Cria uma conta segura para acompanhar o teu percurso ou o dos teus educandos."
+    "registerSubtitle": "Cria uma conta segura para acompanhar o teu percurso ou o dos teus educandos.",
+    "registeredSuccess": "Conta criada! Inicia sessão para continuar.",
+    "showPassword": "Mostrar palavra-passe",
+    "hidePassword": "Ocultar palavra-passe",
+    "strengthWeak": "Fraca",
+    "strengthFair": "Razoável",
+    "strengthGood": "Boa",
+    "strengthStrong": "Forte"
   },
   "common": {
     "save": "Gravar",
