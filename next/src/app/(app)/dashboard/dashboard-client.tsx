@@ -79,11 +79,13 @@ export function DashboardClient({ username, summary }: Props) {
             meta: todayLabel,
           }}
         >
-          <EmptyState
-            icon={Link2}
-            title={t("unlinkedTitle")}
-            description={t("unlinkedDescription")}
-          />
+          <div className="flex min-h-[400px] items-center justify-center rounded-[22px] border border-dashed border-border/60 bg-muted/30 p-8 shadow-inner">
+            <EmptyState
+              icon={Link2}
+              title={t("unlinkedTitle")}
+              description={t("unlinkedDescription")}
+            />
+          </div>
         </PageScaffold>
       );
     }
@@ -164,8 +166,6 @@ export function DashboardClient({ username, summary }: Props) {
         ? t("psychologistOverview")
         : t("parentOverview");
 
-  const [primaryCard, ...secondaryCards] = summary.cards;
-
   return (
     <PageScaffold
       className="gap-6"
@@ -176,21 +176,9 @@ export function DashboardClient({ username, summary }: Props) {
         meta: todayLabel,
       }}
     >
-
-      {primaryCard ? (
-        <KpiCard
-          icon={ICONS[primaryCard.icon]}
-          title={t(primaryCard.titleKey)}
-          value={primaryCard.value}
-          description={t(primaryCard.descriptionKey)}
-          accent={primaryCard.accent}
-          emphasis="hero"
-        />
-      ) : null}
-
-      {secondaryCards.length > 0 ? (
-        <StaggerList className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-          {secondaryCards.map((card) => (
+      {summary.cards.length > 0 ? (
+        <StaggerList className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {summary.cards.map((card) => (
             <StaggerItem key={card.id}>
               <KpiCard
                 icon={ICONS[card.icon]}
@@ -231,7 +219,7 @@ export function DashboardClient({ username, summary }: Props) {
                       {t("zafDistribution")}
                     </div>
                     <div className="relative h-[180px] w-[180px]">
-                      <ResponsiveContainer width="100%" height="100%">
+                      <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
                         <PieChart>
                           <Pie
                             data={donutData}
@@ -381,9 +369,12 @@ export function DashboardClient({ username, summary }: Props) {
                   href={href}
                   className={`group relative flex flex-col items-start gap-4 rounded-[20px] border border-border/50 bg-gradient-to-b p-4 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-float ${classes}`}
                 >
-                  <span className="flex size-10 items-center justify-center rounded-2xl bg-white/15 ring-1 ring-white/10 transition-transform duration-300 group-hover:scale-110">
-                    <Icon className="size-5" />
-                  </span>
+                  <div className="flex w-full items-center justify-between">
+                    <span className="flex size-10 items-center justify-center rounded-2xl bg-white/15 ring-1 ring-white/10 transition-transform duration-300 group-hover:scale-110">
+                      <Icon className="size-5" />
+                    </span>
+                    <ArrowRight className="size-4 opacity-50 transition-transform duration-300 group-hover:translate-x-1 group-hover:opacity-100" />
+                  </div>
                   <div>
                     <p className="text-sm font-bold tracking-wide">{label}</p>
                     <p className="mt-1 text-xs opacity-80">{t("quickActions")}</p>

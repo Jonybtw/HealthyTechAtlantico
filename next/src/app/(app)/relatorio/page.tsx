@@ -18,7 +18,7 @@ import {
   Link2,
 } from "lucide-react";
 import { PageScaffold } from "@/components/ui/page-scaffold";
-import { StudentPicker } from "@/components/ui/student-picker";
+import { StudentPicker, getInitials, getStudentSwatch } from "@/components/ui/student-picker";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
 import { usePageTitle } from "@/hooks/use-page-title";
@@ -491,32 +491,41 @@ export default function RelatorioPage() {
     >
 
       {/* Document preview card */}
-      <div className="bg-card rounded-2xl border border-border shadow-card">
-        {/* Card header \u2014 mimics PDF header */}
-        <div className="bg-navy-800 rounded-t-2xl px-6 py-5 border-b-[3px] border-gold-400">
-          <p className="text-navy-200 text-xs font-medium uppercase tracking-wider">{t("previewHeader")}</p>
-        </div>
-
+      <div className="surface-secondary rounded-[20px] border border-border/50 shadow-card overflow-hidden">
         {/* Student selector */}
         <div className="px-6 py-4 border-b border-border bg-muted/40">
-          <div className="flex items-center gap-3">
-            <div className="h-9 w-9 rounded-full bg-navy-100 dark:bg-navy-800 flex items-center justify-center">
-              <User className="size-4 text-navy-600 dark:text-navy-300" />
-            </div>
-            <div className="flex-1">
-              {role !== "ALUNO" ? (
-                <StudentPicker
-                  students={students}
-                  value={studentId}
-                  onChange={setStudentId}
-                />
-              ) : (
-                <span className="text-sm font-semibold text-foreground">
-                  {selectedStudent?.name ?? "A carregar…"}
+          {role !== "ALUNO" ? (
+            <StudentPicker
+              students={students}
+              value={studentId}
+              onChange={setStudentId}
+            />
+          ) : (
+            <div className="flex h-[46px] w-full items-center justify-between rounded-[18px] border border-input px-4 text-left shadow-sm bg-background">
+              <div className="flex w-full items-center gap-2.5">
+                {selectedStudent ? (
+                  <span
+                    className="flex size-7 shrink-0 items-center justify-center rounded-full text-[11px] font-semibold shadow-[inset_0_1px_0_rgba(255,255,255,0.18)]"
+                    style={getStudentSwatch({ id: selectedStudent.id, name: selectedStudent.name })}
+                  >
+                    {getInitials(selectedStudent.name)}
+                  </span>
+                ) : (
+                  <div className="size-7 rounded-full bg-navy-100 dark:bg-navy-800 flex items-center justify-center shrink-0">
+                    <User className="size-4 text-navy-600 dark:text-navy-300" />
+                  </div>
+                )}
+                <span className="min-w-0 flex-1 flex flex-col justify-center">
+                  <span className="truncate text-[13px] font-semibold leading-tight text-foreground">
+                    {selectedStudent?.name ?? "A carregar..."}
+                  </span>
+                  <span className="truncate text-[10px] leading-none text-muted-foreground mt-0.5">
+                    {selectedStudent?.className ?? selectedStudent?.schoolYear ?? "Sem turma atribuída"}
+                  </span>
                 </span>
-              )}
+              </div>
             </div>
-          </div>
+          )}
         </div>
 
         {/* Preview sections */}
@@ -652,7 +661,7 @@ export default function RelatorioPage() {
       {/* Actions row */}
       <div className={`grid gap-4 ${canSendEmail ? "sm:grid-cols-2" : "sm:grid-cols-1"}`}>
         {/* PDF download */}
-        <div className="bg-card rounded-2xl border border-border p-5 flex flex-col gap-4 shadow-card">
+        <div className="surface-secondary rounded-[20px] border border-border/50 p-5 flex flex-col gap-4 shadow-card transition-all duration-300 hover:scale-[1.01] hover:-translate-y-0.5 hover:shadow-card">
           <div className="flex items-center gap-3">
             <div className="h-10 w-10 rounded-xl bg-navy-50 dark:bg-navy-900 flex items-center justify-center">
               <Download className="size-5 text-navy-700 dark:text-navy-300" />
@@ -678,7 +687,7 @@ export default function RelatorioPage() {
 
         {/* Email */}
         {canSendEmail && (
-          <div className="bg-card rounded-2xl border border-border p-5 flex flex-col gap-4 shadow-card">
+          <div className="surface-secondary rounded-[20px] border border-border/50 p-5 flex flex-col gap-4 shadow-card transition-all duration-300 hover:scale-[1.01] hover:-translate-y-0.5 hover:shadow-card">
             <div className="flex items-center gap-3">
               <div className="h-10 w-10 rounded-xl bg-navy-50 dark:bg-navy-900 flex items-center justify-center">
                 <Mail className="size-5 text-navy-700 dark:text-navy-300" />

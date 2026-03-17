@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
-import { Dumbbell, FileUp, Link2, Timer, Wind, Zap, Ruler, HeartHandshake } from "lucide-react";
+import { Dumbbell, FileUp, Link2, Timer, Wind, Zap, Ruler } from "lucide-react";
 import { PageScaffold } from "@/components/ui/page-scaffold";
 import { PageSection } from "@/components/ui/page-section";
 import { StudentPicker } from "@/components/ui/student-picker";
@@ -266,6 +266,7 @@ export default function TestesPage() {
 
             {/* Test selector */}
             <PillSelect
+              size="lg"
               label={t("selectTest")}
               options={TEST_OPTIONS.map((opt) => ({
                 value: opt.id,

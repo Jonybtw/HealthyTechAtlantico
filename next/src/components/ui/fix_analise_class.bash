@@ -1,0 +1,1 @@
+sed -i 's/import { PillSelect } from "@\/components\/ui\/pill-select";/import { PillSelect } from "@\/components\/ui\/pill-select";\nimport { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@\/components\/ui\/select";/' ../app/\(app\)/analise/page.tsx

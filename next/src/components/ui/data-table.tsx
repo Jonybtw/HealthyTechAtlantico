@@ -106,25 +106,25 @@ export function DataTable<T extends object>({
   }
 
   return (
-    <div className="animate-fade-in-up flex flex-col gap-3">
-      {searchable || toolbarTitle || toolbarSummary || toolbarActions ? (
-        <div className="surface-utility flex flex-col gap-2.5 rounded-[18px] p-3 sm:flex-row sm:items-center sm:justify-between">
+<div className="animate-fade-in-up flex flex-col gap-4">
+      {searchable || toolbarTitle || toolbarSummary || toolbarActions ? (       
+        <div className="flex flex-col gap-3 px-1 sm:flex-row sm:items-end sm:justify-between">
           <div className="space-y-1">
             <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
               {toolbarTitle}
             </p>
-            <p className="text-[13px] text-foreground sm:text-sm">
+            <p className="text-[13px] text-foreground sm:text-sm font-medium">
               {toolbarSummary ?? (
                 <>
-                  {filtered.length} resultado{filtered.length === 1 ? "" : "s"}
+                  {filtered.length} resultado{filtered.length === 1 ? "" : "s"} 
                 </>
               )}
             </p>
           </div>
-          <div className="flex w-full items-center justify-end gap-2 sm:max-w-2xl">
+          <div className="flex w-full items-center justify-end gap-2 sm:max-w-xs">
             {toolbarActions ? <div className="flex flex-wrap items-center gap-2">{toolbarActions}</div> : null}
             {searchable ? (
-              <div className="relative w-full max-w-md">
+              <div className="relative w-full">
                 <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
                 <input
                   value={search}
@@ -133,7 +133,7 @@ export function DataTable<T extends object>({
                     setPage(1);
                   }}
                   placeholder={searchPlaceholder}
-                  className="w-full rounded-xl border border-border/80 bg-card/80 py-2 pl-9 pr-3 text-sm text-foreground outline-none transition-all focus:border-gold-500/50 focus:ring-3 focus:ring-gold-400/10"
+                  className="h-[42px] w-full rounded-[14px] border border-border/80 bg-background/60 py-2 pl-9 pr-4 text-sm text-foreground shadow-sm outline-none backdrop-blur-md transition-all focus:border-gold-500/50 focus:bg-background focus:ring-4 focus:ring-gold-400/10 placeholder:text-muted-foreground/60"
                 />
               </div>
             ) : null}

@@ -197,6 +197,14 @@ export async function getDashboardSummaryForUser(user: {
         accent: "blue",
       },
       {
+        id: "classes",
+        titleKey: "classes",
+        descriptionKey: "activeClasses",
+        value: totalClasses,
+        icon: "school",
+        accent: "green",
+      },
+      {
         id: "sessions",
         titleKey: "sessions",
         descriptionKey: "evaluationsDone",
@@ -211,14 +219,6 @@ export async function getDashboardSummaryForUser(user: {
         value: pendingSos,
         icon: "alert",
         accent: "red",
-      },
-      {
-        id: "classes",
-        titleKey: "classes",
-        descriptionKey: "activeClasses",
-        value: totalClasses,
-        icon: "school",
-        accent: "green",
       },
     ],
   };

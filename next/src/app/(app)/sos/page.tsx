@@ -9,6 +9,7 @@ import {
   Clock3,
   ExternalLink,
   Link2,
+  ListFilter,
   Mail,
   RefreshCw,
 } from "lucide-react";
@@ -398,7 +399,7 @@ export default function SosPage() {
               {alerts.map((alert) => (
                 <StaggerItem
                   key={alert.id}
-                  className="surface-utility rounded-[18px] border border-border/50 p-4 flex flex-col gap-3 transition-all duration-300 hover:scale-[1.01] hover:-translate-y-0.5 hover:shadow-card"
+                  className="surface-secondary rounded-[18px] border border-border/50 p-4 flex flex-col gap-3 transition-all duration-300 hover:scale-[1.01] hover:-translate-y-0.5 hover:shadow-card"
                 >
                   <div className="flex flex-wrap items-start justify-between gap-3">
                     <div>
@@ -408,9 +409,19 @@ export default function SosPage() {
                       </p>
                     </div>
                     <span
-                      className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold ${statusClass(alert.resolved)}`}
+                      className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold ${statusClass(alert.resolved)}`}
                     >
-                      {alert.resolved ? t("resolved") : t("pending")}
+                      {alert.resolved ? (
+                        <>
+                          <CheckCircle2 className="size-3.5" />
+                          {t("resolved")}
+                        </>
+                      ) : (
+                        <>
+                          <Clock3 className="size-3.5" />
+                          {t("pending")}
+                        </>
+                      )}
                     </span>
                   </div>
 
@@ -466,37 +477,43 @@ export default function SosPage() {
 
       <StaggerList className="grid gap-4 sm:grid-cols-3">
         {[
-          { label: t("totalAlerts"), value: alerts.length, tone: "border-border/50" },
-          { label: t("pendingAlerts"), value: pendingAlerts.length, tone: "border-danger-300/60" },
-          { label: t("resolvedAlerts"), value: resolvedAlerts.length, tone: "border-success-300/60" },
+          { label: t("totalAlerts"), value: alerts.length, tone: "border-border/50", icon: ListFilter },
+          { label: t("pendingAlerts"), value: pendingAlerts.length, tone: "border-danger-300/60 text-danger-600 dark:text-danger-400", icon: Clock3 },
+          { label: t("resolvedAlerts"), value: resolvedAlerts.length, tone: "border-success-300/60 text-success-600 dark:text-success-400", icon: CheckCircle2 },
         ].map((card) => (
           <StaggerItem
             key={card.label}
-            className={`surface-secondary rounded-[20px] border ${card.tone} p-5`}
+            className={`surface-secondary relative overflow-hidden rounded-[20px] border ${card.tone.split(' ')[0]} p-5`}
           >
-            <p className="text-sm text-muted-foreground">{card.label}</p>
-            <p className="mt-2 text-2xl font-extrabold tracking-tight">{card.value}</p>
+            <div className="flex items-center justify-between">
+              <p className="text-sm font-medium text-muted-foreground">{card.label}</p>
+              <card.icon className={`size-5 ${card.tone.includes('danger') ? 'text-danger-500' : card.tone.includes('success') ? 'text-success-500' : 'text-muted-foreground'}`} />
+            </div>
+            <p className={`mt-2 text-3xl font-extrabold tracking-tight ${card.tone.includes('danger') ? 'text-danger-600 dark:text-danger-400' : card.tone.includes('success') ? 'text-success-600 dark:text-success-400' : ''}`}>
+              {card.value}
+            </p>
           </StaggerItem>
         ))}
       </StaggerList>
 
       <div role="group" aria-label={t("filterLabel")} className="flex flex-wrap gap-2">
         {([
-          ["pending", t("filterPending")],
-          ["resolved", t("filterResolved")],
-          ["all", t("filterAll")],
-        ] as const).map(([value, label]) => (
+          ["pending", t("filterPending"), Clock3],
+          ["resolved", t("filterResolved"), CheckCircle2],
+          ["all", t("filterAll"), ListFilter],
+        ] as const).map(([value, label, Icon]) => (
           <button
             key={value}
             type="button"
             aria-pressed={filter === value}
             onClick={() => setFilter(value)}
-            className={`rounded-full px-3 py-1.5 text-xs font-semibold transition-all border ${
+            className={`flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-xs font-semibold transition-all border ${
               filter === value
                 ? "border-navy-800 bg-navy-900 text-white shadow-float"
-                : "border-border/60 bg-card/70 text-muted-foreground hover:text-foreground hover:border-navy-300"
+                : "border-border/60 bg-card/70 text-muted-foreground hover:text-foreground hover:border-navy-300 hover:bg-muted/50"
             }`}
           >
+            <Icon className="size-3.5" />
             {label}
           </button>
         ))}
@@ -525,7 +542,7 @@ export default function SosPage() {
           {filteredAlerts.map((alert) => (
             <StaggerItem
               key={alert.id}
-              className={`surface-utility rounded-[18px] border p-4 flex flex-col gap-3 transition-all duration-300 hover:scale-[1.01] hover:-translate-y-0.5 hover:shadow-card ${
+              className={`surface-secondary rounded-[18px] border p-4 flex flex-col gap-3 transition-all duration-300 hover:scale-[1.01] hover:-translate-y-0.5 hover:shadow-card ${
                 alert.resolved
                   ? "border-border/50"
                   : "border-danger-300/60 dark:border-danger-900/30"

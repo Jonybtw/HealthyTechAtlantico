@@ -16,7 +16,7 @@ import {
 } from "recharts";
 import { PageScaffold } from "@/components/ui/page-scaffold";
 import { PageSection } from "@/components/ui/page-section";
-import { PillSelect } from "@/components/ui/pill-select";
+import { ClassPicker } from "@/components/ui/class-picker";
 import { DataTable, type Column } from "@/components/ui/data-table";
 import { Button } from "@/components/ui/button";
 import { ZoneBadge } from "@/components/ui/zone-badge";
@@ -28,6 +28,7 @@ import { ChartTooltip } from "@/components/ui/chart-tooltip";
 import { useClasses } from "@/hooks/use-queries";
 import { usePageTitle } from "@/hooks/use-page-title";
 import { readApiResponse } from "@/lib/api-client";
+import { getInitials, getStudentSwatch } from "@/components/ui/student-picker";
 
 interface StudentRow {
   id: string;
@@ -182,13 +183,11 @@ export default function TurmaPage() {
       render: (row) => (
         <div className="flex items-center gap-3">
           <Avatar className="size-8">
-            <AvatarFallback className="text-[10px] bg-navy-100 text-navy-700 dark:bg-navy-900 dark:text-navy-300">
-              {row.name
-                .split(" ")
-                .filter(Boolean)
-                .slice(0, 2)
-                .map((n) => n[0]?.toUpperCase())
-                .join("")}
+            <AvatarFallback 
+              className="text-[10px] shadow-[inset_0_1px_0_rgba(255,255,255,0.18)]"
+              style={getStudentSwatch(row)}
+            >
+              {getInitials(row.name)}
             </AvatarFallback>
           </Avatar>
           <span className="font-medium">{row.name}</span>
@@ -246,7 +245,7 @@ export default function TurmaPage() {
           />
           <Button
             size="sm"
-            variant="secondary"
+            variant="outline"
             icon={<FileUp className="size-4" />}
             loading={isImportingCsv}
             onClick={() => importInputRef.current?.click()}
@@ -267,31 +266,28 @@ export default function TurmaPage() {
     >
 
       {classes.length > 0 && (
-        <PageSection tone="utility" layout="list">
-          <div className="flex items-center gap-3">
-            <Users className="size-4 text-muted-foreground" />
-            <PillSelect
-              options={classes.map((schoolClass) => ({
-                value: schoolClass.id,
-                label: `${schoolClass.name} (${schoolClass.year})`,
-              }))}
-              value={classId}
-              onChange={(value) => {
-                setLoading(true);
-                setClassId(value);
-                setStudents([]);
-              }}
-            />
-          </div>
-        </PageSection>
+        <div className="w-full max-w-[280px] animate-fade-in-up">
+          <ClassPicker
+            classes={classes}
+            value={classId}
+            onChange={(value) => {
+              setLoading(true);
+              setClassId(value);
+              setStudents([]);
+            }}
+            placeholder={t("className")}
+          />
+        </div>
       )}
 
       {!classId ? (
-        <EmptyState
-          icon={Users}
-          title={t("noClassSelected")}
-          description={t("noClassSelectedDesc")}
-        />
+        <div className="flex min-h-[400px] items-center justify-center rounded-[22px] border border-dashed border-border/60 bg-muted/30 p-8 shadow-inner">
+          <EmptyState
+            icon={Users}
+            title={t("noClassSelected")}
+            description={t("noClassSelectedDesc")}
+          />
+        </div>
       ) : loading ? (
         <div className="flex flex-col gap-5 animate-fade-in">
           <Skeleton className="h-52 w-full rounded-2xl" />
@@ -307,7 +303,7 @@ export default function TurmaPage() {
               className="animate-fade-in-up"
             >
               <div className="h-40 w-full">
-                <ResponsiveContainer width="100%" height="100%">
+                <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
                   <BarChart
                     data={zoneChartData}
                     layout="vertical"
@@ -388,3 +384,4 @@ export default function TurmaPage() {
     </PageScaffold>
   );
 }
+

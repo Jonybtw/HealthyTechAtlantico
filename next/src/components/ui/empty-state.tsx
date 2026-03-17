@@ -20,8 +20,10 @@ export function EmptyState({
       <div className="absolute bottom-0 left-0 h-28 w-28 rounded-full bg-navy-300/8 blur-3xl" />
 
       <div className="relative mx-auto flex max-w-xl flex-col items-center gap-4">
-        <div className="surface-utility flex size-10 items-center justify-center rounded-lg shadow-card">
-          <Icon className="size-4 text-navy-700 dark:text-gold-300 animate-pulse" strokeWidth={1.8} />
+        <div className="animate-pulse-ring rounded-full p-2">
+          <div className="surface-utility flex size-10 items-center justify-center rounded-lg shadow-card">
+            <Icon className="size-4 text-navy-700 dark:text-gold-300 animate-pulse" strokeWidth={1.8} />
+          </div>
         </div>
 
         <div className="space-y-1.5">

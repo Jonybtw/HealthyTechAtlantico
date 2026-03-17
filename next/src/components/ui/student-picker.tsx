@@ -19,7 +19,7 @@ export interface StudentPickerProps {
   placeholder?: string;
 }
 
-const STUDENT_SWATCHES = [
+export const STUDENT_SWATCHES = [
   { background: "linear-gradient(135deg, #d8ad34 0%, #b88c19 100%)", color: "#091523" },
   { background: "linear-gradient(135deg, #2563eb 0%, #1e3a8a 100%)", color: "#eff6ff" },
   { background: "linear-gradient(135deg, #059669 0%, #065f46 100%)", color: "#ecfdf5" },
@@ -28,7 +28,7 @@ const STUDENT_SWATCHES = [
   { background: "linear-gradient(135deg, #e11d48 0%, #881337 100%)", color: "#fff1f2" },
 ];
 
-function getInitials(name: string) {
+export function getInitials(name: string) {
   return name
     .split(" ")
     .map((part) => part[0])
@@ -38,7 +38,7 @@ function getInitials(name: string) {
     .toUpperCase();
 }
 
-function getStudentSwatch(student: Student) {
+export function getStudentSwatch(student: { id: string; name: string }) {
   const source = `${student.id}:${student.name}`;
   const hash = [...source].reduce(
     (acc, char) => (acc * 31 + char.charCodeAt(0)) >>> 0,
@@ -63,7 +63,7 @@ export function StudentPicker({
     width: number;
   } | null>(null);
   const rootRef = useRef<HTMLDivElement>(null);
-  const triggerRef = useRef<HTMLButtonElement>(null);
+  const triggerRef = useRef<HTMLDivElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -133,19 +133,6 @@ export function StudentPicker({
             className="animate-scale-in glass fixed z-[120] overflow-hidden rounded-[18px] shadow-float"
             style={menuStyle}
           >
-            <div className="border-b border-border/60 p-2.5">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-                <input
-                  ref={inputRef}
-                  type="text"
-                  value={search}
-                  onChange={(event) => setSearch(event.target.value)}
-                  placeholder="Procurar aluno..."
-                  className="w-full rounded-xl border border-border/80 bg-card/80 py-2 pl-9 pr-3 text-sm text-foreground outline-none transition-all focus:border-gold-500/50 focus:ring-3 focus:ring-gold-400/10"
-                />
-              </div>
-            </div>
             <div className="max-h-64 overflow-y-auto p-2">
               {filtered.length === 0 ? (
                 <p className="px-3 py-6 text-center text-sm text-muted-foreground">
@@ -195,42 +182,37 @@ export function StudentPicker({
 
   return (
     <div ref={rootRef} className={`relative ${open ? "z-20" : ""}`}>
-      <button
+      <div
         ref={triggerRef}
-        type="button"
-        onClick={() =>
-          setOpen((current) => {
-            if (current) {
-              setSearch("");
-            }
-
-            return !current;
-          })
-        }
-        aria-expanded={open}
-        className={`flex min-h-10 w-full items-center gap-3 rounded-[18px] border px-3 py-2 text-left transition-all duration-300 ${
+        onClick={() => {
+          if (!open) {
+            setSearch("");
+            setOpen(true);
+          }
+        }}
+        className={`flex h-[46px] w-full cursor-pointer items-center justify-between rounded-[18px] border px-4 text-left transition-all duration-300 outline-none focus-within:ring-1 focus-within:ring-ring ${
           open
             ? "border-gold-500/50 bg-card shadow-card"
-            : "border-border/80 bg-card/70 hover:border-navy-300/40 hover:bg-card"
+            : "border-input bg-background shadow-sm hover:surface-secondary hover:text-foreground"
         }`}
       >
-        {selected ? (
-          <>
+        {selected && !open ? (
+          <div className="flex w-full items-center gap-2.5">
             <span
-              className="flex size-9 shrink-0 items-center justify-center rounded-full text-xs font-semibold shadow-[inset_0_1px_0_rgba(255,255,255,0.18)]"
+              className="flex size-7 shrink-0 items-center justify-center rounded-full text-[11px] font-semibold shadow-[inset_0_1px_0_rgba(255,255,255,0.18)]"
               style={getStudentSwatch(selected)}
             >
               {getInitials(selected.name)}
             </span>
-            <span className="min-w-0 flex-1">
-              <span className="block truncate text-sm font-semibold text-foreground">
+            <span className="min-w-0 flex-1 flex flex-col justify-center">
+              <span className="truncate text-[13px] font-semibold leading-tight text-foreground">
                 {selected.name}
               </span>
-              <span className="block truncate text-xs text-muted-foreground">
-                {selected.className ?? selected.schoolYear ?? "Sem turma atribuida"}
+              <span className="truncate text-[10px] leading-none text-muted-foreground mt-0.5">
+                {selected.className ?? selected.schoolYear ?? "Sem turma atribuída"}
               </span>
             </span>
-            <div className="flex items-center gap-1">
+            <div className="flex items-center gap-0.5">
               <span
                 role="button"
                 tabIndex={0}
@@ -255,28 +237,45 @@ export function StudentPicker({
                 <X className="size-4" />
               </span>
               <ChevronDown
-                className={`size-4 text-muted-foreground transition-transform ${
+                className={`size-4 text-muted-foreground opacity-50 transition-transform ${
                   open ? "rotate-180" : ""
                 }`}
               />
             </div>
-          </>
+          </div>
         ) : (
-          <>
-            <div className="flex size-9 items-center justify-center rounded-full bg-muted/60 text-muted-foreground">
-              <Search className="size-4" />
+          <div className="flex w-full items-center justify-between gap-2 whitespace-nowrap">
+            <div className="flex flex-1 items-center gap-2">
+              <Search className="h-4 w-4 text-muted-foreground mr-1" />
+              <input
+                ref={inputRef}
+                type="text"
+                value={search}
+                onChange={(event) => setSearch(event.target.value)}
+                placeholder={placeholder || "Procurar aluno..."}
+                className="w-full bg-transparent text-sm font-medium text-foreground outline-none placeholder:text-muted-foreground"
+              />
             </div>
-            <span className="flex-1 text-sm text-muted-foreground">
-              {placeholder}
-            </span>
-            <ChevronDown
-              className={`size-4 text-muted-foreground transition-transform ${
-                open ? "rotate-180" : ""
-              }`}
-            />
-          </>
+            {open && (
+              <span
+                role="button"
+                tabIndex={0}
+                className="rounded-full p-1.5 text-muted-foreground transition-colors hover:bg-muted/70 hover:text-foreground"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setOpen(false);
+                  setSearch("");
+                }}
+              >
+                <ChevronDown className="h-4 w-4 opacity-50 rotate-180" />
+              </span>
+            )}
+            {!open && (
+              <ChevronDown className="h-4 w-4 opacity-50 text-muted-foreground" />
+            )}
+          </div>
         )}
-      </button>
+      </div>
       {dropdown}
     </div>
   );

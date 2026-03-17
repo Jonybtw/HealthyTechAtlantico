@@ -47,7 +47,6 @@ export default function GuardioesPage() {
   const [loadingGuardians, setLoadingGuardians] = useState(false);
 
   // Add form
-  const [addStudentId, setAddStudentId] = useState<string | null>(null);
   const [guardianEmail, setGuardianEmail] = useState("");
   const [relationship, setRelationship] = useState("EE");
   const [submitting, setSubmitting] = useState(false);
@@ -81,13 +80,13 @@ export default function GuardioesPage() {
 
   async function handleAdd(e: React.FormEvent) {
     e.preventDefault();
-    if (!addStudentId) {
+    if (!selectedStudentId) {
       toast.error(t("addError"));
       return;
     }
     setSubmitting(true);
     try {
-      const res = await fetch(`/api/students/${addStudentId}/guardians`, {
+      const res = await fetch(`/api/students/${selectedStudentId}/guardians`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ guardianEmail, relationship }),
@@ -95,12 +94,7 @@ export default function GuardioesPage() {
       await readApiResponse(res);
       toast.success(t("addSuccess"));
       setGuardianEmail("");
-      // Refresh list if viewing same student
-      if (selectedStudentId === addStudentId) {
-        loadGuardians(addStudentId);
-      } else {
-        setSelectedStudentId(addStudentId);
-      }
+      loadGuardians(selectedStudentId);
     } catch (error) {
       toast.error(error instanceof Error ? error.message : t("unknownError"));
     } finally {
@@ -209,53 +203,46 @@ export default function GuardioesPage() {
         )}
       </PageSection>
 
-      <PageSection
-        tone="primary"
-        layout="form"
-        className="animate-fade-in-up delay-100 relative z-10 max-w-2xl overflow-visible"
-        title={
-          <span className="flex items-center gap-2">
-            <UserPlus size={16} className="text-navy-600" />
-            {t("addTitle")}
-          </span>
-        }
-      >
-        <form onSubmit={handleAdd} className="flex flex-col gap-4">
-          <div>
-            <label className="block text-xs font-medium mb-1">{t("student")}</label>
-            <StudentPicker
-              students={students}
-              value={addStudentId}
-              onChange={setAddStudentId}
-              placeholder={t("selectStudent")}
+      {selectedStudentId && (
+        <PageSection
+          tone="primary"
+          layout="form"
+          className="animate-fade-in-up delay-100 relative z-10 max-w-2xl overflow-visible"
+          title={
+            <span className="flex items-center gap-2">
+              <UserPlus size={16} className="text-navy-600" />
+              {t("addTitle")}
+            </span>
+          }
+        >
+          <form onSubmit={handleAdd} className="flex flex-col gap-4">
+            <Input
+              label={t("emailLabel")}
+              type="email"
+              value={guardianEmail}
+              onChange={(e) => setGuardianEmail(e.target.value)}
+              placeholder="encarregado@exemplo.pt"
+              required
             />
-          </div>
-          <Input
-            label={t("emailLabel")}
-            type="email"
-            value={guardianEmail}
-            onChange={(e) => setGuardianEmail(e.target.value)}
-            placeholder="encarregado@exemplo.pt"
-            required
-          />
-          <div>
-            <label className="block text-xs font-medium mb-1">{t("relationship")}</label>
-            <PillSelect
-              options={RELATIONSHIP_OPTIONS.map((r) => ({ value: r.value, label: t(r.labelKey as Parameters<typeof t>[0]) }))}
-              value={relationship}
-              onChange={setRelationship}
-            />
-          </div>
-          <Button
-            type="submit"
-            loading={submitting}
-            icon={<UserPlus size={16} />}
-            className="self-start"
-          >
-            {t("addBtn")}
-          </Button>
-        </form>
-      </PageSection>
+            <div>
+              <label className="block text-xs font-medium mb-1">{t("relationship")}</label>
+              <PillSelect
+                options={RELATIONSHIP_OPTIONS.map((r) => ({ value: r.value, label: t(r.labelKey as Parameters<typeof t>[0]) }))}
+                value={relationship}
+                onChange={setRelationship}
+              />
+            </div>
+            <Button
+              type="submit"
+              loading={submitting}
+              icon={<UserPlus size={16} />}
+              className="self-start"
+            >
+              {t("addBtn")}
+            </Button>
+          </form>
+        </PageSection>
+      )}
 
       <ConfirmModal
         open={!!deleteTarget}

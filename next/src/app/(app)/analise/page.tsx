@@ -14,11 +14,12 @@ import {
   ResponsiveContainer,
   Legend,
 } from "recharts";
-import { Activity, LineChart as ChartIcon, Link2, Users } from "lucide-react";
+import { Activity, CheckCircle2, LineChart as ChartIcon, Link2, Users } from "lucide-react";
 import { PageScaffold } from "@/components/ui/page-scaffold";
 import { PageSection } from "@/components/ui/page-section";
 import { StudentPicker } from "@/components/ui/student-picker";
 import { PillSelect } from "@/components/ui/pill-select";
+import { ClassPicker } from "@/components/ui/class-picker";
 import { EmptyState } from "@/components/ui/empty-state";
 import { ChartTooltip } from "@/components/ui/chart-tooltip";
 import { useUser } from "@/components/user-context";
@@ -213,9 +214,9 @@ export default function AnalisePage() {
   }, [chart, classId, classes]);
 
   const chartOptions = [
-    { value: "bmi", label: t("chartBmi") },
-    { value: "tests", label: t("chartTests") },
-    ...(!isStudent ? [{ value: "class", label: t("chartClass") }] : []),
+    { value: "bmi", label: t("chartBmi"), icon: <Activity className="size-4" /> },
+    { value: "tests", label: t("chartTests"), icon: <CheckCircle2 className="size-4" /> },
+    ...(!isStudent ? [{ value: "class", label: t("chartClass"), icon: <Users className="size-4" /> }] : []),
   ];
 
   if (!canViewAnalysis) {
@@ -243,7 +244,7 @@ export default function AnalisePage() {
   return (
     <PageScaffold headerProps={{ title: t("title"), description: t("description"), eyebrow: "Analysis" }}>
 
-      <PageSection tone="utility" layout="list">
+      <PageSection tone="secondary" layout="list">
         <div className="flex flex-wrap items-end gap-4">
           {chart !== "class" && !isStudent ? (
             <div className="w-full max-w-xs">
@@ -256,22 +257,19 @@ export default function AnalisePage() {
           ) : null}
 
           {chart === "class" && classes.length > 0 ? (
-            <div className="w-full max-w-xs">
-              <PillSelect
-                options={classes.map((schoolClass) => ({
-                  value: schoolClass.id,
-                  label: `${schoolClass.name} (${schoolClass.year})`,
-                }))}
-                value={classId}
-                onChange={(value) => {
-                  setClassId(value);
-                  setClassData([]);
-                }}
-              />
-            </div>
+            <ClassPicker
+              classes={classes}
+              value={classId}
+              onChange={(value) => {
+                setClassId(value);
+                setClassData([]);
+              }}
+              placeholder={t("chartClass")}
+            />
           ) : null}
 
           <PillSelect
+            size="lg"
             options={chartOptions}
             value={chart}
             onChange={(value) => {
@@ -296,7 +294,7 @@ export default function AnalisePage() {
           />
         ) : chart === "bmi" ? (
           <div className="h-80 w-full animate-fade-in">
-            <ResponsiveContainer width="100%" height="100%">
+            <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
               <LineChart data={bmiData} margin={{ top: 20, right: 20, left: 0, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" vertical={false} />
                 <XAxis dataKey="date" tick={{ fill: "var(--color-muted-foreground)", fontSize: 12 }} axisLine={false} tickLine={false} dy={10} />
@@ -319,7 +317,7 @@ export default function AnalisePage() {
           </div>
         ) : chart === "tests" ? (
           <div className="h-80 w-full animate-fade-in">
-            <ResponsiveContainer width="100%" height="100%">
+            <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
               <BarChart data={testData} margin={{ top: 20, right: 20, left: 0, bottom: 0 }} barSize={32}>
                 <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" vertical={false} />
                 <XAxis dataKey="date" tick={{ fill: "var(--color-muted-foreground)", fontSize: 12 }} axisLine={false} tickLine={false} dy={10} />
@@ -344,7 +342,7 @@ export default function AnalisePage() {
           </div>
         ) : (
           <div className="h-72 w-full animate-fade-in">
-            <ResponsiveContainer width="100%" height="100%">
+            <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
               <BarChart data={classData} layout="vertical" margin={{ top: 0, right: 20, left: 20, bottom: 0 }} barSize={40}>
                 <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" horizontal={false} />
                 <XAxis type="number" allowDecimals={false} tick={{ fill: "var(--color-muted-foreground)", fontSize: 12 }} axisLine={false} tickLine={false} />
@@ -362,3 +360,5 @@ export default function AnalisePage() {
     </PageScaffold>
   );
 }
+
+

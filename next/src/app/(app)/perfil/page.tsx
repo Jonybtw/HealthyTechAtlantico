@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
-import { Lock, ShieldCheck, Share2, User, Check, X, Save } from "lucide-react";
+import { Lock, ShieldCheck, Share2, User, Check, X, Save, Key, Shield } from "lucide-react";
 import { toast } from "sonner";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -238,7 +238,7 @@ export default function PerfilPage() {
                           label={t("newPassword")}
                           type="password"
                           autoComplete="new-password"
-                          leftIcon={<Lock className="size-4" />}
+                          leftIcon={<Key className="size-4" />}
                           error={pwForm.formState.errors.newPassword?.message}
                           {...field}
                         />
@@ -256,7 +256,7 @@ export default function PerfilPage() {
                           label={t("confirmPassword")}
                           type="password"
                           autoComplete="new-password"
-                          leftIcon={<Lock className="size-4" />}
+                          leftIcon={<Shield className="size-4" />}
                           error={pwForm.formState.errors.confirmPassword?.message}
                           {...field}
                         />

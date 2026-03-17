@@ -194,6 +194,7 @@ export default function QuestionariosPage() {
             )}
 
             <PillSelect
+              size="lg"
               options={[
                 { value: "AUTOCONCEITO", label: t("autoconceito") },
                 { value: "AUTOESTIMA", label: t("autoestima") },

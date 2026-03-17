@@ -14,6 +14,7 @@ import { Input } from "@/components/ui/input";
 import { PillSelect } from "@/components/ui/pill-select";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { readApiResponse } from "@/lib/api-client";
+import { getInitials, getStudentSwatch } from "@/components/ui/student-picker";
 import { createStudentAction } from "./actions";
 
 interface StudentRow {
@@ -69,13 +70,11 @@ export function AlunosClient({ initialStudents }: AlunosClientProps) {
       render: (row) => (
         <div className="flex items-center gap-3">
           <Avatar className="size-8">
-            <AvatarFallback className="text-[10px] bg-navy-100 text-navy-700 dark:bg-navy-900 dark:text-navy-300">
-              {row.name
-                .split(" ")
-                .filter(Boolean)
-                .slice(0, 2)
-                .map((n) => n[0]?.toUpperCase())
-                .join("")}
+            <AvatarFallback 
+              className="text-[10px] shadow-[inset_0_1px_0_rgba(255,255,255,0.18)]"
+              style={getStudentSwatch(row)}
+            >
+              {getInitials(row.name)}
             </AvatarFallback>
           </Avatar>
           <span className="font-medium">{row.name}</span>
@@ -152,7 +151,7 @@ export function AlunosClient({ initialStudents }: AlunosClientProps) {
           />
           <Button
             size="sm"
-            variant="secondary"
+            variant="outline"
             icon={<FileUp className="size-4" />}
             loading={isImportingCsv}
             onClick={() => importInputRef.current?.click()}

@@ -96,10 +96,10 @@ export default function DispensasPage() {
         </Button>
       }
     >
-      <PageSection tone="utility" layout="list">
-        <StudentPicker students={students} value={studentId} onChange={setStudentId} />
-      </PageSection>
-
+        <PageSection tone="secondary" layout="list">
+          <div className="w-full max-w-sm">
+            <StudentPicker students={students} value={studentId} onChange={setStudentId} />
+          </div>          </PageSection>
       <AnimatePresence>
         {showForm ? (
           <FadeIn key="dispensa-form" className="max-w-lg">
