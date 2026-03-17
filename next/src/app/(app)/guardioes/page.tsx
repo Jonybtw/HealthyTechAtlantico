@@ -4,7 +4,8 @@ import { useState, useEffect, useCallback } from "react";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { UserCheck, UserPlus, Trash2 } from "lucide-react";
-import { PageHeader } from "@/components/ui/page-header";
+import { PageScaffold } from "@/components/ui/page-scaffold";
+import { PageSection } from "@/components/ui/page-section";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { PillSelect } from "@/components/ui/pill-select";
@@ -14,7 +15,7 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useUser } from "@/components/user-context";
 import { usePageTitle } from "@/hooks/use-page-title";
-import { PageTransition } from "@/components/ui/motion";
+import { readApiResponse } from "@/lib/api-client";
 
 interface Student {
   id: string;
@@ -56,11 +57,8 @@ export default function GuardioesPage() {
 
   useEffect(() => {
     fetch("/api/students")
-      .then((r) => {
-        if (!r.ok) throw new Error();
-        return r.json();
-      })
-      .then((data) => setStudents(Array.isArray(data) ? data : data.students ?? []))
+      .then((response) => readApiResponse<{ students: Student[] }>(response))
+      .then((data) => setStudents(data.students))
       .catch(() => toast.error(t("loadError")));
   }, [t]);
 
@@ -68,10 +66,9 @@ export default function GuardioesPage() {
     setLoadingGuardians(true);
     try {
       const r = await fetch(`/api/students/${studentId}/guardians`);
-      const data = await r.json();
-      setGuardians(Array.isArray(data) ? data : []);
-    } catch {
-      toast.error(t("loadError"));
+      setGuardians(await readApiResponse<Guardian[]>(r));
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : t("loadError"));
     } finally {
       setLoadingGuardians(false);
     }
@@ -95,11 +92,7 @@ export default function GuardioesPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ guardianEmail, relationship }),
       });
-      if (!res.ok) {
-        const { error } = await res.json().catch(() => ({ error: t("unknownError") }));
-        toast.error(error);
-        return;
-      }
+      await readApiResponse(res);
       toast.success(t("addSuccess"));
       setGuardianEmail("");
       // Refresh list if viewing same student
@@ -108,8 +101,8 @@ export default function GuardioesPage() {
       } else {
         setSelectedStudentId(addStudentId);
       }
-    } catch {
-      toast.error(t("loadError"));
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : t("unknownError"));
     } finally {
       setSubmitting(false);
     }
@@ -123,15 +116,12 @@ export default function GuardioesPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ guardianUserId: deleteTarget.guardianUserId }),
       });
-      if (!res.ok) {
-        toast.error(t("loadError"));
-        return;
-      }
+      await readApiResponse(res);
       toast.success(t("removeSuccess"));
       setDeleteTarget(null);
       loadGuardians(deleteTarget.studentId);
-    } catch {
-      toast.error(t("loadError"));
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : t("loadError"));
     }
   }
 
@@ -146,17 +136,19 @@ export default function GuardioesPage() {
   const selectedStudent = students.find((s) => s.id === selectedStudentId);
 
   return (
-    <PageTransition className="flex flex-col gap-5">
-      <PageHeader
-        title={t("title")}
-        description={t("description")}
-      />
+    <PageScaffold headerProps={{ title: t("title"), description: t("description") }}>
 
-      <div className="animate-fade-in-up relative z-20 flex max-w-2xl flex-col gap-5 overflow-visible rounded-2xl border border-border/50 bg-card/85 p-5 shadow-float glass">
-        <h2 className="text-lg font-bold tracking-tight flex items-center gap-2">
-          <UserCheck size={18} className="text-navy-600" />
-          {t("viewTitle")}
-        </h2>
+      <PageSection
+        tone="secondary"
+        layout="list"
+        className="animate-fade-in-up relative z-20 max-w-2xl overflow-visible"
+        title={
+          <span className="flex items-center gap-2">
+            <UserCheck size={16} className="text-navy-600" />
+            {t("viewTitle")}
+          </span>
+        }
+      >
         <StudentPicker
           students={students}
           value={selectedStudentId}
@@ -196,14 +188,14 @@ export default function GuardioesPage() {
                     <td className="py-3 px-4 font-medium">{g.guardian.name ?? "-"}</td>
                     <td className="py-3 px-4 text-muted-foreground">{g.guardian.email}</td>
                     <td className="py-3 px-4">
-                      <span className="inline-block rounded-md px-2.5 py-1 text-xs font-semibold bg-navy-100 dark:bg-navy-900/50 text-navy-700 dark:text-navy-300 border border-navy-200 dark:border-navy-800/50 tracking-wide uppercase">
+                      <span className="inline-block rounded-md px-2.5 py-1 text-[11px] font-semibold bg-navy-100 dark:bg-navy-900/50 text-navy-700 dark:text-navy-300 border border-navy-200 dark:border-navy-800/50 tracking-wide uppercase">
                         {RELATIONSHIP_OPTIONS.find((r) => r.value === g.relationship)?.labelKey ? t(RELATIONSHIP_OPTIONS.find((r) => r.value === g.relationship)!.labelKey as Parameters<typeof t>[0]) : g.relationship}
                       </span>
                     </td>
                     <td className="py-3 px-4 text-right">
                       <button
                         onClick={() => setDeleteTarget({ guardianUserId: g.id, studentId: selectedStudentId! })}
-                        className="p-2 rounded-xl text-muted-foreground hover:text-danger-600 hover:bg-danger-50 dark:hover:bg-danger-900/20 transition-all border border-transparent hover:border-danger-200 dark:hover:border-danger-800/30 shadow-sm"
+                        className="p-2 rounded-lg text-muted-foreground hover:text-danger-600 hover:bg-danger-50 dark:hover:bg-danger-900/20 transition-all border border-transparent hover:border-danger-200 dark:hover:border-danger-800/30 shadow-sm"
                         aria-label={t("removeBtn")}
                       >
                         <Trash2 size={16} />
@@ -215,16 +207,22 @@ export default function GuardioesPage() {
             </table>
           </div>
         )}
-      </div>
+      </PageSection>
 
-      <div className="animate-fade-in-up delay-100 relative z-10 flex max-w-2xl flex-col gap-5 overflow-visible rounded-2xl border border-border/50 bg-card/85 p-5 shadow-float glass">
-        <h2 className="text-lg font-bold tracking-tight flex items-center gap-2">
-          <UserPlus size={18} className="text-navy-600" />
-          {t("addTitle")}
-        </h2>
+      <PageSection
+        tone="primary"
+        layout="form"
+        className="animate-fade-in-up delay-100 relative z-10 max-w-2xl overflow-visible"
+        title={
+          <span className="flex items-center gap-2">
+            <UserPlus size={16} className="text-navy-600" />
+            {t("addTitle")}
+          </span>
+        }
+      >
         <form onSubmit={handleAdd} className="flex flex-col gap-4">
           <div>
-            <label className="block text-sm font-medium mb-1">{t("student")}</label>
+            <label className="block text-xs font-medium mb-1">{t("student")}</label>
             <StudentPicker
               students={students}
               value={addStudentId}
@@ -241,7 +239,7 @@ export default function GuardioesPage() {
             required
           />
           <div>
-            <label className="block text-sm font-medium mb-1">{t("relationship")}</label>
+            <label className="block text-xs font-medium mb-1">{t("relationship")}</label>
             <PillSelect
               options={RELATIONSHIP_OPTIONS.map((r) => ({ value: r.value, label: t(r.labelKey as Parameters<typeof t>[0]) }))}
               value={relationship}
@@ -257,7 +255,7 @@ export default function GuardioesPage() {
             {t("addBtn")}
           </Button>
         </form>
-      </div>
+      </PageSection>
 
       <ConfirmModal
         open={!!deleteTarget}
@@ -268,6 +266,6 @@ export default function GuardioesPage() {
         onCancel={() => setDeleteTarget(null)}
         variant="danger"
       />
-    </PageTransition>
+    </PageScaffold>
   );
 }

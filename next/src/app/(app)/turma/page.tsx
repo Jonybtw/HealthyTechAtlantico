@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
-import { Download, Users } from "lucide-react";
+import { Download, FileUp, Users } from "lucide-react";
 import {
   BarChart,
   Bar,
@@ -14,18 +14,20 @@ import {
   ResponsiveContainer,
   Legend,
 } from "recharts";
-import { PageHeader } from "@/components/ui/page-header";
+import { PageScaffold } from "@/components/ui/page-scaffold";
+import { PageSection } from "@/components/ui/page-section";
 import { PillSelect } from "@/components/ui/pill-select";
 import { DataTable, type Column } from "@/components/ui/data-table";
 import { Button } from "@/components/ui/button";
 import { ZoneBadge } from "@/components/ui/zone-badge";
 import { EmptyState } from "@/components/ui/empty-state";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useUser } from "@/components/user-context";
 import { ChartTooltip } from "@/components/ui/chart-tooltip";
 import { useClasses } from "@/hooks/use-queries";
 import { usePageTitle } from "@/hooks/use-page-title";
-import { PageTransition } from "@/components/ui/motion";
+import { readApiResponse } from "@/lib/api-client";
 
 interface StudentRow {
   id: string;
@@ -42,10 +44,16 @@ export default function TurmaPage() {
   usePageTitle(t("title"));
   const { role } = useUser();
   const canViewClassReports = role === "ADMIN" || role === "PROFESSOR";
-  const { data: classes = [], error: classesError } = useClasses({ enabled: canViewClassReports });
+  const {
+    data: classes = [],
+    error: classesError,
+    refetch: refetchClasses,
+  } = useClasses({ enabled: canViewClassReports });
   const [classId, setClassId] = useState<string>("");
   const [students, setStudents] = useState<StudentRow[]>([]);
   const [loading, setLoading] = useState(false);
+  const [isImportingCsv, setIsImportingCsv] = useState(false);
+  const importInputRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
     if (classesError) toast.error(t("loadError"));
@@ -60,13 +68,9 @@ export default function TurmaPage() {
       const res = await fetch(
         `/api/classes/report?classId=${encodeURIComponent(classId)}`
       );
-      if (!res.ok) {
-        throw new Error("load-class-report");
-      }
-
-      const body = (await res.json()) as StudentRow[];
+      const body = await readApiResponse<StudentRow[]>(res);
       if (!active) return;
-      setStudents(Array.isArray(body) ? body : []);
+      setStudents(body);
     })()
       .catch(() => {
         if (active) {
@@ -112,6 +116,43 @@ export default function TurmaPage() {
     toast.success(t("exportCsv"));
   };
 
+  const importClassesCsv = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) {
+      return;
+    }
+
+    setIsImportingCsv(true);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const response = await fetch("/api/classes/import", {
+        method: "POST",
+        body: formData,
+      });
+      const result = await readApiResponse<{
+        createdAcademicYears: number;
+        createdClasses: number;
+        failed: number;
+      }>(response);
+
+      toast.success(
+        `Importadas ${result.createdClasses} turmas (${result.createdAcademicYears} anos letivos novos)`,
+      );
+      if (result.failed > 0) {
+        toast.warning(`${result.failed} linhas falharam validacao`);
+      }
+
+      await refetchClasses();
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Erro na importacao CSV");
+    } finally {
+      event.target.value = "";
+      setIsImportingCsv(false);
+    }
+  };
+
   const zoneChartData = useMemo(() => {
     if (!students.length) return [];
     let zsaf = 0;
@@ -134,7 +175,26 @@ export default function TurmaPage() {
   }, [students, t]);
 
   const columns: Column<StudentRow>[] = [
-    { key: "name", header: t("colName"), sortable: true },
+    {
+      key: "name",
+      header: t("colName"),
+      sortable: true,
+      render: (row) => (
+        <div className="flex items-center gap-3">
+          <Avatar className="size-8">
+            <AvatarFallback className="text-[10px] bg-navy-100 text-navy-700 dark:bg-navy-900 dark:text-navy-300">
+              {row.name
+                .split(" ")
+                .filter(Boolean)
+                .slice(0, 2)
+                .map((n) => n[0]?.toUpperCase())
+                .join("")}
+            </AvatarFallback>
+          </Avatar>
+          <span className="font-medium">{row.name}</span>
+        </div>
+      ),
+    },
     {
       key: "sex",
       header: t("colSex"),
@@ -173,35 +233,57 @@ export default function TurmaPage() {
   }
 
   return (
-    <PageTransition className="flex flex-col gap-5">
-      <PageHeader title={t("title")} description={t("description")}>
-        <Button
-          size="sm"
-          variant="secondary"
-          icon={<Download className="size-4" />}
-          onClick={exportCsv}
-          disabled={!students.length}
-        >
-          {t("exportCsv")}
-        </Button>
-      </PageHeader>
+    <PageScaffold
+      headerProps={{ title: t("title"), description: t("description") }}
+      headerActions={
+        <div className="flex items-center gap-2">
+          <input
+            ref={importInputRef}
+            type="file"
+            accept=".csv,text/csv"
+            className="hidden"
+            onChange={importClassesCsv}
+          />
+          <Button
+            size="sm"
+            variant="secondary"
+            icon={<FileUp className="size-4" />}
+            loading={isImportingCsv}
+            onClick={() => importInputRef.current?.click()}
+          >
+            CSV
+          </Button>
+          <Button
+            size="sm"
+            variant="secondary"
+            icon={<Download className="size-4" />}
+            onClick={exportCsv}
+            disabled={!students.length}
+          >
+            {t("exportCsv")}
+          </Button>
+        </div>
+      }
+    >
 
       {classes.length > 0 && (
-        <div className="flex items-center gap-3">
-          <Users className="size-4 text-muted-foreground" />
-          <PillSelect
-            options={classes.map((schoolClass) => ({
-              value: schoolClass.id,
-              label: `${schoolClass.name} (${schoolClass.year})`,
-            }))}
-            value={classId}
-            onChange={(value) => {
-              setLoading(true);
-              setClassId(value);
-              setStudents([]);
-            }}
-          />
-        </div>
+        <PageSection tone="utility" layout="list">
+          <div className="flex items-center gap-3">
+            <Users className="size-4 text-muted-foreground" />
+            <PillSelect
+              options={classes.map((schoolClass) => ({
+                value: schoolClass.id,
+                label: `${schoolClass.name} (${schoolClass.year})`,
+              }))}
+              value={classId}
+              onChange={(value) => {
+                setLoading(true);
+                setClassId(value);
+                setStudents([]);
+              }}
+            />
+          </div>
+        </PageSection>
       )}
 
       {!classId ? (
@@ -218,10 +300,12 @@ export default function TurmaPage() {
       ) : (
         <>
           {zoneChartData.length > 0 && (
-            <div className="bg-card/85 glass rounded-2xl border border-border/50 shadow-float p-5 animate-fade-in-up">
-              <h3 className="text-base font-bold tracking-tight mb-4">
-                {t("zafDistribution")}
-              </h3>
+            <PageSection
+              tone="secondary"
+              layout="analytics"
+              title={t("zafDistribution")}
+              className="animate-fade-in-up"
+            >
               <div className="h-40 w-full">
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart
@@ -283,7 +367,7 @@ export default function TurmaPage() {
                   </BarChart>
                 </ResponsiveContainer>
               </div>
-            </div>
+            </PageSection>
           )}
           <div className="animate-fade-in-up delay-100">
             <DataTable
@@ -291,10 +375,16 @@ export default function TurmaPage() {
               data={students}
               rowKey={(row) => row.id}
               emptyMessage={t("noStudents")}
+              toolbarTitle={t("className")}
+              toolbarSummary={
+                <span>
+                  {students.length} {t("studentsUnit")}
+                </span>
+              }
             />
           </div>
         </>
       )}
-    </PageTransition>
+    </PageScaffold>
   );
 }

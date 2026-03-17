@@ -3,12 +3,15 @@
 import { motion, AnimatePresence, type Variants } from "motion/react";
 import type { ReactNode } from "react";
 
-// ── Page wrapper ─────────────────────────────────────────────────
-
+// Page wrapper
 const pageVariants: Variants = {
-  hidden: { opacity: 0, y: 12 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.35, ease: [0.25, 0.46, 0.45, 0.94] } },
-  exit: { opacity: 0, y: -8, transition: { duration: 0.2 } },
+  hidden: { opacity: 0, y: 10 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.35, ease: [0.25, 0.46, 0.45, 0.94] },
+  },
+  exit: { opacity: 0, y: -6, transition: { duration: 0.2 } },
 };
 
 export function PageTransition({
@@ -19,20 +22,13 @@ export function PageTransition({
   className?: string;
 }) {
   return (
-    <motion.div
-      variants={pageVariants}
-      initial="hidden"
-      animate="visible"
-      exit="exit"
-      className={className}
-    >
+    <motion.div variants={pageVariants} initial="hidden" animate="visible" exit="exit" className={className}>
       {children}
     </motion.div>
   );
 }
 
-// ── Fade-in wrapper ──────────────────────────────────────────────
-
+// Fade-in wrapper
 export function FadeIn({
   children,
   className,
@@ -56,8 +52,7 @@ export function FadeIn({
   );
 }
 
-// ── Staggered list container ─────────────────────────────────────
-
+// Staggered list container
 const containerVariants: Variants = {
   hidden: { opacity: 0 },
   visible: {
@@ -86,12 +81,7 @@ export function StaggerList({
   className?: string;
 }) {
   return (
-    <motion.div
-      variants={containerVariants}
-      initial="hidden"
-      animate="visible"
-      className={className}
-    >
+    <motion.div variants={containerVariants} initial="hidden" animate="visible" className={className}>
       {children}
     </motion.div>
   );
@@ -111,8 +101,7 @@ export function StaggerItem({
   );
 }
 
-// ── Scale-in (cards, modals) ─────────────────────────────────────
-
+// Scale-in (cards, modals)
 export function ScaleIn({
   children,
   className,
@@ -134,8 +123,7 @@ export function ScaleIn({
   );
 }
 
-// ── Number counter ───────────────────────────────────────────────
-
+// Number counter
 export function AnimatedNumber({
   value,
   className,
@@ -156,6 +144,5 @@ export function AnimatedNumber({
   );
 }
 
-// ── AnimatePresence re-export ────────────────────────────────────
-
+// AnimatePresence re-export
 export { AnimatePresence, motion };

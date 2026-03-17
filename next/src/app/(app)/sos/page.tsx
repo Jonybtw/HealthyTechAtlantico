@@ -13,14 +13,16 @@ import {
   RefreshCw,
 } from "lucide-react";
 import { toast } from "sonner";
-import { PageHeader } from "@/components/ui/page-header";
+import { PageScaffold } from "@/components/ui/page-scaffold";
+import { PageSection } from "@/components/ui/page-section";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Input } from "@/components/ui/input";
 import { useUser } from "@/components/user-context";
-import { PageTransition, StaggerList, StaggerItem } from "@/components/ui/motion";
+import { StaggerList, StaggerItem } from "@/components/ui/motion";
 import { Skeleton } from "@/components/ui/skeleton";
 import { usePageTitle } from "@/hooks/use-page-title";
+import { getApiErrorMessage, readApiResponse } from "@/lib/api-client";
 
 interface LinkedStudent {
   id: string;
@@ -56,39 +58,6 @@ const EMPTY_FORM = {
   teacherEmail: "",
 };
 
-function getAlertsFromBody(body: unknown): SosAlert[] {
-  if (Array.isArray(body)) {
-    return body as SosAlert[];
-  }
-
-  if (
-    body &&
-    typeof body === "object" &&
-    "alerts" in body &&
-    Array.isArray((body as { alerts?: unknown }).alerts)
-  ) {
-    return (body as { alerts: SosAlert[] }).alerts;
-  }
-
-  return [];
-}
-
-function getErrorMessage(body: unknown): string | null {
-  if (body && typeof body === "object" && "error" in body) {
-    const error = (body as { error?: unknown }).error;
-
-    if (typeof error === "string") {
-      return error;
-    }
-
-    if (Array.isArray(error) && typeof error[0]?.message === "string") {
-      return error[0].message;
-    }
-  }
-
-  return null;
-}
-
 export default function SosPage() {
   const t = useTranslations("sos");
   usePageTitle(t("title"));
@@ -107,7 +76,7 @@ export default function SosPage() {
   const formatDateTime = useCallback(
     (value: string | null) => {
       if (!value) {
-        return "—";
+        return "-";
       }
 
       return new Date(value).toLocaleString(locale === "en" ? "en-GB" : "pt-PT", {
@@ -124,13 +93,8 @@ export default function SosPage() {
 
     try {
       const studentRes = await fetch("/api/students?limit=1");
-      const studentBody = await studentRes.json().catch(() => ({}));
-
-      if (!studentRes.ok) {
-        throw new Error(getErrorMessage(studentBody) ?? t("loadStudentError"));
-      }
-
-      const student = studentBody.students?.[0] as LinkedStudent | undefined;
+      const studentBody = await readApiResponse<{ students: LinkedStudent[] }>(studentRes);
+      const student = studentBody.students[0];
       setLinkedStudent(student ?? null);
 
       if (!student) {
@@ -139,13 +103,7 @@ export default function SosPage() {
       }
 
       const alertsRes = await fetch(`/api/students/${student.id}/sos`);
-      const alertsBody = await alertsRes.json().catch(() => ({}));
-
-      if (!alertsRes.ok) {
-        throw new Error(getErrorMessage(alertsBody) ?? t("loadError"));
-      }
-
-      setAlerts(getAlertsFromBody(alertsBody));
+      setAlerts(await readApiResponse<SosAlert[]>(alertsRes));
     } catch (error) {
       setLinkedStudent(null);
       setAlerts([]);
@@ -161,13 +119,7 @@ export default function SosPage() {
 
     try {
       const res = await fetch("/api/stats/sos-alerts");
-      const body = await res.json().catch(() => ({}));
-
-      if (!res.ok) {
-        throw new Error(getErrorMessage(body) ?? t("loadError"));
-      }
-
-      setAlerts(getAlertsFromBody(body));
+      setAlerts(await readApiResponse<SosAlert[]>(res));
     } catch (error) {
       setAlerts([]);
       toast.error(error instanceof Error ? error.message : t("loadError"));
@@ -212,31 +164,18 @@ export default function SosPage() {
         body: JSON.stringify(form),
       });
 
-      const body = await res.json().catch(() => ({}));
-
       if (res.status === 409) {
-        const existingAlert = (body as { alert?: SosAlert }).alert;
-        if (existingAlert) {
-          setAlerts((current) => [
-            existingAlert,
-            ...current.filter((alert) => alert.id !== existingAlert.id),
-          ]);
-        }
-
-        toast.error(getErrorMessage(body) ?? t("alreadyOpen"));
+        const body = await res.json().catch(() => undefined);
+        toast.error(getApiErrorMessage(body, t("alreadyOpen")));
+        await loadStudentView();
         return;
       }
 
-      if (!res.ok) {
-        toast.error(getErrorMessage(body) ?? t("sendError"));
-        return;
-      }
-
-      const alert = body as SosAlert;
+      const alert = await readApiResponse<SosAlert>(res);
       setAlerts((current) => [alert, ...current.filter((item) => item.id !== alert.id)]);
       toast.success(t("success"));
-    } catch {
-      toast.error(t("sendError"));
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : t("sendError"));
     } finally {
       setSending(false);
     }
@@ -249,20 +188,13 @@ export default function SosPage() {
       const res = await fetch(`/api/sos/${alertId}`, {
         method: "PATCH",
       });
-      const body = await res.json().catch(() => ({}));
-
-      if (!res.ok) {
-        toast.error(getErrorMessage(body) ?? t("resolveError"));
-        return;
-      }
-
-      const updatedAlert = body as SosAlert;
+      const updatedAlert = await readApiResponse<SosAlert>(res);
       setAlerts((current) =>
         current.map((alert) => (alert.id === updatedAlert.id ? updatedAlert : alert))
       );
       toast.success(t("resolvedSuccess"));
-    } catch {
-      toast.error(t("resolveError"));
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : t("resolveError"));
     } finally {
       setResolvingId(null);
     }
@@ -286,29 +218,28 @@ export default function SosPage() {
   if (role === "ALUNO") {
     if (loadingStudent) {
       return (
-        <div className="flex flex-col gap-5">
-          <PageHeader title={t("title")} description={t("descriptionStudent")} />
+        <PageScaffold headerProps={{ title: t("title"), description: t("descriptionStudent") }}>
           <Skeleton className="h-4 w-32" />
-        </div>
+        </PageScaffold>
       );
     }
 
     if (!linkedStudent) {
       return (
-        <div className="flex flex-col gap-5">
-          <PageHeader title={t("title")} description={t("descriptionStudent")} />
+        <PageScaffold headerProps={{ title: t("title"), description: t("descriptionStudent") }}>
           <EmptyState
             icon={Link2}
             title={t("studentNotLinkedTitle")}
             description={t("studentNotLinkedDescription")}
           />
-        </div>
+        </PageScaffold>
       );
     }
 
     return (
-      <PageTransition className="flex flex-col gap-5">
-        <PageHeader title={t("title")} description={t("descriptionStudent")}>
+      <PageScaffold
+        headerProps={{ title: t("title"), description: t("descriptionStudent") }}
+        headerActions={
           <Button
             size="sm"
             variant="ghost"
@@ -317,17 +248,17 @@ export default function SosPage() {
           >
             {t("refresh")}
           </Button>
-        </PageHeader>
+        }
+      >
 
         <div className="grid gap-4 lg:grid-cols-2">
-          <form
-            onSubmit={handleTrigger}
-            className="bg-card/85 glass rounded-2xl border border-border/50 shadow-float p-5 flex flex-col gap-5"
+          <PageSection
+            tone="primary"
+            layout="form"
+            title={t("contactTitle")}
+            description={t("contactDescription")}
           >
-            <div className="flex flex-col gap-1">
-              <h2 className="text-lg font-semibold tracking-tight">{t("contactTitle")}</h2>
-              <p className="text-sm text-muted-foreground">{t("contactDescription")}</p>
-            </div>
+            <form onSubmit={handleTrigger} className="flex flex-col gap-4">
 
             <div className="grid gap-4 md:grid-cols-2">
               <Input
@@ -375,7 +306,7 @@ export default function SosPage() {
               />
             </div>
 
-            <div className="rounded-2xl border border-danger-200/70 bg-danger-50/70 dark:border-danger-900/30 dark:bg-danger-950/20 p-4 flex gap-3">
+            <div className="rounded-xl border border-danger-200/70 bg-danger-50/70 dark:border-danger-900/30 dark:bg-danger-950/20 p-3 flex gap-3">
               <AlertTriangle className="size-5 shrink-0 text-danger-600 dark:text-danger-400" />
               <div className="space-y-1">
                 <p className="text-sm font-semibold text-danger-700 dark:text-danger-300">
@@ -397,27 +328,28 @@ export default function SosPage() {
             >
               {openAlert ? t("alreadyOpenButton") : t("trigger")}
             </Button>
-          </form>
+            </form>
+          </PageSection>
 
-          <div className="bg-card/85 glass rounded-2xl border border-border/50 shadow-float p-5 flex flex-col gap-4">
-            <div className="flex flex-col gap-1">
-              <h2 className="text-lg font-semibold tracking-tight">{t("activeAlertTitle")}</h2>
-              <p className="text-sm text-muted-foreground">{t("activeAlertDescription")}</p>
-            </div>
-
-            <div className="rounded-2xl border border-border/60 bg-background/40 p-4">
+          <PageSection
+            tone="secondary"
+            layout="list"
+            title={t("activeAlertTitle")}
+            description={t("activeAlertDescription")}
+          >
+            <div className="rounded-xl border border-border/60 bg-background/40 p-3">
               <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
                 {t("linkedStudentLabel")}
               </p>
               <p className="mt-2 text-base font-semibold">{linkedStudent.name}</p>
-              <p className="text-sm text-muted-foreground">
-                {[linkedStudent.className, linkedStudent.schoolYear].filter(Boolean).join(" · ") ||
-                  "—"}
-              </p>
+                <p className="text-sm text-muted-foreground">
+                  {[linkedStudent.className, linkedStudent.schoolYear].filter(Boolean).join(" - ") ||
+                    "-"}
+                </p>
             </div>
 
             {openAlert ? (
-              <div className="rounded-2xl border border-danger-300/60 bg-danger-50/70 dark:border-danger-900/30 dark:bg-danger-950/20 p-4 flex flex-col gap-3">
+              <div className="rounded-xl border border-danger-300/60 bg-danger-50/70 dark:border-danger-900/30 dark:bg-danger-950/20 p-3 flex flex-col gap-3">
                 <div className="flex items-center justify-between gap-3">
                   <span className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold ${statusClass(false)}`}>
                     {t("pending")}
@@ -441,19 +373,19 @@ export default function SosPage() {
                 description={t("noActiveDescription")}
               />
             )}
-          </div>
+          </PageSection>
         </div>
 
-        <section className="flex flex-col gap-4">
-          <div className="flex flex-col gap-1">
-            <h2 className="text-lg font-semibold tracking-tight">{t("historyTitle")}</h2>
-            <p className="text-sm text-muted-foreground">{t("historyDescription")}</p>
-          </div>
-
+        <PageSection
+          tone="secondary"
+          layout="list"
+          title={t("historyTitle")}
+          description={t("historyDescription")}
+        >
           {loadingAlerts ? (
             <div className="flex flex-col gap-2">
-              <Skeleton className="h-24 w-full rounded-2xl" />
-              <Skeleton className="h-24 w-full rounded-2xl" />
+              <Skeleton className="h-20 w-full rounded-xl" />
+              <Skeleton className="h-20 w-full rounded-xl" />
             </div>
           ) : alerts.length === 0 ? (
             <EmptyState
@@ -466,7 +398,7 @@ export default function SosPage() {
               {alerts.map((alert) => (
                 <StaggerItem
                   key={alert.id}
-                  className="bg-card/85 glass rounded-2xl border border-border/50 p-5 flex flex-col gap-4 shadow-float"
+                  className="surface-utility rounded-[18px] border border-border/50 p-4 flex flex-col gap-3 transition-all duration-300 hover:scale-[1.01] hover:-translate-y-0.5 hover:shadow-card"
                 >
                   <div className="flex flex-wrap items-start justify-between gap-3">
                     <div>
@@ -512,14 +444,15 @@ export default function SosPage() {
               ))}
             </StaggerList>
           )}
-        </section>
-      </PageTransition>
+        </PageSection>
+      </PageScaffold>
     );
   }
 
   return (
-    <PageTransition className="flex flex-col gap-5">
-      <PageHeader title={t("staffTitle")} description={t("staffDescription")}>
+    <PageScaffold
+      headerProps={{ title: t("staffTitle"), description: t("staffDescription") }}
+      headerActions={
         <Button
           size="sm"
           variant="ghost"
@@ -528,7 +461,8 @@ export default function SosPage() {
         >
           {t("refresh")}
         </Button>
-      </PageHeader>
+      }
+    >
 
       <StaggerList className="grid gap-4 sm:grid-cols-3">
         {[
@@ -538,7 +472,7 @@ export default function SosPage() {
         ].map((card) => (
           <StaggerItem
             key={card.label}
-            className={`bg-card/85 glass rounded-2xl border ${card.tone} shadow-float p-5`}
+            className={`surface-secondary rounded-[20px] border ${card.tone} p-5`}
           >
             <p className="text-sm text-muted-foreground">{card.label}</p>
             <p className="mt-2 text-2xl font-extrabold tracking-tight">{card.value}</p>
@@ -557,7 +491,7 @@ export default function SosPage() {
             type="button"
             aria-pressed={filter === value}
             onClick={() => setFilter(value)}
-            className={`rounded-full px-4 py-2 text-sm font-semibold transition-all border ${
+            className={`rounded-full px-3 py-1.5 text-xs font-semibold transition-all border ${
               filter === value
                 ? "border-navy-800 bg-navy-900 text-white shadow-float"
                 : "border-border/60 bg-card/70 text-muted-foreground hover:text-foreground hover:border-navy-300"
@@ -570,9 +504,9 @@ export default function SosPage() {
 
       {loadingAlerts ? (
         <div className="flex flex-col gap-2">
-          <Skeleton className="h-24 w-full rounded-2xl" />
-          <Skeleton className="h-24 w-full rounded-2xl" />
-          <Skeleton className="h-24 w-full rounded-2xl" />
+          <Skeleton className="h-20 w-full rounded-xl" />
+          <Skeleton className="h-20 w-full rounded-xl" />
+          <Skeleton className="h-20 w-full rounded-xl" />
         </div>
       ) : alerts.length === 0 ? (
         <EmptyState
@@ -591,7 +525,7 @@ export default function SosPage() {
           {filteredAlerts.map((alert) => (
             <StaggerItem
               key={alert.id}
-              className={`bg-card/85 glass rounded-2xl border p-5 flex flex-col gap-4 shadow-float ${
+              className={`surface-utility rounded-[18px] border p-4 flex flex-col gap-3 transition-all duration-300 hover:scale-[1.01] hover:-translate-y-0.5 hover:shadow-card ${
                 alert.resolved
                   ? "border-border/50"
                   : "border-danger-300/60 dark:border-danger-900/30"
@@ -600,24 +534,34 @@ export default function SosPage() {
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div className="space-y-1">
                   <div className="flex flex-wrap items-center gap-2">
-                    <h2 className="text-lg font-semibold">{alert.student.name}</h2>
+                    <h2 className="text-base font-semibold">{alert.student.name}</h2>
                     <span
-                      className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold ${statusClass(alert.resolved)}`}
+                      className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold ${statusClass(alert.resolved)}`}
                     >
-                      {alert.resolved ? t("resolved") : t("pending")}
+                      {alert.resolved ? (
+                        <>
+                          <CheckCircle2 className="size-3.5" />
+                          {t("resolved")}
+                        </>
+                      ) : (
+                        <>
+                          <Clock3 className="size-3.5" />
+                          {t("pending")}
+                        </>
+                      )}
                     </span>
                   </div>
-                  <p className="text-sm text-muted-foreground">
-                    {[alert.student.className, alert.student.schoolYear]
-                      .filter(Boolean)
-                      .join(" · ") || "—"}
-                  </p>
+                    <p className="text-sm text-muted-foreground">
+                      {[alert.student.className, alert.student.schoolYear]
+                        .filter(Boolean)
+                        .join(" - ") || "-"}
+                    </p>
                 </div>
 
                 <div className="flex flex-wrap items-center gap-2">
                   <Link
                     href={`/alunos/${alert.student.id}`}
-                    className="inline-flex items-center gap-2 rounded-xl border border-border/60 px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:border-navy-300 hover:text-foreground"
+                    className="inline-flex items-center gap-2 rounded-xl border border-border/60 px-2.5 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:border-navy-300 hover:text-foreground"
                   >
                     <ExternalLink className="size-3.5" />
                     {t("openStudentProfile")}
@@ -636,42 +580,42 @@ export default function SosPage() {
                 </div>
               </div>
 
-              <div className="grid gap-4 lg:grid-cols-[1fr_1fr_auto]">
-                <div className="rounded-2xl border border-border/60 bg-background/40 p-4">
+              <div className="grid gap-3 lg:grid-cols-[1fr_1fr_auto]">
+                <div className="rounded-xl border border-border/60 bg-background/40 p-3">
                   <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
                     {t("psychLabel")}
                   </p>
                   <p className="mt-1 font-medium">{alert.psych}</p>
                   {alert.psychEmail ? (
-                    <p className="mt-2 inline-flex items-center gap-2 text-sm text-muted-foreground">
+                    <p className="mt-2 inline-flex items-center gap-2 text-[13px] text-muted-foreground">
                       <Mail className="size-4" />
                       {alert.psychEmail}
                     </p>
                   ) : null}
                 </div>
 
-                <div className="rounded-2xl border border-border/60 bg-background/40 p-4">
+                <div className="rounded-xl border border-border/60 bg-background/40 p-3">
                   <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
                     {t("teacherLabel")}
                   </p>
                   <p className="mt-1 font-medium">{alert.teacher}</p>
                   {alert.teacherEmail ? (
-                    <p className="mt-2 inline-flex items-center gap-2 text-sm text-muted-foreground">
+                    <p className="mt-2 inline-flex items-center gap-2 text-[13px] text-muted-foreground">
                       <Mail className="size-4" />
                       {alert.teacherEmail}
                     </p>
                   ) : null}
                 </div>
 
-                <div className="rounded-2xl border border-border/60 bg-background/40 p-4 min-w-[220px]">
+                <div className="rounded-xl border border-border/60 bg-background/40 p-3 min-w-[200px]">
                   <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
                     {t("createdAt")}
                   </p>
-                  <p className="mt-1 text-sm font-medium">{formatDateTime(alert.createdAt)}</p>
+                  <p className="mt-1 text-[13px] font-medium">{formatDateTime(alert.createdAt)}</p>
                   <p className="mt-3 text-xs uppercase tracking-[0.18em] text-muted-foreground">
                     {t("resolvedAt")}
                   </p>
-                  <p className="mt-1 text-sm font-medium">{formatDateTime(alert.resolvedAt)}</p>
+                  <p className="mt-1 text-[13px] font-medium">{formatDateTime(alert.resolvedAt)}</p>
                 </div>
               </div>
 
@@ -686,6 +630,6 @@ export default function SosPage() {
           ))}
         </StaggerList>
       )}
-    </PageTransition>
+    </PageScaffold>
   );
 }

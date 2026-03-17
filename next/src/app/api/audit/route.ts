@@ -1,18 +1,19 @@
-import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
-import { auth } from "@/lib/auth";
-import { canRole, PERMISSIONS } from "@/lib/rbac";
 import type { Role } from "@prisma/client";
+import { auth } from "@/lib/auth";
+import { forbidden, ok, serverError, unauthorized } from "@/lib/api-response";
+import { prisma } from "@/lib/prisma";
+import { canRole, PERMISSIONS } from "@/lib/rbac";
 
-// GET /api/audit — last 100 audit log entries (ADMIN only)
+// GET /api/audit - last 100 audit log entries (ADMIN only)
 export async function GET() {
   try {
     const session = await auth();
     if (!session?.user?.id) {
-      return NextResponse.json({ error: "Não autenticado" }, { status: 401 });
+      return unauthorized();
     }
+
     if (!canRole(session.user.role as Role, PERMISSIONS.READ_AUDIT)) {
-      return NextResponse.json({ error: "Sem permissão" }, { status: 403 });
+      return forbidden();
     }
 
     const logs = await prisma.auditLog.findMany({
@@ -23,19 +24,19 @@ export async function GET() {
       },
     });
 
-    return NextResponse.json(
-      logs.map((l) => ({
-        id: l.id,
-        action: l.action,
-        targetId: l.targetId,
-        ipAddress: l.ipAddress,
-        createdAt: l.createdAt.toISOString(),
-        userEmail: l.user?.email ?? null,
-        userName: l.user?.name ?? null,
-      }))
+    return ok(
+      logs.map((log) => ({
+        id: log.id,
+        action: log.action,
+        targetId: log.targetId,
+        ipAddress: log.ipAddress,
+        createdAt: log.createdAt.toISOString(),
+        userEmail: log.user?.email ?? null,
+        userName: log.user?.name ?? null,
+      })),
     );
   } catch (error) {
     console.error("GET /api/audit error:", error);
-    return NextResponse.json({ error: "Erro interno" }, { status: 500 });
+    return serverError();
   }
 }

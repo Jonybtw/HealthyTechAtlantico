@@ -1,6 +1,7 @@
-import { type NextRequest, NextResponse } from "next/server";
+import { type NextRequest } from "next/server";
 import { hash } from "bcryptjs";
 import { z } from "zod";
+import { conflict, created, serverError, validationError } from "@/lib/api-response";
 import { prisma } from "@/lib/prisma";
 import { registerSchema } from "@/lib/validations";
 
@@ -9,15 +10,11 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const data = registerSchema.parse(body);
 
-    // Only ALUNO and PAIS can self-register
     const existing = await prisma.user.findUnique({
       where: { email: data.email },
     });
     if (existing) {
-      return NextResponse.json(
-        { error: "Email já registado" },
-        { status: 409 }
-      );
+      return conflict("Email já registado");
     }
 
     const passwordHash = await hash(data.password, 12);
@@ -32,18 +29,13 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    return NextResponse.json(
-      { id: user.id, email: user.email, role: user.role },
-      { status: 201 }
-    );
+    return created({ id: user.id, email: user.email, role: user.role });
   } catch (error: unknown) {
     if (error instanceof z.ZodError) {
-      return NextResponse.json({ error: error.issues }, { status: 400 });
+      return validationError(error.issues);
     }
+
     console.error("Register error:", error);
-    return NextResponse.json(
-      { error: "Erro interno" },
-      { status: 500 }
-    );
+    return serverError();
   }
 }

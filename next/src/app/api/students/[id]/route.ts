@@ -1,24 +1,44 @@
-import { type NextRequest, NextResponse } from "next/server";
+import { type NextRequest } from "next/server";
 import { z } from "zod";
-import { prisma } from "@/lib/prisma";
-import { auth } from "@/lib/auth";
-import { canAccessStudentByRole, isStaffRole, PERMISSIONS } from "@/lib/rbac";
-import { createStudentSchema } from "@/lib/validations";
 import type { Role } from "@prisma/client";
+import { auth } from "@/lib/auth";
+import {
+  err,
+  forbidden,
+  noContent,
+  notFound,
+  ok,
+  serverError,
+  unauthorized,
+  validationError,
+} from "@/lib/api-response";
+import { prisma } from "@/lib/prisma";
+import { isStaffRole, PERMISSIONS } from "@/lib/rbac";
+import { getStudentAccessContext } from "@/lib/student-access";
+import { createStudentSchema } from "@/lib/validations";
 
 // GET /api/students/[id]
 export async function GET(
   _req: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     const session = await auth();
     if (!session?.user?.id) {
-      return NextResponse.json({ error: "Não autenticado" }, { status: 401 });
+      return unauthorized();
     }
 
     const { id } = await params;
-    const role = session.user.role as Role;
+    const access = await getStudentAccessContext(
+      id,
+      session.user.id,
+      session.user.role as Role,
+      PERMISSIONS.READ_STUDENT_PROFILE,
+    );
+
+    if (!access.ok) {
+      return err(access.error, access.status);
+    }
 
     const student = await prisma.student.findUnique({
       where: { id },
@@ -28,44 +48,29 @@ export async function GET(
     });
 
     if (!student) {
-      return NextResponse.json({ error: "Aluno não encontrado" }, { status: 404 });
+      return notFound("Aluno não encontrado");
     }
 
-    const isOwner = student.linkedUserId === session.user.id;
-    const isGuardian = student.guardians.some(
-      (g) => g.guardianUserId === session.user.id
-    );
-
-    if (
-      !canAccessStudentByRole({
-        role,
-        permission: PERMISSIONS.READ_STUDENT_PROFILE,
-        isOwner,
-        isGuardian,
-      })
-    ) {
-      return NextResponse.json({ error: "Sem permissão" }, { status: 403 });
-    }
-
-    return NextResponse.json(student);
+    return ok(student);
   } catch (error) {
     console.error("GET /api/students/[id] error:", error);
-    return NextResponse.json({ error: "Erro interno" }, { status: 500 });
+    return serverError();
   }
 }
 
 // PUT /api/students/[id]
 export async function PUT(
   req: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     const session = await auth();
     if (!session?.user?.id) {
-      return NextResponse.json({ error: "Não autenticado" }, { status: 401 });
+      return unauthorized();
     }
+
     if (!isStaffRole(session.user.role as Role)) {
-      return NextResponse.json({ error: "Sem permissão" }, { status: 403 });
+      return forbidden();
     }
 
     const { id } = await params;
@@ -86,35 +91,42 @@ export async function PUT(
       },
     });
 
-    return NextResponse.json(student);
+    return ok(student);
   } catch (error: unknown) {
     if (error instanceof z.ZodError) {
-      return NextResponse.json({ error: error.issues }, { status: 400 });
+      return validationError(error.issues);
     }
+
     console.error("PUT /api/students/[id] error:", error);
-    return NextResponse.json({ error: "Erro interno" }, { status: 500 });
+    return serverError();
   }
 }
 
 // DELETE /api/students/[id]
 export async function DELETE(
   _req: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     const session = await auth();
     if (!session?.user?.id) {
-      return NextResponse.json({ error: "Não autenticado" }, { status: 401 });
+      return unauthorized();
     }
+
     if (!isStaffRole(session.user.role as Role)) {
-      return NextResponse.json({ error: "Sem permissão" }, { status: 403 });
+      return forbidden();
     }
 
     const { id } = await params;
+    const existing = await prisma.student.findUnique({ where: { id }, select: { id: true } });
+    if (!existing) {
+      return notFound("Aluno não encontrado");
+    }
+
     await prisma.student.delete({ where: { id } });
-    return new NextResponse(null, { status: 204 });
+    return noContent();
   } catch (error) {
     console.error("DELETE /api/students/[id] error:", error);
-    return NextResponse.json({ error: "Erro interno" }, { status: 500 });
+    return serverError();
   }
 }

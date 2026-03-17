@@ -1,21 +1,32 @@
-import { type NextRequest, NextResponse } from "next/server";
+import { type NextRequest } from "next/server";
 import { z } from "zod";
-import { prisma } from "@/lib/prisma";
-import { auth } from "@/lib/auth";
-import { isStaffRole, PERMISSIONS } from "@/lib/rbac";
-import { dispensaSchema } from "@/lib/validations";
 import type { Role } from "@prisma/client";
+import { auth } from "@/lib/auth";
+import {
+  badRequest,
+  created,
+  err,
+  noContent,
+  notFound,
+  ok,
+  serverError,
+  unauthorized,
+  validationError,
+} from "@/lib/api-response";
+import { prisma } from "@/lib/prisma";
+import { PERMISSIONS } from "@/lib/rbac";
 import { getStudentAccessContext } from "@/lib/student-access";
+import { dispensaSchema } from "@/lib/validations";
 
 // GET /api/students/[id]/dispensas
 export async function GET(
   _req: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     const session = await auth();
     if (!session?.user?.id) {
-      return NextResponse.json({ error: "Não autenticado" }, { status: 401 });
+      return unauthorized();
     }
 
     const { id } = await params;
@@ -23,10 +34,10 @@ export async function GET(
       id,
       session.user.id,
       session.user.role as Role,
-      PERMISSIONS.MANAGE_DISPENSAS
+      PERMISSIONS.MANAGE_DISPENSAS,
     );
     if (!access.ok) {
-      return NextResponse.json({ error: access.error }, { status: access.status });
+      return err(access.error, access.status);
     }
 
     const dispensas = await prisma.dispensa.findMany({
@@ -34,32 +45,33 @@ export async function GET(
       orderBy: { startDate: "desc" },
     });
 
-    return NextResponse.json(dispensas);
+    return ok(dispensas);
   } catch (error) {
     console.error("GET dispensas error:", error);
-    return NextResponse.json({ error: "Erro interno" }, { status: 500 });
+    return serverError();
   }
 }
 
 // POST /api/students/[id]/dispensas
 export async function POST(
   req: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     const session = await auth();
     if (!session?.user?.id) {
-      return NextResponse.json({ error: "Não autenticado" }, { status: 401 });
-    }
-
-    if (!isStaffRole(session.user.role as Role)) {
-      return NextResponse.json({ error: "Apenas funcionários autorizados podem gerir dispensas" }, { status: 403 });
+      return unauthorized();
     }
 
     const { id } = await params;
-    const student = await prisma.student.findUnique({ where: { id } });
-    if (!student) {
-      return NextResponse.json({ error: "Aluno não encontrado" }, { status: 404 });
+    const access = await getStudentAccessContext(
+      id,
+      session.user.id,
+      session.user.role as Role,
+      PERMISSIONS.MANAGE_DISPENSAS,
+    );
+    if (!access.ok) {
+      return err(access.error, access.status);
     }
 
     const body = await req.json();
@@ -76,46 +88,54 @@ export async function POST(
       },
     });
 
-    return NextResponse.json(dispensa, { status: 201 });
+    return created(dispensa);
   } catch (error: unknown) {
     if (error instanceof z.ZodError) {
-      return NextResponse.json({ error: error.issues }, { status: 400 });
+      return validationError(error.issues);
     }
+
     console.error("POST dispensas error:", error);
-    return NextResponse.json({ error: "Erro interno" }, { status: 500 });
+    return serverError();
   }
 }
 
-// DELETE /api/students/[id]/dispensas  (body: { dispensaId })
+// DELETE /api/students/[id]/dispensas (body: { dispensaId })
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     const session = await auth();
     if (!session?.user?.id) {
-      return NextResponse.json({ error: "Não autenticado" }, { status: 401 });
-    }
-    if (!isStaffRole(session.user.role as Role)) {
-      return NextResponse.json({ error: "Sem permissão" }, { status: 403 });
+      return unauthorized();
     }
 
     const { id } = await params;
+    const access = await getStudentAccessContext(
+      id,
+      session.user.id,
+      session.user.role as Role,
+      PERMISSIONS.MANAGE_DISPENSAS,
+    );
+    if (!access.ok) {
+      return err(access.error, access.status);
+    }
+
     const body = await req.json();
     const dispensaId = body?.dispensaId as string | undefined;
     if (!dispensaId) {
-      return NextResponse.json({ error: "dispensaId obrigatório" }, { status: 400 });
+      return badRequest("dispensaId obrigatório");
     }
 
     const dispensa = await prisma.dispensa.findUnique({ where: { id: dispensaId } });
     if (!dispensa || dispensa.studentId !== id) {
-      return NextResponse.json({ error: "Dispensa não encontrada" }, { status: 404 });
+      return notFound("Dispensa não encontrada");
     }
 
     await prisma.dispensa.delete({ where: { id: dispensaId } });
-    return new NextResponse(null, { status: 204 });
+    return noContent();
   } catch (error) {
     console.error("DELETE dispensas error:", error);
-    return NextResponse.json({ error: "Erro interno" }, { status: 500 });
+    return serverError();
   }
 }

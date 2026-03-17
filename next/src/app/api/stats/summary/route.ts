@@ -1,14 +1,14 @@
-import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
-import { auth } from "@/lib/auth";
 import type { Role } from "@prisma/client";
+import { auth } from "@/lib/auth";
+import { ok, serverError, unauthorized } from "@/lib/api-response";
+import { prisma } from "@/lib/prisma";
 
 // GET /api/stats/summary
 export async function GET() {
   try {
     const session = await auth();
     if (!session?.user?.id) {
-      return NextResponse.json({ error: "Não autenticado" }, { status: 401 });
+      return unauthorized();
     }
 
     const role = session.user.role as Role;
@@ -22,7 +22,7 @@ export async function GET() {
           prisma.test.count(),
         ]);
 
-      return NextResponse.json({
+      return ok({
         studentCount,
         openSos,
         totalBiometrics,
@@ -34,14 +34,16 @@ export async function GET() {
       const openSos = await prisma.sosAlert.count({
         where: { resolved: false },
       });
-      return NextResponse.json({ openSos });
+      return ok({ openSos });
     }
 
     if (role === "ALUNO") {
       const student = await prisma.student.findFirst({
         where: { linkedUserId: session.user.id },
       });
-      if (!student) return NextResponse.json({});
+      if (!student) {
+        return ok({});
+      }
 
       const [biometricCount, testCount, questionnaireCount] =
         await Promise.all([
@@ -50,7 +52,7 @@ export async function GET() {
           prisma.questionnaire.count({ where: { studentId: student.id } }),
         ]);
 
-      return NextResponse.json({
+      return ok({
         biometricCount,
         testCount,
         questionnaireCount,
@@ -62,14 +64,14 @@ export async function GET() {
         where: { guardianUserId: session.user.id },
         select: { studentId: true },
       });
-      return NextResponse.json({
+      return ok({
         linkedStudents: guardianLinks.length,
       });
     }
 
-    return NextResponse.json({});
+    return ok({});
   } catch (error) {
     console.error("GET stats summary error:", error);
-    return NextResponse.json({ error: "Erro interno" }, { status: 500 });
+    return serverError();
   }
 }

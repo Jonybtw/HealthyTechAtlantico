@@ -3,9 +3,10 @@
 import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
-import { Plus, ShieldOff, Trash2 } from "lucide-react";
-import { PageTransition, FadeIn, StaggerList, StaggerItem, AnimatePresence } from "@/components/ui/motion";
-import { PageHeader } from "@/components/ui/page-header";
+import { CalendarDays, Plus, ShieldOff, Trash2 } from "lucide-react";
+import { FadeIn, StaggerList, StaggerItem, AnimatePresence } from "@/components/ui/motion";
+import { PageScaffold } from "@/components/ui/page-scaffold";
+import { PageSection } from "@/components/ui/page-section";
 import { StudentPicker } from "@/components/ui/student-picker";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -83,8 +84,9 @@ export default function DispensasPage() {
   }
 
   return (
-    <PageTransition className="flex flex-col gap-5">
-      <PageHeader title={t("title")} description={t("description")}>    
+    <PageScaffold
+      headerProps={{ title: t("title"), description: t("description") }}
+      headerActions={
         <Button
           size="sm"
           icon={<Plus className="size-4" />}
@@ -92,110 +94,122 @@ export default function DispensasPage() {
         >
           {showForm ? t("cancelBtn") : t("newBtn")}
         </Button>
-      </PageHeader>
-
-      <StudentPicker students={students} value={studentId} onChange={setStudentId} />
+      }
+    >
+      <PageSection tone="utility" layout="list">
+        <StudentPicker students={students} value={studentId} onChange={setStudentId} />
+      </PageSection>
 
       <AnimatePresence>
-      {showForm && (
-        <FadeIn key="dispensa-form" className="bg-card/85 glass rounded-2xl border border-border/50 shadow-float p-5 flex flex-col gap-5 max-w-lg mb-2">
-        <form
-          onSubmit={handleCreate}
-          className="flex flex-col gap-5"
-        >
-          <Input
-            label={t("reason")}
-            value={form.reason}
-            onChange={(event) => setForm((current) => ({ ...current, reason: event.target.value }))}
-            required
-          />
-          <div className="grid grid-cols-2 gap-4">
-            <Input
-              label={t("startDateShort")}
-              type="date"
-              value={form.startDate}
-              onChange={(event) =>
-                setForm((current) => ({ ...current, startDate: event.target.value }))
-              }
-              required
-            />
-            <Input
-              label={t("endDateShort")}
-              type="date"
-              value={form.endDate}
-              onChange={(event) =>
-                setForm((current) => ({ ...current, endDate: event.target.value }))
-              }
-            />
-          </div>
-          <Button type="submit" loading={createMutation.isPending} icon={<ShieldOff className="size-4" />} className="self-start">
-            {t("createBtn")}
-          </Button>
-        </form>
-        </FadeIn>
-      )}
+        {showForm ? (
+          <FadeIn key="dispensa-form" className="max-w-lg">
+            <PageSection tone="primary" layout="form">
+              <form onSubmit={handleCreate} className="flex flex-col gap-4">
+                <Input
+                  label={t("reason")}
+                  value={form.reason}
+                  onChange={(event) => setForm((current) => ({ ...current, reason: event.target.value }))}
+                  required
+                />
+                <div className="grid grid-cols-2 gap-4">
+                  <Input
+                    label={t("startDateShort")}
+                    type="date"
+                    value={form.startDate}
+                    leftIcon={<CalendarDays className="size-4" />}
+                    hint="dd/mm/aaaa"
+                    onChange={(event) =>
+                      setForm((current) => ({ ...current, startDate: event.target.value }))
+                    }
+                    required
+                  />
+                  <Input
+                    label={t("endDateShort")}
+                    type="date"
+                    value={form.endDate}
+                    leftIcon={<CalendarDays className="size-4" />}
+                    hint="dd/mm/aaaa"
+                    onChange={(event) =>
+                      setForm((current) => ({ ...current, endDate: event.target.value }))
+                    }
+                  />
+                </div>
+                <Button
+                  type="submit"
+                  loading={createMutation.isPending}
+                  icon={<ShieldOff className="size-4" />}
+                  className="self-start"
+                >
+                  {t("createBtn")}
+                </Button>
+              </form>
+            </PageSection>
+          </FadeIn>
+        ) : null}
       </AnimatePresence>
 
-      {!studentId ? (
-        <EmptyState
-          icon={ShieldOff}
-          title={t("noStudentSelected")}
-          description={t("noStudentSelectedDesc")}
-        />
-      ) : loading ? (
-        <div className="flex flex-col gap-3">
-          {Array.from({ length: 3 }).map((_, i) => (
-            <div key={i} className="bg-card/85 rounded-2xl border border-border/50 p-5 flex items-center justify-between">
-              <div className="flex flex-col gap-2">
-                <Skeleton className="h-4 w-48" />
-                <Skeleton className="h-3 w-32" />
+      <PageSection tone="secondary" layout="list">
+        {!studentId ? (
+          <EmptyState
+            icon={ShieldOff}
+            title={t("noStudentSelected")}
+            description={t("noStudentSelectedDesc")}
+          />
+        ) : loading ? (
+          <div className="flex flex-col gap-3">
+            {Array.from({ length: 3 }).map((_, i) => (
+              <div key={i} className="surface-utility rounded-[18px] p-4 flex items-center justify-between">
+                <div className="flex flex-col gap-2">
+                  <Skeleton className="h-3.5 w-44" />
+                  <Skeleton className="h-3 w-28" />
+                </div>
+                <Skeleton className="h-7 w-7 rounded-lg" />
               </div>
-              <Skeleton className="h-8 w-8 rounded-xl" />
-            </div>
-          ))}
-        </div>
-      ) : dispensas.length === 0 ? (
-        <EmptyState
-          icon={ShieldOff}
-          title={t("noDispensasTitle")}
-          description={t("noDispensas")}
-          action={
-            canManageDispensas ? (
-              <Button
-                size="sm"
-                icon={<Plus className="size-4" />}
-                onClick={() => setShowForm(true)}
+            ))}
+          </div>
+        ) : dispensas.length === 0 ? (
+          <EmptyState
+            icon={ShieldOff}
+            title={t("noDispensasTitle")}
+            description={t("noDispensas")}
+            action={
+              canManageDispensas ? (
+                <Button
+                  size="sm"
+                  icon={<Plus className="size-4" />}
+                  onClick={() => setShowForm(true)}
+                >
+                  {t("createBtn")}
+                </Button>
+              ) : undefined
+            }
+          />
+        ) : (
+          <StaggerList className="flex flex-col gap-3">
+            {dispensas.map((dispensa) => (
+              <StaggerItem
+                key={dispensa.id}
+                className="surface-utility rounded-[18px] p-4 flex items-center justify-between transition-all duration-300 hover:-translate-y-0.5"
               >
-                {t("createBtn")}
-              </Button>
-            ) : undefined
-          }
-        />
-      ) : (
-        <StaggerList className="flex flex-col gap-3">
-          {dispensas.map((dispensa) => (
-            <StaggerItem
-              key={dispensa.id}
-              className="bg-card/85 glass rounded-2xl border border-border/50 shadow-float p-5 flex items-center justify-between transition-all duration-300 hover:-translate-y-1"
-            >
-              <div>
-                <p className="font-semibold">{dispensa.reason}</p>
-                <p className="text-xs text-muted-foreground mt-1 font-medium bg-muted/50 inline-block px-2 py-0.5 rounded-md border border-border/50">
-                  {new Date(dispensa.startDate).toLocaleDateString("pt-PT")}
-                  {` - ${new Date(dispensa.endDate).toLocaleDateString("pt-PT")}`}
-                </p>
-              </div>
-              <button
-                onClick={() => setDeleteId(dispensa.id)}
-                aria-label={t("deleteBtn")}
-                className="p-2.5 rounded-xl text-muted-foreground hover:text-danger-600 hover:bg-danger-50 dark:hover:bg-danger-900/20 transition-all border border-transparent hover:border-danger-200 dark:hover:border-danger-800/30 shadow-sm"
-              >
-                <Trash2 className="size-4" />
-              </button>
-            </StaggerItem>
-          ))}
-        </StaggerList>
-      )}
+                <div>
+                  <p className="text-sm font-semibold">{dispensa.reason}</p>
+                  <p className="text-[11px] text-muted-foreground mt-1 font-medium bg-muted/50 inline-block px-2 py-0.5 rounded-md border border-border/50">
+                    {new Date(dispensa.startDate).toLocaleDateString("pt-PT")}
+                    {` - ${new Date(dispensa.endDate).toLocaleDateString("pt-PT")}`}
+                  </p>
+                </div>
+                <button
+                  onClick={() => setDeleteId(dispensa.id)}
+                  aria-label={t("deleteBtn")}
+                  className="p-2 rounded-lg text-muted-foreground hover:text-danger-600 hover:bg-danger-50 dark:hover:bg-danger-900/20 transition-all border border-transparent hover:border-danger-200 dark:hover:border-danger-800/30 shadow-sm"
+                >
+                  <Trash2 className="size-4" />
+                </button>
+              </StaggerItem>
+            ))}
+          </StaggerList>
+        )}
+      </PageSection>
 
       <ConfirmModal
         open={!!deleteId}
@@ -205,6 +219,6 @@ export default function DispensasPage() {
         onConfirm={handleDelete}
         onCancel={() => setDeleteId(null)}
       />
-    </PageTransition>
+    </PageScaffold>
   );
 }

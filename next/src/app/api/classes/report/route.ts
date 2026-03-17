@@ -1,24 +1,32 @@
-import { type NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
-import { auth } from "@/lib/auth";
-import { canRole, PERMISSIONS } from "@/lib/rbac";
+import { type NextRequest } from "next/server";
 import type { Role } from "@prisma/client";
+import { auth } from "@/lib/auth";
+import {
+  badRequest,
+  forbidden,
+  notFound,
+  ok,
+  serverError,
+  unauthorized,
+} from "@/lib/api-response";
+import { prisma } from "@/lib/prisma";
+import { canRole, PERMISSIONS } from "@/lib/rbac";
 
 // GET /api/classes/report?classId=...
 export async function GET(req: NextRequest) {
   try {
     const session = await auth();
     if (!session?.user?.id) {
-      return NextResponse.json({ error: "Não autenticado" }, { status: 401 });
+      return unauthorized();
     }
 
     if (!canRole(session.user.role as Role, PERMISSIONS.READ_CLASS_REPORTS)) {
-      return NextResponse.json({ error: "Sem permissão" }, { status: 403 });
+      return forbidden();
     }
 
     const classId = req.nextUrl.searchParams.get("classId");
     if (!classId) {
-      return NextResponse.json({ error: "Parâmetro 'classId' obrigatório" }, { status: 400 });
+      return badRequest("Parâmetro 'classId' obrigatório");
     }
 
     const schoolClass = await prisma.schoolClass.findUnique({
@@ -26,7 +34,7 @@ export async function GET(req: NextRequest) {
       include: { academicYear: { select: { label: true } } },
     });
     if (!schoolClass) {
-      return NextResponse.json({ error: "Turma não encontrada" }, { status: 404 });
+      return notFound("Turma não encontrada");
     }
 
     const students = await prisma.student.findMany({
@@ -46,19 +54,19 @@ export async function GET(req: NextRequest) {
       },
     });
 
-    const report = students.map((s) => ({
-      id: s.id,
-      name: s.name,
-      sex: s.sex,
-      className: s.className,
-      birthDate: s.birthDate,
-      latestBiometric: s.biometrics[0] ?? null,
-      testCount: s.tests.length,
+    const report = students.map((student) => ({
+      id: student.id,
+      name: student.name,
+      sex: student.sex,
+      className: student.className,
+      birthDate: student.birthDate,
+      latestBiometric: student.biometrics[0] ?? null,
+      testCount: student.tests.length,
     }));
 
-    return NextResponse.json(report);
+    return ok(report);
   } catch (error) {
     console.error("GET class report error:", error);
-    return NextResponse.json({ error: "Erro interno" }, { status: 500 });
+    return serverError();
   }
 }

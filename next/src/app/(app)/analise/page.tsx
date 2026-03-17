@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useTranslations, useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import {
   LineChart,
   Line,
@@ -14,16 +14,17 @@ import {
   ResponsiveContainer,
   Legend,
 } from "recharts";
-import { PageHeader } from "@/components/ui/page-header";
+import { Activity, LineChart as ChartIcon, Link2, Users } from "lucide-react";
+import { PageScaffold } from "@/components/ui/page-scaffold";
+import { PageSection } from "@/components/ui/page-section";
 import { StudentPicker } from "@/components/ui/student-picker";
 import { PillSelect } from "@/components/ui/pill-select";
 import { EmptyState } from "@/components/ui/empty-state";
-import { LineChart as ChartIcon, Users, Activity, Link2 } from "lucide-react";
-import { useUser } from "@/components/user-context";
 import { ChartTooltip } from "@/components/ui/chart-tooltip";
+import { useUser } from "@/components/user-context";
 import { useClasses } from "@/hooks/use-queries";
 import { usePageTitle } from "@/hooks/use-page-title";
-import { PageTransition } from "@/components/ui/motion";
+import { readApiResponse } from "@/lib/api-client";
 
 type ChartType = "bmi" | "tests" | "class";
 
@@ -36,7 +37,6 @@ export default function AnalisePage() {
   const common = useTranslations("common");
   usePageTitle(t("title"));
   const { role } = useUser();
-
   const locale = useLocale();
 
   const isStudent = role === "ALUNO";
@@ -54,27 +54,37 @@ export default function AnalisePage() {
   >([]);
 
   useEffect(() => {
-    if (!canViewAnalysis) return;
+    if (!canViewAnalysis) {
+      return;
+    }
 
     let active = true;
 
-    (async () => {
-      const res = await fetch("/api/students?limit=500");
-      if (!res.ok) return;
+    void (async () => {
+      try {
+        const response = await fetch("/api/students?limit=500");
+        const body = await readApiResponse<{
+          students: { id: string; name: string; className?: string | null }[];
+        }>(response);
+        if (!active) {
+          return;
+        }
 
-      const body = await res.json();
-      if (!active) return;
-
-      const nextStudents = body.students.map(
-        (student: { id: string; name: string; className?: string | null }) => ({
+        const nextStudents = body.students.map((student) => ({
           id: student.id,
           name: student.name,
           className: student.className ?? null,
-        })
-      );
-      setStudents(nextStudents);
-      if (isStudent && nextStudents.length === 1) {
-        setStudentId(nextStudents[0].id);
+        }));
+        setStudents(nextStudents);
+        if (isStudent && nextStudents.length === 1) {
+          setStudentId(nextStudents[0].id);
+        }
+      } catch {
+        if (!active) {
+          return;
+        }
+        setStudents([]);
+        setStudentId(null);
       }
     })();
 
@@ -84,23 +94,27 @@ export default function AnalisePage() {
   }, [canViewAnalysis, isStudent]);
 
   useEffect(() => {
-    if (!studentId) return;
+    if (!studentId) {
+      return;
+    }
 
     let active = true;
 
-    (async () => {
+    void (async () => {
       const [bioRes, testsRes] = await Promise.all([
         fetch(`/api/students/${studentId}/biometrics`),
         fetch(`/api/students/${studentId}/tests`),
       ]);
 
-      if (!active) return;
+      if (!active) {
+        return;
+      }
 
-      if (bioRes.ok) {
-        const body = (await bioRes.json()) as {
+      try {
+        const body = await readApiResponse<{
           recordedAt: string;
           imc: number | string;
-        }[];
+        }[]>(bioRes);
         setBmiData(
           body
             .map((entry) => ({
@@ -112,27 +126,29 @@ export default function AnalisePage() {
             }))
             .reverse()
         );
-      } else {
+      } catch {
         setBmiData([]);
       }
 
-      if (testsRes.ok) {
-        const body = (await testsRes.json()) as {
+      try {
+        const body = await readApiResponse<{
           testId: string;
           valueNum: number | null;
           recordedAt: string;
-        }[];
+        }[]>(testsRes);
         const grouped = new Map<string, Record<string, string | number>>();
         for (const test of body) {
           const dateKey = new Date(test.recordedAt).toLocaleDateString(locale, {
             month: "short",
             year: "2-digit",
           });
-          if (!grouped.has(dateKey)) grouped.set(dateKey, { date: dateKey });
+          if (!grouped.has(dateKey)) {
+            grouped.set(dateKey, { date: dateKey });
+          }
           grouped.get(dateKey)![test.testId] = test.valueNum ?? 0;
         }
         setTestData(Array.from(grouped.values()).reverse());
-      } else {
+      } catch {
         setTestData([]);
       }
     })();
@@ -140,41 +156,55 @@ export default function AnalisePage() {
     return () => {
       active = false;
     };
-  }, [studentId]);
+  }, [locale, studentId]);
 
   useEffect(() => {
-    if (!classId || chart !== "class") return;
+    if (!classId || chart !== "class") {
+      return;
+    }
 
     let active = true;
 
-    (async () => {
-      const res = await fetch(
-        `/api/classes/report?classId=${encodeURIComponent(classId)}`
-      );
-      if (!res.ok) return;
+    void (async () => {
+      try {
+        const response = await fetch(
+          `/api/classes/report?classId=${encodeURIComponent(classId)}`
+        );
+        const body = await readApiResponse<ClassStudent[]>(response);
+        if (!active) {
+          return;
+        }
 
-      const body = (await res.json()) as ClassStudent[];
-      if (!active) return;
+        let zsaf = 0;
+        let zmf = 0;
+        let noData = 0;
 
-      let zsaf = 0;
-      let zmf = 0;
-      let noData = 0;
-      for (const student of body) {
-        const zone = student.latestBiometric?.imcZone ?? "";
-        if (zone.toLowerCase().includes("saud") || zone === "ZSAF") zsaf++;
-        else if (zone) zmf++;
-        else noData++;
+        for (const student of body) {
+          const zone = student.latestBiometric?.imcZone ?? "";
+          if (zone.toLowerCase().includes("saud") || zone === "ZSAF") {
+            zsaf++;
+          } else if (zone) {
+            zmf++;
+          } else {
+            noData++;
+          }
+        }
+
+        const selectedClass = classes.find((schoolClass) => schoolClass.id === classId);
+        setClassData([
+          {
+            name: selectedClass?.name ?? "Turma",
+            ZSAF: zsaf,
+            ZMF: zmf,
+            noData,
+          },
+        ]);
+      } catch {
+        if (!active) {
+          return;
+        }
+        setClassData([]);
       }
-
-      const selectedClass = classes.find((schoolClass) => schoolClass.id === classId);
-      setClassData([
-        {
-          name: selectedClass?.name ?? "Turma",
-          ZSAF: zsaf,
-          ZMF: zmf,
-          noData: noData,
-        },
-      ]);
     })();
 
     return () => {
@@ -190,7 +220,7 @@ export default function AnalisePage() {
 
   if (!canViewAnalysis) {
     return (
-      <div className="flex items-center justify-center min-h-[40vh]">
+      <div className="flex min-h-[40vh] items-center justify-center">
         <p className="text-muted-foreground">{common("noPermission")}</p>
       </div>
     );
@@ -198,34 +228,35 @@ export default function AnalisePage() {
 
   if (isStudent && students.length === 0) {
     return (
-      <div className="flex flex-col gap-5">
-        <PageHeader title={t("title")} description={t("descriptionStudent")} />
+      <PageScaffold
+        headerProps={{ title: t("title"), description: t("descriptionStudent"), eyebrow: "Analysis" }}
+      >
         <EmptyState
           icon={Link2}
           title={t("unlinkedTitle")}
           description={t("unlinkedDescription")}
         />
-      </div>
+      </PageScaffold>
     );
   }
 
   return (
-    <PageTransition className="flex flex-col gap-5">
-      <PageHeader title={t("title")} description={t("description")} />
+    <PageScaffold headerProps={{ title: t("title"), description: t("description"), eyebrow: "Analysis" }}>
 
-      <div className="bg-card/85 glass rounded-2xl border border-border/50 shadow-float p-5 flex flex-col gap-5 max-w-3xl">
+      <PageSection tone="utility" layout="list">
         <div className="flex flex-wrap items-end gap-4">
-          {chart !== "class" && !isStudent && (
-            <div className="w-64">
+          {chart !== "class" && !isStudent ? (
+            <div className="w-full max-w-xs">
               <StudentPicker
                 students={students}
                 value={studentId}
                 onChange={setStudentId}
               />
             </div>
-          )}
-          {chart === "class" && classes.length > 0 && (
-            <div className="w-64">
+          ) : null}
+
+          {chart === "class" && classes.length > 0 ? (
+            <div className="w-full max-w-xs">
               <PillSelect
                 options={classes.map((schoolClass) => ({
                   value: schoolClass.id,
@@ -238,7 +269,8 @@ export default function AnalisePage() {
                 }}
               />
             </div>
-          )}
+          ) : null}
+
           <PillSelect
             options={chartOptions}
             value={chart}
@@ -248,7 +280,14 @@ export default function AnalisePage() {
             }}
           />
         </div>
+      </PageSection>
 
+      <PageSection
+        title={chart === "class" ? t("chartClass") : chart === "tests" ? t("chartTests") : t("chartBmi")}
+        description={chart === "class" ? t("classDistribution") : t("description")}
+        tone="secondary"
+        layout="analytics"
+      >
         {chart !== "class" && !studentId ? (
           <EmptyState
             icon={ChartIcon}
@@ -300,7 +339,7 @@ export default function AnalisePage() {
             description={t("noClassSelectedDesc")}
           />
         ) : classData.length === 0 ? (
-          <div className="flex justify-center items-center h-40">
+          <div className="flex h-40 items-center justify-center">
             <Activity className="size-8 animate-pulse text-muted-foreground opacity-50" />
           </div>
         ) : (
@@ -319,7 +358,7 @@ export default function AnalisePage() {
             </ResponsiveContainer>
           </div>
         )}
-      </div>
-    </PageTransition>
+      </PageSection>
+    </PageScaffold>
   );
 }

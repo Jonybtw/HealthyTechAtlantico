@@ -128,69 +128,69 @@ export function StudentPicker({
   const dropdown =
     open && menuStyle && typeof document !== "undefined"
       ? createPortal(
-        <div
-          ref={menuRef}
-          className="animate-scale-in glass fixed z-[120] overflow-hidden rounded-[26px] shadow-float"
-          style={menuStyle}
-        >
-          <div className="border-b border-border/60 p-3">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-              <input
-                ref={inputRef}
-                type="text"
-                value={search}
-                onChange={(event) => setSearch(event.target.value)}
-                placeholder="Procurar aluno..."
-                className="w-full rounded-2xl border border-border/80 bg-card/80 py-3 pl-10 pr-4 text-sm text-foreground outline-none transition-all focus:border-gold-500/50 focus:ring-4 focus:ring-gold-400/10"
-              />
+          <div
+            ref={menuRef}
+            className="animate-scale-in glass fixed z-[120] overflow-hidden rounded-[18px] shadow-float"
+            style={menuStyle}
+          >
+            <div className="border-b border-border/60 p-2.5">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+                <input
+                  ref={inputRef}
+                  type="text"
+                  value={search}
+                  onChange={(event) => setSearch(event.target.value)}
+                  placeholder="Procurar aluno..."
+                  className="w-full rounded-xl border border-border/80 bg-card/80 py-2 pl-9 pr-3 text-sm text-foreground outline-none transition-all focus:border-gold-500/50 focus:ring-3 focus:ring-gold-400/10"
+                />
+              </div>
             </div>
-          </div>
-          <div className="max-h-64 overflow-y-auto p-2">
-            {filtered.length === 0 ? (
-              <p className="px-4 py-8 text-center text-sm text-muted-foreground">
-                Nenhum aluno encontrado.
-              </p>
-            ) : (
-              filtered.map((student) => {
-                const swatch = getStudentSwatch(student);
+            <div className="max-h-64 overflow-y-auto p-2">
+              {filtered.length === 0 ? (
+                <p className="px-3 py-6 text-center text-sm text-muted-foreground">
+                  Nenhum aluno encontrado.
+                </p>
+              ) : (
+                filtered.map((student) => {
+                  const swatch = getStudentSwatch(student);
 
-                return (
-                  <button
-                    key={student.id}
-                    type="button"
-                    onClick={() => {
-                      onChange(student.id);
-                      setOpen(false);
-                      setSearch("");
-                    }}
-                    className="flex w-full items-center gap-3 rounded-2xl px-3 py-3 text-left transition-colors hover:bg-muted/45"
-                  >
-                    <span
-                      className="flex size-10 shrink-0 items-center justify-center rounded-full text-xs font-semibold shadow-[inset_0_1px_0_rgba(255,255,255,0.18)]"
-                      style={swatch}
+                  return (
+                    <button
+                      key={student.id}
+                      type="button"
+                      onClick={() => {
+                        onChange(student.id);
+                        setOpen(false);
+                        setSearch("");
+                      }}
+                      className="flex w-full items-center gap-3 rounded-xl px-3 py-2 text-left transition-colors hover:bg-muted/45"
                     >
-                      {getInitials(student.name)}
-                    </span>
-                    <span className="min-w-0 flex-1">
-                      <span className="block truncate text-sm font-semibold text-foreground">
-                        {student.name}
+                      <span
+                        className="flex size-9 shrink-0 items-center justify-center rounded-full text-xs font-semibold shadow-[inset_0_1px_0_rgba(255,255,255,0.18)]"
+                        style={swatch}
+                      >
+                        {getInitials(student.name)}
                       </span>
-                      <span className="block truncate text-xs text-muted-foreground">
-                        {student.className ?? student.schoolYear ?? "Sem turma atribuída"}
+                      <span className="min-w-0 flex-1">
+                        <span className="block truncate text-sm font-semibold text-foreground">
+                          {student.name}
+                        </span>
+                        <span className="block truncate text-xs text-muted-foreground">
+                          {student.className ?? student.schoolYear ?? "Sem turma atribuida"}
+                        </span>
                       </span>
-                    </span>
-                    {student.id === value ? (
-                      <Check className="size-4 text-success-600" />
-                    ) : null}
-                  </button>
-                );
-              })
-            )}
-          </div>
-        </div>,
-        document.body
-      )
+                      {student.id === value ? (
+                        <Check className="size-4 text-success-600" />
+                      ) : null}
+                    </button>
+                  );
+                })
+              )}
+            </div>
+          </div>,
+          document.body
+        )
       : null;
 
   return (
@@ -208,7 +208,7 @@ export function StudentPicker({
           })
         }
         aria-expanded={open}
-        className={`flex min-h-14 w-full items-center gap-3 rounded-[24px] border px-4 py-3 text-left transition-all duration-300 ${
+        className={`flex min-h-10 w-full items-center gap-3 rounded-[18px] border px-3 py-2 text-left transition-all duration-300 ${
           open
             ? "border-gold-500/50 bg-card shadow-card"
             : "border-border/80 bg-card/70 hover:border-navy-300/40 hover:bg-card"
@@ -217,7 +217,7 @@ export function StudentPicker({
         {selected ? (
           <>
             <span
-              className="flex size-10 shrink-0 items-center justify-center rounded-full text-xs font-semibold shadow-[inset_0_1px_0_rgba(255,255,255,0.18)]"
+              className="flex size-9 shrink-0 items-center justify-center rounded-full text-xs font-semibold shadow-[inset_0_1px_0_rgba(255,255,255,0.18)]"
               style={getStudentSwatch(selected)}
             >
               {getInitials(selected.name)}
@@ -227,15 +227,15 @@ export function StudentPicker({
                 {selected.name}
               </span>
               <span className="block truncate text-xs text-muted-foreground">
-                {selected.className ?? selected.schoolYear ?? "Sem turma atribuída"}
+                {selected.className ?? selected.schoolYear ?? "Sem turma atribuida"}
               </span>
             </span>
             <div className="flex items-center gap-1">
               <span
                 role="button"
                 tabIndex={0}
-                aria-label="Limpar seleção"
-                className="rounded-full p-2 text-muted-foreground transition-colors hover:bg-muted/70 hover:text-foreground"
+                aria-label="Limpar selecao"
+                className="rounded-full p-1.5 text-muted-foreground transition-colors hover:bg-muted/70 hover:text-foreground"
                 onClick={(event) => {
                   event.stopPropagation();
                   onChange(null);
@@ -263,7 +263,7 @@ export function StudentPicker({
           </>
         ) : (
           <>
-            <div className="flex size-10 items-center justify-center rounded-full bg-muted/60 text-muted-foreground">
+            <div className="flex size-9 items-center justify-center rounded-full bg-muted/60 text-muted-foreground">
               <Search className="size-4" />
             </div>
             <span className="flex-1 text-sm text-muted-foreground">

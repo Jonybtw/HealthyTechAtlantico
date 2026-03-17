@@ -14,16 +14,16 @@ export function PillSelect<T extends string>({
   label,
 }: PillSelectProps<T>) {
   return (
-    <div className="flex flex-col gap-2">
+    <div className="flex flex-col gap-1.5">
       {label ? (
-        <p className="text-sm font-semibold tracking-tight text-foreground">
+        <p className="text-xs font-semibold tracking-tight text-foreground">
           {label}
         </p>
       ) : null}
       <div
         role="radiogroup"
         aria-label={label}
-        className="flex flex-wrap gap-1.5 rounded-xl border border-border/70 bg-card/70 p-1.5"
+        className="surface-utility flex flex-wrap gap-1 rounded-[18px] p-1"
       >
         {options.map((option) => {
           const active = value === option.value;
@@ -35,7 +35,7 @@ export function PillSelect<T extends string>({
               role="radio"
               aria-checked={active}
               onClick={() => onChange(option.value)}
-              className={`inline-flex min-h-9 items-center justify-center gap-1.5 rounded-full px-3.5 py-1.5 text-sm font-medium transition-all duration-300 ${
+              className={`inline-flex min-h-8 items-center justify-center gap-1.5 rounded-lg px-3 py-1 text-xs font-medium transition-all duration-300 ${
                 active
                   ? "bg-navy-900 text-white shadow-card"
                   : "text-muted-foreground hover:bg-muted/60 hover:text-foreground"

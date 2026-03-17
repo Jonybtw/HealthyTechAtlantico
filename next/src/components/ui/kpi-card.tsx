@@ -31,6 +31,8 @@ interface KpiCardProps {
   trend?: "up" | "down" | "neutral";
   delay?: number;
   accent?: "gold" | "green" | "red" | "blue";
+  emphasis?: "default" | "hero";
+  footer?: React.ReactNode;
 }
 
 const accents = {
@@ -58,32 +60,53 @@ export function KpiCard({
   icon: Icon,
   description,
   accent = "blue",
+  emphasis = "default",
+  footer,
 }: KpiCardProps) {
   const styles = accents[accent];
   const isNumeric = typeof value === "number";
   const animatedValue = useAnimatedNumber(isNumeric ? value : 0);
 
   return (
-    <div className="glass group relative overflow-hidden rounded-2xl p-4 sm:p-5 shadow-card transition-all duration-300 hover:-translate-y-1 hover:shadow-card-hover">
+    <div
+      className={`group relative overflow-hidden rounded-[20px] transition-all duration-300 hover:-translate-y-0.5 ${
+        emphasis === "hero"
+          ? "surface-primary p-4 sm:p-5"
+          : "surface-secondary p-3 sm:p-4"
+      }`}
+    >
       <div className={`absolute inset-x-0 top-0 h-1 bg-gradient-to-r ${styles.bar}`} />
       <div className="flex items-start justify-between gap-4">
-        <div className="space-y-2">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-muted-foreground">
+        <div className="space-y-2.5">
+          <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
             {title}
           </p>
-          <p className="text-2xl font-semibold tracking-tight text-foreground sm:text-3xl tabular-nums">
+          <p
+            className={`font-semibold tracking-tight text-foreground tabular-nums ${
+              emphasis === "hero" ? "text-xl sm:text-2xl" : "text-lg sm:text-xl"
+            }`}
+          >
             {isNumeric ? animatedValue : value}
           </p>
           {description ? (
-            <p className="max-w-xs text-sm text-muted-foreground">{description}</p>
+            <p
+              className={`max-w-xs text-muted-foreground ${
+                emphasis === "hero" ? "text-[13px] leading-relaxed sm:text-sm" : "text-[13px]"
+              }`}
+            >
+              {description}
+            </p>
           ) : null}
         </div>
         <div
-          className={`flex size-10 items-center justify-center rounded-xl ring-1 ${styles.chip}`}
+          className={`flex items-center justify-center ring-1 ${styles.chip} ${
+            emphasis === "hero" ? "size-10 rounded-lg" : "size-8 rounded-lg"
+          }`}
         >
-          <Icon className="size-5" />
+          <Icon className={emphasis === "hero" ? "size-4" : "size-4"} />
         </div>
       </div>
+      {footer ? <div className="mt-4 border-t border-border/50 pt-3">{footer}</div> : null}
     </div>
   );
 }

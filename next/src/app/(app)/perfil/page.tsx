@@ -4,7 +4,6 @@ import { useState } from "react";
 import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import { Lock, ShieldCheck, Share2, User, Check, X, Save } from "lucide-react";
-import { PageTransition, FadeIn } from "@/components/ui/motion";
 import { toast } from "sonner";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -12,17 +11,20 @@ import type { z } from "zod";
 import { changePasswordFormSchema } from "@/lib/validations";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { PageHeader } from "@/components/ui/page-header";
-
-import {
-  Form,
-  FormField,
-  FormItem,
-  FormControl,
-} from "@/components/ui/form";
+import { PageScaffold } from "@/components/ui/page-scaffold";
+import { PageSection } from "@/components/ui/page-section";
+import { Form, FormField, FormItem, FormControl } from "@/components/ui/form";
 import { usePageTitle } from "@/hooks/use-page-title";
+import { readApiResponse } from "@/lib/api-client";
 
 type PasswordValues = z.infer<typeof changePasswordFormSchema>;
+type UserProfile = {
+  name: string | null;
+  email: string;
+  role: string;
+  consentRgpd: boolean;
+  consentShare: boolean;
+};
 
 export default function PerfilPage() {
   const t = useTranslations("perfil");
@@ -49,24 +51,16 @@ export default function PerfilPage() {
           newPassword: values.newPassword,
         }),
       });
-
-      if (!response.ok) {
-        const body = await response.json().catch(() => ({}));
-        toast.error(body.error ?? common("connectionError"));
-        return;
-      }
+      await readApiResponse(response);
 
       toast.success(t("passwordSuccess"));
       pwForm.reset();
-    } catch {
-      toast.error(common("connectionError"));
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : common("connectionError"));
     }
   };
 
-  const syncConsent = async (
-    field: "consentRgpd" | "consentShare",
-    value: boolean
-  ) => {
+  const syncConsent = async (field: "consentRgpd" | "consentShare", value: boolean) => {
     setUpdatingConsent(field === "consentRgpd" ? "rgpd" : "share");
 
     try {
@@ -75,13 +69,7 @@ export default function PerfilPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ [field]: value }),
       });
-
-      const body = await response.json().catch(() => ({}));
-
-      if (!response.ok) {
-        toast.error(body.error ?? common("connectionError"));
-        return;
-      }
+      const body = await readApiResponse<UserProfile>(response);
 
       await update({
         name: body.name,
@@ -96,151 +84,132 @@ export default function PerfilPage() {
       } else {
         toast.success(value ? t("activate") : t("deactivate"));
       }
-    } catch {
-      toast.error(common("connectionError"));
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : common("connectionError"));
     } finally {
       setUpdatingConsent(null);
     }
   };
 
   return (
-    <PageTransition className="flex flex-col gap-5">
-      <PageHeader title={t("title")} description={t("description")} />
-
-      <div className="grid gap-5 xl:grid-cols-2">
-        <FadeIn delay={0.1} className="overflow-hidden rounded-2xl border border-border/50 bg-card/85 p-5 shadow-float sm:p-6">
-          <div className="flex flex-col gap-5">
-            <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
-              <div className="flex size-14 items-center justify-center rounded-xl bg-gradient-to-br from-navy-800 via-navy-900 to-navy-950 text-white shadow-card">
-                <User className="size-6" />
-              </div>
-              <div className="space-y-1">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-muted-foreground">
-                  {t("activeAccount")}
-                </p>
-                <h2 className="font-display text-2xl font-semibold tracking-tight text-foreground">
-                  {user?.name || user?.email || "—"}
-                </h2>
-                <p className="text-sm text-muted-foreground">{user?.email}</p>
-              </div>
+    <PageScaffold headerProps={{ title: t("title"), description: t("description") }}>
+      <div className="grid gap-4 xl:grid-cols-2">
+        <PageSection
+          tone="secondary"
+          layout="default"
+          eyebrow={t("activeAccount")}
+          title={user?.name || user?.email || "-"}
+          description={user?.email}
+          actions={
+            <div className="flex size-9 items-center justify-center rounded-[14px] bg-navy-900 text-white shadow-card">
+              <User className="size-4" />
             </div>
+          }
+        >
+          <div className="surface-utility rounded-[18px] p-3">
+            <p className="section-kicker">{t("roleLabel")}</p>
+            <p className="mt-1 text-sm font-semibold text-foreground">
+              {roles(user?.role ?? "ALUNO")}
+            </p>
+          </div>
 
-            <div className="rounded-xl border border-border/50 bg-background/65 p-3.5">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-muted-foreground">
-                {t("roleLabel")}
-              </p>
-              <p className="mt-2 text-lg font-semibold text-foreground">{roles(user?.role ?? "ALUNO")}</p>
-            </div>
-
-            <div className="rounded-xl border border-border/50 bg-background/65 p-4">
-              <div className="flex items-start gap-3">
-                <div className="flex size-9 items-center justify-center rounded-xl bg-gold-100 text-gold-700 dark:bg-gold-400/10 dark:text-gold-300">
-                  <ShieldCheck className="size-5" />
-                </div>
-                <div className="space-y-4">
-                  <div>
-                    <h3 className="text-lg font-semibold tracking-tight text-foreground">
-                      {t("rgpdTitle")}
-                    </h3>
-                    <p className="text-sm leading-relaxed text-muted-foreground">
-                      {t("rgpdDescription")}
-                    </p>
-                  </div>
-
-                  <div className="flex flex-wrap gap-3">
-                    <Button
-                      type="button"
-                      size="sm"
-                      variant={user?.consentRgpd ? "primary" : "ghost"}
-                      loading={updatingConsent === "rgpd"}
-                      icon={<Check className="size-4" />}
-                      onClick={() => syncConsent("consentRgpd", true)}
-                    >
-                      {t("rgpdGrant")}
-                    </Button>
-                    <Button
-                      type="button"
-                      size="sm"
-                      variant={!user?.consentRgpd ? "danger" : "ghost"}
-                      loading={updatingConsent === "rgpd"}
-                      icon={<X className="size-4" />}
-                      onClick={() => syncConsent("consentRgpd", false)}
-                    >
-                      {t("rgpdRevoke")}
-                    </Button>
-                  </div>
-                </div>
+          <div className="surface-utility rounded-[18px] p-3.5 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-card">
+            <div className="flex items-start gap-3">
+              <div className="flex size-8 items-center justify-center rounded-[12px] bg-gold-100 text-gold-700 dark:bg-gold-400/10 dark:text-gold-300">
+                <ShieldCheck className="size-4" />
               </div>
-            </div>
-
-            <div className="rounded-xl border border-border/50 bg-background/65 p-4">
-              <div className="flex items-start gap-3">
-                <div className="flex size-9 items-center justify-center rounded-xl bg-navy-100 text-navy-700 dark:bg-navy-500/10 dark:text-navy-200">
-                  <Share2 className="size-5" />
+              <div className="space-y-3">
+                <div>
+                  <h3 className="text-sm font-semibold tracking-tight text-foreground">
+                    {t("rgpdTitle")}
+                  </h3>
+                  <p className="text-[13px] leading-relaxed text-muted-foreground sm:text-sm">
+                    {t("rgpdDescription")}
+                  </p>
                 </div>
-                <div className="space-y-4">
-                  <div>
-                    <h3 className="text-lg font-semibold tracking-tight text-foreground">
-                      {t("shareTitle")}
-                    </h3>
-                    <p className="text-sm leading-relaxed text-muted-foreground">
-                      {t("shareDescription")}
-                    </p>
-                  </div>
-                  <div className="flex flex-wrap gap-3">
-                    <Button
-                      type="button"
-                      size="sm"
-                      variant={user?.consentShare ? "secondary" : "ghost"}
-                      loading={updatingConsent === "share"}
-                      icon={<Check className="size-4" />}
-                      onClick={() => syncConsent("consentShare", true)}
-                    >
-                      {t("activate")}
-                    </Button>
-                    <Button
-                      type="button"
-                      size="sm"
-                      variant={!user?.consentShare ? "ghost" : "danger"}
-                      loading={updatingConsent === "share"}
-                      icon={<X className="size-4" />}
-                      onClick={() => syncConsent("consentShare", false)}
-                    >
-                      {t("deactivate")}
-                    </Button>
-                  </div>
+
+                <div className="flex flex-wrap gap-2">
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant={user?.consentRgpd ? "primary" : "ghost"}
+                    loading={updatingConsent === "rgpd"}
+                    icon={<Check className="size-4" />}
+                    onClick={() => syncConsent("consentRgpd", true)}
+                  >
+                    {t("rgpdGrant")}
+                  </Button>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant={!user?.consentRgpd ? "danger" : "ghost"}
+                    loading={updatingConsent === "rgpd"}
+                    icon={<X className="size-4" />}
+                    onClick={() => syncConsent("consentRgpd", false)}
+                  >
+                    {t("rgpdRevoke")}
+                  </Button>
                 </div>
               </div>
             </div>
           </div>
-        </FadeIn>
 
-        <Form {...pwForm}>
-          <form
-            onSubmit={pwForm.handleSubmit(onPasswordSubmit)}
-            className="overflow-hidden rounded-2xl border border-border/50 bg-card/85 p-5 shadow-float sm:p-6"
-          >
-            <div className="flex h-full flex-col gap-5">
-              <div className="space-y-2">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-muted-foreground">
-                  {t("securityTitle")}
-                </p>
-                <div className="flex items-center gap-3">
-                  <div className="flex size-9 items-center justify-center rounded-xl bg-danger-100 text-danger-700 dark:bg-danger-500/10 dark:text-danger-300">
-                    <Lock className="size-5" />
-                  </div>
-                  <div>
-                    <h3 className="text-xl font-semibold tracking-tight text-foreground">
-                      {t("changePassword")}
-                    </h3>
-                    <p className="text-sm text-muted-foreground">
-                      {t("passwordDescription")}
-                    </p>
-                  </div>
+          <div className="surface-utility rounded-[18px] p-3.5 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-card">
+            <div className="flex items-start gap-3">
+              <div className="flex size-8 items-center justify-center rounded-[12px] bg-navy-100 text-navy-700 dark:bg-navy-500/10 dark:text-navy-200">
+                <Share2 className="size-4" />
+              </div>
+              <div className="space-y-3">
+                <div>
+                  <h3 className="text-sm font-semibold tracking-tight text-foreground">
+                    {t("shareTitle")}
+                  </h3>
+                  <p className="text-[13px] leading-relaxed text-muted-foreground sm:text-sm">
+                    {t("shareDescription")}
+                  </p>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant={user?.consentShare ? "secondary" : "ghost"}
+                    loading={updatingConsent === "share"}
+                    icon={<Check className="size-4" />}
+                    onClick={() => syncConsent("consentShare", true)}
+                  >
+                    {t("activate")}
+                  </Button>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant={!user?.consentShare ? "ghost" : "danger"}
+                    loading={updatingConsent === "share"}
+                    icon={<X className="size-4" />}
+                    onClick={() => syncConsent("consentShare", false)}
+                  >
+                    {t("deactivate")}
+                  </Button>
                 </div>
               </div>
+            </div>
+          </div>
+        </PageSection>
 
-              <div className="grid gap-4">
+        <Form {...pwForm}>
+          <form onSubmit={pwForm.handleSubmit(onPasswordSubmit)}>
+            <PageSection
+              tone="secondary"
+              layout="form"
+              eyebrow={t("securityTitle")}
+              title={t("changePassword")}
+              description={t("passwordDescription")}
+              actions={
+                <div className="flex size-9 items-center justify-center rounded-[14px] bg-danger-100 text-danger-700 dark:bg-danger-500/10 dark:text-danger-300">
+                  <Lock className="size-4" />
+                </div>
+              }
+            >
+              <div className="grid gap-3.5">
                 <FormField
                   control={pwForm.control}
                   name="currentPassword"
@@ -251,6 +220,7 @@ export default function PerfilPage() {
                           label={t("currentPassword")}
                           type="password"
                           autoComplete="current-password"
+                          leftIcon={<Lock className="size-4" />}
                           error={pwForm.formState.errors.currentPassword?.message}
                           {...field}
                         />
@@ -268,6 +238,7 @@ export default function PerfilPage() {
                           label={t("newPassword")}
                           type="password"
                           autoComplete="new-password"
+                          leftIcon={<Lock className="size-4" />}
                           error={pwForm.formState.errors.newPassword?.message}
                           {...field}
                         />
@@ -285,6 +256,7 @@ export default function PerfilPage() {
                           label={t("confirmPassword")}
                           type="password"
                           autoComplete="new-password"
+                          leftIcon={<Lock className="size-4" />}
                           error={pwForm.formState.errors.confirmPassword?.message}
                           {...field}
                         />
@@ -294,15 +266,15 @@ export default function PerfilPage() {
                 />
               </div>
 
-              <div className="mt-auto flex justify-start">
+              <div className="pt-1">
                 <Button type="submit" loading={pwForm.formState.isSubmitting} icon={<Save className="size-4" />}>
                   {t("savePassword")}
                 </Button>
               </div>
-            </div>
+            </PageSection>
           </form>
         </Form>
       </div>
-    </PageTransition>
+    </PageScaffold>
   );
 }

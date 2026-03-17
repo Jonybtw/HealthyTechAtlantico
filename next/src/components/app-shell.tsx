@@ -4,7 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { signOut } from "next-auth/react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import type { Role } from "@prisma/client";
 import {
   Globe,
@@ -15,13 +15,12 @@ import {
   Sun,
   User,
 } from "lucide-react";
-import { useState, useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useTheme, writeTheme } from "@/lib/theme";
 import { cn } from "@/lib/utils";
 import { NAV_ITEMS, type NavItem } from "@/lib/nav-items";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Separator } from "@/components/ui/separator";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   Tooltip,
@@ -41,6 +40,7 @@ import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { CommandPalette } from "@/components/command-palette";
 import { NotificationCenter } from "@/components/notification-center";
 import { useHotkeys } from "@/hooks/use-hotkeys";
+import { useIsClient } from "@/hooks/use-is-client";
 
 interface AppShellProps {
   user: {
@@ -52,14 +52,13 @@ interface AppShellProps {
   children: React.ReactNode;
 }
 
-function getInitialLocale() {
-  if (typeof document === "undefined") {
-    return "pt";
-  }
-
-  const match = document.cookie.match(/(?:^|;\s*)NEXT_LOCALE=([^;]+)/);
-  return match?.[1] ?? "pt";
-}
+const MOBILE_PRIORITIES: Record<Role, string[]> = {
+  ADMIN: ["/dashboard", "/alunos", "/analise", "/sos", "/admin"],
+  PROFESSOR: ["/dashboard", "/turma", "/biometria", "/testes", "/sos"],
+  ALUNO: ["/dashboard", "/biometria", "/testes", "/sos", "/relatorio"],
+  PSICOLOGO: ["/dashboard", "/sos", "/protocolos", "/perfil"],
+  PAIS: ["/dashboard", "/relatorio", "/protocolos", "/perfil"],
+};
 
 function isActivePath(pathname: string, href: string) {
   return pathname === href || pathname.startsWith(`${href}/`);
@@ -74,6 +73,28 @@ function getSectionLabel(section: NavItem["section"]) {
     case "admin":
       return "Account";
   }
+}
+
+function getMobileItems(role: Role, items: NavItem[]) {
+  const priorities = MOBILE_PRIORITIES[role] ?? [];
+  const sorted = [...items].sort((left, right) => {
+    const leftPriority = priorities.indexOf(left.href);
+    const rightPriority = priorities.indexOf(right.href);
+
+    if (leftPriority === -1 && rightPriority === -1) {
+      return 0;
+    }
+    if (leftPriority === -1) {
+      return 1;
+    }
+    if (rightPriority === -1) {
+      return -1;
+    }
+
+    return leftPriority - rightPriority;
+  });
+
+  return sorted.slice(0, 4);
 }
 
 function NavLink({
@@ -95,10 +116,10 @@ function NavLink({
       onClick={onClick}
       aria-current={active ? "page" : undefined}
       className={cn(
-        "group relative flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400/40 focus-visible:ring-offset-2 focus-visible:ring-offset-navy-900",
+        "group relative flex items-center gap-3 rounded-xl px-2.5 py-2.5 text-xs font-medium transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400/40 focus-visible:ring-offset-2 focus-visible:ring-offset-navy-900",
         active
-          ? "bg-[linear-gradient(135deg,rgba(255,255,255,0.14),rgba(255,255,255,0.06))] text-white shadow-[0_16px_32px_rgba(4,10,18,0.22)]"
-          : "text-navy-200/75 hover:bg-white/6 hover:text-white"
+          ? "bg-[linear-gradient(135deg,rgba(255,255,255,0.14),rgba(255,255,255,0.06))] text-white shadow-[0_18px_36px_rgba(4,10,18,0.22)]"
+          : "text-navy-200/78 hover:bg-white/6 hover:text-white"
       )}
     >
       <span
@@ -111,9 +132,9 @@ function NavLink({
       >
         <Icon className="size-4" />
       </span>
-      <span className="flex-1">{label}</span>
+      <span className="flex-1 truncate">{label}</span>
       {active ? (
-        <span className="h-2 w-2 rounded-full bg-gold-300 shadow-[0_0_12px_rgba(245,194,66,0.7)]" />
+        <span className="h-1.5 w-1.5 rounded-full bg-gold-300 shadow-[0_0_10px_rgba(245,194,66,0.7)]" />
       ) : null}
     </Link>
   );
@@ -122,32 +143,29 @@ function NavLink({
 export function AppShell({ user, children }: AppShellProps) {
   const pathname = usePathname();
   const router = useRouter();
+  const locale = useLocale();
   const t = useTranslations();
   const theme = useTheme();
-  const [locale, setLocale] = useState(getInitialLocale);
+  const isClient = useIsClient();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [cmdOpen, setCmdOpen] = useState(false);
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
 
   useHotkeys([
-    { key: "k", mods: ["ctrl"], handler: () => setCmdOpen((v) => !v) },
+    { key: "k", mods: ["ctrl"], handler: () => setCmdOpen((value) => !value) },
   ]);
 
-  // Tab visibility: swap title when user leaves tab
+  const brandName = "HealthyTech Atlantico";
   const savedTitle = useRef("");
   useEffect(() => {
     function onVisibility() {
       if (document.hidden) {
         savedTitle.current = document.title;
-        document.title = "👋 Volta! · HTA";
+        document.title = "Come back to HealthyTech Atlantico";
       } else {
-        document.title = savedTitle.current || "HealthyTech Atlântico";
+        document.title = savedTitle.current || brandName;
       }
     }
+
     document.addEventListener("visibilitychange", onVisibility);
     return () => document.removeEventListener("visibilitychange", onVisibility);
   }, []);
@@ -160,6 +178,11 @@ export function AppShell({ user, children }: AppShellProps) {
     },
     { core: [], operations: [], admin: [] }
   );
+  const mobileItems = getMobileItems(user.role, visibleItems);
+  const currentItem =
+    visibleItems.find((item) => isActivePath(pathname, item.href)) ??
+    visibleItems[0] ??
+    null;
 
   const roleLabels: Record<Role, string> = {
     ADMIN: t("roles.ADMIN"),
@@ -184,19 +207,16 @@ export function AppShell({ user, children }: AppShellProps) {
 
   const toggleLocale = () => {
     const nextLocale = locale === "pt" ? "en" : "pt";
-    setLocale(nextLocale);
     document.cookie = `NEXT_LOCALE=${nextLocale}; path=/; max-age=31536000; samesite=lax`;
     router.refresh();
   };
-
-  const mobileItems = visibleItems.slice(0, 4);
 
   const sidebarNav = (onNav?: () => void) => (
     <>
       {(["core", "operations", "admin"] as const).map((section) =>
         groupedItems[section].length > 0 ? (
           <div key={section} className="space-y-1.5">
-            <p className="px-3 pb-1 text-[11px] font-semibold uppercase tracking-[0.24em] text-navy-200/50">
+            <p className="px-2.5 pb-1 text-[10px] font-semibold uppercase tracking-[0.22em] text-navy-200/44">
               {getSectionLabel(section)}
             </p>
             {groupedItems[section].map((item) => (
@@ -217,7 +237,6 @@ export function AppShell({ user, children }: AppShellProps) {
   return (
     <TooltipProvider delayDuration={300}>
       <div className="relative min-h-screen bg-background">
-        {/* Skip-to-content link for keyboard/screen-reader users */}
         <a
           href="#main-content"
           className="fixed left-4 top-4 z-50 -translate-y-16 rounded-xl bg-gold-400 px-4 py-2.5 text-sm font-semibold text-navy-950 shadow-float transition-transform focus:translate-y-0 focus:outline-none focus:ring-2 focus:ring-gold-400/40"
@@ -227,19 +246,18 @@ export function AppShell({ user, children }: AppShellProps) {
         <div className="bg-mesh" aria-hidden="true" />
         <div className="bg-noise" aria-hidden="true" />
 
-        {/* ── Desktop Sidebar ── */}
         <aside
           aria-label={t("nav.sidebarNavigation")}
-          className="fixed inset-y-0 left-0 z-30 hidden w-64 border-r border-white/10 bg-gradient-to-b from-navy-950 to-navy-900 lg:flex lg:flex-col"
+          className="fixed inset-y-0 left-0 z-30 hidden w-72 border-r border-white/10 bg-gradient-to-b from-navy-950 via-navy-900 to-navy-900 lg:flex lg:flex-col"
         >
-          <div className="border-b border-white/10 px-4 py-4">
-            <div className="rounded-xl border border-white/10 bg-white/5 p-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]">
+          <div className="border-b border-white/10 px-4 py-3">
+            <div className="rounded-[18px] border border-white/10 bg-white/5 p-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]">
               <div className="flex items-center justify-center">
                 <Image
                   src="/logo.png"
-                  alt="HealthyTech Atlantico"
-                  width={140}
-                  height={42}
+                  alt={brandName}
+                  width={96}
+                  height={28}
                   className="object-contain brightness-0 invert"
                   priority
                 />
@@ -252,49 +270,48 @@ export function AppShell({ user, children }: AppShellProps) {
           </ScrollArea>
 
           <div className="border-t border-white/10 p-3">
-            <div className="rounded-xl border border-white/10 bg-white/5 p-3 text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]">
+            <div className="rounded-[18px] border border-white/10 bg-white/5 p-3 text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]">
               <div className="flex items-center gap-3">
-                <Avatar className="size-9 shadow-[0_12px_24px_rgba(217,166,28,0.3)]">
+                <Avatar className="size-8 shadow-[0_10px_20px_rgba(217,166,28,0.25)]">
                   <AvatarFallback>{initials}</AvatarFallback>
                 </Avatar>
                 <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm font-semibold">{displayName}</p>
-                  <p className="mt-0.5 text-[11px] font-semibold uppercase tracking-[0.2em] text-gold-200/80">
+                  <p className="truncate text-xs font-semibold">{displayName}</p>
+                  <p className="mt-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-gold-200/80">
                     {roleLabels[user.role]}
                   </p>
                 </div>
               </div>
-
-
             </div>
           </div>
         </aside>
 
-        {/* ── Main area ── */}
-        <div className="relative flex min-h-screen flex-col lg:ml-64">
-          {/* ── Top header bar ── */}
+        <div className="relative flex min-h-screen flex-col lg:ml-72">
           <header
             aria-label={t("nav.topBar")}
-            className="sticky top-0 z-20 border-b border-border/70 bg-background/80 backdrop-blur-xl"
+            className="sticky top-0 z-20 border-b border-border/70 bg-background/82 backdrop-blur-xl"
           >
-            <div className="mx-auto flex w-full max-w-[1600px] items-center justify-between gap-3 px-4 py-2.5 sm:px-6 lg:justify-end lg:px-8">
-              {/* Mobile: hamburger + logo */}
-              <div className="flex items-center gap-2 lg:hidden">
+            <div className="mx-auto flex w-full max-w-[1600px] items-center justify-between gap-3 px-4 py-2 sm:px-6 lg:px-8">
+              <div className="flex min-w-0 items-center gap-3">
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="rounded-xl"
+                  className="rounded-lg lg:hidden"
                   onClick={() => setMobileOpen(true)}
                   aria-label={t("nav.openMenu")}
                   aria-expanded={mobileOpen}
                 >
                   <Menu className="size-5" />
                 </Button>
+
+                <div className="min-w-0">
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-muted-foreground">
+                    {currentItem ? getSectionLabel(currentItem.section) : brandName}
+                  </p>
+                </div>
               </div>
 
-              {/* Right-side actions */}
-              <div className="flex items-center gap-1.5">
-                {/* Command palette trigger */}
+              <div className="flex items-center gap-2">
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <Button
@@ -302,11 +319,13 @@ export function AppShell({ user, children }: AppShellProps) {
                       variant="ghost"
                       onClick={() => setCmdOpen(true)}
                       aria-haspopup="dialog"
-                      className="hidden items-center gap-2 rounded-xl border border-border/70 bg-card/60 px-3 py-1.5 text-sm text-muted-foreground transition-colors hover:bg-card hover:text-foreground sm:flex"
+                      className="hidden items-center gap-2 px-2.5 py-1.5 text-xs text-muted-foreground sm:flex"
                     >
                       <Search className="size-3.5" />
-                      <span className="max-w-[100px] truncate">{t("commandPalette.placeholder")}</span>
-                      <kbd className="ml-1 inline-flex h-5 items-center rounded border border-border bg-muted px-1 text-[10px] font-medium">
+                      <span className="max-w-[120px] truncate">
+                        {t("commandPalette.placeholder")}
+                      </span>
+                      <kbd className="ml-1 inline-flex h-4 items-center rounded border border-border bg-muted px-1 text-[9px] font-medium">
                         Ctrl+K
                       </kbd>
                     </Button>
@@ -314,77 +333,92 @@ export function AppShell({ user, children }: AppShellProps) {
                   <TooltipContent>{t("commandPalette.placeholder")}</TooltipContent>
                 </Tooltip>
 
-                {/* Notification center */}
-                <NotificationCenter userRole={user.role} />
-
-                <Separator orientation="vertical" className="mx-1 h-5" />
-
-                {/* User dropdown (desktop) — only rendered after mount to avoid Radix ID hydration mismatch */}
-                {mounted && <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
+                <Tooltip>
+                  <TooltipTrigger asChild>
                     <Button
                       type="button"
                       variant="ghost"
-                      className="hidden items-center gap-2 rounded-2xl border border-border/70 bg-card/60 px-3 py-1.5 transition-colors hover:bg-card lg:flex"
+                      size="icon"
+                      className="sm:hidden"
+                      onClick={() => setCmdOpen(true)}
+                      aria-label={t("commandPalette.placeholder")}
                     >
-                      <Avatar className="size-7">
-                        <AvatarFallback className="text-[11px]">{initials}</AvatarFallback>
-                      </Avatar>
-                      <span className="max-w-[120px] truncate text-sm font-medium text-foreground">
-                        {displayName}
-                      </span>
+                      <Search className="size-4" />
                     </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-56">
-                    <div className="px-3 py-2">
-                      <div className="flex flex-col space-y-1">
-                        <p className="text-sm font-medium text-foreground">{displayName}</p>
-                        <p className="text-xs text-muted-foreground">{user.email}</p>
-                        <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground/70">{roleLabels[user.role]}</p>
-                      </div>
-                    </div>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem asChild>
-                      <Link href="/perfil">
-                        <User className="mr-2 size-4" />
-                        {t("nav.perfil")}
-                      </Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuLabel>{t("nav.preferences")}</DropdownMenuLabel>
-                    <DropdownMenuItem onClick={toggleTheme}>
-                      {theme === "light" ? (
-                        <Moon className="size-4" />
-                      ) : (
-                        <Sun className="size-4" />
-                      )}
-                      {t("nav.changeTheme")}
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={toggleLocale}>
-                      <Globe className="size-4" />
-                      {t("nav.changeLanguage")}
-                      <span className="ml-auto text-xs font-medium text-muted-foreground">
-                        {locale.toUpperCase()}
-                      </span>
-                    </DropdownMenuItem>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem
-                      className="text-danger-600 focus:text-danger-600"
-                      onClick={() => signOut({ callbackUrl: "/login" })}
-                    >
-                      <LogOut className="mr-2 size-4" />
-                      {t("nav.logout")}
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>}
+                  </TooltipTrigger>
+                  <TooltipContent>{t("commandPalette.placeholder")}</TooltipContent>
+                </Tooltip>
 
-                {/* Mobile sign-out button */}
+                <NotificationCenter userRole={user.role} />
+
+                {isClient ? (
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        className="hidden h-fit min-w-fit items-center gap-2 px-2.5 py-1.5 lg:flex"
+                      >
+                        <Avatar className="size-6">
+                          <AvatarFallback className="text-[10px]">{initials}</AvatarFallback>
+                        </Avatar>
+                        <span className="max-w-[120px] truncate text-xs font-medium leading-tight text-foreground">
+                          {displayName}
+                        </span>
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-56">
+                      <div className="px-3 py-2">
+                        <div className="flex flex-col space-y-1">
+                          <p className="text-sm font-medium text-foreground">{displayName}</p>
+                          <p className="text-xs text-muted-foreground">{user.email}</p>
+                          <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-muted-foreground/70">
+                            {roleLabels[user.role]}
+                          </p>
+                        </div>
+                      </div>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem asChild>
+                        <Link href="/perfil">
+                          <User className="mr-2 size-4" />
+                          {t("nav.perfil")}
+                        </Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuLabel>{t("nav.preferences")}</DropdownMenuLabel>
+                      <DropdownMenuItem onClick={toggleTheme}>
+                        {theme === "light" ? (
+                          <Moon className="size-4" />
+                        ) : (
+                          <Sun className="size-4" />
+                        )}
+                        {t("nav.changeTheme")}
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={toggleLocale}>
+                        <Globe className="size-4" />
+                        {t("nav.changeLanguage")}
+                        <span className="ml-auto text-xs font-medium text-muted-foreground">
+                          {locale.toUpperCase()}
+                        </span>
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem
+                        className="text-danger-600 focus:text-danger-600"
+                        onClick={() => signOut({ callbackUrl: "/login" })}
+                      >
+                        <LogOut className="mr-2 size-4" />
+                        {t("nav.logout")}
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                ) : null}
+
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <Button
                       variant="ghost"
                       size="icon"
-                      className="rounded-xl lg:hidden"
+                      className="lg:hidden"
                       onClick={() => signOut({ callbackUrl: "/login" })}
                       title={t("nav.logout")}
                     >
@@ -397,56 +431,53 @@ export function AppShell({ user, children }: AppShellProps) {
             </div>
           </header>
 
-          {/* ── Mobile Sheet Sidebar ── */}
           <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
             <SheetContent
               side="left"
-              className="w-64 bg-gradient-to-b from-navy-950 to-navy-900 p-0 border-r-0"
+              className="w-72 border-r-0 bg-gradient-to-b from-navy-950 via-navy-900 to-navy-900 p-0"
             >
-              <div className="border-b border-white/10 px-4 py-4">
-                <div className="rounded-xl border border-white/10 bg-white/5 p-3">
+              <div className="border-b border-white/10 px-4 py-3.5">
+                <div className="rounded-[18px] border border-white/10 bg-white/5 p-3">
                   <div className="flex items-center justify-center">
                     <Image
                       src="/logo.png"
-                      alt="HealthyTech Atlantico"
-                      width={130}
-                      height={38}
+                      alt={brandName}
+                      width={92}
+                      height={26}
                       className="object-contain brightness-0 invert"
                     />
                   </div>
                 </div>
               </div>
-              <ScrollArea className="h-[calc(100vh-200px)] px-3 py-4">
-                <nav className="space-y-4">
-                  {sidebarNav(() => setMobileOpen(false))}
-                </nav>
+              <ScrollArea className="h-[calc(100vh-224px)] px-3 py-4">
+                <nav className="space-y-4">{sidebarNav(() => setMobileOpen(false))}</nav>
               </ScrollArea>
               <div className="border-t border-white/10 p-3">
-                <div className="flex items-center gap-3 rounded-xl border border-white/10 bg-white/5 p-3 text-white">
-                  <Avatar className="size-9">
-                    <AvatarFallback className="text-xs">{initials}</AvatarFallback>
-                  </Avatar>
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-semibold">{displayName}</p>
-                    <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-gold-200/80">
-                      {roleLabels[user.role]}
-                    </p>
+                <div className="rounded-[18px] border border-white/10 bg-white/5 p-3 text-white">
+                  <div className="flex items-center gap-3">
+                    <Avatar className="size-8">
+                      <AvatarFallback className="text-[10px]">{initials}</AvatarFallback>
+                    </Avatar>
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-xs font-semibold">{displayName}</p>
+                      <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-gold-200/80">
+                        {roleLabels[user.role]}
+                      </p>
+                    </div>
                   </div>
                 </div>
               </div>
             </SheetContent>
           </Sheet>
 
-          {/* ── Page content ── */}
           <main
             id="main-content"
-            className="mx-auto flex w-full max-w-[1600px] flex-1 flex-col gap-5 px-4 py-4 pb-24 sm:px-6 lg:px-8 lg:py-5 lg:pb-8"
+            className="mx-auto flex w-full max-w-[1600px] flex-1 flex-col gap-4 px-4 py-3 pb-24 sm:px-6 lg:px-8 lg:py-4 lg:pb-6"
           >
             {children}
           </main>
 
-          {/* ── Mobile bottom nav ── */}
-          <nav className="fixed inset-x-0 bottom-0 z-20 border-t border-border/70 bg-background/92 px-3 py-2.5 backdrop-blur-xl lg:hidden">
+          <nav className="fixed inset-x-0 bottom-0 z-20 border-t border-border/70 bg-background/92 px-3 py-2 backdrop-blur-xl lg:hidden">
             <div className="mx-auto grid max-w-xl grid-cols-5 gap-1.5">
               {mobileItems.map((item) => {
                 const Icon = item.icon;
@@ -457,7 +488,7 @@ export function AppShell({ user, children }: AppShellProps) {
                     key={item.href}
                     href={item.href}
                     className={cn(
-                      "flex flex-col items-center gap-0.5 rounded-xl px-2 py-1.5 text-[11px] font-semibold transition-all duration-300",
+                      "flex flex-col items-center gap-0.5 rounded-xl px-2 py-1 text-[10px] font-semibold transition-all duration-300",
                       active
                         ? "bg-card text-foreground shadow-card"
                         : "text-muted-foreground hover:bg-card/70 hover:text-foreground"
@@ -465,7 +496,7 @@ export function AppShell({ user, children }: AppShellProps) {
                   >
                     <span
                       className={cn(
-                        "flex size-8 items-center justify-center rounded-xl",
+                        "flex size-7 items-center justify-center rounded-xl",
                         active
                           ? "bg-gold-100 text-gold-700 dark:bg-gold-400/10 dark:text-gold-300"
                           : "bg-muted/60"
@@ -478,27 +509,28 @@ export function AppShell({ user, children }: AppShellProps) {
                 );
               })}
 
-              <Link
-                href="/perfil"
+              <button
+                type="button"
+                onClick={() => setMobileOpen(true)}
                 className={cn(
-                  "flex flex-col items-center gap-0.5 rounded-xl px-2 py-1.5 text-[11px] font-semibold transition-all duration-300",
-                  isActivePath(pathname, "/perfil")
+                  "flex flex-col items-center gap-0.5 rounded-xl px-2 py-1 text-[10px] font-semibold transition-all duration-300",
+                  mobileOpen || (currentItem && !mobileItems.some((item) => item.href === currentItem.href))
                     ? "bg-card text-foreground shadow-card"
                     : "text-muted-foreground hover:bg-card/70 hover:text-foreground"
                 )}
               >
                 <span
                   className={cn(
-                    "flex size-8 items-center justify-center rounded-xl",
-                    isActivePath(pathname, "/perfil")
+                    "flex size-7 items-center justify-center rounded-xl",
+                    mobileOpen || (currentItem && !mobileItems.some((item) => item.href === currentItem.href))
                       ? "bg-gold-100 text-gold-700 dark:bg-gold-400/10 dark:text-gold-300"
                       : "bg-muted/60"
                   )}
                 >
-                  <User className="size-4" />
+                  <Menu className="size-4" />
                 </span>
-                <span>{t("nav.perfil")}</span>
-              </Link>
+                <span>Menu</span>
+              </button>
             </div>
           </nav>
         </div>

@@ -6,7 +6,7 @@ import { signIn } from "next-auth/react";
 import { AnimatePresence, motion } from "motion/react";
 import { ArrowLeft, ArrowRight, CheckCircle2, LogIn, UserPlus } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import type { z } from "zod";
 import { registerFormSchema } from "@/lib/validations";
@@ -21,6 +21,7 @@ import {
   FormControl,
 } from "@/components/ui/form";
 import { usePageTitle } from "@/hooks/use-page-title";
+import { readApiResponse } from "@/lib/api-client";
 
 type RegisterValues = z.infer<typeof registerFormSchema>;
 
@@ -29,12 +30,18 @@ const expandVariants = {
   visible: {
     opacity: 1,
     height: "auto",
-    transition: { duration: 0.32, ease: [0.25, 0.46, 0.45, 0.94] },
+    transition: {
+      duration: 0.32,
+      ease: [0.25, 0.46, 0.45, 0.94] as [number, number, number, number],
+    },
   },
   exit: {
     opacity: 0,
     height: 0,
-    transition: { duration: 0.22, ease: [0.55, 0, 1, 0.45] },
+    transition: {
+      duration: 0.22,
+      ease: [0.55, 0, 1, 0.45] as [number, number, number, number],
+    },
   },
 };
 
@@ -73,7 +80,9 @@ export default function LoginPage() {
     },
   });
 
-  const passwordValue = form.watch("password");
+  const passwordValue = useWatch({ control: form.control, name: "password" }) ?? "";
+  const roleValue = useWatch({ control: form.control, name: "role" }) ?? "ALUNO";
+  const consentRgpd = useWatch({ control: form.control, name: "consentRgpd" }) ?? false;
   const strength = getPasswordStrength(passwordValue);
   const strengthData = [
     null,
@@ -144,14 +153,10 @@ export default function LoginPage() {
           consentRgpd: values.consentRgpd,
         }),
       });
-      if (!response.ok) {
-        const body = await response.json().catch(() => ({}));
-        setApiError(body.error ?? t("createError"));
-        return;
-      }
+      await readApiResponse(response);
       router.push("/login?registered=1");
-    } catch {
-      setApiError(t("connectionError"));
+    } catch (error) {
+      setApiError(error instanceof Error ? error.message : t("connectionError"));
     } finally {
       setIsLoading(false);
     }
@@ -241,7 +246,7 @@ export default function LoginPage() {
             if (mode === "login") {
               handleLogin();
             } else {
-              handleRegister(e);
+              handleRegister();
             }
           }}
           className="space-y-5 p-6"
@@ -292,7 +297,7 @@ export default function LoginPage() {
                           {...field}
                           ref={(el) => {
                             field.ref(el);
-                            (nameRef as React.MutableRefObject<HTMLInputElement | null>).current = el;
+                            nameRef.current = el;
                           }}
                         />
                       </FormControl>
@@ -421,7 +426,7 @@ export default function LoginPage() {
                         { value: "ALUNO", label: t("role_aluno") },
                         { value: "PAIS", label: t("role_pais") },
                       ]}
-                      value={form.watch("role")}
+                      value={roleValue}
                       onChange={(value) =>
                         form.setValue("role", value as "ALUNO" | "PAIS")
                       }
@@ -434,7 +439,7 @@ export default function LoginPage() {
                         type="checkbox"
                         id="register-rgpd"
                         aria-describedby={form.formState.errors.consentRgpd ? "register-rgpd-error" : undefined}
-                        checked={form.watch("consentRgpd") === true}
+                        checked={consentRgpd}
                         onChange={(e) =>
                           form.setValue("consentRgpd", e.target.checked, {
                             shouldValidate: true,

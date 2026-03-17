@@ -1,9 +1,16 @@
-import { type NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
-import { auth } from "@/lib/auth";
-import { canRole, PERMISSIONS } from "@/lib/rbac";
-import { auditLog } from "@/lib/audit";
+import { type NextRequest } from "next/server";
 import type { Role } from "@prisma/client";
+import { auth } from "@/lib/auth";
+import {
+  forbidden,
+  notFound,
+  ok,
+  serverError,
+  unauthorized,
+} from "@/lib/api-response";
+import { auditLog } from "@/lib/audit";
+import { prisma } from "@/lib/prisma";
+import { canRole, PERMISSIONS } from "@/lib/rbac";
 
 const sosAlertInclude = {
   student: {
@@ -27,17 +34,17 @@ const sosAlertInclude = {
 // PATCH /api/sos/[alertId]
 export async function PATCH(
   _req: NextRequest,
-  { params }: { params: Promise<{ alertId: string }> }
+  { params }: { params: Promise<{ alertId: string }> },
 ) {
   try {
     const session = await auth();
     if (!session?.user?.id) {
-      return NextResponse.json({ error: "Nao autenticado" }, { status: 401 });
+      return unauthorized();
     }
 
     const role = session.user.role as Role;
     if (!canRole(role, PERMISSIONS.READ_SOS) || role === "ALUNO") {
-      return NextResponse.json({ error: "Sem permissao" }, { status: 403 });
+      return forbidden();
     }
 
     const { alertId } = await params;
@@ -47,11 +54,11 @@ export async function PATCH(
     });
 
     if (!existingAlert) {
-      return NextResponse.json({ error: "Alerta SOS nao encontrado" }, { status: 404 });
+      return notFound("Alerta SOS não encontrado");
     }
 
     if (existingAlert.resolved) {
-      return NextResponse.json(existingAlert);
+      return ok(existingAlert);
     }
 
     const alert = await prisma.sosAlert.update({
@@ -70,9 +77,9 @@ export async function PATCH(
       targetId: alertId,
     }).catch(console.error);
 
-    return NextResponse.json(alert);
+    return ok(alert);
   } catch (error) {
     console.error("PATCH sos error:", error);
-    return NextResponse.json({ error: "Erro interno" }, { status: 500 });
+    return serverError();
   }
 }

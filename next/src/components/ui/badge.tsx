@@ -19,13 +19,13 @@ const badgeVariants = cva(
           "border-gold-500/25 bg-gold-100/80 text-gold-700 dark:border-gold-400/20 dark:bg-gold-400/10 dark:text-gold-300",
       },
       size: {
-        sm: "gap-1 px-2.5 py-1 text-[11px]",
-        md: "gap-1.5 px-3 py-1.5 text-sm",
+        sm: "gap-1 px-2 py-0.5 text-[10px]",
+        md: "gap-1.5 px-2.5 py-1 text-xs",
       },
     },
     defaultVariants: {
       variant: "default",
-      size: "md",
+      size: "sm",
     },
   }
 );

@@ -40,27 +40,27 @@ export function RangeSlider({
     "bg-gradient-to-r from-navy-600 via-navy-700 to-navy-900";
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-2.5">
       <div className="flex items-start justify-between gap-3">
-        <label className="text-sm font-semibold tracking-tight text-foreground">
+        <label className="text-xs font-semibold tracking-tight text-foreground">
           {label}
         </label>
         <div className="text-right">
-          <p className="text-sm font-semibold tabular-nums text-foreground">{safeValue}</p>
+          <p className="text-xs font-semibold tabular-nums text-foreground">{safeValue}</p>
           {activeLabel ? (
-            <p className="text-xs text-muted-foreground">{activeLabel}</p>
+            <p className="text-[11px] text-muted-foreground">{activeLabel}</p>
           ) : null}
         </div>
       </div>
 
       <div
-        className="relative flex h-6 items-center"
+        className="relative flex h-5 items-center"
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}
       >
-        <div className="absolute inset-x-0 h-2 rounded-full bg-muted/80 shadow-[inset_0_1px_2px_rgba(0,0,0,0.14)]" />
+        <div className="absolute inset-x-0 h-1.5 rounded-full bg-muted/80 shadow-[inset_0_1px_2px_rgba(0,0,0,0.14)]" />
         <div
-          className={`absolute h-2 rounded-full transition-all duration-300 ${activeColor}`}
+          className={`absolute h-1.5 rounded-full transition-all duration-300 ${activeColor}`}
           style={{ width: `${percentage}%` }}
         />
         <input
@@ -75,17 +75,17 @@ export function RangeSlider({
           className="absolute inset-0 z-10 h-full w-full cursor-pointer opacity-0"
         />
         <div
-          className={`absolute z-0 flex size-5 -translate-x-1/2 items-center justify-center rounded-full border border-white/70 bg-card shadow-[0_10px_24px_rgba(15,23,42,0.22)] transition-all duration-300 ${
+          className={`absolute z-0 flex size-4 -translate-x-1/2 items-center justify-center rounded-full border border-white/70 bg-card shadow-[0_10px_24px_rgba(15,23,42,0.22)] transition-all duration-300 ${
             hovered ? "scale-110" : ""
           }`}
           style={{ left: `${percentage}%` }}
         >
-          <div className={`size-3 rounded-full ${activeColor}`} />
+          <div className={`size-2.5 rounded-full ${activeColor}`} />
         </div>
       </div>
 
       {labels ? (
-        <div className="grid grid-cols-5 gap-2 text-[11px] font-medium text-muted-foreground">
+        <div className="grid grid-cols-5 gap-2 text-[10px] font-medium text-muted-foreground">
           {labels.map((item, index) => (
             <span
               key={item}

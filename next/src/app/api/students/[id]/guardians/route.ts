@@ -1,84 +1,99 @@
-import { type NextRequest, NextResponse } from "next/server";
+import { type NextRequest } from "next/server";
 import { z } from "zod";
-import { prisma } from "@/lib/prisma";
-import { auth } from "@/lib/auth";
-import { guardianSchema } from "@/lib/validations";
-import { canRole, PERMISSIONS } from "@/lib/rbac";
 import type { Role } from "@prisma/client";
+import { auth } from "@/lib/auth";
+import {
+  badRequest,
+  created,
+  err,
+  noContent,
+  notFound,
+  ok,
+  serverError,
+  unauthorized,
+  validationError,
+} from "@/lib/api-response";
+import { prisma } from "@/lib/prisma";
+import { PERMISSIONS } from "@/lib/rbac";
+import { getStudentAccessContext } from "@/lib/student-access";
+import { guardianSchema } from "@/lib/validations";
 
-// GET /api/students/[id]/guardians — list guardians for a student
+// GET /api/students/[id]/guardians - list guardians for a student
 export async function GET(
   _req: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     const session = await auth();
     if (!session?.user?.id) {
-      return NextResponse.json({ error: "Não autenticado" }, { status: 401 });
-    }
-    if (!canRole(session.user.role as Role, PERMISSIONS.MANAGE_GUARDIANS)) {
-      return NextResponse.json({ error: "Sem permissão" }, { status: 403 });
+      return unauthorized();
     }
 
     const { id } = await params;
+    const access = await getStudentAccessContext(
+      id,
+      session.user.id,
+      session.user.role as Role,
+      PERMISSIONS.MANAGE_GUARDIANS,
+    );
+    if (!access.ok) {
+      return err(access.error, access.status);
+    }
+
     const links = await prisma.studentGuardian.findMany({
       where: { studentId: id },
       include: { guardian: { select: { id: true, name: true, email: true } } },
       orderBy: { createdAt: "asc" },
     });
 
-    return NextResponse.json(
-      links.map((l) => ({
-        id: l.guardianUserId,
-        relationship: l.relationship,
-        guardian: { name: l.guardian.name, email: l.guardian.email },
-      }))
+    return ok(
+      links.map((link) => ({
+        id: link.guardianUserId,
+        relationship: link.relationship,
+        guardian: { name: link.guardian.name, email: link.guardian.email },
+      })),
     );
   } catch (error) {
     console.error("GET guardians error:", error);
-    return NextResponse.json({ error: "Erro interno" }, { status: 500 });
+    return serverError();
   }
 }
 
-// POST /api/students/[id]/guardians  — link a guardian by email
+// POST /api/students/[id]/guardians - link a guardian by email
 export async function POST(
   req: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     const session = await auth();
     if (!session?.user?.id) {
-      return NextResponse.json({ error: "Não autenticado" }, { status: 401 });
-    }
-    if (!canRole(session.user.role as Role, PERMISSIONS.MANAGE_GUARDIANS)) {
-      return NextResponse.json({ error: "Sem permissão" }, { status: 403 });
+      return unauthorized();
     }
 
     const { id } = await params;
-    const student = await prisma.student.findUnique({ where: { id } });
-    if (!student) {
-      return NextResponse.json({ error: "Aluno não encontrado" }, { status: 404 });
+    const access = await getStudentAccessContext(
+      id,
+      session.user.id,
+      session.user.role as Role,
+      PERMISSIONS.MANAGE_GUARDIANS,
+    );
+    if (!access.ok) {
+      return err(access.error, access.status);
     }
 
     const body = await req.json();
     const data = guardianSchema.parse(body);
 
-    // Find or 404 the guardian user by email
-    const guardianUser = await prisma.user.findUnique({ where: { email: data.guardianEmail } });
+    const guardianUser = await prisma.user.findUnique({
+      where: { email: data.guardianEmail },
+    });
     if (!guardianUser) {
-      return NextResponse.json(
-        { error: `Nenhum utilizador com e-mail "${data.guardianEmail}".` },
-        { status: 404 }
-      );
+      return notFound(`Nenhum utilizador com e-mail "${data.guardianEmail}".`);
     }
     if (guardianUser.role !== "PAIS") {
-      return NextResponse.json(
-        { error: "O utilizador não tem o perfil de Encarregado de Educação." },
-        { status: 400 }
-      );
+      return badRequest("O utilizador não tem o perfil de Encarregado de Educação.");
     }
 
-    // Upsert to avoid duplicate links
     const link = await prisma.studentGuardian.upsert({
       where: {
         studentId_guardianUserId: { studentId: id, guardianUserId: guardianUser.id },
@@ -92,44 +107,52 @@ export async function POST(
       },
     });
 
-    return NextResponse.json(link, { status: 201 });
+    return created(link);
   } catch (error: unknown) {
     if (error instanceof z.ZodError) {
-      return NextResponse.json({ error: error.issues }, { status: 400 });
+      return validationError(error.issues);
     }
+
     console.error("POST guardians error:", error);
-    return NextResponse.json({ error: "Erro interno" }, { status: 500 });
+    return serverError();
   }
 }
 
-// DELETE /api/students/[id]/guardians  (body: { guardianUserId })
+// DELETE /api/students/[id]/guardians (body: { guardianUserId })
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     const session = await auth();
     if (!session?.user?.id) {
-      return NextResponse.json({ error: "Não autenticado" }, { status: 401 });
-    }
-    if (!canRole(session.user.role as Role, PERMISSIONS.MANAGE_GUARDIANS)) {
-      return NextResponse.json({ error: "Sem permissão" }, { status: 403 });
+      return unauthorized();
     }
 
     const { id } = await params;
+    const access = await getStudentAccessContext(
+      id,
+      session.user.id,
+      session.user.role as Role,
+      PERMISSIONS.MANAGE_GUARDIANS,
+    );
+    if (!access.ok) {
+      return err(access.error, access.status);
+    }
+
     const body = await req.json();
     const guardianUserId = body?.guardianUserId as string | undefined;
     if (!guardianUserId) {
-      return NextResponse.json({ error: "guardianUserId obrigatório" }, { status: 400 });
+      return badRequest("guardianUserId obrigatório");
     }
 
     await prisma.studentGuardian.deleteMany({
       where: { studentId: id, guardianUserId },
     });
 
-    return new NextResponse(null, { status: 204 });
+    return noContent();
   } catch (error) {
     console.error("DELETE guardians error:", error);
-    return NextResponse.json({ error: "Erro interno" }, { status: 500 });
+    return serverError();
   }
 }

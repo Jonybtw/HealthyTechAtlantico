@@ -39,7 +39,10 @@ function matchesHotkey(e: KeyboardEvent, hotkey: Hotkey): boolean {
  */
 export function useHotkeys(hotkeys: Hotkey[]) {
   const hotkeysRef = useRef(hotkeys);
-  hotkeysRef.current = hotkeys;
+
+  useEffect(() => {
+    hotkeysRef.current = hotkeys;
+  }, [hotkeys]);
 
   const handleKeyDown = useCallback((e: KeyboardEvent) => {
     const target = e.target as HTMLElement;

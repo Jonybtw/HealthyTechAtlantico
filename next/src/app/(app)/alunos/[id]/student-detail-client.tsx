@@ -9,7 +9,8 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import type { z } from "zod";
 import { createStudentSchema } from "@/lib/validations";
-import { PageHeader } from "@/components/ui/page-header";
+import { PageScaffold } from "@/components/ui/page-scaffold";
+import { PageSection } from "@/components/ui/page-section";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ZoneBadge } from "@/components/ui/zone-badge";
@@ -21,7 +22,6 @@ import {
   FormItem,
   FormControl,
 } from "@/components/ui/form";
-import { PageTransition } from "@/components/ui/motion";
 import {
   Select,
   SelectContent,
@@ -29,6 +29,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { calcAgeFromBirthDate } from "@/lib/zaf";
+import { readApiResponse } from "@/lib/api-client";
 
 interface Props {
   student: {
@@ -85,11 +87,7 @@ export function StudentDetailClient({ student }: Props) {
   const locale = useLocale();
   const canManageStudent = role === "PROFESSOR" || role === "ADMIN";
 
-  const age = student.birthDate
-    ? Math.floor(
-        (Date.now() - new Date(student.birthDate).getTime()) / (365.25 * 24 * 3600_000)
-      )
-    : null;
+  const age = student.age ?? calcAgeFromBirthDate(student.birthDate);
 
   const lastBio = student.biometrics[0];
 
@@ -124,45 +122,38 @@ export function StudentDetailClient({ student }: Props) {
           className: values.className || null,
         }),
       });
-      if (!res.ok) {
-        const body = await res.json().catch(() => ({}));
-        toast.error(body.error ?? t("saveError"));
-        return;
-      }
+      await readApiResponse(res);
       toast.success(t("saveSuccess"));
       setEditing(false);
       router.refresh();
-    } catch {
-      toast.error(common("connectionError"));
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : common("connectionError"));
     }
   };
 
   const handleDelete = async () => {
     try {
       const res = await fetch(`/api/students/${student.id}`, { method: "DELETE" });
-      if (!res.ok) {
-        const body = await res.json().catch(() => ({}));
-        toast.error(body.error ?? t("deleteError"));
-        return;
-      }
+      await readApiResponse(res);
       toast.success(t("deleteSuccess"));
       router.push("/alunos");
-    } catch {
-      toast.error(common("connectionError"));
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : common("connectionError"));
     }
   };
 
   return (
-    <PageTransition className="flex flex-col gap-5">
-      <PageHeader
-        title={student.name}
-        description={`${student.sex === "M" ? t("male") : t("female")}${age !== null && age !== undefined ? " \u00b7 " + age + " " + t("years") : ""} \u00b7 ${
+    <PageScaffold
+      headerProps={{
+        title: student.name,
+        description: `${student.sex === "M" ? t("male") : t("female")}${age !== null && age !== undefined ? " \u00b7 " + age + " " + t("years") : ""} \u00b7 ${
           student.className
             ? student.className + " (" + (student.schoolYear ?? "") + ")"
             : t("noClass")
-        }`}
-      >
-        {canManageStudent && (
+        }`,
+      }}
+      headerActions={
+        canManageStudent ? (
           <div className="flex gap-2">
             <Button
               size="sm"
@@ -181,15 +172,16 @@ export function StudentDetailClient({ student }: Props) {
               {t("deleteBtn")}
             </Button>
           </div>
-        )}
-      </PageHeader>
+        ) : null
+      }
+    >
 
       {/* Edit form */}
       {editing && (
         <Form {...editForm}>
           <form
             onSubmit={editForm.handleSubmit(handleSave)}
-            className="bg-card/85 glass rounded-2xl border border-border/50 shadow-float p-5 flex flex-col gap-4 max-w-lg"
+            className="surface-primary rounded-[20px] p-5 flex flex-col gap-4 max-w-lg"
           >
             <h3 className="font-semibold text-sm">{t("editTitle")}</h3>
             <FormField
@@ -391,7 +383,7 @@ export function StudentDetailClient({ student }: Props) {
         onConfirm={handleDelete}
         onCancel={() => setConfirmDelete(false)}
       />
-    </PageTransition>
+    </PageScaffold>
   );
 }
 
@@ -405,13 +397,18 @@ function Section({
   children: React.ReactNode;
 }) {
   return (
-    <div className="bg-card/85 glass rounded-2xl border border-border/50 shadow-float p-5 flex flex-col gap-3">
-      <h3 className="flex items-center gap-2 font-semibold text-sm">
-        {icon}
-        {title}
-      </h3>
+    <PageSection
+      tone="secondary"
+      layout="list"
+      title={
+        <span className="flex items-center gap-2">
+          {icon}
+          {title}
+        </span>
+      }
+    >
       {children}
-    </div>
+    </PageSection>
   );
 }
 

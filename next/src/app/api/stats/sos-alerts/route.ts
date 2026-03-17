@@ -1,6 +1,6 @@
-import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
+import { forbidden, ok, serverError, unauthorized } from "@/lib/api-response";
+import { prisma } from "@/lib/prisma";
 import { canAccessSosInbox } from "@/lib/rbac";
 
 // GET /api/stats/sos-alerts
@@ -8,11 +8,11 @@ export async function GET() {
   try {
     const session = await auth();
     if (!session?.user?.id) {
-      return NextResponse.json({ error: "Nao autenticado" }, { status: 401 });
+      return unauthorized();
     }
 
     if (!canAccessSosInbox(session.user.role)) {
-      return NextResponse.json({ error: "Sem permissao" }, { status: 403 });
+      return forbidden();
     }
 
     const alerts = await prisma.sosAlert.findMany({
@@ -38,9 +38,9 @@ export async function GET() {
       },
     });
 
-    return NextResponse.json(alerts);
+    return ok(alerts);
   } catch (error) {
     console.error("GET sos-alerts error:", error);
-    return NextResponse.json({ error: "Erro interno" }, { status: 500 });
+    return serverError();
   }
 }

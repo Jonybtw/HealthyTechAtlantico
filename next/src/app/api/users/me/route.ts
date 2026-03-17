@@ -1,17 +1,18 @@
-import { type NextRequest, NextResponse } from "next/server";
+import { type NextRequest } from "next/server";
 import { z } from "zod";
-import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
+import { ok, notFound, serverError, unauthorized, validationError } from "@/lib/api-response";
+import { auditLog } from "@/lib/audit";
+import { prisma } from "@/lib/prisma";
 import { getRolePermissions } from "@/lib/rbac";
 import { updateConsentSchema } from "@/lib/validations";
-import { auditLog } from "@/lib/audit";
 
-// GET /api/users/me — current user profile + permissions
+// GET /api/users/me - current user profile + permissions
 export async function GET() {
   try {
     const session = await auth();
     if (!session?.user?.id) {
-      return NextResponse.json({ error: "Não autenticado" }, { status: 401 });
+      return unauthorized();
     }
 
     const user = await prisma.user.findUnique({
@@ -28,25 +29,25 @@ export async function GET() {
     });
 
     if (!user) {
-      return NextResponse.json({ error: "Utilizador não encontrado" }, { status: 404 });
+      return notFound("Utilizador não encontrado");
     }
 
-    return NextResponse.json({
+    return ok({
       ...user,
       permissions: getRolePermissions(user.role),
     });
   } catch (error) {
     console.error("GET /api/users/me error:", error);
-    return NextResponse.json({ error: "Erro interno" }, { status: 500 });
+    return serverError();
   }
 }
 
-// PUT /api/users/me — update consent flags
+// PUT /api/users/me - update consent flags
 export async function PUT(req: NextRequest) {
   try {
     const session = await auth();
     if (!session?.user?.id) {
-      return NextResponse.json({ error: "Não autenticado" }, { status: 401 });
+      return unauthorized();
     }
 
     const body = await req.json();
@@ -71,12 +72,13 @@ export async function PUT(req: NextRequest) {
       targetId: session.user.id,
     }).catch(console.error);
 
-    return NextResponse.json(user);
+    return ok(user);
   } catch (error: unknown) {
     if (error instanceof z.ZodError) {
-      return NextResponse.json({ error: error.issues }, { status: 400 });
+      return validationError(error.issues);
     }
+
     console.error("PUT /api/users/me error:", error);
-    return NextResponse.json({ error: "Erro interno" }, { status: 500 });
+    return serverError();
   }
 }

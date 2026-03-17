@@ -32,7 +32,7 @@ Important security rules:
 
 ## Environment
 
-Copy `next/.env.example` to `next/.env` and set the required values.
+Copy `.env.example` to `.env` and set the required values.
 
 ### Required variables
 
@@ -40,9 +40,7 @@ Copy `next/.env.example` to `next/.env` and set the required values.
 DATABASE_URL="postgresql://user:password@host:5432/dbname"
 AUTH_SECRET="replace_with_a_strong_random_secret"
 NEXTAUTH_SECRET="replace_with_a_strong_random_secret"
-NEXTAUTH_URL="http://localhost:3000"
-NEXT_PUBLIC_APP_URL="http://localhost:3000"
-ADMIN_SECRET="replace_with_a_bootstrap_secret"
+NEXTAUTH_URL="http://127.0.0.1:3000"
 ```
 
 ### Database TLS
@@ -103,14 +101,19 @@ Response shape:
 
 ```json
 {
-  "status": "ready",
-  "database": "up",
-  "latencyMs": 8,
-  "timestamp": "2026-03-10T12:00:00.000Z"
+  "data": {
+    "ok": true,
+    "status": "ready",
+    "services": {
+      "database": "up"
+    },
+    "latencyMs": 8,
+    "timestamp": "2026-03-10T12:00:00.000Z"
+  }
 }
 ```
 
-When the database is unavailable, the endpoint returns `503` with `status: "degraded"`.
+When the database is unavailable, the endpoint returns `503` with `data.status: "degraded"`.
 
 ## Tests
 
@@ -118,8 +121,11 @@ Unit and component coverage lives under `next/tests/`.
 
 ```bash
 npm test
+npx playwright install chromium
 npm run test:smoke
 ```
+
+`npm run test:smoke` performs a fresh production build and boots the standalone server from `.next/standalone/server.js`.
 
 Current automated coverage includes:
 

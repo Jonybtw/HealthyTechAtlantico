@@ -1,16 +1,24 @@
-import { type NextRequest, NextResponse } from "next/server";
+import { type NextRequest } from "next/server";
 import { compare, hash } from "bcryptjs";
 import { z } from "zod";
-import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
-import { changePasswordSchema } from "@/lib/validations";
+import {
+  badRequest,
+  notFound,
+  ok,
+  serverError,
+  unauthorized,
+  validationError,
+} from "@/lib/api-response";
 import { auditLog } from "@/lib/audit";
+import { prisma } from "@/lib/prisma";
+import { changePasswordSchema } from "@/lib/validations";
 
 export async function PUT(req: NextRequest) {
   try {
     const session = await auth();
     if (!session?.user?.id) {
-      return NextResponse.json({ error: "Não autenticado" }, { status: 401 });
+      return unauthorized();
     }
 
     const body = await req.json();
@@ -20,12 +28,12 @@ export async function PUT(req: NextRequest) {
       where: { id: session.user.id },
     });
     if (!user) {
-      return NextResponse.json({ error: "Utilizador não encontrado" }, { status: 404 });
+      return notFound("Utilizador não encontrado");
     }
 
     const valid = await compare(data.currentPassword, user.passwordHash);
     if (!valid) {
-      return NextResponse.json({ error: "Password atual incorreta" }, { status: 400 });
+      return badRequest("Password atual incorreta");
     }
 
     const passwordHash = await hash(data.newPassword, 12);
@@ -40,12 +48,13 @@ export async function PUT(req: NextRequest) {
       targetId: session.user.id,
     }).catch(console.error);
 
-    return NextResponse.json({ ok: true });
+    return ok({ ok: true });
   } catch (error: unknown) {
     if (error instanceof z.ZodError) {
-      return NextResponse.json({ error: error.issues }, { status: 400 });
+      return validationError(error.issues);
     }
+
     console.error("PUT /api/users/me/password error:", error);
-    return NextResponse.json({ error: "Erro interno" }, { status: 500 });
+    return serverError();
   }
 }

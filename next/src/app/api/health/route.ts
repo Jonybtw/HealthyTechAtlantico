@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { ok } from "@/lib/api-response";
 import { prisma } from "@/lib/prisma";
 
 export async function GET() {
@@ -7,7 +7,7 @@ export async function GET() {
   try {
     await prisma.$queryRaw`SELECT 1`;
 
-    return NextResponse.json({
+    return ok({
       ok: true,
       status: "ready",
       services: {
@@ -19,7 +19,7 @@ export async function GET() {
   } catch (error) {
     console.error("Healthcheck failed:", error);
 
-    return NextResponse.json(
+    return ok(
       {
         ok: false,
         status: "degraded",
@@ -29,7 +29,7 @@ export async function GET() {
         latencyMs: Date.now() - startedAt,
         timestamp: new Date().toISOString(),
       },
-      { status: 503 }
+      503,
     );
   }
 }

@@ -22,6 +22,9 @@ interface DataTableProps<T> {
   data: T[];
   pageSize?: number;
   searchable?: boolean;
+  toolbarTitle?: string;
+  toolbarSummary?: React.ReactNode;
+  toolbarActions?: React.ReactNode;
   searchPlaceholder?: string;
   emptyMessage?: string;
   onRowClick?: (row: T) => void;
@@ -33,6 +36,9 @@ export function DataTable<T extends object>({
   data,
   pageSize = 15,
   searchable = true,
+  toolbarTitle = "Data view",
+  toolbarSummary,
+  toolbarActions,
   searchPlaceholder = "Pesquisar...",
   emptyMessage = "Sem registos.",
   onRowClick,
@@ -100,23 +106,42 @@ export function DataTable<T extends object>({
   }
 
   return (
-    <div className="animate-fade-in-up flex flex-col gap-4">
-      {searchable ? (
-        <div className="relative max-w-md">
-          <Search className="absolute left-4 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-          <input
-            value={search}
-            onChange={(event) => {
-              setSearch(event.target.value);
-              setPage(1);
-            }}
-            placeholder={searchPlaceholder}
-            className="w-full rounded-full border border-border/80 bg-card/75 py-3 pl-11 pr-4 text-sm text-foreground outline-none transition-all focus:border-gold-500/50 focus:ring-4 focus:ring-gold-400/10"
-          />
+    <div className="animate-fade-in-up flex flex-col gap-3">
+      {searchable || toolbarTitle || toolbarSummary || toolbarActions ? (
+        <div className="surface-utility flex flex-col gap-2.5 rounded-[18px] p-3 sm:flex-row sm:items-center sm:justify-between">
+          <div className="space-y-1">
+            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
+              {toolbarTitle}
+            </p>
+            <p className="text-[13px] text-foreground sm:text-sm">
+              {toolbarSummary ?? (
+                <>
+                  {filtered.length} resultado{filtered.length === 1 ? "" : "s"}
+                </>
+              )}
+            </p>
+          </div>
+          <div className="flex w-full items-center justify-end gap-2 sm:max-w-2xl">
+            {toolbarActions ? <div className="flex flex-wrap items-center gap-2">{toolbarActions}</div> : null}
+            {searchable ? (
+              <div className="relative w-full max-w-md">
+                <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+                <input
+                  value={search}
+                  onChange={(event) => {
+                    setSearch(event.target.value);
+                    setPage(1);
+                  }}
+                  placeholder={searchPlaceholder}
+                  className="w-full rounded-xl border border-border/80 bg-card/80 py-2 pl-9 pr-3 text-sm text-foreground outline-none transition-all focus:border-gold-500/50 focus:ring-3 focus:ring-gold-400/10"
+                />
+              </div>
+            ) : null}
+          </div>
         </div>
       ) : null}
 
-      <div className="glass overflow-hidden rounded-[30px] shadow-card">
+      <div className="surface-secondary overflow-hidden rounded-[20px]">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead className="border-b border-border/70 bg-muted/28">
@@ -127,7 +152,7 @@ export function DataTable<T extends object>({
                     onClick={
                       column.sortable ? () => toggleSort(column.key) : undefined
                     }
-                    className={`px-5 py-4 text-left text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground ${
+                    className={`px-4 py-3 text-left text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground ${
                       column.sortable
                         ? "cursor-pointer transition-colors hover:text-foreground"
                         : ""
@@ -156,7 +181,7 @@ export function DataTable<T extends object>({
                 <tr>
                   <td
                     colSpan={columns.length}
-                    className="px-6 py-16 text-center text-sm text-muted-foreground"
+                    className="px-5 py-8 text-center text-sm text-muted-foreground"
                   >
                     {emptyMessage}
                   </td>
@@ -173,7 +198,7 @@ export function DataTable<T extends object>({
                     {columns.map((column) => (
                       <td
                         key={column.key}
-                        className={`px-5 py-4 align-middle text-foreground ${column.className ?? ""}`}
+                        className={`px-4 py-3 align-middle text-foreground ${column.className ?? ""}`}
                       >
                         {column.render
                           ? column.render(row)
@@ -189,8 +214,8 @@ export function DataTable<T extends object>({
       </div>
 
       {totalPages > 1 ? (
-        <div className="flex items-center justify-between px-1 text-sm text-muted-foreground">
-          <span>
+        <div className="surface-utility flex items-center justify-between rounded-[16px] px-3 py-2 text-sm text-muted-foreground">
+          <span className="text-[13px] sm:text-sm">
             {sorted.length} resultado{sorted.length === 1 ? "" : "s"}
           </span>
           <div className="flex items-center gap-2">
@@ -198,18 +223,18 @@ export function DataTable<T extends object>({
               type="button"
               disabled={safePage <= 1}
               onClick={() => setPage((current) => current - 1)}
-              className="rounded-full border border-border/70 bg-card/70 p-2 transition-colors hover:bg-card disabled:opacity-35"
+              className="rounded-lg border border-border/70 bg-card/70 p-1.5 transition-colors hover:bg-card disabled:opacity-35"
             >
               <ChevronLeft className="size-4" />
             </button>
-            <span className="min-w-16 text-center text-xs font-semibold uppercase tracking-[0.16em]">
+            <span className="min-w-14 text-center text-[10px] font-semibold uppercase tracking-[0.16em]">
               {safePage} / {totalPages}
             </span>
             <button
               type="button"
               disabled={safePage >= totalPages}
               onClick={() => setPage((current) => current + 1)}
-              className="rounded-full border border-border/70 bg-card/70 p-2 transition-colors hover:bg-card disabled:opacity-35"
+              className="rounded-lg border border-border/70 bg-card/70 p-1.5 transition-colors hover:bg-card disabled:opacity-35"
             >
               <ChevronRight className="size-4" />
             </button>

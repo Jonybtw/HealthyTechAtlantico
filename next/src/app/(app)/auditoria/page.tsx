@@ -1,16 +1,17 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
-import { useTranslations, useLocale } from "next-intl";
+import { useCallback, useEffect, useState } from "react";
+import { useLocale, useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { FileSearch, RefreshCw } from "lucide-react";
-import { PageHeader } from "@/components/ui/page-header";
+import { PageScaffold } from "@/components/ui/page-scaffold";
+import { PageSection } from "@/components/ui/page-section";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useUser } from "@/components/user-context";
 import { usePageTitle } from "@/hooks/use-page-title";
-import { PageTransition } from "@/components/ui/motion";
+import { readApiResponse } from "@/lib/api-client";
 
 interface AuditEntry {
   id: string;
@@ -23,13 +24,24 @@ interface AuditEntry {
 }
 
 const ACTION_KEYS = [
-  "login", "logout", "register",
-  "create_student", "update_student", "delete_student",
-  "record_biometrics", "record_tests", "submit_questionnaire",
-  "trigger_sos", "resolve_sos", "export_report",
-  "create_dispensa", "delete_dispensa",
-  "add_guardian", "remove_guardian",
-  "change_password", "update_consent",
+  "login",
+  "logout",
+  "register",
+  "create_student",
+  "update_student",
+  "delete_student",
+  "record_biometrics",
+  "record_tests",
+  "submit_questionnaire",
+  "trigger_sos",
+  "resolve_sos",
+  "export_report",
+  "create_dispensa",
+  "delete_dispensa",
+  "add_guardian",
+  "remove_guardian",
+  "change_password",
+  "update_consent",
 ] as const;
 
 export default function AuditoriaPage() {
@@ -51,9 +63,8 @@ export default function AuditoriaPage() {
   const loadLogs = useCallback(async () => {
     setLoading(true);
     try {
-      const r = await fetch("/api/audit");
-      if (!r.ok) throw new Error();
-      setLogs(await r.json());
+      const response = await fetch("/api/audit");
+      setLogs(await readApiResponse<AuditEntry[]>(response));
     } catch {
       toast.error(t("loadError"));
     } finally {
@@ -62,23 +73,28 @@ export default function AuditoriaPage() {
   }, [t]);
 
   useEffect(() => {
-    if (role === "ADMIN") loadLogs();
+    if (role === "ADMIN") {
+      void loadLogs();
+    }
   }, [role, loadLogs]);
 
   if (role !== "ADMIN") {
     return (
-      <div className="flex items-center justify-center min-h-[40vh]">
+      <div className="flex min-h-[40vh] items-center justify-center">
         <p className="text-muted-foreground">{t("noPermission")}</p>
       </div>
     );
   }
 
   return (
-    <PageTransition className="flex flex-col gap-5">
-      <PageHeader
-        title={t("title")}
-        description={t("description")}
-      >
+    <PageScaffold
+      headerProps={{
+        title: t("title"),
+        description: t("description"),
+        eyebrow: "Admin",
+        meta: t("colAction"),
+      }}
+      headerActions={
         <Button
           size="sm"
           variant="ghost"
@@ -89,45 +105,46 @@ export default function AuditoriaPage() {
         >
           {t("refresh")}
         </Button>
-      </PageHeader>
+      }
+    >
 
-      <div className="animate-fade-in-up bg-card/85 glass border border-border/50 shadow-float rounded-2xl overflow-hidden">
-        {loading && (
-          <div className="p-5 flex flex-col gap-3 animate-fade-in">
+      <PageSection tone="secondary" className="animate-fade-in-up" contentClassName="gap-0" layout="list">
+        {loading ? (
+          <div className="flex flex-col gap-3 p-5 animate-fade-in">
             <Skeleton className="h-12 w-full rounded-xl" />
             <Skeleton className="h-12 w-full rounded-xl" />
             <Skeleton className="h-12 w-full rounded-xl" />
             <Skeleton className="h-12 w-full rounded-xl" />
             <Skeleton className="h-12 w-full rounded-xl" />
           </div>
-        )}
+        ) : null}
 
-        {!loading && logs.length === 0 && (
-          <div className="py-10">
+        {!loading && logs.length === 0 ? (
+          <div className="py-4">
             <EmptyState
               icon={FileSearch}
               title={t("emptyTitle")}
               description={t("noLogs")}
             />
           </div>
-        )}
+        ) : null}
 
-        {!loading && logs.length > 0 && (
-          <div className="overflow-x-auto">
+        {!loading && logs.length > 0 ? (
+          <div className="surface-utility overflow-x-auto rounded-[20px] p-1">
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-border/50 bg-navy-50/50 dark:bg-navy-900/30">
-                  <th className="text-left py-3 px-5 font-semibold text-muted-foreground whitespace-nowrap">{t("colDatetime")}</th>
-                  <th className="text-left py-3 px-5 font-semibold text-muted-foreground">{t("colAction")}</th>
-                  <th className="text-left py-3 px-5 font-semibold text-muted-foreground">{t("colUser")}</th>
-                  <th className="text-left py-3 px-5 font-semibold text-muted-foreground">{t("colTarget")}</th>
-                  <th className="text-left py-3 px-5 font-semibold text-muted-foreground">{t("colIp")}</th>
+                  <th className="whitespace-nowrap px-5 py-3 text-left font-semibold text-muted-foreground">{t("colDatetime")}</th>
+                  <th className="px-5 py-3 text-left font-semibold text-muted-foreground">{t("colAction")}</th>
+                  <th className="px-5 py-3 text-left font-semibold text-muted-foreground">{t("colUser")}</th>
+                  <th className="px-5 py-3 text-left font-semibold text-muted-foreground">{t("colTarget")}</th>
+                  <th className="px-5 py-3 text-left font-semibold text-muted-foreground">{t("colIp")}</th>
                 </tr>
               </thead>
               <tbody>
                 {logs.map((entry) => (
-                  <tr key={entry.id} className="border-b border-border/50 hover:bg-muted/50 transition-colors">
-                    <td className="py-3 px-5 whitespace-nowrap text-muted-foreground text-xs font-medium">
+                  <tr key={entry.id} className="border-b border-border/50 transition-colors hover:bg-muted/50">
+                    <td className="whitespace-nowrap px-5 py-3 text-xs font-medium text-muted-foreground">
                       {new Date(entry.createdAt).toLocaleString(locale, {
                         day: "2-digit",
                         month: "2-digit",
@@ -136,27 +153,29 @@ export default function AuditoriaPage() {
                         minute: "2-digit",
                       })}
                     </td>
-                    <td className="py-3 px-5 font-semibold text-foreground">{labelAction(entry.action)}</td>
-                    <td className="py-3 px-5 text-muted-foreground">
-                      {entry.userName ?? entry.userEmail ?? <span className="italic opacity-50">—</span>}
+                    <td className="px-5 py-3 font-semibold text-foreground">{labelAction(entry.action)}</td>
+                    <td className="px-5 py-3 text-muted-foreground">
+                      {entry.userName ?? entry.userEmail ?? <span className="italic opacity-50">-</span>}
                     </td>
-                    <td className="py-3 px-5 text-muted-foreground font-mono text-xs">
+                    <td className="px-5 py-3 font-mono text-xs text-muted-foreground">
                       {entry.targetId ? (
-                        <span className="bg-muted/80 rounded-md px-2 py-1 border border-border/50 shadow-inner">{entry.targetId.slice(0, 8)}…</span>
+                        <span className="rounded-md border border-border/50 bg-muted/80 px-2 py-1 shadow-inner">
+                          {entry.targetId.slice(0, 8)}...
+                        </span>
                       ) : (
-                        <span className="opacity-50">—</span>
+                        <span className="opacity-50">-</span>
                       )}
                     </td>
-                    <td className="py-3 px-5 text-muted-foreground text-xs font-mono font-medium">
-                      {entry.ipAddress ?? "—"}
+                    <td className="px-5 py-3 font-mono text-xs font-medium text-muted-foreground">
+                      {entry.ipAddress ?? "-"}
                     </td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
-        )}
-      </div>
-    </PageTransition>
+        ) : null}
+      </PageSection>
+    </PageScaffold>
   );
 }

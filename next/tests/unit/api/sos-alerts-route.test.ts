@@ -36,7 +36,7 @@ describe("GET /api/stats/sos-alerts", () => {
 
     expect(response.status).toBe(403);
     expect(findManyMock).not.toHaveBeenCalled();
-    await expect(response.json()).resolves.toEqual({ error: "Sem permissao" });
+    await expect(response.json()).resolves.toEqual({ error: "Sem permissão" });
   });
 
   it("returns alerts for staff roles", async () => {
@@ -57,6 +57,6 @@ describe("GET /api/stats/sos-alerts", () => {
 
     expect(response.status).toBe(200);
     expect(findManyMock).toHaveBeenCalledOnce();
-    await expect(response.json()).resolves.toEqual(alerts);
+    await expect(response.json()).resolves.toEqual({ data: alerts });
   });
 });

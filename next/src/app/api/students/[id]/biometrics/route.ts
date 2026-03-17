@@ -1,18 +1,27 @@
-import { type NextRequest, NextResponse } from "next/server";
+import { type NextRequest } from "next/server";
 import { z } from "zod";
-import { prisma } from "@/lib/prisma";
-import { auth } from "@/lib/auth";
-import { PERMISSIONS, type Permission } from "@/lib/rbac";
-import { biometricsSchema } from "@/lib/validations";
-import { auditLog } from "@/lib/audit";
 import type { Role } from "@prisma/client";
+import { auth } from "@/lib/auth";
+import {
+  created,
+  err,
+  forbidden,
+  ok,
+  serverError,
+  unauthorized,
+  validationError,
+} from "@/lib/api-response";
+import { auditLog } from "@/lib/audit";
+import { prisma } from "@/lib/prisma";
+import { PERMISSIONS, type Permission } from "@/lib/rbac";
 import { getStudentAccessContext } from "@/lib/student-access";
+import { biometricsSchema } from "@/lib/validations";
 
 async function checkAccess(
   studentId: string,
   userId: string,
   role: Role,
-  permission: Permission
+  permission: Permission,
 ) {
   return getStudentAccessContext(studentId, userId, role, permission);
 }
@@ -20,55 +29,71 @@ async function checkAccess(
 // GET /api/students/[id]/biometrics
 export async function GET(
   _req: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     const session = await auth();
     if (!session?.user?.id) {
-      return NextResponse.json({ error: "Não autenticado" }, { status: 401 });
+      return unauthorized();
+    }
+
+    if (!session.user.consentRgpd) {
+      return forbidden("Consentimento RGPD necessário");
     }
 
     const { id } = await params;
-    const access = await checkAccess(id, session.user.id, session.user.role as Role, PERMISSIONS.READ_BIOMETRICS);
+    const access = await checkAccess(
+      id,
+      session.user.id,
+      session.user.role as Role,
+      PERMISSIONS.READ_BIOMETRICS,
+    );
     if (!access.ok) {
-      return NextResponse.json({ error: access.error }, { status: access.status });
+      return err(access.error, access.status);
     }
 
-    // Audit read
-    await auditLog({ userId: session.user.id, action: "read_biometrics", targetId: id });
+    await auditLog({
+      userId: session.user.id,
+      action: "read_biometrics",
+      targetId: id,
+    }).catch(console.error);
 
     const biometrics = await prisma.biometric.findMany({
       where: { studentId: id },
       orderBy: { recordedAt: "desc" },
     });
 
-    return NextResponse.json(biometrics);
+    return ok(biometrics);
   } catch (error) {
     console.error("GET biometrics error:", error);
-    return NextResponse.json({ error: "Erro interno" }, { status: 500 });
+    return serverError();
   }
 }
 
 // POST /api/students/[id]/biometrics
 export async function POST(
   req: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     const session = await auth();
     if (!session?.user?.id) {
-      return NextResponse.json({ error: "Não autenticado" }, { status: 401 });
+      return unauthorized();
     }
 
-    // Check RGPD consent
     if (!session.user.consentRgpd) {
-      return NextResponse.json({ error: "Consentimento RGPD necessário" }, { status: 403 });
+      return forbidden("Consentimento RGPD necessário");
     }
 
     const { id } = await params;
-    const access = await checkAccess(id, session.user.id, session.user.role as Role, PERMISSIONS.RECORD_BIOMETRICS);
+    const access = await checkAccess(
+      id,
+      session.user.id,
+      session.user.role as Role,
+      PERMISSIONS.RECORD_BIOMETRICS,
+    );
     if (!access.ok) {
-      return NextResponse.json({ error: access.error }, { status: access.status });
+      return err(access.error, access.status);
     }
 
     const body = await req.json();
@@ -89,12 +114,13 @@ export async function POST(
       },
     });
 
-    return NextResponse.json(biometric, { status: 201 });
+    return created(biometric);
   } catch (error: unknown) {
     if (error instanceof z.ZodError) {
-      return NextResponse.json({ error: error.issues }, { status: 400 });
+      return validationError(error.issues);
     }
+
     console.error("POST biometrics error:", error);
-    return NextResponse.json({ error: "Erro interno" }, { status: 500 });
+    return serverError();
   }
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useCallback, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { Command } from "cmdk";
@@ -33,51 +33,53 @@ export function CommandPalette({ open, onOpenChange, userRole }: CommandPaletteP
     [userRole],
   );
 
-  // Reset search on close
-  useEffect(() => {
-    if (!open) setSearch("");
-  }, [open]);
-
-  const runAction = useCallback(
-    (action: () => void) => {
-      onOpenChange(false);
-      action();
+  const handleOpenChange = useCallback(
+    (nextOpen: boolean) => {
+      if (!nextOpen) {
+        setSearch("");
+      }
+      onOpenChange(nextOpen);
     },
     [onOpenChange],
   );
 
+  const runAction = useCallback(
+    (action: () => void) => {
+      handleOpenChange(false);
+      action();
+    },
+    [handleOpenChange],
+  );
+
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="overflow-hidden p-0 max-w-lg">
         <VisuallyHidden.Root>
           <DialogTitle>Paleta de comandos</DialogTitle>
         </VisuallyHidden.Root>
-        <Command
-          className="flex flex-col"
-          loop
-        >
-          <div className="flex items-center border-b border-border px-4">
+        <Command className="flex flex-col" loop>
+          <div className="flex items-center border-b border-border px-3">
             <Search className="mr-2 size-4 shrink-0 text-muted-foreground" />
             <Command.Input
               value={search}
               onValueChange={setSearch}
               placeholder={t("commandPalette.placeholder")}
-              className="flex h-12 w-full bg-transparent text-sm outline-none placeholder:text-muted-foreground"
+              className="flex h-10 w-full bg-transparent text-sm outline-none placeholder:text-muted-foreground"
             />
-            <kbd className="hidden sm:inline-flex h-5 items-center gap-1 rounded border border-border bg-muted px-1.5 text-[10px] font-medium text-muted-foreground">
+            <kbd className="hidden sm:inline-flex h-4 items-center gap-1 rounded border border-border bg-muted px-1 text-[9px] font-medium text-muted-foreground">
               ESC
             </kbd>
           </div>
 
-          <Command.List className="max-h-[320px] overflow-y-auto p-2">
-            <Command.Empty className="py-6 text-center text-sm text-muted-foreground">
+          <Command.List className="max-h-[280px] overflow-y-auto p-1.5">
+            <Command.Empty className="py-5 text-center text-xs text-muted-foreground">
               {t("commandPalette.noResults")}
             </Command.Empty>
 
             {/* ── Navigation ──────────────────────────────── */}
             <Command.Group
               heading={t("commandPalette.navigate")}
-              className="text-xs font-semibold text-muted-foreground uppercase tracking-wider px-2 py-1.5"
+              className="text-[10px] font-semibold text-muted-foreground uppercase tracking-[0.2em] px-2 py-1.5"
             >
               {visibleNav.map((item) => {
                 const Icon = item.icon;
@@ -87,7 +89,7 @@ export function CommandPalette({ open, onOpenChange, userRole }: CommandPaletteP
                     key={item.href}
                     value={label}
                     onSelect={() => runAction(() => router.push(item.href))}
-                    className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm cursor-pointer select-none data-[selected=true]:bg-muted/80 data-[selected=true]:text-foreground transition-colors"
+                    className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm cursor-pointer select-none data-[selected=true]:bg-muted/80 data-[selected=true]:text-foreground transition-colors"
                   >
                     <Icon className="size-4 text-muted-foreground" />
                     <span>{label}</span>
@@ -99,14 +101,14 @@ export function CommandPalette({ open, onOpenChange, userRole }: CommandPaletteP
             {/* ── Actions ─────────────────────────────────── */}
             <Command.Group
               heading={t("commandPalette.actions")}
-              className="text-xs font-semibold text-muted-foreground uppercase tracking-wider px-2 py-1.5 mt-1"
+              className="text-[10px] font-semibold text-muted-foreground uppercase tracking-[0.2em] px-2 py-1.5 mt-1"
             >
               <Command.Item
                 value={t("commandPalette.toggleTheme")}
                 onSelect={() =>
                   runAction(() => writeTheme(theme === "light" ? "dark" : "light"))
                 }
-                className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm cursor-pointer select-none data-[selected=true]:bg-muted/80 data-[selected=true]:text-foreground transition-colors"
+                className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm cursor-pointer select-none data-[selected=true]:bg-muted/80 data-[selected=true]:text-foreground transition-colors"
               >
                 {theme === "light" ? (
                   <Moon className="size-4 text-muted-foreground" />
@@ -119,7 +121,7 @@ export function CommandPalette({ open, onOpenChange, userRole }: CommandPaletteP
               <Command.Item
                 value={t("commandPalette.signOut")}
                 onSelect={() => runAction(() => signOut({ callbackUrl: "/login" }))}
-                className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm cursor-pointer select-none data-[selected=true]:bg-muted/80 data-[selected=true]:text-foreground transition-colors"
+                className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm cursor-pointer select-none data-[selected=true]:bg-muted/80 data-[selected=true]:text-foreground transition-colors"
               >
                 <LogOut className="size-4 text-muted-foreground" />
                 <span>{t("commandPalette.signOut")}</span>

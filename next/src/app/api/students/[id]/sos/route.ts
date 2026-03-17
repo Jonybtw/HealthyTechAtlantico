@@ -1,14 +1,24 @@
-import { type NextRequest, NextResponse } from "next/server";
+import { type NextRequest } from "next/server";
 import { z } from "zod";
-import { prisma } from "@/lib/prisma";
-import { auth } from "@/lib/auth";
-import { PERMISSIONS } from "@/lib/rbac";
-import { sosSchema } from "@/lib/validations";
-import { sendMail } from "@/lib/mailer";
-import { auditLog } from "@/lib/audit";
-import { escapeHtml } from "@/lib/utils";
 import type { Role } from "@prisma/client";
+import { auth } from "@/lib/auth";
+import {
+  conflict,
+  created,
+  err,
+  notFound,
+  ok,
+  serverError,
+  unauthorized,
+  validationError,
+} from "@/lib/api-response";
+import { auditLog } from "@/lib/audit";
+import { prisma } from "@/lib/prisma";
+import { PERMISSIONS } from "@/lib/rbac";
 import { getStudentAccessContext } from "@/lib/student-access";
+import { sendMail } from "@/lib/mailer";
+import { escapeHtml } from "@/lib/utils";
+import { sosSchema } from "@/lib/validations";
 
 const sosAlertInclude = {
   student: {
@@ -32,12 +42,12 @@ const sosAlertInclude = {
 // GET /api/students/[id]/sos
 export async function GET(
   _req: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     const session = await auth();
     if (!session?.user?.id) {
-      return NextResponse.json({ error: "Nao autenticado" }, { status: 401 });
+      return unauthorized();
     }
 
     const { id } = await params;
@@ -45,11 +55,11 @@ export async function GET(
       id,
       session.user.id,
       session.user.role as Role,
-      PERMISSIONS.READ_SOS
+      PERMISSIONS.READ_SOS,
     );
 
     if (!access.ok) {
-      return NextResponse.json({ error: access.error }, { status: access.status });
+      return err(access.error, access.status);
     }
 
     const alerts = await prisma.sosAlert.findMany({
@@ -58,22 +68,22 @@ export async function GET(
       include: sosAlertInclude,
     });
 
-    return NextResponse.json(alerts);
+    return ok(alerts);
   } catch (error) {
     console.error("GET sos error:", error);
-    return NextResponse.json({ error: "Erro interno" }, { status: 500 });
+    return serverError();
   }
 }
 
 // POST /api/students/[id]/sos
 export async function POST(
   req: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     const session = await auth();
     if (!session?.user?.id) {
-      return NextResponse.json({ error: "Nao autenticado" }, { status: 401 });
+      return unauthorized();
     }
 
     const { id } = await params;
@@ -81,11 +91,11 @@ export async function POST(
       id,
       session.user.id,
       session.user.role as Role,
-      PERMISSIONS.TRIGGER_SOS
+      PERMISSIONS.TRIGGER_SOS,
     );
 
     if (!access.ok) {
-      return NextResponse.json({ error: access.error }, { status: access.status });
+      return err(access.error, access.status);
     }
 
     const student = await prisma.student.findUnique({
@@ -99,7 +109,7 @@ export async function POST(
     });
 
     if (!student) {
-      return NextResponse.json({ error: "Aluno nao encontrado" }, { status: 404 });
+      return notFound("Aluno não encontrado");
     }
 
     const body = await req.json();
@@ -114,13 +124,7 @@ export async function POST(
     });
 
     if (existingAlert) {
-      return NextResponse.json(
-        {
-          error: "Ja existe um alerta SOS pendente para este aluno.",
-          alert: existingAlert,
-        },
-        { status: 409 }
-      );
+      return conflict("Já existe um alerta SOS pendente para este aluno.");
     }
 
     const alert = await prisma.sosAlert.create({
@@ -149,19 +153,19 @@ export async function POST(
           sendMail({
             to,
             subject: `SOS alert - ${student.name}`,
-            html: `<p>Foi ativado um alerta SOS para o/a aluno/a <strong>${escapeHtml(student.name)}</strong>${classLabel}.</p><p>Por favor verifique a situacao na plataforma HealthyTech Atlantico.</p>`,
-          })
-        )
+            html: `<p>Foi ativado um alerta SOS para o/a aluno/a <strong>${escapeHtml(student.name)}</strong>${classLabel}.</p><p>Por favor verifique a situação na plataforma HealthyTech Atlantico.</p>`,
+          }),
+        ),
       );
     }
 
-    return NextResponse.json(alert, { status: 201 });
+    return created(alert);
   } catch (error: unknown) {
     if (error instanceof z.ZodError) {
-      return NextResponse.json({ error: error.issues }, { status: 400 });
+      return validationError(error.issues);
     }
 
     console.error("POST sos error:", error);
-    return NextResponse.json({ error: "Erro interno" }, { status: 500 });
+    return serverError();
   }
 }

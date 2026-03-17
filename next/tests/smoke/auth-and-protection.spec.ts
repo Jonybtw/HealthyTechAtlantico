@@ -19,8 +19,17 @@ test("login and register pages render in both locales", async ({ page, context }
   await expect(page.locator("input[type='password']").first()).toBeVisible();
 });
 
+test("login page remains usable on mobile widths", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/login");
+
+  await expect(page.locator("input[type='email']")).toBeVisible();
+  await expect(page.locator("input[type='password']").first()).toBeVisible();
+  await expect(page.getByRole("button", { name: /iniciar sess|sign in|entrar/i })).toBeVisible();
+});
+
 test("protected routes redirect anonymous users to login", async ({ page }) => {
-  for (const path of ["/dashboard", "/sos", "/relatorio", "/perfil"]) {
+  for (const path of ["/dashboard", "/sos", "/relatorio", "/perfil", "/biometria", "/turma"]) {
     await page.goto(path);
     await expect(page).toHaveURL(/\/login/);
   }
@@ -28,12 +37,9 @@ test("protected routes redirect anonymous users to login", async ({ page }) => {
 
 test("health endpoint responds with a deployment status payload", async ({ request }) => {
   const response = await request.get("/api/health");
+  const body = await response.json();
 
   expect([200, 503]).toContain(response.status());
-  await expect
-    .poll(async () => {
-      const body = await response.json();
-      return typeof body.status;
-    })
-    .toBe("string");
+  expect(typeof body.data?.status).toBe("string");
+  expect(typeof body.data?.services?.database).toBe("string");
 });

@@ -1,13 +1,24 @@
-import { type NextRequest, NextResponse } from "next/server";
+import { type NextRequest } from "next/server";
 import { z } from "zod";
-import { prisma } from "@/lib/prisma";
-import { auth } from "@/lib/auth";
-import { canRole, PERMISSIONS } from "@/lib/rbac";
-import { reportEmailSchema } from "@/lib/validations";
-import { sendMail } from "@/lib/mailer";
-import { auditLog } from "@/lib/audit";
-import { escapeHtml } from "@/lib/utils";
 import type { Role } from "@prisma/client";
+import { auth } from "@/lib/auth";
+import {
+  created,
+  err,
+  forbidden,
+  notFound,
+  ok,
+  serverError,
+  unauthorized,
+  validationError,
+} from "@/lib/api-response";
+import { auditLog } from "@/lib/audit";
+import { prisma } from "@/lib/prisma";
+import { isStaffRole, PERMISSIONS } from "@/lib/rbac";
+import { getStudentAccessContext } from "@/lib/student-access";
+import { sendMail } from "@/lib/mailer";
+import { escapeHtml } from "@/lib/utils";
+import { reportEmailSchema } from "@/lib/validations";
 
 function buildReportHtml(params: {
   studentName: string;
@@ -35,7 +46,7 @@ function buildReportHtml(params: {
     ? `<ul>${params.latestTests
         .map(
           (test) =>
-            `<li><strong>${escapeHtml(test.testId)}</strong>: ${escapeHtml(test.valueText)} ${escapeHtml(test.unit)} (${escapeHtml(test.zone)})</li>`
+            `<li><strong>${escapeHtml(test.testId)}</strong>: ${escapeHtml(test.valueText)} ${escapeHtml(test.unit)} (${escapeHtml(test.zone)})</li>`,
         )
         .join("")}</ul>`
     : "<p>Sem testes físicos recentes.</p>";
@@ -57,20 +68,30 @@ function buildReportHtml(params: {
 // POST /api/students/[id]/reports/email
 export async function POST(
   req: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     const session = await auth();
     if (!session?.user?.id) {
-      return NextResponse.json({ error: "Não autenticado" }, { status: 401 });
+      return unauthorized();
     }
 
     const role = session.user.role as Role;
-    if (!canRole(role, PERMISSIONS.SEND_REPORTS)) {
-      return NextResponse.json({ error: "Sem permissão" }, { status: 403 });
+    if (!isStaffRole(role)) {
+      return forbidden();
     }
 
     const { id } = await params;
+    const access = await getStudentAccessContext(
+      id,
+      session.user.id,
+      role,
+      PERMISSIONS.SEND_REPORTS,
+    );
+    if (!access.ok) {
+      return err(access.error, access.status);
+    }
+
     const student = await prisma.student.findUnique({
       where: { id },
       include: {
@@ -92,24 +113,24 @@ export async function POST(
       },
     });
     if (!student) {
-      return NextResponse.json({ error: "Aluno não encontrado" }, { status: 404 });
+      return notFound("Aluno não encontrado");
     }
 
     const body = await req.json();
     const data = reportEmailSchema.parse(body);
     const guardianLink = student.guardians.find(
-      (guardian) => guardian.guardianUserId === data.guardianUserId
+      (guardian) => guardian.guardianUserId === data.guardianUserId,
     );
     if (!guardianLink) {
-      return NextResponse.json(
-        { error: "Encarregado não associado a este aluno" },
-        { status: 404 }
-      );
+      return notFound("Encarregado não associado a este aluno");
     }
 
-    await auditLog({ userId: session.user.id, action: "send_report", targetId: id }).catch(console.error);
+    await auditLog({
+      userId: session.user.id,
+      action: "send_report",
+      targetId: id,
+    }).catch(console.error);
 
-    // Save report metadata
     const report = await prisma.report.create({
       data: {
         studentId: id,
@@ -120,12 +141,11 @@ export async function POST(
       },
     });
 
-    // Send email (non-blocking)
     let emailSent = false;
     try {
       await sendMail({
         to: guardianLink.guardian.email,
-        subject: `${data.title} — ${student.name}`,
+        subject: `${data.title} - ${student.name}`,
         html: buildReportHtml({
           studentName: student.name,
           guardianName: guardianLink.guardian.name,
@@ -150,18 +170,20 @@ export async function POST(
       });
       emailSent = true;
     } catch {
-      // Email failure is non-critical
+      emailSent = false;
     }
 
-    return NextResponse.json(
-      { report, emailSent },
-      { status: emailSent ? 201 : 207 }
-    );
+    if (emailSent) {
+      return created({ report, emailSent });
+    }
+
+    return ok({ report, emailSent }, 207);
   } catch (error: unknown) {
     if (error instanceof z.ZodError) {
-      return NextResponse.json({ error: error.issues }, { status: 400 });
+      return validationError(error.issues);
     }
+
     console.error("POST report email error:", error);
-    return NextResponse.json({ error: "Erro interno" }, { status: 500 });
+    return serverError();
   }
 }

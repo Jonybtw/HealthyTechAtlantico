@@ -1,22 +1,30 @@
-import { type NextRequest, NextResponse } from "next/server";
+import { type NextRequest } from "next/server";
 import { z } from "zod";
-import { prisma } from "@/lib/prisma";
+import { type Prisma, type Role } from "@prisma/client";
 import { auth } from "@/lib/auth";
+import {
+  created,
+  forbidden,
+  ok,
+  serverError,
+  unauthorized,
+  validationError,
+} from "@/lib/api-response";
+import { prisma } from "@/lib/prisma";
 import { canRole, isStaffRole, PERMISSIONS } from "@/lib/rbac";
 import { createStudentSchema } from "@/lib/validations";
-import { type Prisma, type Role } from "@prisma/client";
 
-// GET /api/students — list students (paginated, role-scoped)
+// GET /api/students - list students (paginated, role-scoped)
 export async function GET(req: NextRequest) {
   try {
     const session = await auth();
     if (!session?.user?.id) {
-      return NextResponse.json({ error: "Não autenticado" }, { status: 401 });
+      return unauthorized();
     }
 
     const role = session.user.role as Role;
     if (!canRole(role, PERMISSIONS.LIST_STUDENTS)) {
-      return NextResponse.json({ error: "Sem permissão" }, { status: 403 });
+      return forbidden();
     }
 
     const { searchParams } = new URL(req.url);
@@ -36,7 +44,6 @@ export async function GET(req: NextRequest) {
         some: { guardianUserId: session.user.id },
       };
     }
-    // PROFESSOR and PSICOLOGO see all students
 
     if (search) {
       where.name = { contains: search, mode: "insensitive" };
@@ -68,7 +75,7 @@ export async function GET(req: NextRequest) {
       prisma.student.count({ where }),
     ]);
 
-    return NextResponse.json({
+    return ok({
       students,
       total,
       page,
@@ -76,21 +83,21 @@ export async function GET(req: NextRequest) {
     });
   } catch (error) {
     console.error("GET /api/students error:", error);
-    return NextResponse.json({ error: "Erro interno" }, { status: 500 });
+    return serverError();
   }
 }
 
-// POST /api/students — create student
+// POST /api/students - create student
 export async function POST(req: NextRequest) {
   try {
     const session = await auth();
     if (!session?.user?.id) {
-      return NextResponse.json({ error: "Não autenticado" }, { status: 401 });
+      return unauthorized();
     }
 
     const role = session.user.role as Role;
     if (!canRole(role, PERMISSIONS.CREATE_STUDENT) || !isStaffRole(role)) {
-      return NextResponse.json({ error: "Sem permissão" }, { status: 403 });
+      return forbidden();
     }
 
     const body = await req.json();
@@ -108,12 +115,13 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    return NextResponse.json(student, { status: 201 });
+    return created(student);
   } catch (error: unknown) {
     if (error instanceof z.ZodError) {
-      return NextResponse.json({ error: error.issues }, { status: 400 });
+      return validationError(error.issues);
     }
+
     console.error("POST /api/students error:", error);
-    return NextResponse.json({ error: "Erro interno" }, { status: 500 });
+    return serverError();
   }
 }

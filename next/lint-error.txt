@@ -1,0 +1,15 @@
+﻿
+> next@0.1.0 lint
+> npm run ui:guard && eslint
+
+
+> next@0.1.0 ui:guard
+> node scripts/check-ui-consistency.mjs
+
+UI consistency check passed.
+
+C:\Users\Ryzen\HealthyTechAtlantico\next\src\app\(app)\questionarios\page.tsx
+  297:11  error  Parsing error: JSX element 'PageSection' has no corresponding closing tag
+
+Ô£û 1 problem (1 error, 0 warnings)
+

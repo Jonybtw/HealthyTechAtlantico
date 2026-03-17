@@ -1,22 +1,35 @@
-import { type NextRequest, NextResponse } from "next/server";
+import { type NextRequest } from "next/server";
 import { z } from "zod";
-import { prisma } from "@/lib/prisma";
-import { auth } from "@/lib/auth";
-import { PERMISSIONS } from "@/lib/rbac";
-import { testsSchema } from "@/lib/validations";
-import { auditLog } from "@/lib/audit";
 import type { Role } from "@prisma/client";
+import { auth } from "@/lib/auth";
+import {
+  created,
+  err,
+  forbidden,
+  ok,
+  serverError,
+  unauthorized,
+  validationError,
+} from "@/lib/api-response";
+import { auditLog } from "@/lib/audit";
+import { prisma } from "@/lib/prisma";
+import { PERMISSIONS } from "@/lib/rbac";
 import { getStudentAccessContext } from "@/lib/student-access";
+import { testsSchema } from "@/lib/validations";
 
 // GET /api/students/[id]/tests
 export async function GET(
-  _req: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     const session = await auth();
     if (!session?.user?.id) {
-      return NextResponse.json({ error: "Não autenticado" }, { status: 401 });
+      return unauthorized();
+    }
+
+    if (!session.user.consentRgpd) {
+      return forbidden("Consentimento RGPD necessário");
     }
 
     const { id } = await params;
@@ -24,16 +37,19 @@ export async function GET(
       id,
       session.user.id,
       session.user.role as Role,
-      PERMISSIONS.READ_TESTS
+      PERMISSIONS.READ_TESTS,
     );
     if (!access.ok) {
-      return NextResponse.json({ error: access.error }, { status: access.status });
+      return err(access.error, access.status);
     }
 
-    await auditLog({ userId: session.user.id, action: "read_tests", targetId: id }).catch(console.error);
+    await auditLog({
+      userId: session.user.id,
+      action: "read_tests",
+      targetId: id,
+    }).catch(console.error);
 
-    const url = new URL(_req.url);
-    const latestOnly = url.searchParams.get("latest") === "true";
+    const latestOnly = req.nextUrl.searchParams.get("latest") === "true";
 
     const tests = await prisma.test.findMany({
       where: { studentId: id },
@@ -42,29 +58,31 @@ export async function GET(
 
     const result = latestOnly
       ? Object.values(
-        tests.reduce<Record<string, typeof tests[number]>>((acc, t) => {
-          if (!acc[t.testId]) acc[t.testId] = t;
-          return acc;
-        }, {})
-      )
+          tests.reduce<Record<string, (typeof tests)[number]>>((acc, test) => {
+            if (!acc[test.testId]) {
+              acc[test.testId] = test;
+            }
+            return acc;
+          }, {}),
+        )
       : tests;
 
-    return NextResponse.json(result);
+    return ok(result);
   } catch (error) {
     console.error("GET tests error:", error);
-    return NextResponse.json({ error: "Erro interno" }, { status: 500 });
+    return serverError();
   }
 }
 
-// POST /api/students/[id]/tests — batch insert
+// POST /api/students/[id]/tests - batch insert
 export async function POST(
   req: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     const session = await auth();
     if (!session?.user?.id) {
-      return NextResponse.json({ error: "Não autenticado" }, { status: 401 });
+      return unauthorized();
     }
 
     const { id } = await params;
@@ -72,39 +90,51 @@ export async function POST(
       id,
       session.user.id,
       session.user.role as Role,
-      PERMISSIONS.RECORD_TESTS
+      PERMISSIONS.RECORD_TESTS,
     );
     if (!access.ok) {
-      return NextResponse.json({ error: access.error }, { status: access.status });
+      return err(access.error, access.status);
     }
 
     if (!session.user.consentRgpd) {
-      return NextResponse.json({ error: "Consentimento RGPD necessário" }, { status: 403 });
+      return forbidden("Consentimento RGPD necessário");
     }
 
     const body = await req.json();
     const data = testsSchema.parse(body);
 
-    await auditLog({ userId: session.user.id, action: "record_tests", targetId: id }).catch(console.error);
+    await auditLog({
+      userId: session.user.id,
+      action: "record_tests",
+      targetId: id,
+    }).catch(console.error);
 
-    const created = await prisma.test.createMany({
-      data: data.tests.map((t) => ({
-        studentId: id,
-        sessionId: data.sessionId ?? null,
-        testId: t.testId,
-        valueNum: t.valueNum ?? null,
-        valueText: t.valueText,
-        unit: t.unit,
-        zone: t.zone,
-      })),
+    const createdTests = await prisma.$transaction(
+      data.tests.map((test) =>
+        prisma.test.create({
+          data: {
+            studentId: id,
+            sessionId: data.sessionId ?? null,
+            testId: test.testId,
+            valueNum: test.valueNum ?? null,
+            valueText: test.valueText,
+            unit: test.unit,
+            zone: test.zone,
+          },
+        }),
+      ),
+    );
+
+    return created({
+      count: createdTests.length,
+      tests: createdTests,
     });
-
-    return NextResponse.json({ count: created.count }, { status: 201 });
   } catch (error: unknown) {
     if (error instanceof z.ZodError) {
-      return NextResponse.json({ error: error.issues }, { status: 400 });
+      return validationError(error.issues);
     }
+
     console.error("POST tests error:", error);
-    return NextResponse.json({ error: "Erro interno" }, { status: 500 });
+    return serverError();
   }
 }

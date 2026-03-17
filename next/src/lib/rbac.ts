@@ -87,7 +87,7 @@ export function getRolePermissions(role: Role): Permission[] {
 }
 
 export function isKnownRole(role: string): role is Role {
-  return role in ROLE_PERMISSIONS;
+  return Object.prototype.hasOwnProperty.call(ROLE_PERMISSIONS, role);
 }
 
 export function isAdminRole(role: Role): boolean {

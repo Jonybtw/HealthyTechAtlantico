@@ -1,39 +1,25 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { Sex } from "@prisma/client";
-
-// ── Fetcher ──────────────────────────────────────────────────────
+import { readApiResponse } from "@/lib/api-client";
 
 async function fetchJson<T>(url: string): Promise<T> {
-  const res = await fetch(url);
-  if (!res.ok) {
-    const body = await res.json().catch(() => ({}));
-    throw new Error(
-      (body as { error?: string }).error ?? `Request failed: ${res.status}`
-    );
-  }
-  return res.json() as Promise<T>;
+  const response = await fetch(url);
+  return readApiResponse<T>(response);
 }
 
 async function mutateJson<T>(
   url: string,
   method: "POST" | "PUT" | "PATCH" | "DELETE",
-  body?: unknown
+  body?: unknown,
 ): Promise<T> {
-  const res = await fetch(url, {
+  const response = await fetch(url, {
     method,
     headers: body ? { "Content-Type": "application/json" } : undefined,
     body: body ? JSON.stringify(body) : undefined,
   });
-  if (!res.ok) {
-    const data = await res.json().catch(() => ({}));
-    throw new Error(
-      (data as { error?: string }).error ?? `Request failed: ${res.status}`
-    );
-  }
-  return res.json() as Promise<T>;
-}
 
-// ── Types ────────────────────────────────────────────────────────
+  return readApiResponse<T>(response);
+}
 
 export interface StudentListItem {
   id: string;
@@ -54,16 +40,22 @@ export interface StaffUser {
 }
 
 export interface DashboardStats {
-  totalStudents: number;
-  totalBiometrics: number;
-  totalTests: number;
-  totalQuestionnaires: number;
-  totalSosAlerts: number;
-  pendingSosAlerts: number;
+  studentCount?: number;
+  openSos?: number;
+  totalBiometrics?: number;
+  totalTests?: number;
+  biometricCount?: number;
+  testCount?: number;
+  questionnaireCount?: number;
+  linkedStudents?: number;
   [key: string]: unknown;
 }
 
-// ── Query Keys ───────────────────────────────────────────────────
+export interface SosAlertSummary {
+  id: string;
+  resolved: boolean;
+  createdAt: string;
+}
 
 export const queryKeys = {
   students: (limit?: number) => ["students", { limit }] as const,
@@ -76,18 +68,14 @@ export const queryKeys = {
   classes: () => ["classes"] as const,
 } as const;
 
-// ── Hooks ────────────────────────────────────────────────────────
-
 export function useStudents(limit = 100) {
   return useQuery({
     queryKey: queryKeys.students(limit),
-    queryFn: async () => {
-      const body = await fetchJson<{ students: StudentListItem[] }>(
-        `/api/students?limit=${limit}`
-      );
-      return body.students;
-    },
-    staleTime: 2 * 60 * 1000, // 2 min
+    queryFn: async () =>
+      (await fetchJson<{ students: StudentListItem[] }>(
+        `/api/students?limit=${limit}`,
+      )).students,
+    staleTime: 2 * 60 * 1000,
   });
 }
 
@@ -101,15 +89,19 @@ export function useClasses(options?: { enabled?: boolean }) {
   return useQuery({
     queryKey: queryKeys.classes(),
     queryFn: async () => {
-      const body = await fetchJson<
+      const years = await fetchJson<
         { label: string; classes: { id: string; name: string }[] }[]
       >("/api/classes");
-      return body.flatMap((ay) =>
-        ay.classes.map((c) => ({ id: c.id, name: c.name, year: ay.label }))
+      return years.flatMap((year) =>
+        year.classes.map((schoolClass) => ({
+          id: schoolClass.id,
+          name: schoolClass.name,
+          year: year.label,
+        })),
       ) satisfies ClassOption[];
     },
     enabled: options?.enabled,
-    staleTime: 5 * 60 * 1000, // 5 min
+    staleTime: 5 * 60 * 1000,
   });
 }
 
@@ -126,14 +118,14 @@ export function useStaff() {
   return useQuery({
     queryKey: queryKeys.staff(),
     queryFn: () => fetchJson<StaffUser[]>("/api/admin/staff"),
-    staleTime: 5 * 60 * 1000, // 5 min
+    staleTime: 5 * 60 * 1000,
   });
 }
 
 export function useDashboard() {
   return useQuery({
     queryKey: queryKeys.dashboard(),
-    queryFn: () => fetchJson<DashboardStats>("/api/stats/dashboard"),
+    queryFn: () => fetchJson<DashboardStats>("/api/stats/summary"),
     staleTime: 30 * 1000,
   });
 }
@@ -141,69 +133,57 @@ export function useDashboard() {
 export function useDispensas(studentId: string | null) {
   return useQuery({
     queryKey: queryKeys.dispensas(studentId ?? ""),
-    staleTime: 60 * 1000, // 1 min
-    queryFn: async () => {
-      const body = await fetchJson<
+    queryFn: () =>
+      fetchJson<
         { id: string; reason: string; startDate: string; endDate: string; createdAt: string }[]
-        | { dispensas: { id: string; reason: string; startDate: string; endDate: string; createdAt: string }[] }
-      >(`/api/students/${studentId}/dispensas`);
-      return Array.isArray(body) ? body : body.dispensas ?? [];
-    },
+      >(`/api/students/${studentId}/dispensas`),
     enabled: !!studentId,
+    staleTime: 60 * 1000,
   });
 }
 
 export function useSosAlerts(options?: { enabled?: boolean; refetchInterval?: number }) {
   return useQuery({
     queryKey: queryKeys.sosAlerts(),
-    queryFn: async () => {
-      const body = await fetchJson<unknown>("/api/stats/sos-alerts");
-      if (Array.isArray(body)) return body;
-      if (body && typeof body === "object" && "alerts" in body && Array.isArray((body as { alerts?: unknown }).alerts)) {
-        return (body as { alerts: unknown[] }).alerts;
-      }
-      return [];
-    },
+    queryFn: () => fetchJson<SosAlertSummary[]>("/api/stats/sos-alerts"),
     enabled: options?.enabled,
     refetchInterval: options?.refetchInterval,
-    staleTime: 30 * 1000, // 30 s
+    staleTime: 30 * 1000,
   });
 }
 
-// ── Mutations ────────────────────────────────────────────────────
-
 export function useDeleteStaff() {
-  const qc = useQueryClient();
+  const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (userId: string) =>
-      mutateJson("/api/admin/staff", "DELETE", { userId }),
+      mutateJson<void>("/api/admin/staff", "DELETE", { userId }),
     onSuccess: () => {
-      void qc.invalidateQueries({ queryKey: queryKeys.staff() });
+      void queryClient.invalidateQueries({ queryKey: queryKeys.staff() });
     },
   });
 }
 
 export function useCreateDispensa(studentId: string | null) {
-  const qc = useQueryClient();
+  const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (data: { reason: string; startDate: string; endDate?: string }) =>
       mutateJson(`/api/students/${studentId}/dispensas`, "POST", data),
     onSuccess: () => {
       if (studentId) {
-        void qc.invalidateQueries({ queryKey: queryKeys.dispensas(studentId) });
+        void queryClient.invalidateQueries({ queryKey: queryKeys.dispensas(studentId) });
       }
     },
   });
 }
 
 export function useDeleteDispensa(studentId: string | null) {
-  const qc = useQueryClient();
+  const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (dispensaId: string) =>
-      mutateJson(`/api/students/${studentId}/dispensas`, "DELETE", { dispensaId }),
+      mutateJson<void>(`/api/students/${studentId}/dispensas`, "DELETE", { dispensaId }),
     onSuccess: () => {
       if (studentId) {
-        void qc.invalidateQueries({ queryKey: queryKeys.dispensas(studentId) });
+        void queryClient.invalidateQueries({ queryKey: queryKeys.dispensas(studentId) });
       }
     },
   });

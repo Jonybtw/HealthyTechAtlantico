@@ -1,21 +1,33 @@
-import { type NextRequest, NextResponse } from "next/server";
+import { type NextRequest } from "next/server";
 import { hash } from "bcryptjs";
 import { z } from "zod";
-import { prisma } from "@/lib/prisma";
-import { auth } from "@/lib/auth";
-import { createStaffSchema } from "@/lib/validations";
-import { canRole, PERMISSIONS } from "@/lib/rbac";
 import type { Role } from "@prisma/client";
+import { auth } from "@/lib/auth";
+import {
+  badRequest,
+  conflict,
+  created,
+  forbidden,
+  noContent,
+  ok,
+  serverError,
+  unauthorized,
+  validationError,
+} from "@/lib/api-response";
+import { prisma } from "@/lib/prisma";
+import { canRole, PERMISSIONS } from "@/lib/rbac";
+import { createStaffSchema } from "@/lib/validations";
 
-// GET /api/admin/staff — list all PROFESSOR and PSICOLOGO accounts
+// GET /api/admin/staff - list all PROFESSOR and PSICOLOGO accounts
 export async function GET() {
   try {
     const session = await auth();
     if (!session?.user?.id) {
-      return NextResponse.json({ error: "Não autenticado" }, { status: 401 });
+      return unauthorized();
     }
+
     if (!canRole(session.user.role as Role, PERMISSIONS.MANAGE_STAFF)) {
-      return NextResponse.json({ error: "Sem permissão" }, { status: 403 });
+      return forbidden();
     }
 
     const staff = await prisma.user.findMany({
@@ -24,22 +36,23 @@ export async function GET() {
       orderBy: { createdAt: "desc" },
     });
 
-    return NextResponse.json(staff);
+    return ok(staff);
   } catch (error) {
     console.error("GET /api/admin/staff error:", error);
-    return NextResponse.json({ error: "Erro interno" }, { status: 500 });
+    return serverError();
   }
 }
 
-// POST /api/admin/staff — create a new PROFESSOR or PSICOLOGO account (session-auth)
+// POST /api/admin/staff - create a new PROFESSOR or PSICOLOGO account
 export async function POST(req: NextRequest) {
   try {
     const session = await auth();
     if (!session?.user?.id) {
-      return NextResponse.json({ error: "Não autenticado" }, { status: 401 });
+      return unauthorized();
     }
+
     if (!canRole(session.user.role as Role, PERMISSIONS.MANAGE_STAFF)) {
-      return NextResponse.json({ error: "Sem permissão" }, { status: 403 });
+      return forbidden();
     }
 
     const body = await req.json();
@@ -47,7 +60,7 @@ export async function POST(req: NextRequest) {
 
     const existing = await prisma.user.findUnique({ where: { email: data.email } });
     if (existing) {
-      return NextResponse.json({ error: "Email já registado" }, { status: 409 });
+      return conflict("Email já registado");
     }
 
     const passwordHash = await hash(data.password, 12);
@@ -63,39 +76,42 @@ export async function POST(req: NextRequest) {
       select: { id: true, email: true, role: true, name: true, createdAt: true },
     });
 
-    return NextResponse.json(user, { status: 201 });
+    return created(user);
   } catch (error: unknown) {
     if (error instanceof z.ZodError) {
-      return NextResponse.json({ error: error.issues }, { status: 400 });
+      return validationError(error.issues);
     }
+
     console.error("POST /api/admin/staff error:", error);
-    return NextResponse.json({ error: "Erro interno" }, { status: 500 });
+    return serverError();
   }
 }
 
-// DELETE /api/admin/staff — remove a staff account (body: { userId })
+// DELETE /api/admin/staff - remove a staff account (body: { userId })
 export async function DELETE(req: NextRequest) {
   try {
     const session = await auth();
     if (!session?.user?.id) {
-      return NextResponse.json({ error: "Não autenticado" }, { status: 401 });
+      return unauthorized();
     }
+
     if (!canRole(session.user.role as Role, PERMISSIONS.MANAGE_STAFF)) {
-      return NextResponse.json({ error: "Sem permissão" }, { status: 403 });
+      return forbidden();
     }
 
     const { userId } = await req.json();
     if (!userId) {
-      return NextResponse.json({ error: "userId obrigatório" }, { status: 400 });
+      return badRequest("userId obrigatório");
     }
+
     if (userId === session.user.id) {
-      return NextResponse.json({ error: "Não pode remover a sua própria conta." }, { status: 400 });
+      return badRequest("Não pode remover a sua própria conta.");
     }
 
     await prisma.user.delete({ where: { id: userId } });
-    return new NextResponse(null, { status: 204 });
+    return noContent();
   } catch (error) {
     console.error("DELETE /api/admin/staff error:", error);
-    return NextResponse.json({ error: "Erro interno" }, { status: 500 });
+    return serverError();
   }
 }

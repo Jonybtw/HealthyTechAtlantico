@@ -17,12 +17,12 @@ import {
   Send,
   Link2,
 } from "lucide-react";
-import { PageHeader } from "@/components/ui/page-header";
+import { PageScaffold } from "@/components/ui/page-scaffold";
 import { StudentPicker } from "@/components/ui/student-picker";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
 import { usePageTitle } from "@/hooks/use-page-title";
-import { PageTransition } from "@/components/ui/motion";
+import { readApiResponse } from "@/lib/api-client";
 import { Skeleton } from "@/components/ui/skeleton";
 
 type BiometricEntry = {
@@ -79,16 +79,18 @@ export default function RelatorioPage() {
 
     const res = await fetch("/api/students?limit=500");
     if (res.ok) {
-      const body = await res.json();
-      setStudents(
-        body.students.map((s: { id: string; name: string; className?: string | null }) => ({
-          id: s.id,
-          name: s.name,
-          className: s.className ?? null,
-        }))
-      );
-      if (role === "ALUNO" && body.students.length === 1) {
-        setStudentId(body.students[0].id);
+      const body = await readApiResponse<{
+        students: { id: string; name: string; className?: string | null }[];
+      }>(res);
+      const nextStudents = body.students.map((student) => ({
+        id: student.id,
+        name: student.name,
+        className: student.className ?? null,
+      }));
+
+      setStudents(nextStudents);
+      if (role === "ALUNO" && nextStudents.length === 1) {
+        setStudentId(nextStudents[0].id);
       }
     }
   }, [canViewReports, role]);
@@ -108,16 +110,16 @@ export default function RelatorioPage() {
     }
     setLoadingPreview(true);
     Promise.all([
-      fetch(`/api/students/${studentId}/biometrics`).then((r) =>
-        r.ok ? r.json() : []
-      ),
-      fetch(`/api/students/${studentId}/tests?latest=true`).then((r) =>
-        r.ok ? r.json() : []
-      ),
+      fetch(`/api/students/${studentId}/biometrics`)
+        .then((response) => readApiResponse<BiometricEntry[]>(response))
+        .catch(() => []),
+      fetch(`/api/students/${studentId}/tests?latest=true`)
+        .then((response) => readApiResponse<TestEntry[]>(response))
+        .catch(() => []),
     ])
       .then(([bio, tests]) => {
-        setBioData(Array.isArray(bio) ? bio : []);
-        setTestData(Array.isArray(tests) ? tests : []);
+        setBioData(bio);
+        setTestData(tests);
       })
       .finally(() => setLoadingPreview(false));
   }, [canViewReports, studentId]);
@@ -132,13 +134,11 @@ export default function RelatorioPage() {
     let active = true;
 
     fetch(`/api/students/${studentId}/guardians`)
-      .then(async (response) => {
-        if (!response.ok) return [];
-        return (await response.json()) as GuardianOption[];
-      })
+      .then((response) => readApiResponse<GuardianOption[]>(response))
+      .catch(() => [])
       .then((data) => {
         if (!active) return;
-        setGuardians(Array.isArray(data) ? data : []);
+        setGuardians(data);
         setGuardianUserId((current) =>
           current && data.some((guardian) => guardian.id === current)
             ? current
@@ -167,11 +167,11 @@ export default function RelatorioPage() {
     setGeneratingPdf(true);
     try {
       const [bio, tests] = await Promise.all([
-        fetch(`/api/students/${studentId}/biometrics`).then((r) =>
-          r.ok ? r.json() : []
+        fetch(`/api/students/${studentId}/biometrics`).then((response) =>
+          readApiResponse<BiometricEntry[]>(response)
         ),
-        fetch(`/api/students/${studentId}/tests?latest=true`).then((r) =>
-          r.ok ? r.json() : []
+        fetch(`/api/students/${studentId}/tests?latest=true`).then((response) =>
+          readApiResponse<TestEntry[]>(response)
         ),
       ]);
 
@@ -187,7 +187,6 @@ export default function RelatorioPage() {
       const navy600 = [54, 85, 109] as [number, number, number];
       const navy100 = [221, 231, 240] as [number, number, number];
       const gold400 = [216, 173, 52] as [number, number, number];
-      const gold600 = [147, 110, 15] as [number, number, number];
       const white   = [255, 255, 255] as [number, number, number];
       const green   = [16, 185, 129] as [number, number, number];
       const red     = [239, 68, 68]  as [number, number, number];
@@ -199,6 +198,23 @@ export default function RelatorioPage() {
       const fill  = (c: [number,number,number]) => doc.setFillColor(...c);
       const stroke= (c: [number,number,number]) => doc.setDrawColor(...c);
       const text  = (c: [number,number,number]) => doc.setTextColor(...c);
+      const addContainedImage = (
+        image: HTMLImageElement,
+        x: number,
+        y: number,
+        maxWidth: number,
+        maxHeight: number
+      ) => {
+        const sourceWidth = image.naturalWidth || image.width || maxWidth;
+        const sourceHeight = image.naturalHeight || image.height || maxHeight;
+        const scale = Math.min(maxWidth / sourceWidth, maxHeight / sourceHeight);
+        const width = sourceWidth * scale;
+        const height = sourceHeight * scale;
+        const offsetX = x + (maxWidth - width) / 2;
+        const offsetY = y + (maxHeight - height) / 2;
+
+        doc.addImage(image, "PNG", offsetX, offsetY, width, height, undefined, "FAST");
+      };
 
       // ── Header ──────────────────────────────────────────────────
       fill(navy950); doc.rect(0, 0, W, 42, "F");
@@ -208,11 +224,15 @@ export default function RelatorioPage() {
       fill(gold400); doc.rect(0, 42, W, 2.5, "F");
 
       // Logo
+      const logoCard = { x: 14, y: 8, width: 18, height: 18 };
+      fill(white); doc.roundedRect(logoCard.x, logoCard.y, logoCard.width, logoCard.height, 4, 4, "F");
+      fill(gray50); doc.roundedRect(logoCard.x + 0.8, logoCard.y + 0.8, logoCard.width - 1.6, logoCard.height - 1.6, 3.2, 3.2, "F");
       try {
         const logoImg = new window.Image();
+        logoImg.decoding = "async";
         logoImg.src = "/logo.png";
         await new Promise((res, rej) => { logoImg.onload = res; logoImg.onerror = rej; });
-        doc.addImage(logoImg, "PNG", 14, 9, 36, 9.26);
+        addContainedImage(logoImg, logoCard.x + 2, logoCard.y + 2, logoCard.width - 4, logoCard.height - 4);
       } catch { /* skip */ }
 
       // Title + date
@@ -420,14 +440,10 @@ export default function RelatorioPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ guardianUserId }),
       });
-      if (!res.ok) {
-        const body = await res.json().catch(() => ({}));
-        toast.error(body.error ?? t("emailSendError"));
-        return;
-      }
+      await readApiResponse(res);
       toast.success(t("emailSuccess"));
-    } catch {
-      toast.error(t("connectionError"));
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : t("connectionError"));
     } finally {
       setSendingEmail(false);
     }
@@ -455,20 +471,24 @@ export default function RelatorioPage() {
 
   if (role === "ALUNO" && students.length === 0) {
     return (
-      <div className="flex flex-col gap-5 max-w-4xl">
-        <PageHeader title={t("title")} description={t("description")} />
+      <PageScaffold
+        className="max-w-4xl"
+        headerProps={{ title: t("title"), description: t("description") }}
+      >
         <EmptyState
           icon={Link2}
           title={t("unlinkedTitle")}
           description={t("unlinkedDescription")}
         />
-      </div>
+      </PageScaffold>
     );
   }
 
   return (
-    <PageTransition className="flex flex-col gap-5 max-w-4xl">
-      <PageHeader title={t("title")} description={t("description")} />
+    <PageScaffold
+      className="max-w-4xl"
+      headerProps={{ title: t("title"), description: t("description") }}
+    >
 
       {/* Document preview card */}
       <div className="bg-card rounded-2xl border border-border shadow-card">
@@ -618,7 +638,7 @@ export default function RelatorioPage() {
             </div>
           </div>
         ) : (
-          <div className="px-6 py-10 flex flex-col items-center gap-2 text-center">
+          <div className="px-6 py-8 flex flex-col items-center gap-2 text-center">
             <FileText className="size-8 text-muted-foreground/40" />
             <p className="text-sm text-muted-foreground">
               {role !== "ALUNO"
@@ -707,6 +727,6 @@ export default function RelatorioPage() {
           </div>
         )}
       </div>
-    </PageTransition>
+    </PageScaffold>
   );
 }

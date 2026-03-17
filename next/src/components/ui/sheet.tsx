@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import * as DialogPrimitive from "@radix-ui/react-dialog";
 import { DialogTitle } from "@radix-ui/react-dialog";
 import { X } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -14,35 +15,8 @@ import {
 // Re-export Dialog primitives with Sheet naming.
 
 const Sheet = Dialog;
-const SheetTrigger = React.forwardRef<
-  HTMLButtonElement,
-  React.ComponentPropsWithoutRef<typeof import("@radix-ui/react-dialog").Trigger>
->((props, ref) => {
-  const Trigger = React.lazy(() =>
-    import("@radix-ui/react-dialog").then((mod) => ({ default: mod.Trigger }))
-  );
-  return (
-    <React.Suspense fallback={null}>
-      <Trigger ref={ref} {...props} />
-    </React.Suspense>
-  );
-});
-SheetTrigger.displayName = "SheetTrigger";
-
-const SheetClose = React.forwardRef<
-  HTMLButtonElement,
-  React.ComponentPropsWithoutRef<typeof import("@radix-ui/react-dialog").Close>
->((props, ref) => {
-  const Close = React.lazy(() =>
-    import("@radix-ui/react-dialog").then((mod) => ({ default: mod.Close }))
-  );
-  return (
-    <React.Suspense fallback={null}>
-      <Close ref={ref} {...props} />
-    </React.Suspense>
-  );
-});
-SheetClose.displayName = "SheetClose";
+const SheetTrigger = DialogPrimitive.Trigger;
+const SheetClose = DialogPrimitive.Close;
 
 interface SheetContentProps
   extends React.ComponentPropsWithoutRef<"div"> {
@@ -51,15 +25,13 @@ interface SheetContentProps
 }
 
 const sideVariants = {
-  top: "inset-x-0 top-0 border-b rounded-b-[28px] data-[state=closed]:-translate-y-full data-[state=open]:translate-y-0",
+  top: "inset-x-0 top-0 border-b rounded-b-[20px] data-[state=closed]:-translate-y-full data-[state=open]:translate-y-0",
   bottom:
-    "inset-x-0 bottom-0 border-t rounded-t-[28px] data-[state=closed]:translate-y-full data-[state=open]:translate-y-0",
-  left: "inset-y-0 left-0 h-full w-3/4 max-w-sm border-r rounded-r-[28px] data-[state=closed]:-translate-x-full data-[state=open]:translate-x-0",
+    "inset-x-0 bottom-0 border-t rounded-t-[20px] data-[state=closed]:translate-y-full data-[state=open]:translate-y-0",
+  left: "inset-y-0 left-0 h-full w-3/4 max-w-sm border-r rounded-r-[20px] data-[state=closed]:-translate-x-full data-[state=open]:translate-x-0",
   right:
-    "inset-y-0 right-0 h-full w-3/4 max-w-sm border-l rounded-l-[28px] data-[state=closed]:translate-x-full data-[state=open]:translate-x-0",
+    "inset-y-0 right-0 h-full w-3/4 max-w-sm border-l rounded-l-[20px] data-[state=closed]:translate-x-full data-[state=open]:translate-x-0",
 };
-
-import * as DialogPrimitive from "@radix-ui/react-dialog";
 
 const SheetContent = React.forwardRef<HTMLDivElement, SheetContentProps>(
   ({ side = "right", className, children, ...props }, ref) => (
@@ -69,7 +41,7 @@ const SheetContent = React.forwardRef<HTMLDivElement, SheetContentProps>(
         <div
           ref={ref}
           className={cn(
-            "fixed z-50 gap-4 bg-card/95 p-6 shadow-float backdrop-blur-xl transition-transform duration-300 ease-in-out",
+            "fixed z-50 gap-4 bg-card/95 p-4 shadow-float backdrop-blur-xl transition-transform duration-300 ease-in-out",
             sideVariants[side],
             className
           )}

@@ -1,10 +1,11 @@
-﻿"use client";
+"use client";
 
 import { useState, useEffect, useCallback } from "react";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { ClipboardList, Clock, Link2 } from "lucide-react";
-import { PageHeader } from "@/components/ui/page-header";
+import { PageScaffold } from "@/components/ui/page-scaffold";
+import { PageSection } from "@/components/ui/page-section";
 import { StudentPicker } from "@/components/ui/student-picker";
 import { PillSelect } from "@/components/ui/pill-select";
 import { RangeSlider } from "@/components/ui/range-slider";
@@ -13,7 +14,7 @@ import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
 import { useUser } from "@/components/user-context";
 import { usePageTitle } from "@/hooks/use-page-title";
-import { PageTransition } from "@/components/ui/motion";
+import { readApiResponse } from "@/lib/api-client";
 
 const MAX_DEFERRALS = 3;
 const STRESS_COLORS = ["bg-green-500", "bg-lime-500", "bg-yellow-500", "bg-orange-500", "bg-red-500"];
@@ -38,6 +39,9 @@ const INITIAL_QUESTIONS = [
   { key: "eatsFruitsVegetables", labelKey: "eatsFruitsVegetablesLabel", type: "yesno" as const },
   { key: "drinksWaterEnough", labelKey: "drinksWaterEnoughLabel", type: "yesno" as const },
 ];
+
+type StudentOption = { id: string; name: string; className?: string | null };
+type QuestionnaireSummary = { deferredCount: number };
 
 export default function QuestionariosPage() {
   const t = useTranslations("questionarios");
@@ -75,23 +79,33 @@ export default function QuestionariosPage() {
   });
 
   const loadStudents = useCallback(async () => {
-    const res = await fetch("/api/students?limit=500");
-    if (res.ok) {
-      const body = await res.json();
-      setStudents(body.students.map((s: { id: string; name: string; className?: string | null }) => ({ id: s.id, name: s.name, className: s.className ?? null })));
-      if (role === "ALUNO" && body.students.length === 1) {
-        setStudentId(body.students[0].id);
+    try {
+      const res = await fetch("/api/students?limit=500");
+      const body = await readApiResponse<{ students: StudentOption[] }>(res);
+      const nextStudents = body.students.map((student) => ({
+        id: student.id,
+        name: student.name,
+        className: student.className ?? null,
+      }));
+
+      setStudents(nextStudents);
+      if (role === "ALUNO" && nextStudents.length === 1) {
+        setStudentId(nextStudents[0].id);
       }
+    } catch {
+      toast.error(t("connectionError"));
     }
-  }, [role]);
+  }, [role, t]);
 
   // Load latest questionnaire to get deferredCount
   const loadLatestQ = useCallback(async (sid: string) => {
-    const res = await fetch(`/api/students/${sid}/questionnaires?limit=1`);
-    if (res.ok) {
-      const body = await res.json();
-      const latest = Array.isArray(body) ? body[0] : body?.questionnaires?.[0];
+    try {
+      const res = await fetch(`/api/students/${sid}/questionnaires?limit=1`);
+      const questionnaires = await readApiResponse<QuestionnaireSummary[]>(res);
+      const latest = questionnaires[0];
       setDeferredCount(latest?.deferredCount ?? 0);
+    } catch {
+      setDeferredCount(0);
     }
   }, []);
 
@@ -116,14 +130,13 @@ export default function QuestionariosPage() {
 
   if (role === "ALUNO" && students.length === 0) {
     return (
-      <div className="flex flex-col gap-5">
-        <PageHeader title={t("title")} description={t("description")} />
+      <PageScaffold headerProps={{ title: t("title"), description: t("description") }}>
         <EmptyState
           icon={Link2}
           title={t("unlinkedTitle")}
           description={t("unlinkedDescription")}
         />
-      </div>
+      </PageScaffold>
     );
   }
 
@@ -153,11 +166,7 @@ export default function QuestionariosPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
-      if (!res.ok) {
-        const body = await res.json().catch(() => ({}));
-        toast.error(body.error ?? t("submitError"));
-        return;
-      }
+      await readApiResponse(res);
       if (deferred) {
         setDeferredCount((c) => c + 1);
         toast.info(`${t("defer")}. ${deferralsLeft - 1} ${t("deferCount")}.`);
@@ -165,139 +174,139 @@ export default function QuestionariosPage() {
         setDeferredCount(0);
         toast.success(t("success"));
       }
-    } catch {
-      toast.error(t("connectionError"));
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : t("connectionError"));
     } finally {
       setSaving(false);
     }
   };
 
   return (
-    <PageTransition className="flex flex-col gap-5">
-      <PageHeader
-        title={t("title")}
-        description={t("description")}
-      />
+    <PageScaffold headerProps={{ title: t("title"), description: t("description") }}>
 
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_340px] gap-5 items-start">
 
         {/* LEFT — Form */}
-        <form
-          onSubmit={handleSubmit}
-          className="animate-fade-in-up bg-card/85 glass rounded-2xl border border-border/50 shadow-float p-6 flex flex-col gap-5"
-        >
-          {role !== "ALUNO" && (
-            <StudentPicker students={students} value={studentId} onChange={setStudentId} />
-          )}
-
-          <PillSelect
-          options={[
-            { value: "AUTOCONCEITO", label: t("autoconceito") },
-            { value: "AUTOESTIMA", label: t("autoestima") },
-          ]}
-          value={qType}
-          onChange={(v) => setQType(v as "AUTOCONCEITO" | "AUTOESTIMA")}
-        />
-
-        {/* ── Autoconceito questions ── */}
-        {qType === "AUTOCONCEITO" && (
-          <div className="flex flex-col gap-5">
-            {ROUTINE_QUESTIONS.map((q) =>
-              q.slider ? (
-                <RangeSlider
-                  key={q.key}
-                  label={t(q.labelKey)}
-                  min={q.min}
-                  max={q.max}
-                  step={q.step}
-                  value={routineData[q.key as keyof typeof routineData] as number}
-                  onChange={(v) => setRoutineData((d) => ({ ...d, [q.key]: v }))}
-                  labels={q.key === "stressLevel" ? [t("stressNone"), t("stressLow"), t("stressModerate"), t("stressHigh"), t("stressExtreme")] : undefined}
-                  colorStops={q.key === "stressLevel" ? STRESS_COLORS : undefined}
-                />
-              ) : (
-                <NumericStepper
-                  key={q.key}
-                  label={t(q.labelKey)}
-                  min={q.min}
-                  max={q.max}
-                  step={q.step}
-                  value={routineData[q.key as keyof typeof routineData] as number}
-                  onChange={(v) => setRoutineData((d) => ({ ...d, [q.key]: v }))}
-                  unit={q.unitKey ? t(q.unitKey) : undefined}
-                />
-              )
+        <PageSection tone="primary" layout="form" className="animate-fade-in-up">
+          <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+            {role !== "ALUNO" && (
+              <StudentPicker students={students} value={studentId} onChange={setStudentId} />
             )}
-          </div>
-        )}
 
-        {/* \u2500\u2500 Autoestima questions \u2500\u2500 */}
-        {qType === "AUTOESTIMA" && (
-          <div className="flex flex-col gap-4">
-            {INITIAL_QUESTIONS.map((q) =>
-              q.type === "yesno" ? (
-                <div key={q.key} className="flex items-center justify-between">
-                  <label className="text-sm font-medium">{t(q.labelKey)}</label>
-                  <PillSelect
-                    options={[
-                      { value: "true", label: t("yes") },
-                      { value: "false", label: t("no") },
-                    ]}
-                    value={String(initialData[q.key as keyof typeof initialData])}
-                    onChange={(v) =>
-                      setInitialData((d) => ({ ...d, [q.key]: v === "true" }))
-                    }
-                  />
-                </div>
-              ) : (
-                <NumericStepper
-                  key={q.key}
-                  label={t(q.labelKey)}
-                  min={q.min}
-                  max={q.max}
-                  step={q.step}
-                  value={initialData[q.key as keyof typeof initialData] as number}
-                  onChange={(v) => setInitialData((d) => ({ ...d, [q.key]: v }))}
-                  unit={q.unitKey ? t(q.unitKey) : undefined}
-                />
-              )
+            <PillSelect
+              options={[
+                { value: "AUTOCONCEITO", label: t("autoconceito") },
+                { value: "AUTOESTIMA", label: t("autoestima") },
+              ]}
+              value={qType}
+              onChange={(v) => setQType(v as "AUTOCONCEITO" | "AUTOESTIMA")}
+            />
+
+            {/* Autoconceito questions */}
+            {qType === "AUTOCONCEITO" && (
+              <div className="flex flex-col gap-4">
+                {ROUTINE_QUESTIONS.map((q) =>
+                  q.slider ? (
+                    <RangeSlider
+                      key={q.key}
+                      label={t(q.labelKey)}
+                      min={q.min}
+                      max={q.max}
+                      step={q.step}
+                      value={routineData[q.key as keyof typeof routineData] as number}
+                      onChange={(v) => setRoutineData((d) => ({ ...d, [q.key]: v }))}
+                      labels={q.key === "stressLevel" ? [t("stressNone"), t("stressLow"), t("stressModerate"), t("stressHigh"), t("stressExtreme")] : undefined}
+                      colorStops={q.key === "stressLevel" ? STRESS_COLORS : undefined}
+                    />
+                  ) : (
+                    <NumericStepper
+                      key={q.key}
+                      label={t(q.labelKey)}
+                      min={q.min}
+                      max={q.max}
+                      step={q.step}
+                      value={routineData[q.key as keyof typeof routineData] as number}
+                      onChange={(v) => setRoutineData((d) => ({ ...d, [q.key]: v }))}
+                      unit={q.unitKey ? t(q.unitKey) : undefined}
+                    />
+                  )
+                )}
+              </div>
             )}
-          </div>
-        )}
 
-        <div className="flex gap-3 flex-wrap">
-          <Button
-            type="button"
-            variant="secondary"
-            loading={saving}
-            icon={<Clock className="size-4" />}
-            onClick={() => submitQuestionnaire(true)}
-            disabled={deferralsLeft <= 0 || !studentId}
-            className="self-start"
-          >
-            {t("defer")} ({deferralsLeft})
-          </Button>
-          <Button
-            type="submit"
-            loading={saving}
-            icon={<ClipboardList className="size-4" />}
-            className="self-start"
-          >
-            {t("submit")}
-          </Button>
-        </div>
-        </form>
+            {/* Autoestima questions */}
+            {qType === "AUTOESTIMA" && (
+              <div className="flex flex-col gap-3">
+                {INITIAL_QUESTIONS.map((q) =>
+                  q.type === "yesno" ? (
+                    <div key={q.key} className="flex items-center justify-between">
+                      <label className="text-xs font-medium">{t(q.labelKey)}</label>
+                      <PillSelect
+                        options={[
+                          { value: "true", label: t("yes") },
+                          { value: "false", label: t("no") },
+                        ]}
+                        value={String(initialData[q.key as keyof typeof initialData])}
+                        onChange={(v) =>
+                          setInitialData((d) => ({ ...d, [q.key]: v === "true" }))
+                        }
+                      />
+                    </div>
+                  ) : (
+                    <NumericStepper
+                      key={q.key}
+                      label={t(q.labelKey)}
+                      min={q.min}
+                      max={q.max}
+                      step={q.step}
+                      value={initialData[q.key as keyof typeof initialData] as number}
+                      onChange={(v) => setInitialData((d) => ({ ...d, [q.key]: v }))}
+                      unit={q.unitKey ? t(q.unitKey) : undefined}
+                    />
+                  )
+                )}
+              </div>
+            )}
+
+            <div className="flex gap-2 flex-wrap">
+              <Button
+                type="button"
+                variant="secondary"
+                loading={saving}
+                icon={<Clock className="size-4" />}
+                onClick={() => submitQuestionnaire(true)}
+                disabled={deferralsLeft <= 0 || !studentId}
+                className="self-start"
+              >
+                {t("defer")} ({deferralsLeft})
+              </Button>
+              <Button
+                type="submit"
+                loading={saving}
+                icon={<ClipboardList className="size-4" />}
+                className="self-start"
+              >
+                {t("submit")}
+              </Button>
+            </div>
+          </form>
+        </PageSection>
 
         {/* RIGHT — Wellness Summary */}
-        <div className="lg:sticky lg:top-6 flex flex-col gap-4">
-          <div className="bg-card/85 glass rounded-2xl border border-border/50 shadow-float p-6 flex flex-col gap-5">
-            <div className="flex items-center gap-2">
-              <ClipboardList className="size-4 text-navy-600 dark:text-gold-400" />
-              <h3 className="text-sm font-semibold tracking-tight">{t(qType === "AUTOCONCEITO" ? "autoconceito" : "autoestima")}</h3>
-            </div>
+        <div className="lg:sticky lg:top-6 flex flex-col gap-3">
+          <PageSection
+            tone="secondary"
+            layout="list"
+            title={
+              <span className="flex items-center gap-2">
+                <ClipboardList className="size-4 text-navy-600 dark:text-gold-400" />
+                {t(qType === "AUTOCONCEITO" ? "autoconceito" : "autoestima")}
+              </span>
+            }
+          >
 
             {qType === "AUTOCONCEITO" ? (
-              <div className="flex flex-col gap-4">
+              <div className="flex flex-col gap-3">
                 {[
                   { key: "energyLevel", labelKey: "energyLevelLabel", invert: false },
                   { key: "stressLevel", labelKey: "stressLevelLabel", invert: true },
@@ -308,18 +317,18 @@ export default function QuestionariosPage() {
                     ? val >= 7 ? "bg-danger-500" : val >= 4 ? "bg-warning-500" : "bg-success-500"
                     : val >= 7 ? "bg-success-500" : val >= 4 ? "bg-warning-500" : "bg-danger-400";
                   return (
-                    <div key={key} className="flex flex-col gap-1.5">
+                    <div key={key} className="flex flex-col gap-1">
                       <div className="flex justify-between items-center">
                         <span className="text-xs text-muted-foreground">{t(labelKey)}</span>
                         <span className="text-xs font-bold tabular-nums">{val}/10</span>
                       </div>
-                      <div className="h-2 rounded-full bg-muted/50 overflow-hidden">
+                      <div className="h-1.5 rounded-full bg-muted/50 overflow-hidden">
                         <div className={`h-full rounded-full transition-all duration-500 ${color}`} style={{ width: `${val * 10}%` }} />
                       </div>
                     </div>
                   );
                 })}
-                <div className="pt-2 border-t border-border/50 grid grid-cols-2 gap-3">
+                <div className="pt-2 border-t border-border/50 grid grid-cols-2 gap-2.5">
                   {[
                     { key: "sleepHours", labelKey: "sleepHoursLabel", unitKey: "unitHours" },
                     { key: "screenHours", labelKey: "screenHoursLabel", unitKey: "unitHours" },
@@ -328,7 +337,7 @@ export default function QuestionariosPage() {
                   ].map(({ key, labelKey, unitKey }) => (
                     <div key={key} className="flex flex-col gap-0.5">
                       <span className="text-[10px] text-muted-foreground truncate">{t(labelKey)}</span>
-                      <span className="text-base font-bold tabular-nums">
+                      <span className="text-sm font-bold tabular-nums">
                         {routineData[key as keyof typeof routineData]}
                         <span className="text-xs font-normal text-muted-foreground ml-1">{t(unitKey)}</span>
                       </span>
@@ -337,7 +346,7 @@ export default function QuestionariosPage() {
                 </div>
               </div>
             ) : (
-              <div className="flex flex-col gap-2.5">
+              <div className="flex flex-col gap-2">
                 {INITIAL_QUESTIONS.filter((q) => q.type === "yesno").map((q) => {
                   const val = initialData[q.key as keyof typeof initialData] as boolean;
                   return (
@@ -355,7 +364,7 @@ export default function QuestionariosPage() {
                     {[0,1,2,3,4,5,6].map((day) => (
                       <div
                         key={day}
-                        className={`flex-1 h-2 rounded-sm transition-colors ${day < initialData.physicalActivityFreq ? "bg-success-500" : "bg-muted/50"}`}
+                        className={`flex-1 h-1.5 rounded-sm transition-colors ${day < initialData.physicalActivityFreq ? "bg-success-500" : "bg-muted/50"}`}
                       />
                     ))}
                   </div>
@@ -363,17 +372,17 @@ export default function QuestionariosPage() {
                 </div>
               </div>
             )}
-          </div>
+          </PageSection>
 
           {studentId && (
-            <div className="rounded-2xl border border-border/50 bg-card/60 p-4 flex flex-col gap-2">
+            <PageSection tone="utility" layout="list" className="gap-0" contentClassName="gap-2">
               <div className="flex items-center justify-between text-xs">
                 <span className="text-muted-foreground font-medium">{t("deferralsUsed", { used: deferredCount, max: MAX_DEFERRALS })}</span>
                 <span className={deferralsLeft === 0 ? "text-danger-500 font-semibold" : "text-muted-foreground"}>
                   {deferralsLeft === 0 ? t("limitReached") : t("remaining", { count: deferralsLeft })}
                 </span>
               </div>
-              <div className="h-2 rounded-full bg-muted/50 overflow-hidden shadow-inner">
+              <div className="h-1.5 rounded-full bg-muted/50 overflow-hidden shadow-inner">
                 <div
                   className={`h-full rounded-full transition-all duration-1000 ease-out-expo ${
                     deferredCount >= MAX_DEFERRALS ? "bg-danger-500" : deferredCount >= 2 ? "bg-warning-500" : "bg-success-500"
@@ -381,11 +390,11 @@ export default function QuestionariosPage() {
                   style={{ width: `${Math.min((deferredCount / MAX_DEFERRALS) * 100, 100)}%` }}
                 />
               </div>
-            </div>
+            </PageSection>
           )}
         </div>
 
       </div>
-    </PageTransition>
+    </PageScaffold>
   );
 }

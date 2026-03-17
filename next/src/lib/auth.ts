@@ -6,7 +6,6 @@ import type { Role } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import {
   getRolePermissions,
-  isKnownRole,
   type Permission,
 } from "@/lib/rbac";
 
@@ -59,7 +58,6 @@ type AuthUser = {
 
 type SessionUpdate = Partial<{
   name: string | null;
-  role: string;
   consentRgpd: boolean;
   consentShare: boolean;
 }>;
@@ -107,11 +105,6 @@ export function applySessionUpdateToToken(
   token: SessionToken,
   session: SessionUpdate
 ): SessionToken {
-  const role =
-    typeof session.role === "string" && isKnownRole(session.role)
-      ? session.role
-      : token.role;
-
   return {
     ...token,
     ...(session.name !== undefined ? { name: session.name } : {}),
@@ -121,7 +114,6 @@ export function applySessionUpdateToToken(
     ...(session.consentShare !== undefined
       ? { consentShare: session.consentShare }
       : {}),
-    ...(role ? { role, permissions: getRolePermissions(role) } : {}),
   };
 }
 
