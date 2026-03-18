@@ -250,18 +250,16 @@ export function AppShell({ user, children }: AppShellProps) {
           aria-label={t("nav.sidebarNavigation")}
           className="fixed inset-y-0 left-0 z-30 hidden w-72 border-r border-white/10 bg-gradient-to-b from-navy-950 via-navy-900 to-navy-900 lg:flex lg:flex-col"
         >
-          <div className="border-b border-white/10 px-6 py-5">
-            <div className="flex h-[72px] items-center justify-center">
+          <div className="flex items-center justify-center border-b border-white/10 px-6 py-5">
               <Image
                 src="/logo.png"
                 alt={brandName}
                 width={120}
                 height={120}
-                className="max-h-full w-auto object-contain brightness-0 invert"
+                className="w-[96px] h-auto object-contain brightness-0 invert drop-shadow-[0_2px_8px_rgba(255,255,255,0.12)]"
                 priority
               />
             </div>
-          </div>
 
           <ScrollArea className="flex-1 px-3 py-4">
             <nav className="space-y-4">{sidebarNav()}</nav>
@@ -434,17 +432,16 @@ export function AppShell({ user, children }: AppShellProps) {
               side="left"
               className="w-72 border-r-0 bg-gradient-to-b from-navy-950 via-navy-900 to-navy-900 p-0"
             >
-              <div className="border-b border-white/10 px-6 py-5">
-                <div className="flex h-[72px] items-center justify-center">
-                  <Image
-                    src="/logo.png"
-                    alt={brandName}
-                    width={120}
-                    height={120}
-                    className="max-h-full w-auto object-contain brightness-0 invert"
-                  />
-                </div>
-              </div>
+              <div className="flex items-center justify-center border-b border-white/10 px-6 py-5">
+              <Image
+                src="/logo.png"
+                alt={brandName}
+                width={120}
+                height={120}
+                className="w-[96px] h-auto object-contain brightness-0 invert drop-shadow-[0_2px_8px_rgba(255,255,255,0.12)]"
+                
+              />
+            </div>
               <ScrollArea className="h-[calc(100vh-224px)] px-3 py-4">
                 <nav className="space-y-4">{sidebarNav(() => setMobileOpen(false))}</nav>
               </ScrollArea>

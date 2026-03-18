@@ -373,7 +373,7 @@ export default function BiometriaPage() {
             </PageSection>
 
             <PageSection
-              tone="utility"
+              tone="secondary"
               title="Referencia ZAF"
               className="gap-0"
               contentClassName="gap-2"
@@ -385,7 +385,7 @@ export default function BiometriaPage() {
                   <span className="text-xs text-muted-foreground">ZSAF - {t("healthyZone")}</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="h-2.5 w-2.5 rounded-full bg-warning-400" />
+                  <span className="h-2.5 w-2.5 rounded-full bg-warning-500" />
                   <span className="text-xs text-muted-foreground">ZMF - {t("improvementZone")}</span>
                 </div>
               </div>

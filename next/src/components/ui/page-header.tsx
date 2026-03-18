@@ -26,7 +26,7 @@ export function PageHeader({
           </div>
         ) : null}
         <div className="flex flex-wrap items-center gap-3">
-          <h1 className="font-display text-balance text-base font-semibold leading-tight tracking-[-0.035em] text-gradient-gold sm:text-lg">
+          <h1 className="font-display text-balance text-base font-semibold leading-tight tracking-[-0.035em] text-foreground sm:text-lg">
             {title}
           </h1>
           {status ? <div className="flex items-center">{status}</div> : null}

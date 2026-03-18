@@ -176,7 +176,7 @@ export default function AuthLayout({
           </div>
 
           {/* Foreground content */}
-          <div className="relative mx-auto flex min-h-screen w-full max-w-6xl flex-col px-4 py-6 sm:py-8 lg:px-8 lg:py-8">
+          <div className="relative mx-auto flex min-h-screen w-full max-w-6xl flex-col justify-center px-4 py-6 sm:py-8 lg:px-8 lg:py-8">
             <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-2 lg:items-center lg:gap-8">
               {/* Left: branding copy */}
               <div className="order-2 hidden space-y-6 lg:order-1 lg:block">

@@ -226,7 +226,7 @@ export default function TestesPage() {
             />
             <Button
               size="sm"
-              variant="secondary"
+              variant="ghost"
               icon={<FileUp className="size-4" />}
               loading={isImportingCsv}
               onClick={() => importInputRef.current?.click()}

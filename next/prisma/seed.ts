@@ -1,4 +1,5 @@
-﻿import { PrismaClient, Role, Sex, QuestionnaireType } from "@prisma/client";
+import "dotenv/config";
+import { PrismaClient, Role, Sex, QuestionnaireType } from "@prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
 import pg from "pg";
 import bcrypt from "bcryptjs";
@@ -7,284 +8,263 @@ import { INTERNAL_EMAIL_DOMAIN } from "../src/lib/email-rules";
 
 const pool = new pg.Pool({
   connectionString: process.env.DATABASE_URL!,
-  ssl: getPgSslConfig(),
+  ssl: false,
 });
 const adapter = new PrismaPg(pool);
 const prisma = new PrismaClient({ adapter });
 
+const TEST_OPTIONS = [
+  { id: "vai", unit: "percursos" },
+  { id: "cooper", unit: "m" },
+  { id: "milha", unit: "mm:ss" },
+  { id: "velocidade", unit: "s" },
+  { id: "agilidade", unit: "s" },
+  { id: "abd", unit: "reps" },
+  { id: "bracos", unit: "reps" },
+  { id: "senta", unit: "cm" },
+];
+
 async function main() {
-  console.log("🌱 Seeding database…");
+  console.log("🌱 Advanced Seeding database with massive realistic demo data...");
+
+  // 1. CLEAR EXISTING DATA FOR A CLEAN STATE
+  console.log("Cleaning existing data...");
+  await prisma.auditLog.deleteMany();
+  await prisma.studentGuardian.deleteMany();
+  await prisma.dispensa.deleteMany();
+  await prisma.report.deleteMany();
+  await prisma.sosAlert.deleteMany();
+  await prisma.questionnaire.deleteMany();
+  await prisma.test.deleteMany();
+  await prisma.biometric.deleteMany();
+  await prisma.evaluationSession.deleteMany();
+  await prisma.student.deleteMany();
+  await prisma.schoolClass.deleteMany();
+  await prisma.academicYear.deleteMany();
+  await prisma.user.deleteMany({
+    where: {
+      email: {
+        notIn: [`admin@${INTERNAL_EMAIL_DOMAIN}`, `professor@${INTERNAL_EMAIL_DOMAIN}`, `psicologo@${INTERNAL_EMAIL_DOMAIN}`, "joao.ferreira@gmail.com"]
+      }
+    }
+  });
+
   const adminEmail = `admin@${INTERNAL_EMAIL_DOMAIN}`;
   const professorEmail = `professor@${INTERNAL_EMAIL_DOMAIN}`;
   const psychologistEmail = `psicologo@${INTERNAL_EMAIL_DOMAIN}`;
   const parentEmail = "joao.ferreira@gmail.com";
-
-  // ── Academic Year ──
-  const year = await prisma.academicYear.upsert({
-    where: { label: "2025/2026" },
-    update: {},
-    create: { label: "2025/2026" },
-  });
-
-  // ── Classes ──
-  const class7A = await prisma.schoolClass.upsert({
-    where: { academicYearId_name: { name: "7ºA", academicYearId: year.id } },
-    update: {},
-    create: { name: "7ºA", academicYearId: year.id },
-  });
-  const class8B = await prisma.schoolClass.upsert({
-    where: { academicYearId_name: { name: "8ºB", academicYearId: year.id } },
-    update: {},
-    create: { name: "8ºB", academicYearId: year.id },
-  });
-
-  // ── Staff accounts (password = Password1) ──
   const hash = await bcrypt.hash("Password1", 12);
 
   const admin = await prisma.user.upsert({
     where: { email: adminEmail },
     update: {},
-    create: {
-      email: adminEmail,
-      name: "Admin Atlântico",
-      passwordHash: hash,
-      role: Role.ADMIN,
-      consentRgpd: true,
-      consentShare: true,
-    },
+    create: { email: adminEmail, name: "Admin Atlântico", passwordHash: hash, role: Role.ADMIN, consentRgpd: true, consentShare: true },
   });
 
   const professor = await prisma.user.upsert({
     where: { email: professorEmail },
     update: {},
-    create: {
-      email: professorEmail,
-      name: "Prof. Carlos Silva",
-      passwordHash: hash,
-      role: Role.PROFESSOR,
-      consentRgpd: true,
-    },
+    create: { email: professorEmail, name: "Prof. Carlos Silva", passwordHash: hash, role: Role.PROFESSOR, consentRgpd: true },
   });
 
   await prisma.user.upsert({
     where: { email: psychologistEmail },
     update: {},
-    create: {
-      email: psychologistEmail,
-      name: "Dr. Ana Rodrigues",
-      passwordHash: hash,
-      role: Role.PSICOLOGO,
-      consentRgpd: true,
-    },
+    create: { email: psychologistEmail, name: "Dr. Ana Rodrigues", passwordHash: hash, role: Role.PSICOLOGO, consentRgpd: true },
   });
 
   const parentUser = await prisma.user.upsert({
     where: { email: parentEmail },
     update: {},
-    create: {
-      email: parentEmail,
-      name: "João Ferreira",
-      passwordHash: hash,
-      role: Role.PAIS,
-      consentRgpd: true,
-    },
+    create: { email: parentEmail, name: "João Ferreira", passwordHash: hash, role: Role.PAIS, consentRgpd: true },
   });
 
-  // ── Student accounts + profiles ──
-  const studentNames = [
-    { name: "Maria Santos", sex: Sex.F, birth: "2011-03-15" },
-    { name: "Pedro Costa", sex: Sex.M, birth: "2011-07-22" },
-    { name: "Ana Oliveira", sex: Sex.F, birth: "2012-01-10" },
-    { name: "Tiago Pereira", sex: Sex.M, birth: "2011-11-30" },
-    { name: "Sofia Mendes", sex: Sex.F, birth: "2012-05-18" },
-    { name: "Diogo Almeida", sex: Sex.M, birth: "2011-09-03" },
-    { name: "Beatriz Gomes", sex: Sex.F, birth: "2012-02-28" },
-    { name: "Rui Fernandes", sex: Sex.M, birth: "2011-06-14" },
-    { name: "Inês Martins", sex: Sex.F, birth: "2012-08-07" },
-    { name: "Miguel Ribeiro", sex: Sex.M, birth: "2011-12-25" },
+  const years = ["2024/2025", "2025/2026"];
+  const dbYears = [];
+  for (const y of years) {
+    const ay = await prisma.academicYear.create({ data: { label: y } });
+    dbYears.push(ay);
+  }
+
+  const classesConfig = ["7ºA", "7ºB", "8ºA", "8ºB", "9ºA"];
+  const clsMap = new Map();
+  
+  for (const year of dbYears) {
+    for (const c of classesConfig) {
+      const cls = await prisma.schoolClass.create({
+        data: { name: c, academicYearId: year.id }
+      });
+      clsMap.set(`${year.label}-${c}`, cls);
+    }
+  }
+
+  const firstNamesM = ["Diogo", "João", "Tiago", "Miguel", "Gonçalo", "Pedro", "Rui", "Tomás", "Martim", "Dinis", "Rodrigo", "Guilherme", "Afonso", "Francisco"];
+  const firstNamesF = ["Maria", "Ana", "Beatriz", "Inês", "Sofia", "Margarida", "Leonor", "Carolina", "Mariana", "Matilde", "Laura", "Lara", "Joana"];
+  const lastNames = ["Silva", "Santos", "Ferreira", "Pereira", "Oliveira", "Costa", "Rodrigues", "Martins", "Jesus", "Sousa", "Fernandes", "Gomes", "Marques", "Almeida", "Ribeiro"];
+
+  const students = [];
+  let studentCounter = 1;
+
+  for (const className of classesConfig) {
+    const numStudents = 15; 
+    for (let i = 0; i < numStudents; i++) {
+      const isM = Math.random() > 0.5;
+      const firstName = isM ? firstNamesM[Math.floor(Math.random() * firstNamesM.length)] : firstNamesF[Math.floor(Math.random() * firstNamesF.length)];
+      const lastName = lastNames[Math.floor(Math.random() * lastNames.length)];
+      const name = `${firstName} ${lastName}`;
+      const sex = isM ? Sex.M : Sex.F;
+      
+      const ageOff = className.startsWith('7') ? 12 : className.startsWith('8') ? 13 : 14;
+      const birthYear = 2025 - ageOff;
+      const birthDate = new Date(`${birthYear}-0${Math.floor(Math.random()*8)+1}-15`);
+
+      const email = `aluno.demo.${studentCounter}@${INTERNAL_EMAIL_DOMAIN}`;
+      studentCounter++;
+      
+      const user = await prisma.user.create({
+        data: { email, name, passwordHash: hash, role: Role.ALUNO, consentRgpd: true }
+      });
+
+      const student = await prisma.student.create({
+        data: {
+          name,
+          sex,
+          birthDate,
+          linkedUserId: user.id,
+          createdById: admin.id,
+          schoolYear: "2025/2026",
+          className,
+        }
+      });
+      students.push({ student, ageOff });
+    }
+  }
+
+  const terms = [
+    { year: "2024/2025", term: "1º Período" },
+    { year: "2024/2025", term: "2º Período" },
+    { year: "2024/2025", term: "3º Período" },
+    { year: "2025/2026", term: "1º Período" },
+    { year: "2025/2026", term: "2º Período" },
   ];
 
-  const students: { id: string; name: string; sex: Sex }[] = [];
+  let progress = 0;
+  console.log(`Generating records for ${students.length} students across 5 evaluation sessions...`);
 
-  for (let i = 0; i < studentNames.length; i++) {
-    const s = studentNames[i];
-    const email = `aluno${i + 1}@${INTERNAL_EMAIL_DOMAIN}`;
-    const className = i < 5 ? class7A.name : class8B.name;
+  for (const {student, ageOff} of students) {
+    let baseHeight = student.sex === "M" ? 1.45 + (ageOff - 12) * 0.05 + Math.random() * 0.1 : 1.48 + (ageOff - 12) * 0.02 + Math.random() * 0.1;
+    let baseWeight = student.sex === "M" ? 38 + (ageOff - 12) * 5 + Math.random() * 10 : 40 + (ageOff - 12) * 3 + Math.random() * 8;
+    
+    let baseVai = Math.floor(20 + Math.random() * 40);
+    let baseCooper = Math.floor(1600 + Math.random() * 800);
+    let baseVelocidade = 8.5 - Math.random() * 1.5;
 
-    const user = await prisma.user.upsert({
-      where: { email },
-      update: {},
-      create: {
-        email,
-        name: s.name,
-        passwordHash: hash,
-        role: Role.ALUNO,
-        consentRgpd: true,
-      },
-    });
+    for (let t = 0; t < terms.length; t++) {
+      const sessionLabel = terms[t].term;
+      const schoolYear = terms[t].year;
 
-    const student = await prisma.student.upsert({
-      where: { linkedUserId: user.id },
-      update: { className, schoolYear: "2025/2026" },
-      create: {
-        name: s.name,
-        sex: s.sex,
-        birthDate: new Date(s.birth),
-        linkedUserId: user.id,
-        createdById: admin.id,
-        schoolYear: "2025/2026",
-        className,
-      },
-    });
+      const sessionDate = new Date();
+      sessionDate.setFullYear(parseInt(schoolYear.substring(0, 4)) + (sessionLabel.includes("1º") ? 0 : 1));
+      sessionDate.setMonth(sessionLabel.includes("1º") ? 10 : sessionLabel.includes("2º") ? 2 : 5);
+      sessionDate.setDate(15 + Math.floor(Math.random() * 10));
 
-    students.push({ id: student.id, name: student.name, sex: student.sex });
-  }
-
-  // ── Evaluation Sessions (per student) + Biometrics + Tests ──
-  for (const st of students) {
-    const existingSession = await prisma.evaluationSession.findFirst({
-      where: { studentId: st.id, label: "1ª Avaliação 2025/2026" },
-    });
-    if (existingSession) continue;
-
-    const session = await prisma.evaluationSession.create({
-      data: {
-        studentId: st.id,
-        label: "1ª Avaliação 2025/2026",
-        schoolYear: "2025/2026",
-        createdById: professor.id,
-      },
-    });
-
-    // Biometric
-    const h = st.sex === "M" ? 1.55 + Math.random() * 0.2 : 1.50 + Math.random() * 0.15;
-    const w = st.sex === "M" ? 45 + Math.random() * 15 : 40 + Math.random() * 12;
-    const bmi = Math.round((w / (h * h)) * 10) / 10;
-
-    await prisma.biometric.create({
-      data: {
-        studentId: st.id,
-        sessionId: session.id,
-        heightM: Math.round(h * 100) / 100,
-        weightKg: Math.round(w * 10) / 10,
-        waistCm: Math.round((55 + Math.random() * 20) * 10) / 10,
-        fatPct: Math.round((12 + Math.random() * 10) * 10) / 10,
-        imc: bmi,
-        imcZone: bmi < 24 ? "ZSAF" : "FZSAF",
-        waistZone: "ZSAF",
-      },
-    });
-
-    // Tests (EAV-style: one row per test)
-    const testEntries = [
-      { testId: "vaivem", value: Math.floor(20 + Math.random() * 60), unit: "percursos" },
-      { testId: "cooper", value: Math.floor(1500 + Math.random() * 1000), unit: "m" },
-      { testId: "velocidade", value: Math.round((7 + Math.random() * 4) * 10) / 10, unit: "seg" },
-      { testId: "agilidade", value: Math.round((12 + Math.random() * 5) * 10) / 10, unit: "seg" },
-      { testId: "abdominais", value: Math.floor(15 + Math.random() * 30), unit: "rep" },
-      { testId: "extensoes", value: Math.floor(5 + Math.random() * 25), unit: "rep" },
-      { testId: "senta_alcanca", value: Math.round((15 + Math.random() * 20) * 10) / 10, unit: "cm" },
-    ];
-
-    for (const entry of testEntries) {
-      await prisma.test.create({
+      const session = await prisma.evaluationSession.create({
         data: {
-          studentId: st.id,
-          sessionId: session.id,
-          testId: entry.testId,
-          valueNum: entry.value,
-          valueText: String(entry.value),
-          unit: entry.unit,
-          zone: "ZSAF",
+          studentId: student.id,
+          label: sessionLabel,
+          schoolYear: schoolYear,
+          createdById: professor.id,
+          createdAt: sessionDate
         },
       });
-    }
 
-    // Questionnaire
-    await prisma.questionnaire.create({
-      data: {
-        studentId: st.id,
-        type: QuestionnaireType.AUTOCONCEITO,
-        payload: {
-          sleepHours: 7 + Math.round(Math.random() * 2),
-          screenHours: 1 + Math.round(Math.random() * 4),
-          stressLevel: Math.floor(Math.random() * 6),
-          wellnessLevel: 5 + Math.floor(Math.random() * 5),
+      baseHeight += 0.01 + Math.random() * 0.01;
+      baseWeight += 0.5 + Math.random() * 1.5;
+      baseVai += Math.floor(Math.random() * 3);
+      baseCooper += Math.floor(Math.random() * 50);
+      baseVelocidade -= Math.random() * 0.1;
+
+      const bmi = baseWeight / (baseHeight * baseHeight);
+
+      await prisma.biometric.create({
+        data: {
+          studentId: student.id,
+          sessionId: session.id,
+          heightM: Math.round(baseHeight * 100) / 100,
+          weightKg: Math.round(baseWeight * 10) / 10,
+          waistCm: Math.round((55 + Math.random() * 15) * 10) / 10,
+          fatPct: Math.round((12 + Math.random() * 12) * 10) / 10,
+          imc: Math.round(bmi * 10) / 10,
+          imcZone: bmi < 18 ? "ZMF - Zona de Melhoria" : bmi < 24 ? "ZSAF - Zona Saudável" : "ZMF - Zona de Melhoria",
+          waistZone: Math.random() > 0.8 ? "ZMF - Zona de Melhoria" : "ZSAF - Zona Saudável",
+          fatZone: Math.random() > 0.8 ? "ZMF - Zona de Melhoria" : "ZSAF - Zona Saudável",
+          recordedAt: sessionDate
         },
-      },
-    });
+      });
+
+      for (const opt of TEST_OPTIONS) {
+        let valNum = 0;
+        let strVal = "";
+        
+        switch (opt.id) {
+          case "vai": valNum = baseVai; break;
+          case "cooper": valNum = baseCooper; break;
+          case "milha": 
+            valNum = 8 + Math.random() * 4; 
+            const m = Math.floor(valNum); 
+            const s = Math.floor((valNum - m) * 60);
+            strVal = `${m}:${s < 10 ? '0' : ''}${s}`; 
+            break;
+          case "velocidade": valNum = baseVelocidade; break;
+          case "agilidade": valNum = 11 + Math.random() * 3; break;
+          case "abd": valNum = Math.floor(15 + Math.random() * 35); break;
+          case "bracos": valNum = Math.floor(5 + Math.random() * 25); break;
+          case "senta": valNum = Math.round((15 + Math.random() * 20) * 10) / 10; break;
+        }
+
+        if(valNum > 0 && opt.id !== "milha") {
+           valNum = Math.round(valNum * 10) / 10;
+           strVal = valNum.toString();
+        }
+
+        const isGood = Math.random() > 0.3;
+
+        await prisma.test.create({
+          data: {
+            studentId: student.id,
+            sessionId: session.id,
+            testId: opt.id,
+            valueNum: valNum,
+            valueText: strVal,
+            unit: opt.unit,
+            zone: isGood ? "ZSAF - Zona Saudável" : "ZMF - Zona de Melhoria",
+            recordedAt: sessionDate
+          }
+        });
+      }
+      
+      if (t > 1) { 
+        await prisma.questionnaire.create({
+          data: {
+            studentId: student.id,
+            type: QuestionnaireType.AUTOCONCEITO,
+            payload: {
+              sleepHours: 7 + Math.round(Math.random() * 2),
+              screenHours: 1 + Math.round(Math.random() * 4),
+              stressLevel: Math.floor(Math.random() * 6),
+              wellnessLevel: 5 + Math.floor(Math.random() * 5),
+            },
+            submittedAt: sessionDate
+          },
+        });
+      }
+    }
+    progress++;
+    if (progress % 10 === 0) console.log(`  ...${progress} students processed`);
   }
 
-  // ── SOS Alerts (skip if already exist for these students) ──
-  const existingSos = await prisma.sosAlert.findMany({
-    where: { studentId: { in: [students[0].id, students[3].id] } },
-    select: { studentId: true },
-  });
-  const sosStudentIds = new Set(existingSos.map((s) => s.studentId));
-
-  if (!sosStudentIds.has(students[0].id)) {
-    await prisma.sosAlert.create({
-      data: {
-        studentId: students[0].id,
-        psych: "Dr. Ana Rodrigues",
-        teacher: "Prof. Carlos Silva",
-        psychEmail: psychologistEmail,
-        teacherEmail: professorEmail,
-        resolved: false,
-      },
-    });
-  }
-
-  if (!sosStudentIds.has(students[3].id)) {
-    await prisma.sosAlert.create({
-      data: {
-        studentId: students[3].id,
-        psych: "Dr. Ana Rodrigues",
-        teacher: "Prof. Carlos Silva",
-        psychEmail: psychologistEmail,
-        teacherEmail: professorEmail,
-        resolved: false,
-      },
-    });
-  }
-
-  // ── Dispensas (skip if already exists) ──
-  const existingDispensa = await prisma.dispensa.findFirst({
-    where: { studentId: students[2].id },
-  });
-  if (!existingDispensa) {
-    await prisma.dispensa.create({
-      data: {
-        studentId: students[2].id,
-        reason: "Entorse do tornozelo direito",
-        startDate: new Date("2025-10-01"),
-        endDate: new Date("2025-10-20"),
-        createdById: professor.id,
-      },
-    });
-  }
-
-  // ── Guardian link (upsert via unique constraint) ──
-  await prisma.studentGuardian.upsert({
-    where: {
-      studentId_guardianUserId: {
-        studentId: students[0].id,
-        guardianUserId: parentUser.id,
-      },
-    },
-    update: {},
-    create: {
-      studentId: students[0].id,
-      guardianUserId: parentUser.id,
-      relationship: "Pai",
-      createdById: professor.id,
-    },
-  });
-
-
-  console.log("✅ Seed complete!");
-  console.log(`   ${students.length} students, 1 admin, 1 professor, 1 psicólogo, 1 encarregado`);
-  console.log(`   Login: any email above / Password1`);
+  console.log("✅ Advanced demo data seed complete!");
+  console.log(`Generated ${students.length} students across 5 classes.`);
 }
 
 main()

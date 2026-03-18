@@ -221,6 +221,11 @@ export function DashboardClient({ username, summary }: Props) {
                     <div className="relative h-[180px] w-[180px]">
                       <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
                         <PieChart>
+                          <defs>
+                            <filter id="dropShadow" x="-20%" y="-20%" width="140%" height="140%">
+                              <feDropShadow dx="0" dy="4" stdDeviation="6" floodColor="#000000" floodOpacity="0.15" />
+                            </filter>
+                          </defs>
                           <Pie
                             data={donutData}
                             cx="50%"
@@ -230,9 +235,10 @@ export function DashboardClient({ username, summary }: Props) {
                             paddingAngle={3}
                             dataKey="value"
                             strokeWidth={0}
+                            cornerRadius={6}
                           >
                             {donutData.map((entry) => (
-                              <Cell key={entry.name} fill={entry.color} />
+                              <Cell key={entry.name} fill={entry.color} filter="url(#dropShadow)" />
                             ))}
                           </Pie>
                           <Tooltip
@@ -245,9 +251,9 @@ export function DashboardClient({ username, summary }: Props) {
                           />
                         </PieChart>
                       </ResponsiveContainer>
-                      <div className="absolute inset-0 flex flex-col items-center justify-center">
-                        <span className="text-2xl font-bold tabular-nums">{overallPct}%</span>
-                        <span className="text-[10px] uppercase tracking-[0.22em] text-muted-foreground">
+                      <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none drop-shadow-sm">
+                        <span className="text-3xl font-extrabold tabular-nums tracking-tight text-foreground">{overallPct}%</span>
+                        <span className="text-[11px] font-medium uppercase tracking-[0.2em] text-muted-foreground mt-0.5">
                           {t("zsaf")}
                         </span>
                       </div>
@@ -295,9 +301,9 @@ export function DashboardClient({ username, summary }: Props) {
                           </div>
                           {academicYear.withBio > 0 ? (
                             <>
-                              <div className="h-3 overflow-hidden rounded-full bg-navy-900/10 dark:bg-navy-900/40">
+                              <div className="h-3 w-full overflow-hidden rounded-full bg-navy-900/10 drop-shadow-inner dark:bg-navy-900/40">
                                 <div
-                                  className="h-full rounded-full bg-gradient-to-r from-success-500 to-success-400"
+                                  className="h-full rounded-full bg-gradient-to-r from-success-600 via-success-500 to-success-400 shadow-sm transition-all duration-1000 ease-out"
                                   style={{ width: `${pct}%` }}
                                 />
                               </div>

@@ -151,7 +151,7 @@ export function AlunosClient({ initialStudents }: AlunosClientProps) {
           />
           <Button
             size="sm"
-            variant="outline"
+            variant="ghost"
             icon={<FileUp className="size-4" />}
             loading={isImportingCsv}
             onClick={() => importInputRef.current?.click()}

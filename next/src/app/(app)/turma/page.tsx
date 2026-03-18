@@ -245,7 +245,7 @@ export default function TurmaPage() {
           />
           <Button
             size="sm"
-            variant="outline"
+            variant="ghost"
             icon={<FileUp className="size-4" />}
             loading={isImportingCsv}
             onClick={() => importInputRef.current?.click()}
@@ -254,7 +254,7 @@ export default function TurmaPage() {
           </Button>
           <Button
             size="sm"
-            variant="secondary"
+            variant="ghost"
             icon={<Download className="size-4" />}
             onClick={exportCsv}
             disabled={!students.length}

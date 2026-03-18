@@ -181,120 +181,113 @@ export default function RelatorioPage() {
       const W = doc.internal.pageSize.getWidth();   // 210
       const H = doc.internal.pageSize.getHeight();  // 297
 
-      // ── Colour palette ──────────────────────────────────────────
-      const navy950 = [9,  21, 35]  as [number, number, number];
-      const navy800 = [20, 48, 76]  as [number, number, number];
-      const navy600 = [54, 85, 109] as [number, number, number];
-      const navy100 = [221, 231, 240] as [number, number, number];
-      const gold400 = [216, 173, 52] as [number, number, number];
-      const white   = [255, 255, 255] as [number, number, number];
-      const green   = [16, 185, 129] as [number, number, number];
-      const red     = [239, 68, 68]  as [number, number, number];
-      const amber   = [245, 158, 11] as [number, number, number];
-      const gray50  = [248, 249, 250] as [number, number, number];
-      const gray200 = [226, 232, 240] as [number, number, number];
-      const gray600 = [75, 85, 99]    as [number, number, number];
+      // ── Colour palette (Matching Site Theme) ──────────────────
+      const fgFull  = [9, 21, 35] as [number, number, number];      // --foreground (navy-950)
+      const fgMuted = [95, 109, 123] as [number, number, number];  // --muted-foreground
+      const bgSite  = [244, 241, 234] as [number, number, number];  // --background
+      const bgCard  = [255, 255, 255] as [number, number, number];  // --card (white)
+      const bgMuted = [236, 230, 218] as [number, number, number];  // --muted
+      const brand   = [184, 140, 25] as [number, number, number];   // --accent (gold-500)
+      const success = [16, 185, 129] as [number, number, number];   // --color-success-500
+      const warning = [245, 158, 11] as [number, number, number];   // --color-warning-500
+      const danger  = [239, 68, 68] as [number, number, number];    // --color-danger-500
+      const border  = [225, 215, 203] as [number, number, number];  // warm gray border
 
       const fill  = (c: [number,number,number]) => doc.setFillColor(...c);
       const stroke= (c: [number,number,number]) => doc.setDrawColor(...c);
       const text  = (c: [number,number,number]) => doc.setTextColor(...c);
-      const addContainedImage = (
-        image: HTMLImageElement,
-        x: number,
-        y: number,
-        maxWidth: number,
-        maxHeight: number
-      ) => {
-        const sourceWidth = image.naturalWidth || image.width || maxWidth;
-        const sourceHeight = image.naturalHeight || image.height || maxHeight;
-        const scale = Math.min(maxWidth / sourceWidth, maxHeight / sourceHeight);
-        const width = sourceWidth * scale;
-        const height = sourceHeight * scale;
-        const offsetX = x + (maxWidth - width) / 2;
-        const offsetY = y + (maxHeight - height) / 2;
 
-        doc.addImage(image, "PNG", offsetX, offsetY, width, height, undefined, "FAST");
-      };
+      // Entire page background
+      fill(bgSite);
+      doc.rect(0, 0, W, H, "F");
 
       // ── Header ──────────────────────────────────────────────────
-      fill(navy950); doc.rect(0, 0, W, 42, "F");
-      // Subtle gold glow top-left
-      fill([30, 55, 85]); doc.roundedRect(-10, -10, 80, 55, 8, 8, "F");
-      // Gold accent line
-      fill(gold400); doc.rect(0, 42, W, 2.5, "F");
-
-      // Logo
-      const logoCard = { x: 14, y: 8, width: 18, height: 18 };
-      fill(white); doc.roundedRect(logoCard.x, logoCard.y, logoCard.width, logoCard.height, 4, 4, "F");
-      fill(gray50); doc.roundedRect(logoCard.x + 0.8, logoCard.y + 0.8, logoCard.width - 1.6, logoCard.height - 1.6, 3.2, 3.2, "F");
+      let headerTextX = 14;
       try {
-        const logoImg = new window.Image();
-        logoImg.decoding = "async";
-        logoImg.src = "/logo.png";
-        await new Promise((res, rej) => { logoImg.onload = res; logoImg.onerror = rej; });
-        addContainedImage(logoImg, logoCard.x + 2, logoCard.y + 2, logoCard.width - 4, logoCard.height - 4);
-      } catch { /* skip */ }
+        const logoRes = await fetch("/logo.png");
+        const logoBlob = await logoRes.blob();
+        const logoBase64 = await new Promise<string>((resolve) => {
+          const reader = new FileReader();
+          reader.onloadend = () => resolve(reader.result as string);
+          reader.readAsDataURL(logoBlob);
+        });
+        
+        // Let's get image properties to maintain aspect ratio
+        const props = doc.getImageProperties(logoBase64);
+        const desiredHeight = 12;
+        const scaledWidth = (props.width * desiredHeight) / props.height;
+        
+        doc.addImage(logoBase64, "PNG", 14, 13, scaledWidth, desiredHeight);
+        headerTextX = 14 + scaledWidth + 4;
+      } catch {
+        // Fallback or ignore
+      }
 
-      // Title + date
-      text([200, 215, 230]);
-      doc.setFontSize(13); doc.setFont("helvetica", "bold");
-      doc.text("HealthyTech Atlântico  ·  Relatório Individual", 14, 29);
+      text(fgMuted);
+      doc.setFontSize(8); doc.setFont("helvetica", "bold");
+      doc.text("HEALTHYTECH ATLÂNTICO", headerTextX, 17);
+
+      text(fgFull);
+      doc.setFontSize(16); doc.setFont("helvetica", "bold");
+      doc.text("Relatório Individual", headerTextX, 24);
+
       const today = new Date().toLocaleDateString("pt-PT", { day: "2-digit", month: "long", year: "numeric" });
-      text([150, 170, 190]);
+      text(fgMuted);
       doc.setFontSize(8); doc.setFont("helvetica", "normal");
-      doc.text(`Emitido em ${today}`, 14, 36);
+      doc.text(`Emitido em ${today}`, W - 14, 25, { align: "right" });
 
-      // Page number placeholder
-      text([120, 145, 165]);
-      doc.setFontSize(7);
-      doc.text("1 / 1", W - 14, 36, { align: "right" });
+      stroke(border); doc.setLineWidth(0.3);
+      doc.line(14, 32, W - 14, 32);
 
       // ── Student banner ───────────────────────────────────────────
-      fill(navy100); doc.rect(0, 44.5, W, 22, "F");
-      // student initial circle
-      fill(navy800); doc.circle(14 + 8, 44.5 + 11, 8, "F");
+      let y = 42;
+      fill(bgCard); doc.circle(14 + 6, y + 2, 6, "F");
+      stroke(border); doc.setLineWidth(0.3); doc.circle(14 + 6, y + 2, 6, "S");
       const initials = (selectedStudent?.name ?? "?")
         .split(" ").map((p) => p[0]).filter(Boolean).slice(0,2).join("").toUpperCase();
-      text(white);
-      doc.setFontSize(9); doc.setFont("helvetica", "bold");
-      doc.text(initials, 14 + 8, 44.5 + 13.5, { align: "center" });
+      text(brand);
+      doc.setFontSize(7); doc.setFont("helvetica", "bold");
+      doc.text(initials, 14 + 6, y + 3.5, { align: "center" });
 
-      text(navy800);
-      doc.setFontSize(14); doc.setFont("helvetica", "bold");
-      doc.text(selectedStudent?.name ?? "—", 33, 52.5);
-      text(navy600);
+      text(fgFull);
+      doc.setFontSize(12); doc.setFont("helvetica", "bold");
+      doc.text(selectedStudent?.name ?? "—", 30, y + 2);
+      
+      text(fgMuted);
       doc.setFontSize(8); doc.setFont("helvetica", "normal");
       const studentMeta = [
         selectedStudent?.className ? `Turma ${selectedStudent.className}` : null,
       ].filter(Boolean).join("  ·  ") || "Aluno";
-      doc.text(studentMeta, 33, 58);
+      doc.text(studentMeta, 30, y + 6);
 
-      let y = 76;
+      y = 60;
 
       // ── Section helper ───────────────────────────────────────────
-      const section = (title: string, iconLabel: string) => {
-        text(navy800);
+      const section = (title: string, subtitle?: string) => {
+        text(fgFull);
         doc.setFontSize(10); doc.setFont("helvetica", "bold");
-        doc.text(iconLabel + "  " + title, 14, y);
-        y += 1.5;
-        stroke(gold400); doc.setLineWidth(0.6);
-        doc.line(14, y, W - 14, y);
+        doc.text(title, 14, y);
+        if (subtitle) {
+            text(fgMuted);
+            doc.setFontSize(8); doc.setFont("helvetica", "normal");
+            doc.text(subtitle, 14, y + 4);
+            y += 5;
+        }
         y += 6;
       };
 
       // ── Biometria ─────────────────────────────────────────────────
-      section("Biometria", "◉");
+      section("Métricas Corporais", "Registos gerais mais recentes.");
 
       if (Array.isArray(bio) && bio.length) {
         const b = bio[0] as BiometricEntry;
 
-        // IMC zone
         const imc = b.imc ?? 0;
-        let imcZoneColor = green;
+        let imcZoneColor = success;
         let imcZoneLabel = "Normal";
-        if (imc < 18.5) { imcZoneColor = amber; imcZoneLabel = "Baixo peso"; }
-        else if (imc >= 25 && imc < 30) { imcZoneColor = amber; imcZoneLabel = "Excesso de peso"; }
-        else if (imc >= 30) { imcZoneColor = red; imcZoneLabel = "Obesidade"; }
+        if (imc < 18.5) { imcZoneColor = warning; imcZoneLabel = "Baixo peso"; }
+        else if (imc >= 25 && imc < 30) { imcZoneColor = warning; imcZoneLabel = "Excesso de peso"; }
+        else if (imc >= 30) { imcZoneColor = danger; imcZoneLabel = "Obesidade"; }
 
         const metrics = [
           { label: "Altura", value: b.heightM ? `${b.heightM} m` : "—", badge: null },
@@ -306,38 +299,34 @@ export default function RelatorioPage() {
         const boxW = (W - 28 - 9) / 4;
         metrics.forEach((m, i) => {
           const bx = 14 + i * (boxW + 3);
-          // Card shadow simulation
-          fill([210, 220, 228]); doc.roundedRect(bx + 0.5, y + 0.8, boxW, 20, 3, 3, "F");
-          fill(white);          doc.roundedRect(bx, y, boxW, 20, 3, 3, "F");
-          // Top accent line
-          fill(navy800); doc.roundedRect(bx, y, boxW, 2, 3, 3, "F");
-          fill(navy800); doc.rect(bx, y + 0.5, boxW, 1.5, "F");
+          fill(bgCard); doc.roundedRect(bx, y, boxW, 20, 3, 3, "F");
+          stroke(border); doc.setLineWidth(0.3); doc.roundedRect(bx, y, boxW, 20, 3, 3, "S");
 
-          text(gray600);
-          doc.setFontSize(6.5); doc.setFont("helvetica", "normal");
+          text(fgMuted);
+          doc.setFontSize(6.5); doc.setFont("helvetica", "bold");
           doc.text(m.label.toUpperCase(), bx + 4, y + 7);
 
-          text(navy950);
-          doc.setFontSize(12); doc.setFont("helvetica", "bold");
+          text(fgFull);
+          doc.setFontSize(11); doc.setFont("helvetica", "bold");
           doc.text(m.value, bx + 4, y + 14);
 
           if (m.badge) {
-            fill(m.badge.color); doc.roundedRect(bx + 4, y + 15.5, boxW - 8, 3.2, 1, 1, "F");
-            text(white); doc.setFontSize(5.5); doc.setFont("helvetica", "bold");
-            doc.text(m.badge.label, bx + boxW / 2, y + 17.8, { align: "center" });
+            text(m.badge.color); doc.setFontSize(6); doc.setFont("helvetica", "bold");
+            doc.text(m.badge.label, bx + 4, y + 17.5);
           }
         });
-        y += 26;
+        y += 28;
       } else {
-        fill(gray50); doc.roundedRect(14, y, W - 28, 10, 2, 2, "F");
-        text(gray600); doc.setFontSize(8); doc.setFont("helvetica", "normal");
-        doc.text("Sem dados de biometria registados.", 14 + (W - 28) / 2, y + 6.5, { align: "center" });
-        y += 16;
+        fill(navy50); doc.roundedRect(14, y, W - 28, 12, 3, 3, "F");
+        stroke(border); doc.setLineWidth(0.3); doc.roundedRect(14, y, W - 28, 12, 3, 3, "S");
+        text(navy600); doc.setFontSize(8); doc.setFont("helvetica", "normal");
+        doc.text("Sem dados de biometria registados.", 14 + (W - 28) / 2, y + 7, { align: "center" });
+        y += 20;
       }
 
       // ── Testes Físicos ────────────────────────────────────────────
-      y += 6;
-      section("Testes Físicos", "▶");
+      y += 2;
+      section("Aptidão Física", "Resultados atualizados por categoria.");
 
       const TEST_LABELS: Record<string, string> = {
         vai: "Vai e Vem", cooper: "Cooper", milha: "Milha 1609m",
@@ -349,16 +338,19 @@ export default function RelatorioPage() {
       };
 
       if (Array.isArray(tests) && tests.length) {
-        // Table header
-        const rowH = 8;
-        fill(navy800); doc.roundedRect(14, y, W - 28, rowH + 1, 3, 3, "F");
-        fill(navy800); doc.rect(14, y + 3, W - 28, rowH - 2, "F"); // square bottom
-        text(white);
-        doc.setFontSize(7.5); doc.setFont("helvetica", "bold");
-        doc.text("Teste", 20, y + 5.8);
-        doc.text("Categoria", W / 2 - 10, y + 5.8);
-        doc.text("Resultado", W - 20, y + 5.8, { align: "right" });
-        y += rowH + 1;
+        const rowH = 9;
+        
+        fill(bgMuted); doc.rect(14, y, W - 28, rowH, "F");
+        stroke(border); doc.setLineWidth(0.3); 
+        doc.line(14, y, W - 14, y);
+        doc.line(14, y + rowH, W - 14, y + rowH);
+        
+        text(fgFull);
+        doc.setFontSize(7); doc.setFont("helvetica", "bold");
+        doc.text("TESTE", 18, y + 6);
+        doc.text("CATEGORIA", W / 2 - 10, y + 6);
+        doc.text("RESULTADO", W - 18, y + 6, { align: "right" });
+        y += rowH;
 
         const CATEGORIES: Record<string, string> = {
           vai: "Capacidade Aeróbia", cooper: "Capacidade Aeróbia", milha: "Capacidade Aeróbia",
@@ -370,51 +362,56 @@ export default function RelatorioPage() {
 
         (tests as TestEntry[]).forEach((test, i) => {
           const isEven = i % 2 === 0;
-          fill(isEven ? white : gray50);
+          fill(isEven ? bgCard : bgSite);
           doc.rect(14, y, W - 28, rowH, "F");
 
           const label = TEST_LABELS[test.testId] ?? test.testId;
           const cat   = CATEGORIES[test.testId] ?? "—";
-          const result= `${test.valueText} ${test.unit}`.trim();
 
-          // Category pill
-          fill(navy100); doc.roundedRect(W / 2 - 22, y + 1.5, 44, 5, 2, 2, "F");
-          text(navy800); doc.setFontSize(6); doc.setFont("helvetica", "normal");
-          doc.text(cat, W / 2, y + 5.3, { align: "center" });
+          text(fgFull); doc.setFontSize(8); doc.setFont("helvetica", "normal");
+          doc.text(label, 18, y + 6);
+          
+          text(fgMuted);
+          doc.text(cat, W / 2 - 10, y + 6);
+          
+          text(fgFull); doc.setFont("helvetica", "bold");
+          const valText = test.valueText;
+          const unitText = test.unit.trim();
+          doc.text(valText, W - 18 - doc.getTextWidth(" " + unitText), y + 6, { align: "right" });
+          
+          text(fgMuted); doc.setFont("helvetica", "normal"); doc.setFontSize(7);
+          doc.text(" " + unitText, W - 18, y + 6, { align: "right" });
 
-          text(navy950); doc.setFontSize(7.5); doc.setFont("helvetica", "normal");
-          doc.text(label, 20, y + 5.5);
-          doc.setFont("helvetica", "bold");
-          doc.text(result, W - 20, y + 5.5, { align: "right" });
-
-          // Bottom border
-          stroke(gray200); doc.setLineWidth(0.2);
+          stroke(border); doc.setLineWidth(0.2);
           doc.line(14, y + rowH, W - 14, y + rowH);
 
           y += rowH;
         });
 
-        // Table bottom radius cap
-        fill(navy100); doc.rect(14, y, W - 28, 0.5, "F");
-        y += 8;
+        y += 12;
       } else {
-        fill(gray50); doc.roundedRect(14, y, W - 28, 10, 2, 2, "F");
-        text(gray600); doc.setFontSize(8); doc.setFont("helvetica", "normal");
+        fill(bgCard); doc.roundedRect(14, y, W - 28, 10, 2, 2, "F");
+        text(fgMuted); doc.setFontSize(8); doc.setFont("helvetica", "normal");
         doc.text("Sem dados de testes registados.", 14 + (W - 28) / 2, y + 6.5, { align: "center" });
         y += 16;
       }
 
       // ── Footer ────────────────────────────────────────────────────
-      fill(navy950); doc.rect(0, H - 16, W, 16, "F");
-      fill(gold400); doc.rect(0, H - 16, W, 1.5, "F");
-      text([120, 145, 165]); doc.setFontSize(6.5); doc.setFont("helvetica", "normal");
+      fill(fgFull); doc.rect(0, H - 16, W, 16, "F");
+      fill(brand); doc.rect(0, H - 16, W, 1.5, "F");
+      text(bgMuted); doc.setFontSize(6.5); doc.setFont("helvetica", "normal");
       doc.text("HealthyTech Atlântico  ·  Documento gerado automaticamente", W / 2, H - 7.5, { align: "center" });
-      text(gold400); doc.setFontSize(6); doc.setFont("helvetica", "bold");
+      text(brand); doc.setFontSize(6); doc.setFont("helvetica", "bold");
       doc.text("CONFIDENCIAL — USO INTERNO", W / 2, H - 3.5, { align: "center" });
 
-      doc.save(
-        `relatorio_${selectedStudent?.name?.replace(/\s+/g, "_") ?? "aluno"}.pdf`
-      );
+      // Em vez de baixar o ficheiro para o computador, abrir num separador novo para não persistir dados sensíveis
+      const blob = doc.output("blob");
+      const url = URL.createObjectURL(blob);
+      window.open(url, "_blank");
+      
+      // Cleanup para performance
+      setTimeout(() => URL.revokeObjectURL(url), 60000);
+      
       toast.success(t("success"));
     } catch {
       toast.error(t("noData"));
@@ -493,7 +490,7 @@ export default function RelatorioPage() {
       {/* Document preview card */}
       <div className="surface-secondary rounded-[20px] border border-border/50 shadow-card overflow-hidden">
         {/* Student selector */}
-        <div className="px-6 py-4 border-b border-border bg-muted/40">
+        <div className="px-6 py-4 border-b border-border bg-card/60">
           {role !== "ALUNO" ? (
             <StudentPicker
               students={students}
