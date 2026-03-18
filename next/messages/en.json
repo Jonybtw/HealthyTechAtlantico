@@ -399,6 +399,7 @@
   },
   "protocolos": {
     "title": "Protocols",
+    "eyebrow": "Reference",
     "description": "ZAF reference tables by age and sex",
     "bmiTable": "BMI  -  Healthy Zone",
     "waistTable": "Waist Circumference (max cm)",
@@ -407,7 +408,9 @@
     "male": "Male (M)",
     "female": "Female (F)",
     "bmiTableTitle": "BMI \u2014 Cut-off values (Healthy Zone)",
+    "bmiTableCaption": "BMI reference table by age and sex",
     "waistTableTitle": "Waist Circumference \u2014 Cut-off values (Healthy Zone)",
+    "waistTableCaption": "Waist circumference reference table by age and sex",
     "fitnessTitle": "Fitness Tests",
     "unitLabel": "Unit",
     "testVaiVem": "Shuttle Run",
