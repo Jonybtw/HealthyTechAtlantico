@@ -11,7 +11,7 @@ import { StudentPicker } from "@/components/ui/student-picker";
 import { PillSelect } from "@/components/ui/pill-select";
 import { RangeSlider } from "@/components/ui/range-slider";
 import { NumericStepper } from "@/components/ui/numeric-stepper";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
 import { useUser } from "@/components/user-context";
 import { readApiResponse } from "@/lib/api-client";
@@ -132,9 +132,9 @@ export default function QuestionariosPage() {
           title={t("studentOnlyTitle")}
           description={t("studentOnlyDescription")}
           action={
-            <Button asChild size="sm" variant="ghost">
-              <Link href="/dashboard">{t("openDashboard")}</Link>
-            </Button>
+            <Link href="/dashboard" className={buttonVariants({ size: "sm", variant: "ghost" })}>
+              {t("openDashboard")}
+            </Link>
           }
         />
       </PageScaffold>

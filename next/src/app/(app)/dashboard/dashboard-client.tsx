@@ -22,7 +22,7 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { KpiCard } from "@/components/ui/kpi-card";
 import { PageScaffold } from "@/components/ui/page-scaffold";
 import { PageSection } from "@/components/ui/page-section";
-import { Button } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button";
 import { FadeIn, StaggerItem, StaggerList } from "@/components/ui/motion";
 import type { DashboardCardData, DashboardSummary } from "@/lib/dashboard";
 
@@ -120,9 +120,9 @@ export function DashboardClient({ username, summary }: Props) {
               title={t("unlinkedTitle")}
               description={t("unlinkedDescription")}
               action={
-                <Button asChild size="sm" variant="ghost">
-                  <Link href="/perfil">{nav("perfil")}</Link>
-                </Button>
+                <Link href="/perfil" className={buttonVariants({ size: "sm", variant: "ghost" })}>
+                  {nav("perfil")}
+                </Link>
               }
             />
           </div>
