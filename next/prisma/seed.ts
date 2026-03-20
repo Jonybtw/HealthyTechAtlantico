@@ -261,6 +261,27 @@ async function main() {
     }
     progress++;
     if (progress % 10 === 0) console.log(`  ...${progress} students processed`);
+
+    // Generate random SOS Alerts for a fraction of students (e.g. 15%)
+    if (Math.random() < 0.15) {
+      const isResolved = Math.random() > 0.5;
+      const createdDate = new Date();
+      createdDate.setDate(createdDate.getDate() - Math.floor(Math.random() * 60)); // Up to 60 days ago
+      
+      await prisma.sosAlert.create({
+        data: {
+          studentId: student.id,
+          psych: psychologistEmail, // Use the constant defined earlier
+          teacher: professorEmail,
+          psychEmail: psychologistEmail,
+          teacherEmail: professorEmail,
+          createdAt: createdDate,
+          resolved: isResolved,
+          resolvedAt: isResolved ? new Date() : null,
+          resolvedById: isResolved ? admin.id : null, 
+        }
+      });
+    }
   }
 
   console.log("✅ Advanced demo data seed complete!");

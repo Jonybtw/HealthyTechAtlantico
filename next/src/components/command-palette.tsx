@@ -11,10 +11,10 @@ import {
   Sun,
 } from "lucide-react";
 import { signOut } from "next-auth/react";
-import { useTheme, writeTheme } from "@/lib/theme";
 import * as VisuallyHidden from "@radix-ui/react-visually-hidden";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { NAV_ITEMS } from "@/lib/nav-items";
+import { usePreferences } from "@/hooks/use-preferences";
 
 interface CommandPaletteProps {
   open: boolean;
@@ -25,7 +25,7 @@ interface CommandPaletteProps {
 export function CommandPalette({ open, onOpenChange, userRole }: CommandPaletteProps) {
   const t = useTranslations();
   const router = useRouter();
-  const theme = useTheme();
+  const { theme, toggleTheme } = usePreferences();
   const [search, setSearch] = useState("");
 
   const visibleNav = useMemo(
@@ -105,9 +105,7 @@ export function CommandPalette({ open, onOpenChange, userRole }: CommandPaletteP
             >
               <Command.Item
                 value={t("commandPalette.toggleTheme")}
-                onSelect={() =>
-                  runAction(() => writeTheme(theme === "light" ? "dark" : "light"))
-                }
+                onSelect={() => runAction(toggleTheme)}
                 className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm cursor-pointer select-none data-[selected=true]:bg-muted/80 data-[selected=true]:text-foreground transition-colors"
               >
                 {theme === "light" ? (

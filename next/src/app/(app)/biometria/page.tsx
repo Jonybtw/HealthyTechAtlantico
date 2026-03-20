@@ -36,6 +36,7 @@ interface Classification {
 
 export default function BiometriaPage() {
   const t = useTranslations("biometria");
+  const common = useTranslations("common");
   usePageTitle(t("title"));
   const { role } = useUser();
 
@@ -67,7 +68,7 @@ export default function BiometriaPage() {
     try {
       const response = await fetch("/api/students?limit=500");
       if (!response.ok) {
-        toast.error(t("loadError"));
+        toast.error(common("studentListLoadError"));
         return;
       }
 
@@ -88,11 +89,11 @@ export default function BiometriaPage() {
         setStudentId(body.students[0].id);
       }
     } catch {
-      toast.error(t("loadConnectionError"));
+      toast.error(common("studentListLoadError"));
     } finally {
       setLoadingStudents(false);
     }
-  }, [role, t]);
+  }, [role, common]);
 
   useEffect(() => {
     void loadStudents();

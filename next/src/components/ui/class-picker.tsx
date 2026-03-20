@@ -28,7 +28,7 @@ export function ClassPicker({ classes, value, onChange, placeholder, className =
     <div className={className}>
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
-          <button className="items-center justify-between rounded-[18px] bg-background px-4 py-2 border border-input shadow-sm hover:bg-muted/60 hover:text-foreground min-h-[46px] inline-flex w-full whitespace-nowrap outline-none transition-all duration-300 focus-visible:ring-1 focus-visible:ring-ring">
+          <button className="items-center justify-between rounded-[18px] bg-card px-4 py-2 border border-border/70 shadow-sm hover:border-navy-300/40 hover:bg-muted/50 hover:text-foreground min-h-[46px] inline-flex w-full whitespace-nowrap outline-none transition-all duration-300 focus-visible:ring-1 focus-visible:ring-ring">
             <div className="flex items-center gap-2 text-sm font-medium whitespace-nowrap">
               <School className="h-4 w-4 text-muted-foreground mr-1" />
               {value && selectedClass ? (

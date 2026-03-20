@@ -1,11 +1,20 @@
+import { type NextRequest } from "next/server";
+import { z } from "zod";
 import type { Role } from "@prisma/client";
 import { auth } from "@/lib/auth";
-import { forbidden, ok, serverError, unauthorized } from "@/lib/api-response";
+import {
+  forbidden,
+  ok,
+  serverError,
+  unauthorized,
+  validationError,
+} from "@/lib/api-response";
 import { prisma } from "@/lib/prisma";
 import { canRole, PERMISSIONS } from "@/lib/rbac";
+import { listAuditQuerySchema } from "@/lib/validations";
 
-// GET /api/audit - last 100 audit log entries (ADMIN only)
-export async function GET() {
+// GET /api/audit - list audit log entries (ADMIN only)
+export async function GET(req: NextRequest) {
   try {
     const session = await auth();
     if (!session?.user?.id) {
@@ -16,9 +25,32 @@ export async function GET() {
       return forbidden();
     }
 
+    const { searchParams } = new URL(req.url);
+    const parsedQuery = listAuditQuerySchema.parse(Object.fromEntries(searchParams.entries()));
+    const { page, limit, action, startDate, endDate, sortBy, sortDir } = parsedQuery;
+    const skip = (page - 1) * limit;
+
+    const where = {
+      ...(action
+        ? {
+            action: { contains: action, mode: "insensitive" as const },
+          }
+        : {}),
+      ...(startDate || endDate
+        ? {
+            createdAt: {
+              ...(startDate ? { gte: new Date(startDate) } : {}),
+              ...(endDate ? { lte: new Date(endDate) } : {}),
+            },
+          }
+        : {}),
+    };
+
     const logs = await prisma.auditLog.findMany({
-      orderBy: { createdAt: "desc" },
-      take: 100,
+      where,
+      skip,
+      take: limit,
+      orderBy: { [sortBy]: sortDir },
       include: {
         user: { select: { email: true, name: true } },
       },
@@ -35,7 +67,11 @@ export async function GET() {
         userName: log.user?.name ?? null,
       })),
     );
-  } catch (error) {
+  } catch (error: unknown) {
+    if (error instanceof z.ZodError) {
+      return validationError(error.issues);
+    }
+
     console.error("GET /api/audit error:", error);
     return serverError();
   }

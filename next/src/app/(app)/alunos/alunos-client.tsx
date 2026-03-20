@@ -32,6 +32,7 @@ interface AlunosClientProps {
 
 export function AlunosClient({ initialStudents }: AlunosClientProps) {
   const t = useTranslations("alunos");
+  const common = useTranslations("common");
   const locale = useLocale();
   const router = useRouter();
 
@@ -156,7 +157,7 @@ export function AlunosClient({ initialStudents }: AlunosClientProps) {
             loading={isImportingCsv}
             onClick={() => importInputRef.current?.click()}
           >
-            CSV
+            {common("importCsv")}
           </Button>
           <Button
             size="sm"

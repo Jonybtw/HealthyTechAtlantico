@@ -3,6 +3,8 @@ import { type NextRequest, NextResponse } from "next/server";
 const SECURITY_HEADERS: Record<string, string> = {
   "X-Frame-Options": "DENY",
   "X-Content-Type-Options": "nosniff",
+  "X-XSS-Protection": "1; mode=block",
+  "X-Permitted-Cross-Domain-Policies": "none",
   "Referrer-Policy": "strict-origin-when-cross-origin",
   "Permissions-Policy": "camera=(), microphone=(), geolocation=()",
   "X-DNS-Prefetch-Control": "on",
@@ -90,19 +92,24 @@ export function proxy(request: NextRequest) {
     "unknown";
 
   if (request.nextUrl.pathname.startsWith("/api")) {
-    const limit =
-      request.nextUrl.pathname === "/api/auth/signin" &&
-      request.method === "POST"
-        ? rateLimit(`auth:${ip}`, 20, 15 * 60 * 1000)
+    const pathname = request.nextUrl.pathname;
+    const isAuthSignin = pathname === "/api/auth/signin" && request.method === "POST";
+    const isImportEndpoint = pathname.includes("/import") && request.method === "POST";
+
+    const limit = isAuthSignin
+      ? rateLimit(`auth:${ip}`, 8, 15 * 60 * 1000)
+      : isImportEndpoint
+        ? rateLimit(`import:${ip}`, 10, 60 * 60 * 1000)
         : rateLimit(`api:${ip}`, 120, 60 * 1000);
 
     if (!limit.allowed) {
       return applySecurityHeaders(
         new NextResponse(
           JSON.stringify({
-            error:
-              request.nextUrl.pathname === "/api/auth/signin"
-                ? "Demasiadas tentativas. Tente mais tarde."
+            error: isAuthSignin
+              ? "Demasiadas tentativas de autenticação. Tente mais tarde."
+              : isImportEndpoint
+                ? "Limite de importações excedido. Tente novamente mais tarde."
                 : "Limite de pedidos excedido.",
           }),
           {

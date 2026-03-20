@@ -1,0 +1,1 @@
+import { prisma } from '../src/lib/prisma'; async function main() { const student = await prisma.student.findFirst(); if(!student) return; await prisma.sosAlert.create({ data: { studentId: student.id, psych: 'Test', teacher: 'Test' }}); console.log('Created SOS'); } main();

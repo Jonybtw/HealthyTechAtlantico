@@ -12,7 +12,7 @@ import {
 } from "@/lib/api-response";
 import { prisma } from "@/lib/prisma";
 import { canRole, isStaffRole, PERMISSIONS } from "@/lib/rbac";
-import { createStudentSchema } from "@/lib/validations";
+import { createStudentSchema, listStudentsQuerySchema } from "@/lib/validations";
 
 // GET /api/students - list students (paginated, role-scoped)
 export async function GET(req: NextRequest) {
@@ -28,11 +28,10 @@ export async function GET(req: NextRequest) {
     }
 
     const { searchParams } = new URL(req.url);
-    const page = Math.max(1, Number(searchParams.get("page") || 1));
-    const limit = Math.min(100, Math.max(1, Number(searchParams.get("limit") || 50)));
-    const search = searchParams.get("search") || "";
-    const schoolYear = searchParams.get("school_year") || "";
-    const className = searchParams.get("class_name") || "";
+    const parsedQuery = listStudentsQuerySchema.parse(
+      Object.fromEntries(searchParams.entries()),
+    );
+    const { page, limit, search, school_year: schoolYear, class_name: className } = parsedQuery;
     const skip = (page - 1) * limit;
 
     const where: Prisma.StudentWhereInput = {};
@@ -81,7 +80,11 @@ export async function GET(req: NextRequest) {
       page,
       pages: Math.ceil(total / limit),
     });
-  } catch (error) {
+  } catch (error: unknown) {
+    if (error instanceof z.ZodError) {
+      return validationError(error.issues);
+    }
+
     console.error("GET /api/students error:", error);
     return serverError();
   }

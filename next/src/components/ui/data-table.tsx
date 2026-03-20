@@ -125,7 +125,7 @@ export function DataTable<T extends object>({
             {toolbarActions ? <div className="flex flex-wrap items-center gap-2">{toolbarActions}</div> : null}
             {searchable ? (
               <div className="relative w-full">
-                <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+                <Search className="pointer-events-none absolute left-3 top-1/2 z-10 size-4 -translate-y-1/2 text-muted-foreground" />
                 <input
                   value={search}
                   onChange={(event) => {
@@ -133,7 +133,7 @@ export function DataTable<T extends object>({
                     setPage(1);
                   }}
                   placeholder={searchPlaceholder}
-                  className="h-[42px] w-full rounded-[14px] border border-border/80 bg-background/60 py-2 pl-9 pr-4 text-sm text-foreground shadow-sm outline-none backdrop-blur-md transition-all focus:border-gold-500/50 focus:bg-background focus:ring-4 focus:ring-gold-400/10 placeholder:text-muted-foreground/60"
+                    className="h-[42px] w-full rounded-[14px] border border-border/80 bg-card py-2 pl-9 pr-4 text-sm text-foreground shadow-sm outline-none backdrop-blur-md transition-all focus:border-gold-500/50 focus:bg-card focus:ring-4 focus:ring-gold-400/10 placeholder:text-muted-foreground/60"
                 />
               </div>
             ) : null}

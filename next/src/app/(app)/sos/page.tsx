@@ -61,6 +61,7 @@ const EMPTY_FORM = {
 
 export default function SosPage() {
   const t = useTranslations("sos");
+  const common = useTranslations("common");
   usePageTitle(t("title"));
   const locale = useLocale();
   const { role } = useUser();
@@ -108,12 +109,12 @@ export default function SosPage() {
     } catch (error) {
       setLinkedStudent(null);
       setAlerts([]);
-      toast.error(error instanceof Error ? error.message : t("loadError"));
+      toast.error(error instanceof Error ? error.message : common("studentListLoadError"));
     } finally {
       setLoadingStudent(false);
       setLoadingAlerts(false);
     }
-  }, [t]);
+  }, [t, common]);
 
   const loadStaffView = useCallback(async () => {
     setLoadingAlerts(true);

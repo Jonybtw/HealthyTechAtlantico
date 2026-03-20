@@ -114,7 +114,7 @@ export default function TurmaPage() {
     link.download = "turma_report.csv";
     link.click();
     URL.revokeObjectURL(url);
-    toast.success(t("exportCsv"));
+    toast.success(common("exportCsv"));
   };
 
   const importClassesCsv = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -250,7 +250,7 @@ export default function TurmaPage() {
             loading={isImportingCsv}
             onClick={() => importInputRef.current?.click()}
           >
-            CSV
+            {common("importCsv")}
           </Button>
           <Button
             size="sm"
@@ -259,7 +259,7 @@ export default function TurmaPage() {
             onClick={exportCsv}
             disabled={!students.length}
           >
-            {t("exportCsv")}
+            {common("exportCsv")}
           </Button>
         </div>
       }

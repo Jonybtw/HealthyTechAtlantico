@@ -54,6 +54,7 @@ const INPUT_ICONS: Record<string, React.ReactNode> = {
 
 export default function TestesPage() {
   const t = useTranslations("testes");
+  const common = useTranslations("common");
   usePageTitle(t("title"));
   const { role } = useUser();
   const canImportCsv = role === "ADMIN" || role === "PROFESSOR";
@@ -72,7 +73,10 @@ export default function TestesPage() {
     setLoadingStudents(true);
     try {
       const res = await fetch("/api/students?limit=500");
-      if (!res.ok) { toast.error(t("loadError")); return; }
+      if (!res.ok) {
+        toast.error(common("studentListLoadError"));
+        return;
+      }
       const body = await readApiResponse<{
         students: {
           id: string;
@@ -96,11 +100,11 @@ export default function TestesPage() {
         setStudentId(mapped[0].id);
       }
     } catch {
-      toast.error(t("loadConnectionError"));
+      toast.error(common("studentListLoadError"));
     } finally {
       setLoadingStudents(false);
     }
-  }, [role, t]);
+  }, [role, common]);
 
   useEffect(() => {
     loadStudents();
@@ -231,7 +235,7 @@ export default function TestesPage() {
               loading={isImportingCsv}
               onClick={() => importInputRef.current?.click()}
             >
-              CSV
+              {common("importCsv")}
             </Button>
           </>
         ) : undefined

@@ -50,6 +50,7 @@ export default function QuestionariosPage() {
   const { role } = useUser();
 
   const [students, setStudents] = useState<{ id: string; name: string; className?: string | null }[]>([]);
+  const [loadingStudents, setLoadingStudents] = useState(true);
   const [studentId, setStudentId] = useState<string | null>(null);
   const [qType, setQType] = useState<"AUTOCONCEITO" | "AUTOESTIMA">("AUTOCONCEITO");
   const [saving, setSaving] = useState(false);
@@ -79,6 +80,7 @@ export default function QuestionariosPage() {
   });
 
   const loadStudents = useCallback(async () => {
+    setLoadingStudents(true);
     try {
       const res = await fetch("/api/students?limit=500");
       const body = await readApiResponse<{ students: StudentOption[] }>(res);
@@ -93,9 +95,12 @@ export default function QuestionariosPage() {
         setStudentId(nextStudents[0].id);
       }
     } catch {
-      toast.error(t("connectionError"));
+      setStudents([]);
+      toast.error(common("studentListLoadError"));
+    } finally {
+      setLoadingStudents(false);
     }
-  }, [role, t]);
+  }, [role, common]);
 
   // Load latest questionnaire to get deferredCount
   const loadLatestQ = useCallback(async (sid: string) => {
@@ -128,7 +133,7 @@ export default function QuestionariosPage() {
     );
   }
 
-  if (role === "ALUNO" && students.length === 0) {
+  if (role === "ALUNO" && !loadingStudents && students.length === 0) {
     return (
       <PageScaffold headerProps={{ title: t("title"), description: t("description") }}>
         <EmptyState
@@ -190,7 +195,12 @@ export default function QuestionariosPage() {
         <PageSection tone="primary" layout="form" className="animate-fade-in-up">
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">
             {role !== "ALUNO" && (
-              <StudentPicker students={students} value={studentId} onChange={setStudentId} />
+              <StudentPicker
+                students={students}
+                value={studentId}
+                onChange={setStudentId}
+                loading={loadingStudents}
+              />
             )}
 
             <PillSelect

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { CalendarDays, Plus, ShieldOff, Trash2 } from "lucide-react";
@@ -29,7 +29,7 @@ export default function DispensasPage() {
   const { role } = useUser();
   const canManageDispensas = role === "ADMIN" || role === "PROFESSOR";
 
-  const { data: studentsList = [] } = useStudents();
+  const { data: studentsList = [], isLoading: loadingStudents, isError: studentsError } = useStudents();
   const students = studentsList.map((s) => ({ id: s.id, name: s.name, className: s.className ?? null }));
   const [studentId, setStudentId] = useState<string | null>(null);
   const { data: dispensas = [], isLoading: loading } = useDispensas(studentId);
@@ -43,6 +43,14 @@ export default function DispensasPage() {
     startDate: "",
     endDate: "",
   });
+
+  useEffect(() => {
+    if (!studentsError) {
+      return;
+    }
+
+    toast.error(common("studentListLoadError"));
+  }, [studentsError, common]);
 
   const handleCreate = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -96,10 +104,16 @@ export default function DispensasPage() {
         </Button>
       }
     >
-        <PageSection tone="secondary" layout="list">
-          <div className="w-full max-w-sm">
-            <StudentPicker students={students} value={studentId} onChange={setStudentId} />
-          </div>          </PageSection>
+      <PageSection tone="secondary" layout="list">
+        <div className="w-full max-w-sm">
+          <StudentPicker
+            students={students}
+            value={studentId}
+            onChange={setStudentId}
+            loading={loadingStudents}
+          />
+        </div>
+      </PageSection>
       <AnimatePresence>
         {showForm ? (
           <FadeIn key="dispensa-form" className="max-w-lg">

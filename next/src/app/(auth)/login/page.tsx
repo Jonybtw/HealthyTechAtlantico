@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { signIn } from "next-auth/react";
 import { AnimatePresence, motion } from "motion/react";
-import { ArrowLeft, ArrowRight, CheckCircle2, LogIn, UserPlus } from "lucide-react";
+import { ArrowLeft, ArrowRight, CheckCircle2, LogIn, UserPlus, Mail, Lock, User } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -163,7 +163,7 @@ export default function LoginPage() {
   });
 
   return (
-    <div className="animate-fade-in-up overflow-hidden rounded-2xl border border-border/40 bg-card/95 shadow-[0_40px_100px_-12px_rgba(9,21,35,0.30),0_2px_16px_rgba(9,21,35,0.12)] backdrop-blur-sm">
+    <div className="animate-fade-in-up overflow-hidden rounded-[24px] border border-border/40 bg-card/95 shadow-[0_40px_100px_-12px_rgba(9,21,35,0.30),0_2px_16px_rgba(9,21,35,0.12)] backdrop-blur-sm">
       {/* Gold accent line */}
       <div className="h-px bg-gradient-to-r from-transparent via-gold-400/60 to-transparent" />
       {/* Header */}
@@ -291,8 +291,9 @@ export default function LoginPage() {
                       <FormControl>
                         <Input
                           label={t("name")}
-                          placeholder={t("name")}
                           autoComplete="name"
+                          floatingLabel
+                          leftIcon={<User className="size-4" />}
                           error={form.formState.errors.name?.message}
                           {...field}
                           ref={(el) => {
@@ -318,9 +319,10 @@ export default function LoginPage() {
                   <Input
                     label={t("email")}
                     type="email"
-                    placeholder="exemplo@escola.pt"
                     autoComplete="email"
                     autoFocus
+                    floatingLabel
+                    leftIcon={<Mail className="size-4" />}
                     error={form.formState.errors.email?.message}
                     {...field}
                   />
@@ -339,10 +341,11 @@ export default function LoginPage() {
                   <Input
                     label={t("password")}
                     type="password"
-                    placeholder={t("password")}
                     autoComplete={mode === "login" ? "current-password" : "new-password"}
                     showPasswordLabel={t("showPassword")}
                     hidePasswordLabel={t("hidePassword")}
+                    floatingLabel
+                    leftIcon={<Lock className="size-4" />}
                     error={form.formState.errors.password?.message}
                     {...field}
                   />
@@ -405,10 +408,11 @@ export default function LoginPage() {
                           <Input
                             label={t("confirmPassword")}
                             type="password"
-                            placeholder={t("confirmPassword")}
                             autoComplete="new-password"
                             showPasswordLabel={t("showPassword")}
                             hidePasswordLabel={t("hidePassword")}
+                            floatingLabel
+                            leftIcon={<Lock className="size-4" />}
                             error={form.formState.errors.confirmPassword?.message}
                             {...field}
                           />
@@ -470,19 +474,19 @@ export default function LoginPage() {
             type="submit"
             loading={isLoading}
             icon={mode === "login" ? <LogIn className="size-4" /> : <UserPlus className="size-4" />}
-            className="w-full justify-center"
+            className="w-full justify-center text-base h-12"
           >
             {mode === "login" ? t("enter") : t("createAccount")}
           </Button>
 
-          <div className="flex items-center justify-between gap-3 border-t border-border/70 pt-4 text-sm">
+          <div className="flex items-center justify-between gap-3 border-t border-border/70 pt-6 mt-2 text-sm">
             {mode === "login" ? (
               <>
                 <p className="text-muted-foreground">{t("noAccount")}</p>
                 <button
                   type="button"
                   onClick={switchToRegister}
-                  className="inline-flex items-center gap-2 font-semibold text-navy-700 transition-colors hover:text-gold-700 dark:text-gold-300"
+                  className="inline-flex items-center gap-1.5 font-semibold text-gold-500 transition-colors hover:text-gold-400 dark:text-gold-400 dark:hover:text-gold-300"
                 >
                   {t("createAccount")}
                   <ArrowRight className="size-4" />
@@ -494,7 +498,7 @@ export default function LoginPage() {
                 <button
                   type="button"
                   onClick={switchToLogin}
-                  className="inline-flex items-center gap-2 font-semibold text-navy-700 transition-colors hover:text-gold-700 dark:text-gold-300"
+                  className="inline-flex items-center gap-1.5 font-semibold text-gold-500 transition-colors hover:text-gold-400 dark:text-gold-400 dark:hover:text-gold-300"
                 >
                   <ArrowLeft className="size-4" />
                   {t("login")}

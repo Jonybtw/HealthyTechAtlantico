@@ -4,6 +4,37 @@ export interface ParsedCsv {
   rows: string[][];
 }
 
+const ALLOWED_CSV_MIME_TYPES = new Set([
+  "text/csv",
+  "application/csv",
+  "text/plain",
+  "application/vnd.ms-excel",
+  "",
+]);
+
+export const MAX_CSV_FILE_BYTES = 5 * 1024 * 1024;
+export const MAX_CSV_ROWS = 10_000;
+
+export function validateCsvUpload(file: File): string | null {
+  if (file.size <= 0) {
+    return "Ficheiro CSV vazio";
+  }
+
+  if (file.size > MAX_CSV_FILE_BYTES) {
+    return "Ficheiro demasiado grande (max 5MB)";
+  }
+
+  const fileName = file.name.toLowerCase();
+  const hasCsvExtension = fileName.endsWith(".csv");
+  const hasAllowedMimeType = ALLOWED_CSV_MIME_TYPES.has(file.type);
+
+  if (!hasCsvExtension && !hasAllowedMimeType) {
+    return "Formato invalido. Use um ficheiro CSV";
+  }
+
+  return null;
+}
+
 export function normalizeCsvHeader(value: string): string {
   return value
     .trim()

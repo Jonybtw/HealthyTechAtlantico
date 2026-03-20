@@ -78,12 +78,15 @@
     "noData": "No data recorded.",
     "search": "Search...",
     "export": "Export",
+    "importCsv": "Import CSV",
+    "exportCsv": "Export CSV",
     "male": "Male",
     "female": "Female",
     "healthy": "Healthy Zone",
     "risk": "Needs Improvement",
     "noPermission": "You don't have permission to access this page.",
     "connectionError": "Connection error.",
+    "studentListLoadError": "Error loading students.",
     "refresh": "Refresh"
   },
   "dashboard": {

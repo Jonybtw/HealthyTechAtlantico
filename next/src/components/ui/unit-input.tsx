@@ -34,7 +34,7 @@ export function UnitInput({
       </span>
       <div className="group relative">
         {icon ? (
-          <span className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-muted-foreground transition-colors duration-300 group-focus-within:text-foreground">
+          <span className="pointer-events-none absolute inset-y-0 left-0 z-10 flex items-center pl-3 text-muted-foreground transition-colors duration-300 group-focus-within:text-foreground">
             {icon}
           </span>
         ) : null}
@@ -49,7 +49,7 @@ export function UnitInput({
           required={required}
           className={`w-full rounded-xl border border-border/80 bg-card/80 py-2 pr-14 text-sm text-foreground shadow-[inset_0_1px_0_rgba(255,255,255,0.3)] transition-all duration-300 placeholder:text-muted-foreground hover:border-navy-300/40 focus:border-gold-500/60 focus:bg-card focus:outline-none focus:ring-3 focus:ring-gold-400/12 ${icon ? "pl-9" : "px-3"}`}
         />
-        <span className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 rounded-lg border border-border/70 bg-background/90 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground shadow-sm transition-colors duration-300 group-focus-within:border-gold-400/40 group-focus-within:text-foreground">
+        <span className="pointer-events-none absolute right-2 top-1/2 z-10 -translate-y-1/2 rounded-lg border border-border/70 bg-background/90 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground shadow-sm transition-colors duration-300 group-focus-within:border-gold-400/40 group-focus-within:text-foreground">
           {unit}
         </span>
       </div>

@@ -156,3 +156,56 @@ export const guardianSchema = z.object({
   }),
   relationship: z.string().default("encarregado"),
 });
+
+function queryNumberSchema(schema: z.ZodNumber) {
+  return z.preprocess(
+    (value) => (value === undefined || value === null || value === "" ? undefined : value),
+    z.coerce.number().int().pipe(schema),
+  );
+}
+
+function queryTextSchema(schema: z.ZodString) {
+  return z.preprocess(
+    (value) => (typeof value === "string" ? value.trim() : value),
+    schema,
+  );
+}
+
+function queryIsoDateSchema() {
+  return z.preprocess(
+    (value) => (value === undefined || value === null || value === "" ? undefined : value),
+    z.string().datetime({ offset: true }),
+  );
+}
+
+export const listStudentsQuerySchema = z.object({
+  page: queryNumberSchema(z.number().min(1)).default(1),
+  limit: queryNumberSchema(z.number().min(1).max(2000)).default(50),
+  search: queryTextSchema(z.string().max(100)).default(""),
+  school_year: queryTextSchema(z.string().max(50)).default(""),
+  class_name: queryTextSchema(z.string().max(50)).default(""),
+});
+
+export const listAuditQuerySchema = z
+  .object({
+    page: queryNumberSchema(z.number().min(1)).default(1),
+    limit: queryNumberSchema(z.number().min(1).max(100)).default(100),
+    action: queryTextSchema(z.string().max(80)).optional(),
+    startDate: queryIsoDateSchema().optional(),
+    endDate: queryIsoDateSchema().optional(),
+    sortBy: z.enum(["createdAt", "action"]).default("createdAt"),
+    sortDir: z.enum(["asc", "desc"]).default("desc"),
+  })
+  .superRefine((data, ctx) => {
+    if (!data.startDate || !data.endDate) {
+      return;
+    }
+
+    if (new Date(data.startDate) > new Date(data.endDate)) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["startDate"],
+        message: "startDate deve ser anterior ou igual a endDate",
+      });
+    }
+  });

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
+import { toast } from "sonner";
 import {
   AreaChart,
   Area,
@@ -46,6 +47,7 @@ export default function AnalisePage() {
   const canViewAnalysis = role === "ADMIN" || role === "PROFESSOR" || isStudent;
 
   const [students, setStudents] = useState<{ id: string; name: string; className?: string | null }[]>([]);
+  const [loadingStudents, setLoadingStudents] = useState(true);
   const [studentId, setStudentId] = useState<string | null>(null);
   const [chart, setChart] = useState<ChartType>("height");
   const [bioData, setBioData] = useState<{ date: string; imc: number; height: number; weight: number }[]>([]);
@@ -62,6 +64,7 @@ export default function AnalisePage() {
     }
 
     let active = true;
+    setLoadingStudents(true);
 
     void (async () => {
       try {
@@ -86,8 +89,13 @@ export default function AnalisePage() {
         if (!active) {
           return;
         }
+        toast.error(common("studentListLoadError"));
         setStudents([]);
         setStudentId(null);
+      } finally {
+        if (active) {
+          setLoadingStudents(false);
+        }
       }
     })();
 
@@ -235,7 +243,7 @@ export default function AnalisePage() {
     );
   }
 
-  if (isStudent && students.length === 0) {
+  if (isStudent && !loadingStudents && students.length === 0) {
     return (
       <PageScaffold
         headerProps={{ title: t("title"), description: t("descriptionStudent"), eyebrow: "Analysis" }}
@@ -260,6 +268,7 @@ export default function AnalisePage() {
                 students={students}
                 value={studentId}
                 onChange={setStudentId}
+                loading={loadingStudents}
               />
             </div>
           ) : null}

@@ -4,8 +4,9 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { Activity, ShieldCheck, Sparkles } from "lucide-react";
+import { Activity, ShieldCheck, Sparkles, Sun, Moon } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
+import { usePreferences } from "@/hooks/use-preferences";
 
 const HIGHLIGHTS = [
   {
@@ -155,9 +156,32 @@ export default function AuthLayout({
 }) {
   const t = useTranslations("authLayout");
   const pathname = usePathname();
+  const { theme, locale, toggleTheme, toggleLocale } = usePreferences();
 
   return (
     <main className="relative flex min-h-screen flex-col overflow-x-hidden bg-[linear-gradient(160deg,#091523_0%,#14304c_60%,#203f56_100%)]">
+      {/* Preferences Controls */}
+      <div className="absolute top-4 right-4 z-50 flex items-center gap-2">
+        <button
+          type="button"
+          onClick={toggleTheme}
+          className="flex h-10 w-10 items-center justify-center rounded-full bg-white/5 border border-white/10 text-white/80 backdrop-blur-md transition-all duration-300 hover:bg-white/15 hover:text-white"
+          aria-label="Toggle theme"
+          title={theme === "light" ? "Mudar para modo escuro" : "Mudar para modo claro"}
+        >
+          {theme === "light" ? <Moon className="size-4" /> : <Sun className="size-4" />}
+        </button>
+        <button
+          type="button"
+          onClick={toggleLocale}
+          className="flex h-10 w-10 items-center justify-center rounded-full bg-white/5 border border-white/10 text-white/80 backdrop-blur-md transition-all duration-300 hover:bg-white/15 hover:text-white font-medium text-[11px] tracking-widest uppercase"
+          aria-label="Toggle language"
+          title={locale === "pt" ? "Change to English" : "Mudar para Português"}
+        >
+          {locale}
+        </button>
+      </div>
+
       {/* Ambient floating orbs */}
       <div aria-hidden="true" className="animate-float-a pointer-events-none absolute -right-24 -top-24 size-[420px] rounded-full bg-gold-300/6 blur-3xl" />
       <div aria-hidden="true" className="animate-float-b pointer-events-none absolute -bottom-40 -left-20 size-[500px] rounded-full bg-white/4 blur-3xl" />

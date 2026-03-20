@@ -1,7 +1,25 @@
 "use client";
 
 import { motion, AnimatePresence, type Variants } from "motion/react";
-import type { ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
+
+function usePrefersReducedMotion() {
+  const [reducedMotion, setReducedMotion] = useState(false);
+
+  useEffect(() => {
+    const media = window.matchMedia("(prefers-reduced-motion: reduce)");
+    setReducedMotion(media.matches);
+
+    const handleChange = () => setReducedMotion(media.matches);
+    media.addEventListener("change", handleChange);
+
+    return () => {
+      media.removeEventListener("change", handleChange);
+    };
+  }, []);
+
+  return reducedMotion;
+}
 
 // Page wrapper
 const pageVariants: Variants = {
@@ -21,8 +39,16 @@ export function PageTransition({
   children: ReactNode;
   className?: string;
 }) {
+  const reducedMotion = usePrefersReducedMotion();
+
   return (
-    <motion.div variants={pageVariants} initial="hidden" animate="visible" exit="exit" className={className}>
+    <motion.div
+      variants={reducedMotion ? undefined : pageVariants}
+      initial={reducedMotion ? undefined : "hidden"}
+      animate={reducedMotion ? undefined : "visible"}
+      exit={reducedMotion ? undefined : "exit"}
+      className={className}
+    >
       {children}
     </motion.div>
   );
@@ -40,11 +66,17 @@ export function FadeIn({
   delay?: number;
   duration?: number;
 }) {
+  const reducedMotion = usePrefersReducedMotion();
+
   return (
     <motion.div
-      initial={{ opacity: 0, y: 16 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration, delay, ease: [0.25, 0.46, 0.45, 0.94] }}
+      initial={reducedMotion ? undefined : { opacity: 0, y: 16 }}
+      animate={reducedMotion ? undefined : { opacity: 1, y: 0 }}
+      transition={
+        reducedMotion
+          ? undefined
+          : { duration, delay, ease: [0.25, 0.46, 0.45, 0.94] }
+      }
       className={className}
     >
       {children}
@@ -80,8 +112,15 @@ export function StaggerList({
   children: ReactNode;
   className?: string;
 }) {
+  const reducedMotion = usePrefersReducedMotion();
+
   return (
-    <motion.div variants={containerVariants} initial="hidden" animate="visible" className={className}>
+    <motion.div
+      variants={reducedMotion ? undefined : containerVariants}
+      initial={reducedMotion ? undefined : "hidden"}
+      animate={reducedMotion ? undefined : "visible"}
+      className={className}
+    >
       {children}
     </motion.div>
   );
@@ -94,8 +133,10 @@ export function StaggerItem({
   children: ReactNode;
   className?: string;
 }) {
+  const reducedMotion = usePrefersReducedMotion();
+
   return (
-    <motion.div variants={itemVariants} className={className}>
+    <motion.div variants={reducedMotion ? undefined : itemVariants} className={className}>
       {children}
     </motion.div>
   );
@@ -111,11 +152,17 @@ export function ScaleIn({
   className?: string;
   delay?: number;
 }) {
+  const reducedMotion = usePrefersReducedMotion();
+
   return (
     <motion.div
-      initial={{ opacity: 0, scale: 0.95 }}
-      animate={{ opacity: 1, scale: 1 }}
-      transition={{ duration: 0.3, delay, ease: [0.25, 0.46, 0.45, 0.94] }}
+      initial={reducedMotion ? undefined : { opacity: 0, scale: 0.95 }}
+      animate={reducedMotion ? undefined : { opacity: 1, scale: 1 }}
+      transition={
+        reducedMotion
+          ? undefined
+          : { duration: 0.3, delay, ease: [0.25, 0.46, 0.45, 0.94] }
+      }
       className={className}
     >
       {children}
@@ -131,12 +178,14 @@ export function AnimatedNumber({
   value: number;
   className?: string;
 }) {
+  const reducedMotion = usePrefersReducedMotion();
+
   return (
     <motion.span
       key={value}
-      initial={{ opacity: 0, y: 8 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.3 }}
+      initial={reducedMotion ? undefined : { opacity: 0, y: 8 }}
+      animate={reducedMotion ? undefined : { opacity: 1, y: 0 }}
+      transition={reducedMotion ? undefined : { duration: 0.3 }}
       className={className}
     >
       {value.toLocaleString()}

@@ -9,7 +9,12 @@ import {
   unauthorized,
   validationError,
 } from "@/lib/api-response";
-import { parseCsv, normalizeCsvHeader } from "@/lib/csv";
+import {
+  MAX_CSV_ROWS,
+  normalizeCsvHeader,
+  parseCsv,
+  validateCsvUpload,
+} from "@/lib/csv";
 import { prisma } from "@/lib/prisma";
 import { canRole, isStaffRole, PERMISSIONS } from "@/lib/rbac";
 import { createStudentSchema } from "@/lib/validations";
@@ -37,10 +42,18 @@ export async function POST(req: Request) {
       return badRequest("Ficheiro CSV em falta");
     }
 
+    const uploadError = validateCsvUpload(file);
+    if (uploadError) {
+      return badRequest(uploadError);
+    }
+
     const text = await file.text();
     const { headers, rows } = parseCsv(text);
     if (!headers.length) {
       return badRequest("CSV vazio");
+    }
+    if (rows.length > MAX_CSV_ROWS) {
+      return badRequest("CSV demasiado grande em numero de linhas (max 10000)");
     }
 
     const headerIndex = new Map<string, number>();

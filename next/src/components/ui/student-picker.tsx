@@ -17,6 +17,7 @@ export interface StudentPickerProps {
   value: string | null;
   onChange: (id: string | null) => void;
   placeholder?: string;
+  loading?: boolean;
 }
 
 export const STUDENT_SWATCHES = [
@@ -53,6 +54,7 @@ export function StudentPicker({
   value,
   onChange,
   placeholder = "Selecionar aluno...",
+  loading = false,
 }: StudentPickerProps) {
   const selected = students.find((student) => student.id === value) ?? null;
   const [open, setOpen] = useState(false);
@@ -102,6 +104,15 @@ export function StudentPicker({
   }, []);
 
   useEffect(() => {
+    if (!loading) {
+      return;
+    }
+
+    setOpen(false);
+    setSearch("");
+  }, [loading]);
+
+  useEffect(() => {
     if (!open) {
       return;
     }
@@ -124,6 +135,24 @@ export function StudentPicker({
   const filtered = students.filter((student) =>
     student.name.toLowerCase().includes(search.toLowerCase())
   );
+
+  if (loading) {
+    return (
+      <div
+        className="flex h-[46px] w-full items-center justify-between rounded-[18px] border border-input bg-card px-4 shadow-sm"
+        aria-busy="true"
+        aria-live="polite"
+      >
+        <div className="flex w-full items-center gap-2.5">
+          <span className="size-7 shrink-0 animate-pulse rounded-full bg-muted" />
+          <span className="flex min-w-0 flex-1 flex-col gap-1">
+            <span className="h-3 w-28 animate-pulse rounded bg-muted" />
+            <span className="h-2.5 w-20 animate-pulse rounded bg-muted/70" />
+          </span>
+        </div>
+      </div>
+    );
+  }
 
   const dropdown =
     open && menuStyle && typeof document !== "undefined"
@@ -185,6 +214,9 @@ export function StudentPicker({
       <div
         ref={triggerRef}
         onClick={() => {
+          if (loading) {
+            return;
+          }
           if (!open) {
             setSearch("");
             setOpen(true);
@@ -193,7 +225,7 @@ export function StudentPicker({
         className={`flex h-[46px] w-full cursor-pointer items-center justify-between rounded-[18px] border px-4 text-left transition-all duration-300 outline-none focus-within:ring-1 focus-within:ring-ring ${
           open
             ? "border-gold-500/50 bg-card shadow-card"
-            : "border-input bg-background shadow-sm hover:surface-secondary hover:text-foreground"
+            : "border-input bg-card shadow-sm hover:border-navy-300/40 hover:bg-muted/50 hover:text-foreground"
         }`}
       >
         {selected && !open ? (

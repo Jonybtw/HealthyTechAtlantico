@@ -38,10 +38,12 @@ const RELATIONSHIP_OPTIONS = [
 
 export default function GuardioesPage() {
   const t = useTranslations("guardioes");
+  const common = useTranslations("common");
   usePageTitle(t("title"));
   const { role } = useUser();
 
   const [students, setStudents] = useState<Student[]>([]);
+  const [loadingStudents, setLoadingStudents] = useState(true);
   const [selectedStudentId, setSelectedStudentId] = useState<string | null>(null);
   const [guardians, setGuardians] = useState<Guardian[]>([]);
   const [loadingGuardians, setLoadingGuardians] = useState(false);
@@ -55,11 +57,16 @@ export default function GuardioesPage() {
   const [deleteTarget, setDeleteTarget] = useState<{ guardianUserId: string; studentId: string } | null>(null);
 
   useEffect(() => {
+    setLoadingStudents(true);
     fetch("/api/students")
       .then((response) => readApiResponse<{ students: Student[] }>(response))
       .then((data) => setStudents(data.students))
-      .catch(() => toast.error(t("loadError")));
-  }, [t]);
+      .catch(() => {
+        setStudents([]);
+        toast.error(common("studentListLoadError"));
+      })
+      .finally(() => setLoadingStudents(false));
+  }, [common]);
 
   const loadGuardians = useCallback(async (studentId: string) => {
     setLoadingGuardians(true);
@@ -148,6 +155,7 @@ export default function GuardioesPage() {
           value={selectedStudentId}
           onChange={setSelectedStudentId}
           placeholder={t("selectStudent")}
+          loading={loadingStudents}
         />
 
         {loadingGuardians && (

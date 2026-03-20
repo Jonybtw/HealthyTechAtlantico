@@ -59,6 +59,7 @@ export default function RelatorioPage() {
   const canSendEmail = role === "ADMIN" || role === "PROFESSOR";
 
   const [students, setStudents] = useState<{ id: string; name: string; className?: string | null }[]>([]);
+  const [loadingStudents, setLoadingStudents] = useState(true);
   const [studentId, setStudentId] = useState<string | null>(null);
   const [guardians, setGuardians] = useState<GuardianOption[]>([]);
   const [guardianUserId, setGuardianUserId] = useState("");
@@ -71,29 +72,43 @@ export default function RelatorioPage() {
   const [loadingPreview, setLoadingPreview] = useState(false);
 
   const loadStudents = useCallback(async () => {
+    setLoadingStudents(true);
     if (!canViewReports) {
       setStudents([]);
       setStudentId(null);
+      setLoadingStudents(false);
       return;
     }
 
-    const res = await fetch("/api/students?limit=500");
-    if (res.ok) {
-      const body = await readApiResponse<{
-        students: { id: string; name: string; className?: string | null }[];
-      }>(res);
-      const nextStudents = body.students.map((student) => ({
-        id: student.id,
-        name: student.name,
-        className: student.className ?? null,
-      }));
+    try {
+      const res = await fetch("/api/students?limit=500");
+      if (res.ok) {
+        const body = await readApiResponse<{
+          students: { id: string; name: string; className?: string | null }[];
+        }>(res);
+        const nextStudents = body.students.map((student) => ({
+          id: student.id,
+          name: student.name,
+          className: student.className ?? null,
+        }));
 
-      setStudents(nextStudents);
-      if (role === "ALUNO" && nextStudents.length === 1) {
-        setStudentId(nextStudents[0].id);
+        setStudents(nextStudents);
+        if (role === "ALUNO" && nextStudents.length === 1) {
+          setStudentId(nextStudents[0].id);
+        }
+      } else {
+        toast.error(common("studentListLoadError"));
+        setStudents([]);
+        setStudentId(null);
       }
+    } catch {
+      toast.error(common("studentListLoadError"));
+      setStudents([]);
+      setStudentId(null);
+    } finally {
+      setLoadingStudents(false);
     }
-  }, [canViewReports, role]);
+  }, [canViewReports, role, common]);
 
   useEffect(() => {
     loadStudents();
@@ -187,7 +202,9 @@ export default function RelatorioPage() {
       const bgSite  = [244, 241, 234] as [number, number, number];  // --background
       const bgCard  = [255, 255, 255] as [number, number, number];  // --card (white)
       const bgMuted = [236, 230, 218] as [number, number, number];  // --muted
-      const brand   = [184, 140, 25] as [number, number, number];   // --accent (gold-500)
+      const brand   = [184, 140, 25] as [number, number, number];
+      const navy50 = [238, 242, 255] as [number, number, number];
+      const navy600 = [79, 70, 229] as [number, number, number];   // --accent (gold-500)
       const success = [16, 185, 129] as [number, number, number];   // --color-success-500
       const warning = [245, 158, 11] as [number, number, number];   // --color-warning-500
       const danger  = [239, 68, 68] as [number, number, number];    // --color-danger-500
@@ -466,7 +483,7 @@ export default function RelatorioPage() {
     );
   }
 
-  if (role === "ALUNO" && students.length === 0) {
+  if (role === "ALUNO" && !loadingStudents && students.length === 0) {
     return (
       <PageScaffold
         className="max-w-4xl"
@@ -496,6 +513,7 @@ export default function RelatorioPage() {
               students={students}
               value={studentId}
               onChange={setStudentId}
+              loading={loadingStudents}
             />
           ) : (
             <div className="flex h-[46px] w-full items-center justify-between rounded-[18px] border border-input px-4 text-left shadow-sm bg-background">
@@ -517,7 +535,7 @@ export default function RelatorioPage() {
                     {selectedStudent?.name ?? "A carregar..."}
                   </span>
                   <span className="truncate text-[10px] leading-none text-muted-foreground mt-0.5">
-                    {selectedStudent?.className ?? selectedStudent?.schoolYear ?? "Sem turma atribuída"}
+                    {selectedStudent?.className ?? "Sem turma atribuída"}
                   </span>
                 </span>
               </div>

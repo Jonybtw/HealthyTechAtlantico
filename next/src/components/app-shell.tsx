@@ -2,9 +2,9 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { signOut } from "next-auth/react";
-import { useLocale, useTranslations } from "next-intl";
+import { useTranslations } from "next-intl";
 import type { Role } from "@prisma/client";
 import {
   Globe,
@@ -16,7 +16,6 @@ import {
   User,
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-import { useTheme, writeTheme } from "@/lib/theme";
 import { cn } from "@/lib/utils";
 import { NAV_ITEMS, type NavItem } from "@/lib/nav-items";
 import { Button } from "@/components/ui/button";
@@ -41,6 +40,7 @@ import { CommandPalette } from "@/components/command-palette";
 import { NotificationCenter } from "@/components/notification-center";
 import { useHotkeys } from "@/hooks/use-hotkeys";
 import { useIsClient } from "@/hooks/use-is-client";
+import { usePreferences } from "@/hooks/use-preferences";
 
 interface AppShellProps {
   user: {
@@ -142,10 +142,8 @@ function NavLink({
 
 export function AppShell({ user, children }: AppShellProps) {
   const pathname = usePathname();
-  const router = useRouter();
-  const locale = useLocale();
   const t = useTranslations();
-  const theme = useTheme();
+  const { theme, locale, toggleTheme, toggleLocale } = usePreferences();
   const isClient = useIsClient();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [cmdOpen, setCmdOpen] = useState(false);
@@ -200,16 +198,6 @@ export function AppShell({ user, children }: AppShellProps) {
       .slice(0, 2)
       .map((chunk) => chunk[0]?.toUpperCase())
       .join("") || user.email.charAt(0).toUpperCase();
-
-  const toggleTheme = () => {
-    writeTheme(theme === "light" ? "dark" : "light");
-  };
-
-  const toggleLocale = () => {
-    const nextLocale = locale === "pt" ? "en" : "pt";
-    document.cookie = `NEXT_LOCALE=${nextLocale}; path=/; max-age=31536000; samesite=lax`;
-    router.refresh();
-  };
 
   const sidebarNav = (onNav?: () => void) => (
     <>
