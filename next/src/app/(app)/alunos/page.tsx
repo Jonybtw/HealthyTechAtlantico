@@ -1,11 +1,18 @@
 import type { Metadata } from "next";
+import { getTranslations } from "next-intl/server";
 import { requireAuth } from "@/lib/auth-guard";
 import { prisma } from "@/lib/prisma";
 import { isStaffRole } from "@/lib/rbac";
 import { redirect } from "next/navigation";
 import { AlunosClient } from "./alunos-client";
 
-export const metadata: Metadata = { title: "Alunos" };
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations("alunos");
+
+  return {
+    title: t("title"),
+  };
+}
 
 export default async function AlunosPage() {
   const user = await requireAuth();

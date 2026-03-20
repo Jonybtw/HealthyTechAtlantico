@@ -2,8 +2,8 @@ import { describe, expect, it } from "vitest";
 import { PERMISSIONS, canAccessSosInbox, canAccessStudentByRole, canRole } from "@/lib/rbac";
 
 describe("rbac", () => {
-  it("blocks students from the global SOS inbox", () => {
-    expect(canRole("ALUNO", PERMISSIONS.READ_SOS)).toBe(false);
+  it("blocks students from the global SOS inbox while keeping scoped SOS access", () => {
+    expect(canRole("ALUNO", PERMISSIONS.READ_SOS)).toBe(true);
     expect(canAccessSosInbox("ALUNO")).toBe(false);
     expect(canAccessSosInbox("PAIS")).toBe(false);
     expect(canAccessSosInbox("PROFESSOR")).toBe(true);

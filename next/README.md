@@ -138,7 +138,7 @@ Current automated coverage includes:
 ## Docker
 
 ```bash
-docker build -t healthytech-atlantico .
+docker build -t healthytech-atlantico -f next/Dockerfile next
 docker run -p 3000:3000 \
   -e DATABASE_URL="..." \
   -e AUTH_SECRET="..." \
@@ -168,6 +168,6 @@ GitHub Actions runs:
 ## Notes
 
 - Active application code lives in `next/`.
-- `old/` is legacy archive code and should not track secrets or `node_modules`.
+- There is no `old/` archive directory in this repo.
 - Security headers are applied in `src/proxy.ts`.
 - For multi-instance production rate limiting, replace the in-memory limiter in `src/proxy.ts` with Redis or another shared backend.

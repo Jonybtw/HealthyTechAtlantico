@@ -2,12 +2,18 @@ import type { LucideIcon } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
 function useAnimatedNumber(target: number, duration = 600) {
-  const [display, setDisplay] = useState(0);
+  const [display, setDisplay] = useState(target);
   const raf = useRef<number | undefined>(undefined);
+  const previousTarget = useRef(target);
 
   useEffect(() => {
+    if (previousTarget.current === target) {
+      setDisplay(target);
+      return;
+    }
+
     const start = performance.now();
-    const from = 0;
+    const from = previousTarget.current;
     const tick = (now: number) => {
       const elapsed = now - start;
       const progress = Math.min(elapsed / duration, 1);
@@ -16,6 +22,7 @@ function useAnimatedNumber(target: number, duration = 600) {
       setDisplay(Math.round(from + (target - from) * eased));
       if (progress < 1) raf.current = requestAnimationFrame(tick);
     };
+    previousTarget.current = target;
     raf.current = requestAnimationFrame(tick);
     return () => { if (raf.current) cancelAnimationFrame(raf.current); };
   }, [target, duration]);

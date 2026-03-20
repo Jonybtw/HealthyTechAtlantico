@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { signOut } from "next-auth/react";
@@ -38,6 +37,7 @@ import {
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { CommandPalette } from "@/components/command-palette";
 import { NotificationCenter } from "@/components/notification-center";
+import { BrandLogo } from "@/components/brand-logo";
 import { useHotkeys } from "@/hooks/use-hotkeys";
 import { useIsClient } from "@/hooks/use-is-client";
 import { usePreferences } from "@/hooks/use-preferences";
@@ -64,14 +64,18 @@ function isActivePath(pathname: string, href: string) {
   return pathname === href || pathname.startsWith(`${href}/`);
 }
 
+const SECTION_ORDER: NavItem["section"][] = ["core", "operations", "reference", "admin"];
+
 function getSectionLabel(section: NavItem["section"]) {
   switch (section) {
     case "core":
-      return "Workspace";
+      return "Geral";
     case "operations":
-      return "Operations";
+      return "Operações";
+    case "reference":
+      return "Referência";
     case "admin":
-      return "Account";
+      return "Conta";
   }
 }
 
@@ -158,7 +162,7 @@ export function AppShell({ user, children }: AppShellProps) {
     function onVisibility() {
       if (document.hidden) {
         savedTitle.current = document.title;
-        document.title = "Come back to HealthyTech Atlantico";
+        document.title = "Volta ao HealthyTech Atlantico";
       } else {
         document.title = savedTitle.current || brandName;
       }
@@ -174,7 +178,7 @@ export function AppShell({ user, children }: AppShellProps) {
       groups[item.section].push(item);
       return groups;
     },
-    { core: [], operations: [], admin: [] }
+    { core: [], operations: [], reference: [], admin: [] }
   );
   const mobileItems = getMobileItems(user.role, visibleItems);
   const currentItem =
@@ -201,7 +205,7 @@ export function AppShell({ user, children }: AppShellProps) {
 
   const sidebarNav = (onNav?: () => void) => (
     <>
-      {(["core", "operations", "admin"] as const).map((section) =>
+      {SECTION_ORDER.map((section) =>
         groupedItems[section].length > 0 ? (
           <div key={section} className="space-y-1.5">
             <p className="px-2.5 pb-1 text-[10px] font-semibold uppercase tracking-[0.22em] text-navy-200/44">
@@ -239,15 +243,14 @@ export function AppShell({ user, children }: AppShellProps) {
           className="fixed inset-y-0 left-0 z-30 hidden w-72 border-r border-white/10 bg-gradient-to-b from-navy-950 via-navy-900 to-navy-900 lg:flex lg:flex-col"
         >
           <div className="flex items-center justify-center border-b border-white/10 px-6 py-5">
-              <Image
-                src="/logo.png"
-                alt={brandName}
-                width={120}
-                height={120}
-                className="w-[96px] h-auto object-contain brightness-0 invert drop-shadow-[0_2px_8px_rgba(255,255,255,0.12)]"
-                priority
-              />
-            </div>
+            <BrandLogo
+              alt={brandName}
+              className="h-[98px] w-[96px]"
+              imageClassName="brightness-0 invert drop-shadow-[0_2px_8px_rgba(255,255,255,0.12)]"
+              priority
+              sizes="96px"
+            />
+          </div>
 
           <ScrollArea className="flex-1 px-3 py-4">
             <nav className="space-y-4">{sidebarNav()}</nav>
@@ -288,11 +291,6 @@ export function AppShell({ user, children }: AppShellProps) {
                   <Menu className="size-5" />
                 </Button>
 
-                <div className="min-w-0">
-                  <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-muted-foreground">
-                    {currentItem ? getSectionLabel(currentItem.section) : brandName}
-                  </p>
-                </div>
               </div>
 
               <div className="flex items-center gap-2">
@@ -421,15 +419,13 @@ export function AppShell({ user, children }: AppShellProps) {
               className="w-72 border-r-0 bg-gradient-to-b from-navy-950 via-navy-900 to-navy-900 p-0"
             >
               <div className="flex items-center justify-center border-b border-white/10 px-6 py-5">
-              <Image
-                src="/logo.png"
-                alt={brandName}
-                width={120}
-                height={120}
-                className="w-[96px] h-auto object-contain brightness-0 invert drop-shadow-[0_2px_8px_rgba(255,255,255,0.12)]"
-                
-              />
-            </div>
+                <BrandLogo
+                  alt={brandName}
+                  className="h-[98px] w-[96px]"
+                  imageClassName="brightness-0 invert drop-shadow-[0_2px_8px_rgba(255,255,255,0.12)]"
+                  sizes="96px"
+                />
+              </div>
               <ScrollArea className="h-[calc(100vh-224px)] px-3 py-4">
                 <nav className="space-y-4">{sidebarNav(() => setMobileOpen(false))}</nav>
               </ScrollArea>

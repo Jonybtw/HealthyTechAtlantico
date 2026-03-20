@@ -4,17 +4,34 @@ import { motion, AnimatePresence, type Variants } from "motion/react";
 import { useEffect, useState, type ReactNode } from "react";
 
 function usePrefersReducedMotion() {
-  const [reducedMotion, setReducedMotion] = useState(false);
+  const [reducedMotion, setReducedMotion] = useState(() => {
+    if (typeof window === "undefined" || typeof window.matchMedia !== "function") {
+      return false;
+    }
+
+    return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  });
 
   useEffect(() => {
+    if (typeof window === "undefined" || typeof window.matchMedia !== "function") {
+      return;
+    }
+
     const media = window.matchMedia("(prefers-reduced-motion: reduce)");
-    setReducedMotion(media.matches);
 
     const handleChange = () => setReducedMotion(media.matches);
-    media.addEventListener("change", handleChange);
+    if (typeof media.addEventListener === "function") {
+      media.addEventListener("change", handleChange);
+    } else {
+      media.addListener(handleChange);
+    }
 
     return () => {
-      media.removeEventListener("change", handleChange);
+      if (typeof media.removeEventListener === "function") {
+        media.removeEventListener("change", handleChange);
+      } else {
+        media.removeListener(handleChange);
+      }
     };
   }, []);
 

@@ -22,7 +22,7 @@ export interface NavItem {
   label: string;
   icon: LucideIcon;
   roles: string[];
-  section: "core" | "operations" | "admin";
+  section: "core" | "operations" | "reference" | "admin";
 }
 
 export const NAV_ITEMS: NavItem[] = [
@@ -35,7 +35,7 @@ export const NAV_ITEMS: NavItem[] = [
   { href: "/analise", label: "nav.analise", icon: BarChart3, roles: ["ADMIN", "PROFESSOR"], section: "operations" },
   { href: "/turma", label: "nav.turma", icon: School, roles: ["ADMIN", "PROFESSOR"], section: "operations" },
   { href: "/dispensas", label: "nav.dispensas", icon: Shield, roles: ["ADMIN", "PROFESSOR"], section: "operations" },
-  { href: "/protocolos", label: "nav.protocolos", icon: Heart, roles: ["ADMIN", "ALUNO", "PROFESSOR", "PAIS"], section: "operations" },
+  { href: "/protocolos", label: "nav.protocolos", icon: Heart, roles: ["ADMIN", "ALUNO", "PROFESSOR", "PAIS"], section: "reference" },
   { href: "/alunos", label: "nav.alunos", icon: Users, roles: ["ADMIN", "PROFESSOR"], section: "operations" },
   { href: "/guardioes", label: "nav.guardioes", icon: UserCheck, roles: ["ADMIN", "PROFESSOR"], section: "operations" },
   { href: "/perfil", label: "nav.perfil", icon: User, roles: ["ADMIN", "PROFESSOR", "ALUNO", "PSICOLOGO", "PAIS"], section: "admin" },

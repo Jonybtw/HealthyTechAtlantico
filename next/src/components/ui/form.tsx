@@ -38,6 +38,10 @@ const FormField = <
   </FormFieldContext.Provider>
 );
 
+function toFormItemId(value: string) {
+  return `form-item-${value.replace(/[^a-zA-Z0-9_-]/g, "-")}`;
+}
+
 const useFormField = () => {
   const fieldContext = React.useContext(FormFieldContext);
   const itemContext = React.useContext(FormItemContext);
@@ -67,7 +71,10 @@ const FormItem = React.forwardRef<
   HTMLDivElement,
   React.HTMLAttributes<HTMLDivElement>
 >(({ className, ...props }, ref) => {
-  const id = React.useId();
+  const fieldContext = React.useContext(FormFieldContext);
+  const id =
+    props.id ??
+    (fieldContext.name ? toFormItemId(String(fieldContext.name)) : React.useId());
 
   return (
     <FormItemContext.Provider value={{ id }}>

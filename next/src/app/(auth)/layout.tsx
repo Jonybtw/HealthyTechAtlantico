@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { Activity, ShieldCheck, Sparkles, Sun, Moon } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
+import { BrandLogo } from "@/components/brand-logo";
 import { usePreferences } from "@/hooks/use-preferences";
 
 const HIGHLIGHTS = [
@@ -205,13 +206,11 @@ export default function AuthLayout({
               {/* Left: branding copy */}
               <div className="order-2 hidden space-y-6 lg:order-1 lg:block">
                 <div className="flex items-center gap-4">
-                  <Image
-                    src="/logo.png"
-                    alt="HealthyTech Atlantico"
-                    width={160}
-                    height={40}
-                    className="object-contain brightness-0 invert"
+                  <BrandLogo
+                    className="h-[84px] w-[82px]"
+                    imageClassName="brightness-0 invert"
                     priority
+                    sizes="84px"
                   />
                 </div>
 
@@ -247,13 +246,11 @@ export default function AuthLayout({
                   {/* Mobile compact header */}
                   <div className="mb-4 flex items-center justify-between gap-3 lg:hidden">
                     <div className="flex items-center gap-3">
-                      <Image
-                        src="/logo.png"
-                        alt="HealthyTech Atlantico"
-                        width={112}
-                        height={30}
-                        className="object-contain brightness-0 invert"
+                      <BrandLogo
+                        className="h-[72px] w-[70px]"
+                        imageClassName="brightness-0 invert"
                         priority
+                        sizes="72px"
                       />
                     </div>
                   </div>
@@ -274,13 +271,11 @@ export default function AuthLayout({
       ) : (
         <div className="relative mx-auto flex w-full max-w-md flex-col items-center gap-7 px-4 py-12 pb-16">
           {/* Logo */}
-          <Image
-            src="/logo.png"
-            alt="HealthyTech Atlantico"
-            width={124}
-            height={32}
-            className="object-contain brightness-0 invert"
+          <BrandLogo
+            className="h-[86px] w-[84px]"
+            imageClassName="brightness-0 invert"
             priority
+            sizes="86px"
           />
 
           {/* Headline */}
@@ -336,3 +331,4 @@ export default function AuthLayout({
     </main>
   );
 }
+

@@ -1,11 +1,18 @@
 import type { Metadata } from "next";
+import { getTranslations } from "next-intl/server";
 import { requireAuth } from "@/lib/auth-guard";
 import { prisma } from "@/lib/prisma";
 import { isStaffRole } from "@/lib/rbac";
 import { notFound, redirect } from "next/navigation";
 import { StudentDetailClient } from "./student-detail-client";
 
-export const metadata: Metadata = { title: "Detalhe do Aluno" };
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations("studentDetail");
+
+  return {
+    title: t("editTitle"),
+  };
+}
 
 interface Props {
   params: Promise<{ id: string }>;

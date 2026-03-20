@@ -26,6 +26,3 @@ Thumbs.db
 
 # TypeScript
 **/*.tsbuildinfo
-
-# Legacy archive
-old/server/config/.env

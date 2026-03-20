@@ -5,8 +5,8 @@ import { NextIntlClientProvider } from "next-intl";
 import { getLocale, getMessages } from "next-intl/server";
 import { cookies } from "next/headers";
 import { Toaster } from "sonner";
-import { THEME_COOKIE_NAME } from "@/lib/theme-cookie";
 import { QueryProvider } from "@/components/query-provider";
+import { THEME_COOKIE_NAME } from "@/lib/theme-cookie";
 import "./globals.css";
 
 const sans = Manrope({
@@ -67,6 +67,7 @@ export default async function RootLayout({
     <html
       lang={locale}
       data-theme={theme}
+      data-scroll-behavior="smooth"
       suppressHydrationWarning
       className="scroll-smooth"
     >
@@ -75,9 +76,7 @@ export default async function RootLayout({
       >
         <NextIntlClientProvider messages={messages}>
           <SessionProvider>
-            <QueryProvider>
-              {children}
-            </QueryProvider>
+            <QueryProvider>{children}</QueryProvider>
             <Toaster
               richColors
               position="top-right"

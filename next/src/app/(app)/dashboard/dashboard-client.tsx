@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useEffect, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import {
   Activity,
@@ -16,13 +17,13 @@ import {
   TrendingUp,
   Users,
 } from "lucide-react";
-import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
+import { PieChart, Pie, Cell, Tooltip } from "recharts";
 import { EmptyState } from "@/components/ui/empty-state";
 import { KpiCard } from "@/components/ui/kpi-card";
 import { PageScaffold } from "@/components/ui/page-scaffold";
 import { PageSection } from "@/components/ui/page-section";
+import { Button } from "@/components/ui/button";
 import { FadeIn, StaggerItem, StaggerList } from "@/components/ui/motion";
-import { usePageTitle } from "@/hooks/use-page-title";
 import type { DashboardCardData, DashboardSummary } from "@/lib/dashboard";
 
 interface Props {
@@ -53,8 +54,17 @@ function formatDisplayDate(value: string | null, locale: string) {
 
 export function DashboardClient({ username, summary }: Props) {
   const t = useTranslations("dashboard");
+  const nav = useTranslations("nav");
   const locale = useLocale();
-  usePageTitle(t("title"));
+  const [chartsReady, setChartsReady] = useState(false);
+
+  useEffect(() => {
+    const frame = window.requestAnimationFrame(() => {
+      setChartsReady(true);
+    });
+
+    return () => window.cancelAnimationFrame(frame);
+  }, []);
 
   const hour = new Date().getHours();
   const greeting =
@@ -66,6 +76,31 @@ export function DashboardClient({ username, summary }: Props) {
   const todayLabel = new Intl.DateTimeFormat(locale === "en" ? "en-GB" : "pt-PT", {
     dateStyle: "full",
   }).format(new Date());
+  const staffLatestYear =
+    summary.variant === "staff"
+      ? summary.zafByYear.find((year) => year.withBio > 0) ?? summary.zafByYear[0] ?? null
+      : null;
+  const staffHealthyPct =
+    staffLatestYear && staffLatestYear.withBio > 0
+      ? Math.round((staffLatestYear.zsaf / staffLatestYear.withBio) * 100)
+      : null;
+  const staffHighlights =
+    summary.variant === "staff"
+      ? [
+          {
+            label: t("students"),
+            value: summary.cards.find((card) => card.id === "students")?.value ?? 0,
+          },
+          {
+            label: t("pendingSos"),
+            value: summary.cards.find((card) => card.id === "pending-sos")?.value ?? 0,
+          },
+          {
+            label: t("zsaf"),
+            value: staffHealthyPct !== null ? `${staffHealthyPct}%` : "-",
+          },
+        ]
+      : [];
 
   if (summary.variant === "student") {
     if (!summary.studentSummary) {
@@ -84,6 +119,11 @@ export function DashboardClient({ username, summary }: Props) {
               icon={Link2}
               title={t("unlinkedTitle")}
               description={t("unlinkedDescription")}
+              action={
+                <Button asChild size="sm" variant="ghost">
+                  <Link href="/perfil">{nav("perfil")}</Link>
+                </Button>
+              }
             />
           </div>
         </PageScaffold>
@@ -126,13 +166,7 @@ export function DashboardClient({ username, summary }: Props) {
           />
         </div>
 
-        <PageSection
-          eyebrow={t("quickActions")}
-          title={t("activitySummary")}
-          description={t("lastMeasurement")}
-          tone="secondary"
-          layout="list"
-        >
+        <PageSection title={t("quickActions")} description={t("quickActionsSummary")} tone="secondary" layout="list">
           <div className="grid gap-3 sm:grid-cols-3">
             {[
               { href: "/biometria", label: t("registerBiometric"), icon: Ruler },
@@ -176,6 +210,26 @@ export function DashboardClient({ username, summary }: Props) {
         meta: todayLabel,
       }}
     >
+      {summary.variant === "staff" ? (
+        <FadeIn delay={0.1}>
+          <div className="grid gap-3 md:grid-cols-3">
+            {staffHighlights.map((item) => (
+              <div
+                key={item.label}
+                className="surface-utility flex items-center justify-between rounded-[18px] px-4 py-3"
+              >
+                <span className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+                  {item.label}
+                </span>
+                <span className="text-lg font-semibold tracking-tight text-foreground">
+                  {item.value}
+                </span>
+              </div>
+            ))}
+          </div>
+        </FadeIn>
+      ) : null}
+
       {summary.cards.length > 0 ? (
         <StaggerList className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {summary.cards.map((card) => (
@@ -206,9 +260,8 @@ export function DashboardClient({ username, summary }: Props) {
 
             return (
               <PageSection
-                eyebrow={t("zafDistribution")}
                 title={t("zafDistribution")}
-                description={t("platformOverview")}
+                description={t("zafDistributionSummary")}
                 tone="secondary"
                 layout="analytics"
               >
@@ -219,8 +272,8 @@ export function DashboardClient({ username, summary }: Props) {
                       {t("zafDistribution")}
                     </div>
                     <div className="relative h-[180px] w-[180px]">
-                      <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
-                        <PieChart>
+                      {chartsReady ? (
+                        <PieChart width={180} height={180}>
                           <defs>
                             <filter id="dropShadow" x="-20%" y="-20%" width="140%" height="140%">
                               <feDropShadow dx="0" dy="4" stdDeviation="6" floodColor="#000000" floodOpacity="0.15" />
@@ -250,9 +303,13 @@ export function DashboardClient({ username, summary }: Props) {
                             }}
                           />
                         </PieChart>
-                      </ResponsiveContainer>
+                      ) : (
+                        <div className="surface-secondary h-full w-full rounded-full border border-border/60 animate-pulse" />
+                      )}
                       <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none drop-shadow-sm">
-                        <span className="text-3xl font-extrabold tabular-nums tracking-tight text-foreground">{overallPct}%</span>
+                        <span className="text-3xl font-extrabold tabular-nums tracking-tight text-foreground">
+                          {chartsReady ? `${overallPct}%` : "-"}
+                        </span>
                         <span className="text-[11px] font-medium uppercase tracking-[0.2em] text-muted-foreground mt-0.5">
                           {t("zsaf")}
                         </span>
@@ -336,40 +393,38 @@ export function DashboardClient({ username, summary }: Props) {
 
       {summary.variant === "staff" ? (
         <FadeIn delay={0.3}>
-          <PageSection
-            eyebrow={t("quickActions")}
-            title={t("quickActions")}
-            description={t("platformOverview")}
-            tone="utility"
-            layout="list"
-          >
+          <PageSection title={t("quickActions")} description={t("quickActionsSummary")} tone="utility" layout="list">
             <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
               {[
                 {
                   href: "/biometria",
                   label: t("registerBiometric"),
+                  description: t("quickBiometricHint"),
                   icon: Ruler,
                   classes: "from-navy-600 to-navy-800 text-white shadow-[0_4px_14px_rgba(20,48,76,0.39)]",
                 },
                 {
                   href: "/testes",
                   label: t("registerTests"),
+                  description: t("quickTestsHint"),
                   icon: ClipboardList,
                   classes: "from-gold-400 to-gold-600 text-navy-950 shadow-[0_0_15px_rgba(194,151,13,0.5)]",
                 },
                 {
                   href: "/turma",
                   label: t("viewClass"),
+                  description: t("quickClassHint"),
                   icon: School,
                   classes: "from-muted to-muted-foreground/10 text-foreground shadow-sm",
                 },
                 {
                   href: "/analise",
                   label: t("analyzeZaf"),
+                  description: t("quickAnalysisHint"),
                   icon: BarChart3,
                   classes: "from-muted to-muted-foreground/10 text-foreground shadow-sm",
                 },
-              ].map(({ href, label, icon: Icon, classes }) => (
+              ].map(({ href, label, description, icon: Icon, classes }) => (
                 <Link
                   key={href}
                   href={href}
@@ -383,7 +438,7 @@ export function DashboardClient({ username, summary }: Props) {
                   </div>
                   <div>
                     <p className="text-sm font-bold tracking-wide">{label}</p>
-                    <p className="mt-1 text-xs opacity-80">{t("quickActions")}</p>
+                    <p className="mt-1 text-xs opacity-80">{description}</p>
                   </div>
                 </Link>
               ))}

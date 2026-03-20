@@ -4,6 +4,7 @@ import { useState, useCallback } from "react";
 import { useTranslations } from "next-intl";
 import { Bell, AlertTriangle, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import {
   Popover,
   PopoverContent,
@@ -58,14 +59,17 @@ export function NotificationCenter({ userRole }: NotificationCenterProps) {
         >
           <Bell className="size-4" />
           {unreadCount > 0 && (
-            <span className="absolute -top-0.5 -right-0.5 flex size-3.5 items-center justify-center rounded-full bg-danger-600 text-[9px] font-bold text-white shadow-sm">
+            <Badge
+              variant="danger"
+              className="absolute -top-0.5 -right-0.5 min-w-3.5 justify-center px-1 text-[9px] shadow-sm"
+            >
               {unreadCount > 9 ? "9+" : unreadCount}
-            </span>
+            </Badge>
           )}
         </Button>
       </PopoverTrigger>
       <PopoverContent align="end" className="w-[min(320px,calc(100vw-2rem))] p-0">
-        <div className="border-b border-border px-3 py-2.5">
+        <div className="border-b border-border/60 px-3 py-2.5">
           <h3 className="text-xs font-semibold">{t("title")}</h3>
         </div>
         <div className="max-h-[260px] overflow-y-auto p-2">
@@ -75,13 +79,15 @@ export function NotificationCenter({ userRole }: NotificationCenterProps) {
               <p className="text-xs text-muted-foreground">{t("allClear")}</p>
             </div>
           ) : (
-            <div className="flex items-start gap-2.5 rounded-lg bg-danger-50/70 dark:bg-danger-950/20 p-2.5 border border-danger-200/60 dark:border-danger-900/30">
-              <AlertTriangle className="size-4 text-danger-600 dark:text-danger-400 shrink-0 mt-0.5" />
+            <div className="flex items-start gap-3 rounded-xl border border-danger-500/15 bg-danger-500/10 px-3 py-3 shadow-sm dark:border-danger-500/20 dark:bg-danger-500/12">
+              <div className="mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-full border border-danger-500/20 bg-danger-500/10 text-danger-700 dark:border-danger-500/20 dark:bg-danger-500/15 dark:text-danger-300">
+                <AlertTriangle className="size-4" />
+              </div>
               <div>
                 <p className="text-xs font-semibold text-danger-700 dark:text-danger-300">
                   {t("pendingAlerts", { count: pendingCount })}
                 </p>
-                <p className="text-[11px] text-danger-600/80 dark:text-danger-400/70 mt-1">
+                <p className="mt-1 text-[11px] leading-relaxed text-muted-foreground">
                   {t("pendingDescription")}
                 </p>
               </div>

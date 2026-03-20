@@ -1,9 +1,16 @@
 import type { Metadata } from "next";
+import { getTranslations } from "next-intl/server";
 import { requireAuth } from "@/lib/auth-guard";
 import { getDashboardSummaryForUser } from "@/lib/dashboard";
 import { DashboardClient } from "./dashboard-client";
 
-export const metadata: Metadata = { title: "Dashboard" };
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations("dashboard");
+
+  return {
+    title: t("title"),
+  };
+}
 
 export default async function DashboardPage() {
   const user = await requireAuth();

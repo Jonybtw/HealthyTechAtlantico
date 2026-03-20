@@ -140,7 +140,7 @@ export function AlunosClient({ initialStudents }: AlunosClientProps) {
 
   return (
     <PageScaffold
-      headerProps={{ title: t("title"), description: t("description"), eyebrow: "Students" }}
+      headerProps={{ title: t("title"), description: t("description") }}
       headerActions={
         <div className="flex items-center gap-2">
           <input
