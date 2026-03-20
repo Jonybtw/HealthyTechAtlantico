@@ -128,6 +128,8 @@
     "quickTestsHint": "Registo de prova física",
     "quickClassHint": "Resumo agregado por turma",
     "quickAnalysisHint": "Leitura rápida da distribuição ZAF",
+    "quickActionsSummary": "Atalhos diretos para registo, consulta e análise.",
+    "zafDistributionSummary": "Comparativo recente entre Zona Saudável e Zona de Melhoria.",
     "greetingMorning": "Bom dia",
     "greetingAfternoon": "Boa tarde",
     "greetingEvening": "Boa noite",
@@ -227,6 +229,9 @@
     "selectStudentError": "Selecione um aluno.",
     "submitError": "Erro a submeter questionário.",
     "connectionError": "Erro de ligação.",
+    "studentOnlyTitle": "Disponível apenas para alunos",
+    "studentOnlyDescription": "Este fluxo foi pensado para resposta individual. No painel principal podes acompanhar o restante trabalho.",
+    "openDashboard": "Abrir painel",
     "unlinkedTitle": "Perfil não associado",
     "unlinkedDescription": "A tua conta ainda não está associada a um perfil de aluno. Contacta a escola para concluírem a ligação."
   },

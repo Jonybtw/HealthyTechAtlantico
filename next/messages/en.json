@@ -128,6 +128,8 @@
     "quickTestsHint": "Physical test entry",
     "quickClassHint": "Aggregated class overview",
     "quickAnalysisHint": "Fast read on ZAF distribution",
+    "quickActionsSummary": "Direct shortcuts for recording, review and analysis.",
+    "zafDistributionSummary": "Recent comparison between Healthy Zone and Improvement Zone.",
     "greetingMorning": "Good morning",
     "greetingAfternoon": "Good afternoon",
     "greetingEvening": "Good evening",
@@ -227,6 +229,9 @@
     "selectStudentError": "Select a student.",
     "submitError": "Error submitting questionnaire.",
     "connectionError": "Connection error.",
+    "studentOnlyTitle": "Available to students only",
+    "studentOnlyDescription": "This flow is meant for individual responses. You can use the main dashboard to continue your work.",
+    "openDashboard": "Open dashboard",
     "unlinkedTitle": "Profile not linked",
     "unlinkedDescription": "Your account is not linked to a student profile yet. Contact the school to complete the setup."
   },
