@@ -37,7 +37,7 @@ const SheetContent = React.forwardRef<HTMLDivElement, SheetContentProps>(
   ({ side = "right", className, children, ...props }, ref) => (
     <DialogPortal>
       <DialogOverlay />
-      <DialogPrimitive.Content asChild>
+      <DialogPrimitive.Content asChild aria-describedby={undefined}>
         <div
           ref={ref}
           className={cn(
@@ -47,11 +47,11 @@ const SheetContent = React.forwardRef<HTMLDivElement, SheetContentProps>(
           )}
           {...props}
         >
-          <DialogTitle className="sr-only">Menu</DialogTitle>
+          <DialogTitle className="sr-only">Menu de navegacao</DialogTitle>
           {children}
           <DialogPrimitive.Close className="absolute right-4 top-4 rounded-full p-1.5 text-muted-foreground opacity-70 transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring">
             <X className="size-4" />
-            <span className="sr-only">Close</span>
+            <span className="sr-only">Fechar</span>
           </DialogPrimitive.Close>
         </div>
       </DialogPrimitive.Content>

@@ -9,7 +9,7 @@ import { useTranslations } from "next-intl";
 import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import type { z } from "zod";
-import { registerFormSchema } from "@/lib/validations";
+import { loginSchema, registerFormSchema } from "@/lib/validations";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -116,11 +116,24 @@ export default function LoginClient() {
 
   const handleLogin = async () => {
     setApiError(null);
-    const valid = await form.trigger(["email", "password"]);
-    if (!valid) return;
+    form.clearErrors(["email", "password"]);
+    const loginValues = {
+      email: form.getValues("email"),
+      password: form.getValues("password"),
+    };
+    const parsed = loginSchema.safeParse(loginValues);
+    if (!parsed.success) {
+      for (const issue of parsed.error.issues) {
+        const field = issue.path[0];
+        if (field === "email" || field === "password") {
+          form.setError(field, { type: "manual", message: issue.message });
+        }
+      }
+      return;
+    }
     setIsLoading(true);
     try {
-      const { email, password } = form.getValues();
+      const { email, password } = parsed.data;
       const result = await signIn("credentials", {
         email,
         password,

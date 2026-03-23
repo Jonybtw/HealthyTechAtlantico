@@ -8,7 +8,6 @@ function useAnimatedNumber(target: number, duration = 600) {
 
   useEffect(() => {
     if (previousTarget.current === target) {
-      setDisplay(target);
       return;
     }
 

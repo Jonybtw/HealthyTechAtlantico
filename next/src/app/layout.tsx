@@ -1,6 +1,5 @@
 import type { Metadata, Viewport } from "next";
 import { JetBrains_Mono, Manrope, Sora } from "next/font/google";
-import { SessionProvider } from "next-auth/react";
 import { NextIntlClientProvider } from "next-intl";
 import { getLocale, getMessages } from "next-intl/server";
 import { cookies } from "next/headers";
@@ -75,25 +74,23 @@ export default async function RootLayout({
         className={`${sans.variable} ${display.variable} ${mono.variable} bg-background text-foreground antialiased`}
       >
         <NextIntlClientProvider messages={messages}>
-          <SessionProvider>
-            <QueryProvider>{children}</QueryProvider>
-            <Toaster
-              richColors
-              position="top-right"
-              toastOptions={{
-                className:
-                  "border border-border/70 bg-card/95 text-foreground shadow-float backdrop-blur-xl",
-                style: {
-                  fontFamily: "var(--font-sans)",
-                },
-                classNames: {
-                  toast: "rounded-2xl",
-                  title: "font-semibold tracking-tight",
-                  description: "text-muted-foreground",
-                },
-              }}
-            />
-          </SessionProvider>
+          <QueryProvider>{children}</QueryProvider>
+          <Toaster
+            richColors
+            position="top-right"
+            toastOptions={{
+              className:
+                "border border-border/70 bg-card/95 text-foreground shadow-float backdrop-blur-xl",
+              style: {
+                fontFamily: "var(--font-sans)",
+              },
+              classNames: {
+                toast: "rounded-2xl",
+                title: "font-semibold tracking-tight",
+                description: "text-muted-foreground",
+              },
+            }}
+          />
         </NextIntlClientProvider>
       </body>
     </html>

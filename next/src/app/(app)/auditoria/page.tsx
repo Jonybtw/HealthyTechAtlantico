@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
+import { requireAnyRole } from "@/lib/auth-guard";
 import AuditoriaClient from "./auditoria-client";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -10,6 +11,7 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-export default function AuditoriaPage() {
+export default async function AuditoriaPage() {
+  await requireAnyRole(["ADMIN"]);
   return <AuditoriaClient />;
 }

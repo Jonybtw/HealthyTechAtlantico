@@ -108,8 +108,12 @@ export function StudentPicker({
       return;
     }
 
-    setOpen(false);
-    setSearch("");
+    const frame = window.requestAnimationFrame(() => {
+      setOpen(false);
+      setSearch("");
+    });
+
+    return () => window.cancelAnimationFrame(frame);
   }, [loading]);
 
   useEffect(() => {

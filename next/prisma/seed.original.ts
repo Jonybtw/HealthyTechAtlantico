@@ -13,7 +13,7 @@ const adapter = new PrismaPg(pool);
 const prisma = new PrismaClient({ adapter });
 
 async function main() {
-  console.log("🌱 Seeding database…");
+  console.warn("🌱 Seeding database…");
   const adminEmail = `admin@${INTERNAL_EMAIL_DOMAIN}`;
   const professorEmail = `professor@${INTERNAL_EMAIL_DOMAIN}`;
   const psychologistEmail = `psicologo@${INTERNAL_EMAIL_DOMAIN}`;
@@ -282,9 +282,9 @@ async function main() {
   });
 
 
-  console.log("✅ Seed complete!");
-  console.log(`   ${students.length} students, 1 admin, 1 professor, 1 psicólogo, 1 encarregado`);
-  console.log(`   Login: any email above / Password1`);
+  console.warn("✅ Seed complete!");
+  console.warn(`   ${students.length} students, 1 admin, 1 professor, 1 psicólogo, 1 encarregado`);
+  console.warn(`   Login: any email above / Password1`);
 }
 
 main()

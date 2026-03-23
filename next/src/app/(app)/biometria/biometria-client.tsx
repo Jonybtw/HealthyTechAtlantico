@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
-import { ArrowUpDown, Link2, Percent, Ruler, Scale } from "lucide-react";
+import { ArrowUpDown, Percent, Ruler, Scale, ShieldAlert } from "lucide-react";
 import type { Sex } from "@prisma/client";
 import { PageScaffold } from "@/components/ui/page-scaffold";
 import { PageSection } from "@/components/ui/page-section";
@@ -37,6 +37,7 @@ export default function BiometriaPage() {
   const t = useTranslations("biometria");
   const common = useTranslations("common");
   const { role } = useUser();
+  const canManageBiometrics = role === "ADMIN" || role === "PROFESSOR";
 
   const [students, setStudents] = useState<StudentOption[]>([]);
   const [loadingStudents, setLoadingStudents] = useState(true);
@@ -83,15 +84,12 @@ export default function BiometriaPage() {
         }))
       );
 
-      if (role === "ALUNO" && body.students.length === 1) {
-        setStudentId(body.students[0].id);
-      }
     } catch {
       toast.error(common("studentListLoadError"));
     } finally {
       setLoadingStudents(false);
     }
-  }, [role, common]);
+  }, [common]);
 
   useEffect(() => {
     void loadStudents();
@@ -132,15 +130,13 @@ export default function BiometriaPage() {
   const updateField = (key: keyof typeof form) => (value: string) =>
     setForm((current) => ({ ...current, [key]: value }));
 
-  if (role === "ALUNO" && students.length === 0) {
+  if (!canManageBiometrics) {
     return (
-      <PageScaffold
-        headerProps={{ title: t("title"), description: t("description") }}
-      >
+      <PageScaffold headerProps={{ title: t("title"), description: t("description") }}>
         <EmptyState
-          icon={Link2}
-          title={t("unlinkedTitle")}
-          description={t("unlinkedDescription")}
+          icon={ShieldAlert}
+          title={common("noPermission")}
+          description={t("description")}
         />
       </PageScaffold>
     );
@@ -228,13 +224,11 @@ export default function BiometriaPage() {
             layout="form"
           >
             <form onSubmit={handleSubmit} className="flex flex-col gap-5">
-              {role !== "ALUNO" ? (
-                <StudentPicker
-                  students={pickerStudents}
-                  value={studentId}
-                  onChange={setStudentId}
-                />
-              ) : null}
+              <StudentPicker
+                students={pickerStudents}
+                value={studentId}
+                onChange={setStudentId}
+              />
 
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <UnitInput

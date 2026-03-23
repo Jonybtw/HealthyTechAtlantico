@@ -5,9 +5,13 @@ import { cleanup } from "@testing-library/react";
 
 vi.mock("next/image", () => ({
   default: ({
+    fill: _fill,
     priority: _priority,
     ...props
-  }: React.ImgHTMLAttributes<HTMLImageElement> & { priority?: boolean }) =>
+  }: React.ImgHTMLAttributes<HTMLImageElement> & {
+    fill?: boolean;
+    priority?: boolean;
+  }) =>
     React.createElement("img", props),
 }));
 

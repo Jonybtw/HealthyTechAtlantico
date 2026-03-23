@@ -1,0 +1,623 @@
+⚠ "next start" does not work with "output: standalone" configuration. Use "node .next/standalone/server.js" instead.
+[31m[auth][error][0m CallbackRouteError: Read more at https://errors.authjs.dev#callbackrouteerror
+[31m[auth][cause][0m: PrismaClientKnownRequestError: 
+Invalid `prisma.user.findUnique()` invocation:
+
+
+Error opening a TLS connection: self-signed certificate in certificate chain
+    at zr.handleRequestError (C:\Users\Ryzen\HealthyTechAtlantico\next\node_modules\@prisma\client\runtime\client.js:65:8286)
+    at zr.handleAndLogRequestError (C:\Users\Ryzen\HealthyTechAtlantico\next\node_modules\@prisma\client\runtime\client.js:65:7581)
+    at zr.request (C:\Users\Ryzen\HealthyTechAtlantico\next\node_modules\@prisma\client\runtime\client.js:65:7288)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async a (C:\Users\Ryzen\HealthyTechAtlantico\next\node_modules\@prisma\client\runtime\client.js:75:5816)
+    at async Object.authorize (C:\Users\Ryzen\HealthyTechAtlantico\next\.next\server\chunks\_ea3bbfcb._.js:404:65263)
+    at async iJ (C:\Users\Ryzen\HealthyTechAtlantico\next\.next\server\chunks\_ea3bbfcb._.js:404:41264)
+    at async iY (C:\Users\Ryzen\HealthyTechAtlantico\next\.next\server\chunks\_ea3bbfcb._.js:404:51020)
+    at async i0 (C:\Users\Ryzen\HealthyTechAtlantico\next\.next\server\chunks\_ea3bbfcb._.js:404:55576)
+    at async rW.do (C:\Users\Ryzen\HealthyTechAtlantico\next\node_modules\next\dist\compiled\next-server\app-route-turbo.runtime.prod.js:5:20169)
+[31m[auth][details][0m: {
+  "provider": "credentials"
+}
+[31m[auth][error][0m CallbackRouteError: Read more at https://errors.authjs.dev#callbackrouteerror
+[31m[auth][cause][0m: PrismaClientKnownRequestError: 
+Invalid `prisma.user.findUnique()` invocation:
+
+
+Error opening a TLS connection: self-signed certificate in certificate chain
+    at zr.handleRequestError (C:\Users\Ryzen\HealthyTechAtlantico\next\node_modules\@prisma\client\runtime\client.js:65:8286)
+    at zr.handleAndLogRequestError (C:\Users\Ryzen\HealthyTechAtlantico\next\node_modules\@prisma\client\runtime\client.js:65:7581)
+    at zr.request (C:\Users\Ryzen\HealthyTechAtlantico\next\node_modules\@prisma\client\runtime\client.js:65:7288)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async a (C:\Users\Ryzen\HealthyTechAtlantico\next\node_modules\@prisma\client\runtime\client.js:75:5816)
+    at async Object.authorize (C:\Users\Ryzen\HealthyTechAtlantico\next\.next\server\chunks\_ea3bbfcb._.js:404:65263)
+    at async iJ (C:\Users\Ryzen\HealthyTechAtlantico\next\.next\server\chunks\_ea3bbfcb._.js:404:41264)
+    at async iY (C:\Users\Ryzen\HealthyTechAtlantico\next\.next\server\chunks\_ea3bbfcb._.js:404:51020)
+    at async i0 (C:\Users\Ryzen\HealthyTechAtlantico\next\.next\server\chunks\_ea3bbfcb._.js:404:55576)
+    at async rW.do (C:\Users\Ryzen\HealthyTechAtlantico\next\node_modules\next\dist\compiled\next-server\app-route-turbo.runtime.prod.js:5:20169)
+[31m[auth][details][0m: {
+  "provider": "credentials"
+}
+[31m[auth][error][0m CallbackRouteError: Read more at https://errors.authjs.dev#callbackrouteerror
+[31m[auth][cause][0m: PrismaClientKnownRequestError: 
+Invalid `prisma.user.findUnique()` invocation:
+
+
+Error opening a TLS connection: self-signed certificate in certificate chain
+    at zr.handleRequestError (C:\Users\Ryzen\HealthyTechAtlantico\next\node_modules\@prisma\client\runtime\client.js:65:8286)
+    at zr.handleAndLogRequestError (C:\Users\Ryzen\HealthyTechAtlantico\next\node_modules\@prisma\client\runtime\client.js:65:7581)
+    at zr.request (C:\Users\Ryzen\HealthyTechAtlantico\next\node_modules\@prisma\client\runtime\client.js:65:7288)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async a (C:\Users\Ryzen\HealthyTechAtlantico\next\node_modules\@prisma\client\runtime\client.js:75:5816)
+    at async Object.authorize (C:\Users\Ryzen\HealthyTechAtlantico\next\.next\server\chunks\_ea3bbfcb._.js:404:65263)
+    at async iJ (C:\Users\Ryzen\HealthyTechAtlantico\next\.next\server\chunks\_ea3bbfcb._.js:404:41264)
+    at async iY (C:\Users\Ryzen\HealthyTechAtlantico\next\.next\server\chunks\_ea3bbfcb._.js:404:51020)
+    at async i0 (C:\Users\Ryzen\HealthyTechAtlantico\next\.next\server\chunks\_ea3bbfcb._.js:404:55576)
+    at async rW.do (C:\Users\Ryzen\HealthyTechAtlantico\next\node_modules\next\dist\compiled\next-server\app-route-turbo.runtime.prod.js:5:20169)
+[31m[auth][details][0m: {
+  "provider": "credentials"
+}
+[31m[auth][error][0m CallbackRouteError: Read more at https://errors.authjs.dev#callbackrouteerror
+[31m[auth][cause][0m: PrismaClientKnownRequestError: 
+Invalid `prisma.user.findUnique()` invocation:
+
+
+Error opening a TLS connection: self-signed certificate in certificate chain
+    at zr.handleRequestError (C:\Users\Ryzen\HealthyTechAtlantico\next\node_modules\@prisma\client\runtime\client.js:65:8286)
+    at zr.handleAndLogRequestError (C:\Users\Ryzen\HealthyTechAtlantico\next\node_modules\@prisma\client\runtime\client.js:65:7581)
+    at zr.request (C:\Users\Ryzen\HealthyTechAtlantico\next\node_modules\@prisma\client\runtime\client.js:65:7288)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async a (C:\Users\Ryzen\HealthyTechAtlantico\next\node_modules\@prisma\client\runtime\client.js:75:5816)
+    at async Object.authorize (C:\Users\Ryzen\HealthyTechAtlantico\next\.next\server\chunks\_ea3bbfcb._.js:404:65263)
+    at async iJ (C:\Users\Ryzen\HealthyTechAtlantico\next\.next\server\chunks\_ea3bbfcb._.js:404:41264)
+    at async iY (C:\Users\Ryzen\HealthyTechAtlantico\next\.next\server\chunks\_ea3bbfcb._.js:404:51020)
+    at async i0 (C:\Users\Ryzen\HealthyTechAtlantico\next\.next\server\chunks\_ea3bbfcb._.js:404:55576)
+    at async rW.do (C:\Users\Ryzen\HealthyTechAtlantico\next\node_modules\next\dist\compiled\next-server\app-route-turbo.runtime.prod.js:5:20169)
+[31m[auth][details][0m: {
+  "provider": "credentials"
+}
+[31m[auth][error][0m CallbackRouteError: Read more at https://errors.authjs.dev#callbackrouteerror
+[31m[auth][cause][0m: PrismaClientKnownRequestError: 
+Invalid `prisma.user.findUnique()` invocation:
+
+
+Error opening a TLS connection: self-signed certificate in certificate chain
+    at zr.handleRequestError (C:\Users\Ryzen\HealthyTechAtlantico\next\node_modules\@prisma\client\runtime\client.js:65:8286)
+    at zr.handleAndLogRequestError (C:\Users\Ryzen\HealthyTechAtlantico\next\node_modules\@prisma\client\runtime\client.js:65:7581)
+    at zr.request (C:\Users\Ryzen\HealthyTechAtlantico\next\node_modules\@prisma\client\runtime\client.js:65:7288)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async a (C:\Users\Ryzen\HealthyTechAtlantico\next\node_modules\@prisma\client\runtime\client.js:75:5816)
+    at async Object.authorize (C:\Users\Ryzen\HealthyTechAtlantico\next\.next\server\chunks\_ea3bbfcb._.js:404:65263)
+    at async iJ (C:\Users\Ryzen\HealthyTechAtlantico\next\.next\server\chunks\_ea3bbfcb._.js:404:41264)
+    at async iY (C:\Users\Ryzen\HealthyTechAtlantico\next\.next\server\chunks\_ea3bbfcb._.js:404:51020)
+    at async i0 (C:\Users\Ryzen\HealthyTechAtlantico\next\.next\server\chunks\_ea3bbfcb._.js:404:55576)
+    at async rW.do (C:\Users\Ryzen\HealthyTechAtlantico\next\node_modules\next\dist\compiled\next-server\app-route-turbo.runtime.prod.js:5:20169)
+[31m[auth][details][0m: {
+  "provider": "credentials"
+}
+GET sos-alerts error: Error [PrismaClientKnownRequestError]: 
+Invalid `prisma.sosAlert.findMany()` invocation:
+
+
+Error opening a TLS connection: self-signed certificate in certificate chain
+    at async l (C:\Users\Ryzen\HealthyTechAtlantico\next\.next\server\chunks\[root-of-the-server]__96beaa0a._.js:1:2524)
+    at async u (C:\Users\Ryzen\HealthyTechAtlantico\next\.next\server\chunks\[root-of-the-server]__96beaa0a._.js:1:6165) {
+  code: 'P1011',
+  meta: [Object],
+  clientVersion: '7.4.2'
+}
+GET /api/admin/staff error: Error [PrismaClientKnownRequestError]: 
+Invalid `prisma.user.findMany()` invocation:
+
+
+Error opening a TLS connection: self-signed certificate in certificate chain
+    at async c (C:\Users\Ryzen\HealthyTechAtlantico\next\.next\server\chunks\[root-of-the-server]__ee9e0e17._.js:1:2580)
+    at async u (C:\Users\Ryzen\HealthyTechAtlantico\next\.next\server\chunks\[root-of-the-server]__ee9e0e17._.js:1:7403) {
+  code: 'P1011',
+  meta: [Object],
+  clientVersion: '7.4.2'
+}
+GET sos-alerts error: Error [PrismaClientKnownRequestError]: 
+Invalid `prisma.sosAlert.findMany()` invocation:
+
+
+Error opening a TLS connection: self-signed certificate in certificate chain
+    at async l (C:\Users\Ryzen\HealthyTechAtlantico\next\.next\server\chunks\[root-of-the-server]__96beaa0a._.js:1:2524)
+    at async u (C:\Users\Ryzen\HealthyTechAtlantico\next\.next\server\chunks\[root-of-the-server]__96beaa0a._.js:1:6165) {
+  code: 'P1011',
+  meta: [Object],
+  clientVersion: '7.4.2'
+}
+GET /api/audit error: Error [PrismaClientKnownRequestError]: 
+Invalid `prisma.auditLog.findMany()` invocation:
+
+
+Error opening a TLS connection: self-signed certificate in certificate chain
+    at async u (C:\Users\Ryzen\HealthyTechAtlantico\next\.next\server\chunks\[root-of-the-server]__9e6f29c3._.js:1:2857)
+    at async u (C:\Users\Ryzen\HealthyTechAtlantico\next\.next\server\chunks\[root-of-the-server]__9e6f29c3._.js:1:6622) {
+  code: 'P1011',
+  meta: [Object],
+  clientVersion: '7.4.2'
+}
+GET /api/admin/staff error: Error [PrismaClientKnownRequestError]: 
+Invalid `prisma.user.findMany()` invocation:
+
+
+Error opening a TLS connection: self-signed certificate in certificate chain
+    at async c (C:\Users\Ryzen\HealthyTechAtlantico\next\.next\server\chunks\[root-of-the-server]__ee9e0e17._.js:1:2580)
+    at async u (C:\Users\Ryzen\HealthyTechAtlantico\next\.next\server\chunks\[root-of-the-server]__ee9e0e17._.js:1:7403) {
+  code: 'P1011',
+  meta: [Object],
+  clientVersion: '7.4.2'
+}
+GET sos-alerts error: Error [PrismaClientKnownRequestError]: 
+Invalid `prisma.sosAlert.findMany()` invocation:
+
+
+Error opening a TLS connection: self-signed certificate in certificate chain
+    at async l (C:\Users\Ryzen\HealthyTechAtlantico\next\.next\server\chunks\[root-of-the-server]__96beaa0a._.js:1:2524)
+    at async u (C:\Users\Ryzen\HealthyTechAtlantico\next\.next\server\chunks\[root-of-the-server]__96beaa0a._.js:1:6165) {
+  code: 'P1011',
+  meta: [Object],
+  clientVersion: '7.4.2'
+}
+[31m[auth][error][0m CallbackRouteError: Read more at https://errors.authjs.dev#callbackrouteerror
+[31m[auth][cause][0m: PrismaClientKnownRequestError: 
+Invalid `prisma.user.findUnique()` invocation:
+
+
+Error opening a TLS connection: self-signed certificate in certificate chain
+    at zr.handleRequestError (C:\Users\Ryzen\HealthyTechAtlantico\next\node_modules\@prisma\client\runtime\client.js:65:8286)
+    at zr.handleAndLogRequestError (C:\Users\Ryzen\HealthyTechAtlantico\next\node_modules\@prisma\client\runtime\client.js:65:7581)
+    at zr.request (C:\Users\Ryzen\HealthyTechAtlantico\next\node_modules\@prisma\client\runtime\client.js:65:7288)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async a (C:\Users\Ryzen\HealthyTechAtlantico\next\node_modules\@prisma\client\runtime\client.js:75:5816)
+    at async Object.authorize (C:\Users\Ryzen\HealthyTechAtlantico\next\.next\server\chunks\_ea3bbfcb._.js:404:65263)
+    at async iJ (C:\Users\Ryzen\HealthyTechAtlantico\next\.next\server\chunks\_ea3bbfcb._.js:404:41264)
+    at async iY (C:\Users\Ryzen\HealthyTechAtlantico\next\.next\server\chunks\_ea3bbfcb._.js:404:51020)
+    at async i0 (C:\Users\Ryzen\HealthyTechAtlantico\next\.next\server\chunks\_ea3bbfcb._.js:404:55576)
+    at async rW.do (C:\Users\Ryzen\HealthyTechAtlantico\next\node_modules\next\dist\compiled\next-server\app-route-turbo.runtime.prod.js:5:20169)
+[31m[auth][details][0m: {
+  "provider": "credentials"
+}
+[31m[auth][error][0m CallbackRouteError: Read more at https://errors.authjs.dev#callbackrouteerror
+[31m[auth][cause][0m: PrismaClientKnownRequestError: 
+Invalid `prisma.user.findUnique()` invocation:
+
+
+Error opening a TLS connection: self-signed certificate in certificate chain
+    at zr.handleRequestError (C:\Users\Ryzen\HealthyTechAtlantico\next\node_modules\@prisma\client\runtime\client.js:65:8286)
+    at zr.handleAndLogRequestError (C:\Users\Ryzen\HealthyTechAtlantico\next\node_modules\@prisma\client\runtime\client.js:65:7581)
+    at zr.request (C:\Users\Ryzen\HealthyTechAtlantico\next\node_modules\@prisma\client\runtime\client.js:65:7288)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async a (C:\Users\Ryzen\HealthyTechAtlantico\next\node_modules\@prisma\client\runtime\client.js:75:5816)
+    at async Object.authorize (C:\Users\Ryzen\HealthyTechAtlantico\next\.next\server\chunks\_ea3bbfcb._.js:404:65263)
+    at async iJ (C:\Users\Ryzen\HealthyTechAtlantico\next\.next\server\chunks\_ea3bbfcb._.js:404:41264)
+    at async iY (C:\Users\Ryzen\HealthyTechAtlantico\next\.next\server\chunks\_ea3bbfcb._.js:404:51020)
+    at async i0 (C:\Users\Ryzen\HealthyTechAtlantico\next\.next\server\chunks\_ea3bbfcb._.js:404:55576)
+    at async rW.do (C:\Users\Ryzen\HealthyTechAtlantico\next\node_modules\next\dist\compiled\next-server\app-route-turbo.runtime.prod.js:5:20169)
+[31m[auth][details][0m: {
+  "provider": "credentials"
+}
+[31m[auth][error][0m CallbackRouteError: Read more at https://errors.authjs.dev#callbackrouteerror
+[31m[auth][cause][0m: PrismaClientKnownRequestError: 
+Invalid `prisma.user.findUnique()` invocation:
+
+
+Error opening a TLS connection: self-signed certificate in certificate chain
+    at zr.handleRequestError (C:\Users\Ryzen\HealthyTechAtlantico\next\node_modules\@prisma\client\runtime\client.js:65:8286)
+    at zr.handleAndLogRequestError (C:\Users\Ryzen\HealthyTechAtlantico\next\node_modules\@prisma\client\runtime\client.js:65:7581)
+    at zr.request (C:\Users\Ryzen\HealthyTechAtlantico\next\node_modules\@prisma\client\runtime\client.js:65:7288)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async a (C:\Users\Ryzen\HealthyTechAtlantico\next\node_modules\@prisma\client\runtime\client.js:75:5816)
+    at async Object.authorize (C:\Users\Ryzen\HealthyTechAtlantico\next\.next\server\chunks\_ea3bbfcb._.js:404:65263)
+    at async iJ (C:\Users\Ryzen\HealthyTechAtlantico\next\.next\server\chunks\_ea3bbfcb._.js:404:41264)
+    at async iY (C:\Users\Ryzen\HealthyTechAtlantico\next\.next\server\chunks\_ea3bbfcb._.js:404:51020)
+    at async i0 (C:\Users\Ryzen\HealthyTechAtlantico\next\.next\server\chunks\_ea3bbfcb._.js:404:55576)
+    at async rW.do (C:\Users\Ryzen\HealthyTechAtlantico\next\node_modules\next\dist\compiled\next-server\app-route-turbo.runtime.prod.js:5:20169)
+[31m[auth][details][0m: {
+  "provider": "credentials"
+}
+[31m[auth][error][0m CallbackRouteError: Read more at https://errors.authjs.dev#callbackrouteerror
+[31m[auth][cause][0m: PrismaClientKnownRequestError: 
+Invalid `prisma.user.findUnique()` invocation:
+
+
+Error opening a TLS connection: self-signed certificate in certificate chain
+    at zr.handleRequestError (C:\Users\Ryzen\HealthyTechAtlantico\next\node_modules\@prisma\client\runtime\client.js:65:8286)
+    at zr.handleAndLogRequestError (C:\Users\Ryzen\HealthyTechAtlantico\next\node_modules\@prisma\client\runtime\client.js:65:7581)
+    at zr.request (C:\Users\Ryzen\HealthyTechAtlantico\next\node_modules\@prisma\client\runtime\client.js:65:7288)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async a (C:\Users\Ryzen\HealthyTechAtlantico\next\node_modules\@prisma\client\runtime\client.js:75:5816)
+    at async Object.authorize (C:\Users\Ryzen\HealthyTechAtlantico\next\.next\server\chunks\_ea3bbfcb._.js:404:65263)
+    at async iJ (C:\Users\Ryzen\HealthyTechAtlantico\next\.next\server\chunks\_ea3bbfcb._.js:404:41264)
+    at async iY (C:\Users\Ryzen\HealthyTechAtlantico\next\.next\server\chunks\_ea3bbfcb._.js:404:51020)
+    at async i0 (C:\Users\Ryzen\HealthyTechAtlantico\next\.next\server\chunks\_ea3bbfcb._.js:404:55576)
+    at async rW.do (C:\Users\Ryzen\HealthyTechAtlantico\next\node_modules\next\dist\compiled\next-server\app-route-turbo.runtime.prod.js:5:20169)
+[31m[auth][details][0m: {
+  "provider": "credentials"
+}
+[31m[auth][error][0m CallbackRouteError: Read more at https://errors.authjs.dev#callbackrouteerror
+[31m[auth][cause][0m: PrismaClientKnownRequestError: 
+Invalid `prisma.user.findUnique()` invocation:
+
+
+Error opening a TLS connection: self-signed certificate in certificate chain
+    at zr.handleRequestError (C:\Users\Ryzen\HealthyTechAtlantico\next\node_modules\@prisma\client\runtime\client.js:65:8286)
+    at zr.handleAndLogRequestError (C:\Users\Ryzen\HealthyTechAtlantico\next\node_modules\@prisma\client\runtime\client.js:65:7581)
+    at zr.request (C:\Users\Ryzen\HealthyTechAtlantico\next\node_modules\@prisma\client\runtime\client.js:65:7288)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async a (C:\Users\Ryzen\HealthyTechAtlantico\next\node_modules\@prisma\client\runtime\client.js:75:5816)
+    at async Object.authorize (C:\Users\Ryzen\HealthyTechAtlantico\next\.next\server\chunks\_ea3bbfcb._.js:404:65263)
+    at async iJ (C:\Users\Ryzen\HealthyTechAtlantico\next\.next\server\chunks\_ea3bbfcb._.js:404:41264)
+    at async iY (C:\Users\Ryzen\HealthyTechAtlantico\next\.next\server\chunks\_ea3bbfcb._.js:404:51020)
+    at async i0 (C:\Users\Ryzen\HealthyTechAtlantico\next\.next\server\chunks\_ea3bbfcb._.js:404:55576)
+    at async rW.do (C:\Users\Ryzen\HealthyTechAtlantico\next\node_modules\next\dist\compiled\next-server\app-route-turbo.runtime.prod.js:5:20169)
+[31m[auth][details][0m: {
+  "provider": "credentials"
+}
+⨯ Error [PrismaClientKnownRequestError]: 
+Invalid `prisma.academicYear.findMany()` invocation:
+
+
+Error opening a TLS connection: self-signed certificate in certificate chain
+    at async g (C:\Users\Ryzen\HealthyTechAtlantico\next\.next\server\chunks\ssr\[root-of-the-server]__5be1f596._.js:1:1650)
+    at async h (C:\Users\Ryzen\HealthyTechAtlantico\next\.next\server\chunks\ssr\[root-of-the-server]__5be1f596._.js:1:3515)
+    at async k (C:\Users\Ryzen\HealthyTechAtlantico\next\.next\server\chunks\ssr\[root-of-the-server]__5be1f596._.js:1:5451) {
+  code: 'P1011',
+  meta: [Object],
+  clientVersion: '7.4.2',
+  digest: '1652690119'
+}
+GET sos-alerts error: Error [PrismaClientKnownRequestError]: 
+Invalid `prisma.sosAlert.findMany()` invocation:
+
+
+Error opening a TLS connection: self-signed certificate in certificate chain
+    at async l (C:\Users\Ryzen\HealthyTechAtlantico\next\.next\server\chunks\[root-of-the-server]__96beaa0a._.js:1:2524)
+    at async u (C:\Users\Ryzen\HealthyTechAtlantico\next\.next\server\chunks\[root-of-the-server]__96beaa0a._.js:1:6165) {
+  code: 'P1011',
+  meta: [Object],
+  clientVersion: '7.4.2'
+}
+GET sos-alerts error: Error [PrismaClientKnownRequestError]: 
+Invalid `prisma.sosAlert.findMany()` invocation:
+
+
+Error opening a TLS connection: self-signed certificate in certificate chain
+    at async l (C:\Users\Ryzen\HealthyTechAtlantico\next\.next\server\chunks\[root-of-the-server]__96beaa0a._.js:1:2524)
+    at async u (C:\Users\Ryzen\HealthyTechAtlantico\next\.next\server\chunks\[root-of-the-server]__96beaa0a._.js:1:6165) {
+  code: 'P1011',
+  meta: [Object],
+  clientVersion: '7.4.2'
+}
+GET sos-alerts error: Error [PrismaClientKnownRequestError]: 
+Invalid `prisma.sosAlert.findMany()` invocation:
+
+
+Error opening a TLS connection: self-signed certificate in certificate chain
+    at async l (C:\Users\Ryzen\HealthyTechAtlantico\next\.next\server\chunks\[root-of-the-server]__96beaa0a._.js:1:2524)
+    at async u (C:\Users\Ryzen\HealthyTechAtlantico\next\.next\server\chunks\[root-of-the-server]__96beaa0a._.js:1:6165) {
+  code: 'P1011',
+  meta: [Object],
+  clientVersion: '7.4.2'
+}
+GET sos-alerts error: Error [PrismaClientKnownRequestError]: 
+Invalid `prisma.sosAlert.findMany()` invocation:
+
+
+Error opening a TLS connection: self-signed certificate in certificate chain
+    at async l (C:\Users\Ryzen\HealthyTechAtlantico\next\.next\server\chunks\[root-of-the-server]__96beaa0a._.js:1:2524)
+    at async u (C:\Users\Ryzen\HealthyTechAtlantico\next\.next\server\chunks\[root-of-the-server]__96beaa0a._.js:1:6165) {
+  code: 'P1011',
+  meta: [Object],
+  clientVersion: '7.4.2'
+}
+GET sos-alerts error: Error [PrismaClientKnownRequestError]: 
+Invalid `prisma.sosAlert.findMany()` invocation:
+
+
+Error opening a TLS connection: self-signed certificate in certificate chain
+    at async l (C:\Users\Ryzen\HealthyTechAtlantico\next\.next\server\chunks\[root-of-the-server]__96beaa0a._.js:1:2524)
+    at async u (C:\Users\Ryzen\HealthyTechAtlantico\next\.next\server\chunks\[root-of-the-server]__96beaa0a._.js:1:6165) {
+  code: 'P1011',
+  meta: [Object],
+  clientVersion: '7.4.2'
+}
+GET /api/students error: Error [PrismaClientKnownRequestError]: 
+Invalid `prisma.student.count()` invocation:
+
+
+Error opening a TLS connection: self-signed certificate in certificate chain
+    at async u (C:\Users\Ryzen\HealthyTechAtlantico\next\.next\server\chunks\[root-of-the-server]__b19d47e2._.js:1:2919)
+    at async u (C:\Users\Ryzen\HealthyTechAtlantico\next\.next\server\chunks\[root-of-the-server]__b19d47e2._.js:1:7332) {
+  code: 'P1011',
+  meta: [Object],
+  clientVersion: '7.4.2'
+}
+GET sos-alerts error: Error [PrismaClientKnownRequestError]: 
+Invalid `prisma.sosAlert.findMany()` invocation:
+
+
+Error opening a TLS connection: self-signed certificate in certificate chain
+    at async l (C:\Users\Ryzen\HealthyTechAtlantico\next\.next\server\chunks\[root-of-the-server]__96beaa0a._.js:1:2524)
+    at async u (C:\Users\Ryzen\HealthyTechAtlantico\next\.next\server\chunks\[root-of-the-server]__96beaa0a._.js:1:6165) {
+  code: 'P1011',
+  meta: [Object],
+  clientVersion: '7.4.2'
+}
+GET sos-alerts error: Error [PrismaClientKnownRequestError]: 
+Invalid `prisma.sosAlert.findMany()` invocation:
+
+
+Error opening a TLS connection: self-signed certificate in certificate chain
+    at async l (C:\Users\Ryzen\HealthyTechAtlantico\next\.next\server\chunks\[root-of-the-server]__96beaa0a._.js:1:2524)
+    at async u (C:\Users\Ryzen\HealthyTechAtlantico\next\.next\server\chunks\[root-of-the-server]__96beaa0a._.js:1:6165) {
+  code: 'P1011',
+  meta: [Object],
+  clientVersion: '7.4.2'
+}
+GET /api/students error: Error [PrismaClientKnownRequestError]: 
+Invalid `prisma.student.count()` invocation:
+
+
+Error opening a TLS connection: self-signed certificate in certificate chain
+    at async u (C:\Users\Ryzen\HealthyTechAtlantico\next\.next\server\chunks\[root-of-the-server]__b19d47e2._.js:1:2919)
+    at async u (C:\Users\Ryzen\HealthyTechAtlantico\next\.next\server\chunks\[root-of-the-server]__b19d47e2._.js:1:7332) {
+  code: 'P1011',
+  meta: [Object],
+  clientVersion: '7.4.2'
+}
+GET sos-alerts error: Error [PrismaClientKnownRequestError]: 
+Invalid `prisma.sosAlert.findMany()` invocation:
+
+
+Error opening a TLS connection: self-signed certificate in certificate chain
+    at async l (C:\Users\Ryzen\HealthyTechAtlantico\next\.next\server\chunks\[root-of-the-server]__96beaa0a._.js:1:2524)
+    at async u (C:\Users\Ryzen\HealthyTechAtlantico\next\.next\server\chunks\[root-of-the-server]__96beaa0a._.js:1:6165) {
+  code: 'P1011',
+  meta: [Object],
+  clientVersion: '7.4.2'
+}
+GET /api/students error: Error [PrismaClientKnownRequestError]: 
+Invalid `prisma.student.findMany()` invocation:
+
+
+Error opening a TLS connection: self-signed certificate in certificate chain
+    at async u (C:\Users\Ryzen\HealthyTechAtlantico\next\.next\server\chunks\[root-of-the-server]__b19d47e2._.js:1:2919)
+    at async u (C:\Users\Ryzen\HealthyTechAtlantico\next\.next\server\chunks\[root-of-the-server]__b19d47e2._.js:1:7332) {
+  code: 'P1011',
+  meta: [Object],
+  clientVersion: '7.4.2'
+}
+GET /api/students error: Error [PrismaClientKnownRequestError]: 
+Invalid `prisma.student.findMany()` invocation:
+
+
+Error opening a TLS connection: self-signed certificate in certificate chain
+    at async u (C:\Users\Ryzen\HealthyTechAtlantico\next\.next\server\chunks\[root-of-the-server]__b19d47e2._.js:1:2919)
+    at async u (C:\Users\Ryzen\HealthyTechAtlantico\next\.next\server\chunks\[root-of-the-server]__b19d47e2._.js:1:7332) {
+  code: 'P1011',
+  meta: [Object],
+  clientVersion: '7.4.2'
+}
+GET /api/students error: Error [PrismaClientKnownRequestError]: 
+Invalid `prisma.student.count()` invocation:
+
+
+Error opening a TLS connection: self-signed certificate in certificate chain
+    at async u (C:\Users\Ryzen\HealthyTechAtlantico\next\.next\server\chunks\[root-of-the-server]__b19d47e2._.js:1:2919)
+    at async u (C:\Users\Ryzen\HealthyTechAtlantico\next\.next\server\chunks\[root-of-the-server]__b19d47e2._.js:1:7332) {
+  code: 'P1011',
+  meta: [Object],
+  clientVersion: '7.4.2'
+}
+GET /api/students error: Error [PrismaClientKnownRequestError]: 
+Invalid `prisma.student.count()` invocation:
+
+
+Error opening a TLS connection: self-signed certificate in certificate chain
+    at async u (C:\Users\Ryzen\HealthyTechAtlantico\next\.next\server\chunks\[root-of-the-server]__b19d47e2._.js:1:2919)
+    at async u (C:\Users\Ryzen\HealthyTechAtlantico\next\.next\server\chunks\[root-of-the-server]__b19d47e2._.js:1:7332) {
+  code: 'P1011',
+  meta: [Object],
+  clientVersion: '7.4.2'
+}
+GET sos-alerts error: Error [PrismaClientKnownRequestError]: 
+Invalid `prisma.sosAlert.findMany()` invocation:
+
+
+Error opening a TLS connection: self-signed certificate in certificate chain
+    at async l (C:\Users\Ryzen\HealthyTechAtlantico\next\.next\server\chunks\[root-of-the-server]__96beaa0a._.js:1:2524)
+    at async u (C:\Users\Ryzen\HealthyTechAtlantico\next\.next\server\chunks\[root-of-the-server]__96beaa0a._.js:1:6165) {
+  code: 'P1011',
+  meta: [Object],
+  clientVersion: '7.4.2'
+}
+[31m[auth][error][0m CallbackRouteError: Read more at https://errors.authjs.dev#callbackrouteerror
+[31m[auth][cause][0m: PrismaClientKnownRequestError: 
+Invalid `prisma.user.findUnique()` invocation:
+
+
+Error opening a TLS connection: self-signed certificate in certificate chain
+    at zr.handleRequestError (C:\Users\Ryzen\HealthyTechAtlantico\next\node_modules\@prisma\client\runtime\client.js:65:8286)
+    at zr.handleAndLogRequestError (C:\Users\Ryzen\HealthyTechAtlantico\next\node_modules\@prisma\client\runtime\client.js:65:7581)
+    at zr.request (C:\Users\Ryzen\HealthyTechAtlantico\next\node_modules\@prisma\client\runtime\client.js:65:7288)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async a (C:\Users\Ryzen\HealthyTechAtlantico\next\node_modules\@prisma\client\runtime\client.js:75:5816)
+    at async Object.authorize (C:\Users\Ryzen\HealthyTechAtlantico\next\.next\server\chunks\_ea3bbfcb._.js:404:65263)
+    at async iJ (C:\Users\Ryzen\HealthyTechAtlantico\next\.next\server\chunks\_ea3bbfcb._.js:404:41264)
+    at async iY (C:\Users\Ryzen\HealthyTechAtlantico\next\.next\server\chunks\_ea3bbfcb._.js:404:51020)
+    at async i0 (C:\Users\Ryzen\HealthyTechAtlantico\next\.next\server\chunks\_ea3bbfcb._.js:404:55576)
+    at async rW.do (C:\Users\Ryzen\HealthyTechAtlantico\next\node_modules\next\dist\compiled\next-server\app-route-turbo.runtime.prod.js:5:20169)
+[31m[auth][details][0m: {
+  "provider": "credentials"
+}
+⨯ Error [PrismaClientKnownRequestError]: 
+Invalid `prisma.sosAlert.count()` invocation:
+
+
+Error opening a TLS connection: self-signed certificate in certificate chain
+    at async h (C:\Users\Ryzen\HealthyTechAtlantico\next\.next\server\chunks\ssr\[root-of-the-server]__5be1f596._.js:1:3515)
+    at async k (C:\Users\Ryzen\HealthyTechAtlantico\next\.next\server\chunks\ssr\[root-of-the-server]__5be1f596._.js:1:5451) {
+  code: 'P1011',
+  meta: [Object],
+  clientVersion: '7.4.2',
+  digest: '2790540184'
+}
+GET sos-alerts error: Error [PrismaClientKnownRequestError]: 
+Invalid `prisma.sosAlert.findMany()` invocation:
+
+
+Error opening a TLS connection: self-signed certificate in certificate chain
+    at async l (C:\Users\Ryzen\HealthyTechAtlantico\next\.next\server\chunks\[root-of-the-server]__96beaa0a._.js:1:2524)
+    at async u (C:\Users\Ryzen\HealthyTechAtlantico\next\.next\server\chunks\[root-of-the-server]__96beaa0a._.js:1:6165) {
+  code: 'P1011',
+  meta: [Object],
+  clientVersion: '7.4.2'
+}
+GET /api/students error: Error [PrismaClientKnownRequestError]: 
+Invalid `prisma.student.findMany()` invocation:
+
+
+Error opening a TLS connection: self-signed certificate in certificate chain
+    at async u (C:\Users\Ryzen\HealthyTechAtlantico\next\.next\server\chunks\[root-of-the-server]__b19d47e2._.js:1:2919)
+    at async u (C:\Users\Ryzen\HealthyTechAtlantico\next\.next\server\chunks\[root-of-the-server]__b19d47e2._.js:1:7332) {
+  code: 'P1011',
+  meta: [Object],
+  clientVersion: '7.4.2'
+}
+GET sos-alerts error: Error [PrismaClientKnownRequestError]: 
+Invalid `prisma.sosAlert.findMany()` invocation:
+
+
+Error opening a TLS connection: self-signed certificate in certificate chain
+    at async l (C:\Users\Ryzen\HealthyTechAtlantico\next\.next\server\chunks\[root-of-the-server]__96beaa0a._.js:1:2524)
+    at async u (C:\Users\Ryzen\HealthyTechAtlantico\next\.next\server\chunks\[root-of-the-server]__96beaa0a._.js:1:6165) {
+  code: 'P1011',
+  meta: [Object],
+  clientVersion: '7.4.2'
+}
+⨯ Error [PrismaClientKnownRequestError]: 
+Invalid `prisma.academicYear.findMany()` invocation:
+
+
+Error opening a TLS connection: self-signed certificate in certificate chain
+    at async g (C:\Users\Ryzen\HealthyTechAtlantico\next\.next\server\chunks\ssr\[root-of-the-server]__5be1f596._.js:1:1650)
+    at async h (C:\Users\Ryzen\HealthyTechAtlantico\next\.next\server\chunks\ssr\[root-of-the-server]__5be1f596._.js:1:3515)
+    at async k (C:\Users\Ryzen\HealthyTechAtlantico\next\.next\server\chunks\ssr\[root-of-the-server]__5be1f596._.js:1:5451) {
+  code: 'P1011',
+  meta: [Object],
+  clientVersion: '7.4.2',
+  digest: '1652690119'
+}
+GET sos-alerts error: Error [PrismaClientKnownRequestError]: 
+Invalid `prisma.sosAlert.findMany()` invocation:
+
+
+Error opening a TLS connection: self-signed certificate in certificate chain
+    at async l (C:\Users\Ryzen\HealthyTechAtlantico\next\.next\server\chunks\[root-of-the-server]__96beaa0a._.js:1:2524)
+    at async u (C:\Users\Ryzen\HealthyTechAtlantico\next\.next\server\chunks\[root-of-the-server]__96beaa0a._.js:1:6165) {
+  code: 'P1011',
+  meta: [Object],
+  clientVersion: '7.4.2'
+}
+GET /api/users/me error: Error [PrismaClientKnownRequestError]: 
+Invalid `prisma.user.findUnique()` invocation:
+
+
+Error opening a TLS connection: self-signed certificate in certificate chain
+    at async c (C:\Users\Ryzen\HealthyTechAtlantico\next\.next\server\chunks\[root-of-the-server]__b94606f3._.js:1:2899)
+    at async l (C:\Users\Ryzen\HealthyTechAtlantico\next\.next\server\chunks\[root-of-the-server]__b94606f3._.js:1:7125) {
+  code: 'P1011',
+  meta: [Object],
+  clientVersion: '7.4.2'
+}
+GET /api/students error: Error [PrismaClientKnownRequestError]: 
+Invalid `prisma.student.count()` invocation:
+
+
+Error opening a TLS connection: self-signed certificate in certificate chain
+    at async u (C:\Users\Ryzen\HealthyTechAtlantico\next\.next\server\chunks\[root-of-the-server]__b19d47e2._.js:1:2919)
+    at async u (C:\Users\Ryzen\HealthyTechAtlantico\next\.next\server\chunks\[root-of-the-server]__b19d47e2._.js:1:7332) {
+  code: 'P1011',
+  meta: [Object],
+  clientVersion: '7.4.2'
+}
+GET sos-alerts error: Error [PrismaClientKnownRequestError]: 
+Invalid `prisma.sosAlert.findMany()` invocation:
+
+
+Error opening a TLS connection: self-signed certificate in certificate chain
+    at async l (C:\Users\Ryzen\HealthyTechAtlantico\next\.next\server\chunks\[root-of-the-server]__96beaa0a._.js:1:2524)
+    at async u (C:\Users\Ryzen\HealthyTechAtlantico\next\.next\server\chunks\[root-of-the-server]__96beaa0a._.js:1:6165) {
+  code: 'P1011',
+  meta: [Object],
+  clientVersion: '7.4.2'
+}
+GET sos-alerts error: Error [PrismaClientKnownRequestError]: 
+Invalid `prisma.sosAlert.findMany()` invocation:
+
+
+Error opening a TLS connection: self-signed certificate in certificate chain
+    at async l (C:\Users\Ryzen\HealthyTechAtlantico\next\.next\server\chunks\[root-of-the-server]__96beaa0a._.js:1:2524)
+    at async u (C:\Users\Ryzen\HealthyTechAtlantico\next\.next\server\chunks\[root-of-the-server]__96beaa0a._.js:1:6165) {
+  code: 'P1011',
+  meta: [Object],
+  clientVersion: '7.4.2'
+}
+⨯ Error [PrismaClientKnownRequestError]: 
+Invalid `prisma.student.count()` invocation:
+
+
+Error opening a TLS connection: self-signed certificate in certificate chain
+    at async h (C:\Users\Ryzen\HealthyTechAtlantico\next\.next\server\chunks\ssr\[root-of-the-server]__5be1f596._.js:1:3515)
+    at async k (C:\Users\Ryzen\HealthyTechAtlantico\next\.next\server\chunks\ssr\[root-of-the-server]__5be1f596._.js:1:5451) {
+  code: 'P1011',
+  meta: [Object],
+  clientVersion: '7.4.2',
+  digest: '1230277210'
+}
+GET sos-alerts error: Error [PrismaClientKnownRequestError]: 
+Invalid `prisma.sosAlert.findMany()` invocation:
+
+
+Error opening a TLS connection: self-signed certificate in certificate chain
+    at async l (C:\Users\Ryzen\HealthyTechAtlantico\next\.next\server\chunks\[root-of-the-server]__96beaa0a._.js:1:2524)
+    at async u (C:\Users\Ryzen\HealthyTechAtlantico\next\.next\server\chunks\[root-of-the-server]__96beaa0a._.js:1:6165) {
+  code: 'P1011',
+  meta: [Object],
+  clientVersion: '7.4.2'
+}
+GET /api/users/me error: Error [PrismaClientKnownRequestError]: 
+Invalid `prisma.user.findUnique()` invocation:
+
+
+Error opening a TLS connection: self-signed certificate in certificate chain
+    at async c (C:\Users\Ryzen\HealthyTechAtlantico\next\.next\server\chunks\[root-of-the-server]__b94606f3._.js:1:2899)
+    at async l (C:\Users\Ryzen\HealthyTechAtlantico\next\.next\server\chunks\[root-of-the-server]__b94606f3._.js:1:7125) {
+  code: 'P1011',
+  meta: [Object],
+  clientVersion: '7.4.2'
+}
+Register error: Error [PrismaClientKnownRequestError]: 
+Invalid `prisma.user.findUnique()` invocation:
+
+
+Error opening a TLS connection: self-signed certificate in certificate chain
+    at async d (C:\Users\Ryzen\HealthyTechAtlantico\next\.next\server\chunks\[root-of-the-server]__aedbc65d._.js:1:2279)
+    at async u (C:\Users\Ryzen\HealthyTechAtlantico\next\.next\server\chunks\[root-of-the-server]__aedbc65d._.js:1:6067) {
+  code: 'P1011',
+  meta: [Object],
+  clientVersion: '7.4.2'
+}
+Healthcheck failed: Error [PrismaClientKnownRequestError]: 
+Invalid `prisma.$queryRaw()` invocation:
+
+
+Raw query failed. Code: `N/A`. Message: `Error opening a TLS connection: self-signed certificate in certificate chain`
+    at async i (C:\Users\Ryzen\HealthyTechAtlantico\next\.next\server\chunks\[root-of-the-server]__c7ddbf46._.js:1:2148)
+    at async u (C:\Users\Ryzen\HealthyTechAtlantico\next\.next\server\chunks\[root-of-the-server]__c7ddbf46._.js:1:5789) {
+  code: 'P2010',
+  meta: [Object],
+  clientVersion: '7.4.2'
+}

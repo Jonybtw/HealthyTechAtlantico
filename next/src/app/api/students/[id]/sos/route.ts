@@ -15,6 +15,7 @@ import {
 import { auditLog } from "@/lib/audit";
 import { prisma } from "@/lib/prisma";
 import { PERMISSIONS } from "@/lib/rbac";
+import { normalizeSosAlerts } from "@/lib/sos-alerts";
 import { getStudentAccessContext } from "@/lib/student-access";
 import { sendMail } from "@/lib/mailer";
 import { escapeHtml } from "@/lib/utils";
@@ -68,7 +69,8 @@ export async function GET(
       include: sosAlertInclude,
     });
 
-    return ok(alerts);
+    const normalizedAlerts = await normalizeSosAlerts(alerts);
+    return ok(normalizedAlerts);
   } catch (error) {
     console.error("GET sos error:", error);
     return serverError();
@@ -159,7 +161,8 @@ export async function POST(
       );
     }
 
-    return created(alert);
+    const [normalizedAlert] = await normalizeSosAlerts([alert]);
+    return created(normalizedAlert);
   } catch (error: unknown) {
     if (error instanceof z.ZodError) {
       return validationError(error.issues);

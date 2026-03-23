@@ -330,6 +330,7 @@
     "pdfSubtitle": "PDF document with logo and tables",
     "emailTitle": "Send by email",
     "emailDescription": "Only for guardians linked to the student",
+    "emailRecipientLabel": "Guardian",
     "emailButton": "Send report",
     "noGuardiansEmail": "This student has no linked guardians for email delivery.",
     "unlinkedTitle": "Profile not linked",
@@ -645,9 +646,9 @@
   },
   "authLayout": {
     "department": "Physical Education Department — Colégio Atlântico",
-    "highlightSecurity": "Institutional security",
-    "highlightMonitoring": "Continuous monitoring",
-    "highlightExperience": "Premium experience",
+    "highlightSecurity": "Assessment protocols",
+    "highlightMonitoring": "Physical fitness monitoring",
+    "highlightExperience": "Pedagogical reports",
     "headline": "School health with criteria and immediate response.",
     "subtitle": "Institutional platform for physical monitoring, questionnaires and alerts with secure follow-up.",
     "copyright": "© {year} HealthyTech Atlântico. All rights reserved."

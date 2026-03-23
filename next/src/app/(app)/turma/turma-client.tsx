@@ -24,6 +24,7 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useUser } from "@/components/user-context";
+import { ChartFrame } from "@/components/ui/chart-frame";
 import { ChartTooltip } from "@/components/ui/chart-tooltip";
 import { useClasses } from "@/hooks/use-queries";
 import { readApiResponse } from "@/lib/api-client";
@@ -105,16 +106,18 @@ export default function TurmaPage() {
         student.testCount,
       ].join(",")
     );
-    const csv = [headers.join(","), ...rows].join("\n");
-    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = "turma_report.csv";
-    link.click();
-    URL.revokeObjectURL(url);
-    toast.success(common("exportCsv"));
-  };
+      const csv = [headers.join(","), ...rows].join("\n");
+      const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = "turma_report.csv";
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+      toast.success(common("exportCsv"));
+    };
 
   const importClassesCsv = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -327,7 +330,7 @@ export default function TurmaPage() {
               title={t("zafDistribution")}
               className="animate-fade-in-up"
             >
-              <div className="h-40 w-full">
+              <ChartFrame className="h-40 w-full">
                 <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
                   <BarChart
                     data={zoneChartData}
@@ -387,7 +390,7 @@ export default function TurmaPage() {
                     />
                   </BarChart>
                 </ResponsiveContainer>
-              </div>
+              </ChartFrame>
             </PageSection>
           )}
           <div className="animate-fade-in-up delay-100">

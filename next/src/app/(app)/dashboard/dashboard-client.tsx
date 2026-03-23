@@ -169,8 +169,8 @@ export function DashboardClient({ username, summary }: Props) {
         <PageSection title={t("quickActions")} description={t("quickActionsSummary")} tone="secondary" layout="list">
           <div className="grid gap-3 sm:grid-cols-3">
             {[
-              { href: "/biometria", label: t("registerBiometric"), icon: Ruler },
-              { href: "/testes", label: t("registerTests"), icon: ClipboardList },
+              { href: "/questionarios", label: nav("questionarios"), icon: BookOpen },
+              { href: "/sos", label: nav("sos"), icon: AlertTriangle },
               { href: "/relatorio", label: t("reportsAvailable"), icon: FileText },
             ].map(({ href, label, icon: Icon }) => (
               <Link

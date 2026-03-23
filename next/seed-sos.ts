@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import "dotenv/config";
 import { PrismaClient, Role } from "@prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
@@ -24,7 +25,7 @@ async function main() {
 
   console.log("Seeding SOS Alerts...");
 
-  for (let s of students) {
+  for (const s of students) {
     // Make 2 alerts per student for 15 students
     if (Math.random() < 0.5) {
       const isResolved = Math.random() > 0.5;

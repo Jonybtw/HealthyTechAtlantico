@@ -329,6 +329,7 @@
     "pdfSubtitle": "Documento PDF com logo e tabelas",
     "emailTitle": "Enviar por e-mail",
     "emailDescription": "Apenas para encarregados associados ao aluno",
+    "emailRecipientLabel": "Encarregado de educação",
     "emailButton": "Enviar relatório",
     "noGuardiansEmail": "Este aluno não tem encarregados associados para envio por e-mail.",
     "unlinkedTitle": "Perfil não associado",
@@ -647,9 +648,9 @@
   },
   "authLayout": {
     "department": "Departamento de Educação Física — Colégio Atlântico",
-    "highlightSecurity": "Segurança institucional",
-    "highlightMonitoring": "Acompanhamento contínuo",
-    "highlightExperience": "Experiência premium",
+    "highlightSecurity": "Protocolos de avaliação",
+    "highlightMonitoring": "Monitorização da aptidão física",
+    "highlightExperience": "Relatórios pedagógicos",
     "headline": "Saúde escolar com critério e resposta imediata.",
     "subtitle": "Plataforma institucional para monitorização física, questionários e alertas com acompanhamento seguro.",
     "copyright": "© {year} HealthyTech Atlântico. Todos os direitos reservados."

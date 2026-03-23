@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import { useTranslations, useLocale } from "next-intl";
 import { toast } from "sonner";
 import { Ruler, Timer, ClipboardList, ShieldOff, Users, Pencil, Trash2, Check, TrendingUp } from "lucide-react";
-import { AreaChart, Area, Line, XAxis, YAxis, Tooltip as RechartsTooltip, ResponsiveContainer, CartesianGrid, ComposedChart } from "recharts";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import type { z } from "zod";
@@ -13,6 +12,7 @@ import { createStudentSchema } from "@/lib/validations";
 import { PageScaffold } from "@/components/ui/page-scaffold";
 import { PageSection } from "@/components/ui/page-section";
 import { Button } from "@/components/ui/button";
+import { DateField } from "@/components/ui/date-field";
 import { Input } from "@/components/ui/input";
 import { ZoneBadge } from "@/components/ui/zone-badge";
 import { ConfirmModal } from "@/components/ui/confirm-modal";
@@ -30,6 +30,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { HeightPercentilesChart } from "@/components/ui/height-percentiles-chart";
+import { FieldShell } from "@/components/ui/field-shell";
 import { calcAgeFromBirthDate } from "@/lib/zaf";
 import { readApiResponse } from "@/lib/api-client";
 
@@ -182,7 +184,7 @@ export function StudentDetailClient({ student }: Props) {
         <Form {...editForm}>
           <form
             onSubmit={editForm.handleSubmit(handleSave)}
-            className="surface-primary rounded-[20px] p-5 flex flex-col gap-4 max-w-lg"
+            className="surface-primary flex max-w-lg flex-col gap-4 rounded-[20px] p-5"
           >
             <h3 className="font-semibold text-sm">{t("editTitle")}</h3>
             <FormField
@@ -200,17 +202,19 @@ export function StudentDetailClient({ student }: Props) {
                 </FormItem>
               )}
             />
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid gap-3 sm:grid-cols-2">
               <FormField
                 control={editForm.control}
                 name="sex"
                 render={({ field }) => (
                   <FormItem>
                     <FormControl>
-                      <div className="flex flex-col gap-1.5">
-                        <label className="text-sm font-semibold tracking-tight text-foreground">{t("sexLabel")}</label>
+                      <FieldShell label={t("sexLabel")}>
                         <Select value={field.value} onValueChange={field.onChange}>
-                          <SelectTrigger>
+                          <SelectTrigger
+                            aria-label={t("sexLabel")}
+                            className="h-14 rounded-full px-4 pt-[1.45rem] pb-[0.45rem] text-left shadow-[inset_0_1px_0_rgba(255,255,255,0.3)] focus:ring-4 focus:ring-gold-400/15"
+                          >
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
@@ -218,7 +222,7 @@ export function StudentDetailClient({ student }: Props) {
                             <SelectItem value="F">{t("female")}</SelectItem>
                           </SelectContent>
                         </Select>
-                      </div>
+                      </FieldShell>
                     </FormControl>
                   </FormItem>
                 )}
@@ -229,17 +233,19 @@ export function StudentDetailClient({ student }: Props) {
                 render={({ field }) => (
                   <FormItem>
                     <FormControl>
-                      <Input
+                      <DateField
                         label={t("birthDateLabel")}
-                        type="date"
-                        {...field}
+                        name={field.name}
+                        value={field.value ?? ""}
+                        onChange={field.onChange}
+                        onBlur={field.onBlur}
                       />
                     </FormControl>
                   </FormItem>
                 )}
               />
             </div>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid gap-3 sm:grid-cols-2">
               <FormField
                 control={editForm.control}
                 name="schoolYear"
@@ -454,137 +460,3 @@ function Empty() {
   return <p className="text-sm text-muted-foreground">—</p>;
 }
 
-const WHO_HEIGHT_M: Record<number, { p5: number; p50: number; p95: number }> = {
-  10: { p5: 125, p50: 138, p95: 151 },
-  11: { p5: 130, p50: 143, p95: 158 },
-  12: { p5: 135, p50: 149, p95: 165 },
-  13: { p5: 141, p50: 156, p95: 173 },
-  14: { p5: 148, p50: 163, p95: 180 },
-  15: { p5: 154, p50: 169, p95: 185 },
-  16: { p5: 159, p50: 173, p95: 188 },
-  17: { p5: 161, p50: 175, p95: 189 },
-  18: { p5: 162, p50: 176, p95: 190 },
-};
-
-const WHO_HEIGHT_F: Record<number, { p5: number; p50: number; p95: number }> = {
-  10: { p5: 125, p50: 138, p95: 152 },
-  11: { p5: 132, p50: 144, p95: 159 },
-  12: { p5: 139, p50: 151, p95: 165 },
-  13: { p5: 145, p50: 156, p95: 169 },
-  14: { p5: 148, p50: 159, p95: 172 },
-  15: { p5: 150, p50: 161, p95: 173 },
-  16: { p5: 151, p50: 162, p95: 174 },
-  17: { p5: 151, p50: 162, p95: 174 },
-  18: { p5: 151, p50: 163, p95: 174 },
-};
-
-export function HeightPercentilesChart({
-  biometrics,
-  sex,
-  birthDate,
-}: {
-  biometrics: { heightM: number; recordedAt: string }[];
-  sex: string;
-  birthDate: string | null;
-}) {
-  const whoTable = sex === "M" ? WHO_HEIGHT_M : WHO_HEIGHT_F;
-
-  const chartData: any[] = [10, 11, 12, 13, 14, 15, 16, 17, 18].map((age) => ({
-    age,
-    range: [whoTable[age].p5, whoTable[age].p95],
-    p50: whoTable[age].p50,
-    studentHeight: null,
-  }));
-
-  if (birthDate) {
-    const bDate = new Date(birthDate);
-    biometrics.forEach((b) => {
-      const rDate = new Date(b.recordedAt);
-      const ageAtMeasurement =
-        (rDate.getTime() - bDate.getTime()) / (1000 * 60 * 60 * 24 * 365.25);
-      
-      if (ageAtMeasurement >= 9 && ageAtMeasurement <= 19) {
-        chartData.push({
-          age: Number(ageAtMeasurement.toFixed(2)),
-          range: null,
-          p50: null,
-          studentHeight: Math.round(b.heightM * 100),
-        });
-      }
-    });
-  }
-
-  chartData.sort((a, b) => a.age - b.age);
-
-  return (
-    <ResponsiveContainer width="100%" height="100%">
-      <ComposedChart data={chartData} margin={{ top: 10, right: 10, bottom: 20, left: -20 }}>
-        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--color-border)" />
-        <XAxis
-          dataKey="age"
-          type="number"
-          domain={[10, 18]}
-          tickCount={9}
-          tick={{ fill: "var(--color-muted-foreground)", fontSize: 12 }}
-          axisLine={false}
-          tickLine={false}
-          dy={10}
-        />
-        <YAxis
-          domain={["auto", "auto"]}
-          tick={{ fill: "var(--color-muted-foreground)", fontSize: 12 }}
-          axisLine={false}
-          tickLine={false}
-          tickFormatter={(v) => `${v} cm`}
-        />
-        <RechartsTooltip
-          cursor={{ stroke: "var(--color-border)", strokeWidth: 1, strokeDasharray: "4 4" }}
-          content={({ active, payload }) => {
-            if (active && payload && payload.length) {
-              const data = payload[0].payload;
-              return (
-                <div className="rounded-lg border border-border/60 bg-background p-2.5 text-xs shadow-sm">
-                  <p className="font-semibold mb-1">Idade: {data.age} anos</p>
-                  {data.studentHeight !== null && <p className="text-success-600 font-bold mt-1">Aluno: {data.studentHeight} cm</p>}
-                  {data.p50 !== null && <p className="text-muted-foreground mt-1">P50 (Médio): {data.p50} cm</p>}
-                  {data.range && <p className="text-muted-foreground">P5-P95: {data.range[0]} - {data.range[1]} cm</p>}
-                </div>
-              );
-            }
-            return null;
-          }}
-        />
-        <Area
-          type="monotone"
-          dataKey="range"
-          stroke="none"
-          fill="var(--color-success-500)"
-          fillOpacity={0.15}
-          connectNulls
-          activeDot={false}
-        />
-        <Line
-          type="monotone"
-          dataKey="p50"
-          stroke="var(--color-success-600)"
-          strokeOpacity={0.6}
-          strokeWidth={2}
-          strokeDasharray="4 4"
-          connectNulls
-          dot={false}
-          activeDot={false}
-        />
-        <Line
-          type="monotone"
-          dataKey="studentHeight"
-          stroke="var(--color-success-600)"
-          strokeWidth={3}
-          connectNulls
-          dot={{ r: 4, strokeWidth: 2, fill: "var(--color-background)", stroke: "var(--color-success-600)" }}
-          activeDot={{ r: 6, strokeWidth: 0, fill: "var(--color-success-600)" }}
-          isAnimationActive={true}
-        />
-      </ComposedChart>
-    </ResponsiveContainer>
-  );
-}
