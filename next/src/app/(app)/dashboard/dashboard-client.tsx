@@ -11,6 +11,7 @@ import {
   BookOpen,
   ClipboardList,
   FileText,
+  Heart,
   Link2,
   Ruler,
   School,
@@ -25,6 +26,7 @@ import { PageSection } from "@/components/ui/page-section";
 import { buttonVariants } from "@/components/ui/button";
 import { FadeIn, StaggerItem, StaggerList } from "@/components/ui/motion";
 import type { DashboardCardData, DashboardSummary } from "@/lib/dashboard";
+import { getQuestionnaireTypeLabelKey } from "@/lib/questionnaires";
 
 interface Props {
   username: string;
@@ -52,9 +54,17 @@ function formatDisplayDate(value: string | null, locale: string) {
   });
 }
 
+function formatCompactDate(value: string, locale: string) {
+  return new Date(value).toLocaleDateString(locale, {
+    day: "2-digit",
+    month: "short",
+  });
+}
+
 export function DashboardClient({ username, summary }: Props) {
   const t = useTranslations("dashboard");
   const nav = useTranslations("nav");
+  const questionnaires = useTranslations("questionarios");
   const locale = useLocale();
   const [chartsReady, setChartsReady] = useState(false);
 
@@ -199,6 +209,285 @@ export function DashboardClient({ username, summary }: Props) {
       : summary.variant === "psychologist"
         ? t("psychologistOverview")
         : t("parentOverview");
+
+  if (summary.variant === "psychologist") {
+    return (
+      <PageScaffold
+        className="gap-6"
+        headerProps={{
+          title: `${greeting}, ${username}!`,
+          description,
+          eyebrow: t("title"),
+          meta: todayLabel,
+        }}
+      >
+        <StaggerList className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+          {summary.cards.map((card) => (
+            <StaggerItem key={card.id}>
+              <KpiCard
+                icon={ICONS[card.icon]}
+                title={t(card.titleKey)}
+                value={card.value}
+                description={t(card.descriptionKey)}
+                accent={card.accent}
+              />
+            </StaggerItem>
+          ))}
+        </StaggerList>
+
+        <div className="grid gap-5 xl:grid-cols-[minmax(0,1.1fr)_340px]">
+          <PageSection
+            tone="secondary"
+            layout="list"
+            title={t("psychologistQueueTitle")}
+            description={t("psychologistQueueDescription")}
+          >
+            {summary.openAlerts.length > 0 ? (
+              <div className="grid gap-3">
+                {summary.openAlerts.map((alert) => (
+                  <Link
+                    key={alert.id}
+                    href={`/acompanhamento/${alert.studentId}`}
+                    className="group rounded-[20px] border border-border/60 bg-background/35 p-4 transition-all duration-300 hover:-translate-y-0.5 hover:border-danger-300/40 hover:shadow-card-hover"
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="space-y-1">
+                        <p className="text-sm font-semibold text-foreground">{alert.studentName}</p>
+                        <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
+                          {alert.className ?? t("classPending")}
+                        </p>
+                      </div>
+                      <span className="rounded-full bg-danger-50 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-danger-700 dark:bg-danger-950/30 dark:text-danger-300">
+                        {t("pendingSos")}
+                      </span>
+                    </div>
+                    <div className="mt-4 flex items-center justify-between gap-3">
+                      <span className="text-sm text-muted-foreground">
+                        {t("alertOpenedOn", { date: formatDisplayDate(alert.createdAt, locale) })}
+                      </span>
+                      <span className="inline-flex items-center gap-2 text-sm font-semibold text-foreground">
+                        {t("openStudentFollowUp")}
+                        <ArrowRight className="size-4 transition-transform duration-300 group-hover:translate-x-1" />
+                      </span>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            ) : (
+              <EmptyState
+                icon={AlertTriangle}
+                title={t("noPendingCasesTitle")}
+                description={t("noPendingCasesDescription")}
+              />
+            )}
+          </PageSection>
+
+          <div className="grid gap-5">
+            <PageSection
+              tone="utility"
+              layout="list"
+              title={t("psychologistRecentTitle")}
+              description={t("psychologistRecentDescription")}
+            >
+              {summary.recentQuestionnaires.length > 0 ? (
+                <div className="grid gap-3">
+                  {summary.recentQuestionnaires.map((questionnaire) => (
+                    <div
+                      key={questionnaire.id}
+                      className="rounded-[18px] border border-border/60 bg-background/45 p-4"
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <div>
+                          <p className="text-sm font-semibold text-foreground">
+                            {questionnaire.studentName}
+                          </p>
+                          <p className="mt-1 text-sm text-muted-foreground">
+                            {questionnaires(
+                              getQuestionnaireTypeLabelKey(
+                                questionnaire.type as "AUTOCONCEITO" | "AUTOESTIMA" | "KIDMED",
+                              ),
+                            )}
+                          </p>
+                        </div>
+                        <span className="rounded-full border border-border/60 bg-background/70 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+                          {formatCompactDate(questionnaire.submittedAt, locale)}
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <EmptyState
+                  icon={BookOpen}
+                  title={t("noRecentQuestionnairesTitle")}
+                  description={t("noRecentQuestionnairesDescription")}
+                />
+              )}
+            </PageSection>
+
+            <PageSection
+              tone="utility"
+              layout="list"
+              title={t("quickActions")}
+              description={t("quickActionsSummary")}
+            >
+              <DashboardQuickLink
+                href="/sos"
+                icon={AlertTriangle}
+                title={t("reviewSosInbox")}
+                description={t("reviewSosInboxHint")}
+                accent="danger"
+              />
+              <DashboardQuickLink
+                href="/perfil"
+                icon={FileText}
+                title={nav("perfil")}
+                description={t("updateProfileHint")}
+                accent="blue"
+              />
+            </PageSection>
+          </div>
+        </div>
+      </PageScaffold>
+    );
+  }
+
+  if (summary.variant === "parent") {
+    return (
+      <PageScaffold
+        className="gap-6"
+        headerProps={{
+          title: `${greeting}, ${username}!`,
+          description,
+          eyebrow: t("title"),
+          meta: todayLabel,
+        }}
+      >
+        <StaggerList className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+          {summary.cards.map((card) => (
+            <StaggerItem key={card.id}>
+              <KpiCard
+                icon={ICONS[card.icon]}
+                title={t(card.titleKey)}
+                value={card.value}
+                description={t(card.descriptionKey)}
+                accent={card.accent}
+              />
+            </StaggerItem>
+          ))}
+        </StaggerList>
+
+        <div className="grid gap-5 xl:grid-cols-[minmax(0,1.15fr)_340px]">
+          <PageSection
+            tone="secondary"
+            layout="list"
+            title={t("parentStudentsTitle")}
+            description={t("parentStudentsDescription")}
+          >
+            {summary.linkedStudents.length > 0 ? (
+              <div className="grid gap-3 lg:grid-cols-2">
+                {summary.linkedStudents.map((student) => (
+                  <div
+                    key={student.id}
+                    className="rounded-[20px] border border-border/60 bg-background/35 p-4"
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="space-y-1">
+                        <p className="text-sm font-semibold text-foreground">{student.name}</p>
+                        <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
+                          {[student.className, student.schoolYear].filter(Boolean).join(" - ") || t("studentRecord")}
+                        </p>
+                      </div>
+                      <span className="rounded-full bg-navy-50 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-navy-700 dark:bg-navy-950/30 dark:text-navy-200">
+                        {t("linkedStudents")}
+                      </span>
+                    </div>
+                    <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                      <DashboardMetaPill
+                        label={t("lastReport")}
+                        value={formatDisplayDate(student.lastReportAt, locale)}
+                      />
+                      <DashboardMetaPill
+                        label={t("lastQuestionnaire")}
+                        value={formatDisplayDate(student.lastQuestionnaireAt, locale)}
+                      />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <EmptyState
+                icon={Users}
+                title={t("noLinkedStudentsDashboardTitle")}
+                description={t("noLinkedStudentsDashboardDescription")}
+              />
+            )}
+          </PageSection>
+
+          <div className="grid gap-5">
+            <PageSection
+              tone="utility"
+              layout="list"
+              title={t("parentReportsTitle")}
+              description={t("parentReportsDescription")}
+            >
+              {summary.recentReports.length > 0 ? (
+                <div className="grid gap-3">
+                  {summary.recentReports.map((report) => (
+                    <div
+                      key={report.id}
+                      className="rounded-[18px] border border-border/60 bg-background/45 p-4"
+                    >
+                      <p className="text-sm font-semibold text-foreground">{report.title}</p>
+                      <p className="mt-1 text-sm text-muted-foreground">{report.studentName}</p>
+                      <p className="mt-3 text-xs uppercase tracking-[0.18em] text-muted-foreground">
+                        {t("historyGeneratedOn", { date: formatDisplayDate(report.createdAt, locale) })}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <EmptyState
+                  icon={FileText}
+                  title={t("noReportsDashboardTitle")}
+                  description={t("noReportsDashboardDescription")}
+                />
+              )}
+            </PageSection>
+
+            <PageSection
+              tone="utility"
+              layout="list"
+              title={t("quickActions")}
+              description={t("quickActionsSummary")}
+            >
+              <DashboardQuickLink
+                href="/relatorio"
+                icon={FileText}
+                title={nav("relatorio")}
+                description={t("openReportsHint")}
+                accent="green"
+              />
+              <DashboardQuickLink
+                href="/protocolos"
+                icon={Heart}
+                title={nav("protocolos")}
+                description={t("viewProtocolsHint")}
+                accent="gold"
+              />
+              <DashboardQuickLink
+                href="/perfil"
+                icon={Users}
+                title={nav("perfil")}
+                description={t("updateProfileHint")}
+                accent="blue"
+              />
+            </PageSection>
+          </div>
+        </div>
+      </PageScaffold>
+    );
+  }
 
   return (
     <PageScaffold
@@ -447,5 +736,55 @@ export function DashboardClient({ username, summary }: Props) {
         </FadeIn>
       ) : null}
     </PageScaffold>
+  );
+}
+
+function DashboardQuickLink({
+  href,
+  icon: Icon,
+  title,
+  description,
+  accent,
+}: {
+  href: string;
+  icon: typeof Users;
+  title: string;
+  description: string;
+  accent: "blue" | "gold" | "green" | "danger";
+}) {
+  const accents = {
+    blue: "bg-navy-900 text-white dark:bg-gold-300 dark:text-navy-950",
+    gold: "bg-gold-300 text-navy-950",
+    green: "bg-success-600 text-white",
+    danger: "bg-danger-600 text-white",
+  } as const;
+
+  return (
+    <Link
+      href={href}
+      className="group flex items-center justify-between gap-3 rounded-[18px] border border-border/60 bg-background/45 px-4 py-3.5 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-card-hover"
+    >
+      <div className="flex items-center gap-3">
+        <span className={`flex size-10 items-center justify-center rounded-2xl ${accents[accent]}`}>
+          <Icon className="size-4" />
+        </span>
+        <div>
+          <p className="text-sm font-semibold text-foreground">{title}</p>
+          <p className="text-xs text-muted-foreground">{description}</p>
+        </div>
+      </div>
+      <ArrowRight className="size-4 text-muted-foreground transition-transform duration-300 group-hover:translate-x-1" />
+    </Link>
+  );
+}
+
+function DashboardMetaPill({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="rounded-[16px] border border-border/60 bg-background/55 px-3 py-2.5">
+      <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+        {label}
+      </p>
+      <p className="mt-1 text-sm font-semibold text-foreground">{value}</p>
+    </div>
   );
 }

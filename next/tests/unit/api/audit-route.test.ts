@@ -3,9 +3,10 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { NextRequest } from "next/server";
 
-const { authMock, findManyMock } = vi.hoisted(() => ({
+const { authMock, findManyMock, countMock } = vi.hoisted(() => ({
   authMock: vi.fn(),
   findManyMock: vi.fn(),
+  countMock: vi.fn(),
 }));
 
 vi.mock("@/lib/auth", () => ({
@@ -16,6 +17,7 @@ vi.mock("@/lib/prisma", () => ({
   prisma: {
     auditLog: {
       findMany: findManyMock,
+      count: countMock,
     },
   },
 }));
@@ -26,6 +28,7 @@ describe("GET /api/audit", () => {
   beforeEach(() => {
     authMock.mockReset();
     findManyMock.mockReset();
+    countMock.mockReset();
   });
 
   it("rejects non-admin users", async () => {
@@ -37,7 +40,10 @@ describe("GET /api/audit", () => {
 
     expect(response.status).toBe(403);
     expect(findManyMock).not.toHaveBeenCalled();
-    await expect(response.json()).resolves.toEqual({ error: "Sem permissão" });
+    expect(countMock).not.toHaveBeenCalled();
+    await expect(response.json()).resolves.toEqual({
+      error: expect.stringMatching(/^Sem permiss/i),
+    });
   });
 
   it("returns validation error for non-ISO dates", async () => {
@@ -51,9 +57,10 @@ describe("GET /api/audit", () => {
 
     expect(response.status).toBe(400);
     expect(findManyMock).not.toHaveBeenCalled();
+    expect(countMock).not.toHaveBeenCalled();
     await expect(response.json()).resolves.toEqual(
       expect.objectContaining({
-        error: "Dados inválidos",
+        error: expect.stringMatching(/^Dados inv/i),
         issues: expect.any(Array),
       }),
     );
@@ -75,6 +82,7 @@ describe("GET /api/audit", () => {
       user: { id: "admin-1", role: "ADMIN" },
     });
     findManyMock.mockResolvedValue(logs);
+    countMock.mockResolvedValue(12);
 
     const response = await GET(
       new NextRequest(
@@ -98,19 +106,33 @@ describe("GET /api/audit", () => {
         user: { select: { email: true, name: true } },
       },
     });
+    expect(countMock).toHaveBeenCalledWith({
+      where: {
+        action: { contains: "login", mode: "insensitive" },
+        createdAt: {
+          gte: new Date("2026-01-01T00:00:00.000Z"),
+          lte: new Date("2026-01-31T23:59:59.000Z"),
+        },
+      },
+    });
 
     await expect(response.json()).resolves.toEqual({
-      data: [
-        {
-          id: "log-1",
-          action: "login",
-          targetId: null,
-          ipAddress: "127.0.0.1",
-          createdAt: "2026-01-15T10:00:00.000Z",
-          userEmail: "admin@colegioatlantico.pt",
-          userName: "Admin",
-        },
-      ],
+      data: {
+        logs: [
+          {
+            id: "log-1",
+            action: "login",
+            targetId: null,
+            ipAddress: "127.0.0.1",
+            createdAt: "2026-01-15T10:00:00.000Z",
+            userEmail: "admin@colegioatlantico.pt",
+            userName: "Admin",
+          },
+        ],
+        total: 12,
+        page: 2,
+        pages: 2,
+      },
     });
   });
 });

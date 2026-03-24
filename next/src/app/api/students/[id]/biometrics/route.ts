@@ -12,6 +12,7 @@ import {
   validationError,
 } from "@/lib/api-response";
 import { auditLog } from "@/lib/audit";
+import { AUDIT_ACTIONS } from "@/lib/audit-actions";
 import { prisma } from "@/lib/prisma";
 import { PERMISSIONS, type Permission } from "@/lib/rbac";
 import { getStudentAccessContext } from "@/lib/student-access";
@@ -54,7 +55,7 @@ export async function GET(
 
     await auditLog({
       userId: session.user.id,
-      action: "read_biometrics",
+      action: AUDIT_ACTIONS.READ_BIOMETRICS,
       targetId: id,
     }).catch(console.error);
 
@@ -113,6 +114,12 @@ export async function POST(
         waistZone: data.waistZone ?? null,
       },
     });
+
+    await auditLog({
+      userId: session.user.id,
+      action: AUDIT_ACTIONS.RECORD_BIOMETRICS,
+      targetId: id,
+    }).catch(console.error);
 
     return created(biometric);
   } catch (error: unknown) {

@@ -5,9 +5,10 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 const refreshMock = vi.fn();
 const signOutMock = vi.fn();
 const writeThemeMock = vi.fn();
+let pathnameMock = "/sos";
 
 vi.mock("next/navigation", () => ({
-  usePathname: () => "/sos",
+  usePathname: () => pathnameMock,
   useRouter: () => ({
     refresh: refreshMock,
   }),
@@ -47,12 +48,14 @@ vi.mock("@/hooks/use-queries", () => ({
 }));
 
 import { AppShell } from "@/components/app-shell";
+import { within } from "@testing-library/react";
 
 describe("AppShell", () => {
   beforeEach(() => {
     refreshMock.mockReset();
     signOutMock.mockReset();
     writeThemeMock.mockReset();
+    pathnameMock = "/sos";
   });
 
   it("renders only role-allowed navigation items", () => {
@@ -73,6 +76,29 @@ describe("AppShell", () => {
     expect(screen.queryByText("Admin")).not.toBeInTheDocument();
     expect(screen.queryByText("Audit")).not.toBeInTheDocument();
     expect(screen.getAllByText("Ana Student").length).toBeGreaterThan(0);
+  });
+
+  it("compacts the top bar on the student questionnaires page without removing the profile dropdown", () => {
+    pathnameMock = "/questionarios";
+
+    render(
+      <AppShell
+        user={{
+          id: "user-1",
+          email: "student@example.com",
+          role: "ALUNO",
+          name: "Ana Student",
+        }}
+      >
+        <div>Questionnaires body</div>
+      </AppShell>
+    );
+
+    const banner = screen.getByRole("banner");
+    expect(within(banner).getByText("Questionnaires")).toBeInTheDocument();
+    expect(within(banner).getAllByText("Ana Student")).toHaveLength(1);
+    expect(screen.getAllByText("Ana Student").length).toBeGreaterThan(0);
+    expect(screen.getByRole("button", { name: /Ana Student/ })).toBeInTheDocument();
   });
 
   it("triggers sign out with the login callback", async () => {

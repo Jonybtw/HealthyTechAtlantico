@@ -1,10 +1,22 @@
 "use client";
 
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations, useLocale } from "next-intl";
 import { toast } from "sonner";
-import { Ruler, Timer, ClipboardList, ShieldOff, Users, Pencil, Trash2, Check, TrendingUp } from "lucide-react";
+import {
+  Ruler,
+  Timer,
+  ClipboardList,
+  ShieldOff,
+  Users,
+  Pencil,
+  Trash2,
+  Check,
+  TrendingUp,
+  ShieldAlert,
+  ShieldCheck,
+} from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import type { z } from "zod";
@@ -32,8 +44,18 @@ import {
 } from "@/components/ui/select";
 import { HeightPercentilesChart } from "@/components/ui/height-percentiles-chart";
 import { FieldShell } from "@/components/ui/field-shell";
+import { Switch } from "@/components/ui/switch";
 import { calcAgeFromBirthDate } from "@/lib/zaf";
 import { readApiResponse } from "@/lib/api-client";
+import {
+  getKidmedClassificationLabelKey,
+  getKidmedPeriodLabelKey,
+  getQuestionnairePreviewItems,
+  getQuestionnaireTypeLabelKey,
+  QUESTIONNAIRE_FIELD_META,
+  type KidmedClassification,
+  type QuestionnaireTypeValue,
+} from "@/lib/questionnaires";
 
 interface Props {
   student: {
@@ -44,6 +66,12 @@ interface Props {
     age: number | null;
     schoolYear: string | null;
     className: string | null;
+    kidmedConsentAt: string | null;
+    kidmedConsentRecordedBy: {
+      id: string;
+      name: string | null;
+      email: string;
+    } | null;
     biometrics: {
       heightM: number;
       weightKg: number;
@@ -64,8 +92,13 @@ interface Props {
       recordedAt: string;
     }[];
     questionnaires: {
-      type: string;
+      type: QuestionnaireTypeValue;
       payload: unknown;
+      score: number | null;
+      classification: KidmedClassification | null;
+      instrumentVersion: string | null;
+      schoolYear: string | null;
+      periodKey: string | null;
       submittedAt: string;
     }[];
     dispensas: {
@@ -86,6 +119,7 @@ export function StudentDetailClient({ student }: Props) {
   const router = useRouter();
   const { role } = useUser();
   const t = useTranslations("studentDetail");
+  const q = useTranslations("questionarios");
   const common = useTranslations("common");
   const locale = useLocale();
   const canManageStudent = role === "PROFESSOR" || role === "ADMIN";
@@ -111,6 +145,64 @@ export function StudentDetailClient({ student }: Props) {
 
   // Delete state
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const [updatingKidmedConsent, setUpdatingKidmedConsent] = useState(false);
+
+  function getQuestionnairePeriodLabel(questionnaire: Props["student"]["questionnaires"][number]) {
+    const period = questionnaire.periodKey?.split(":")[1];
+
+    if ((period === "P1" || period === "P2" || period === "P3") && questionnaire.schoolYear) {
+      return `${q(getKidmedPeriodLabelKey(period))} - ${questionnaire.schoolYear}`;
+    }
+
+    return questionnaire.schoolYear ?? questionnaire.periodKey ?? null;
+  }
+
+  function formatQuestionnaireValue(
+    key: string,
+    value: unknown,
+    meta: { unitKey?: string; scaleMax?: number }
+  ) {
+    if (typeof value === "boolean") {
+      return value ? q("yes") : q("no");
+    }
+
+    if (typeof value === "number") {
+      if (meta.scaleMax) {
+        return `${value}/${meta.scaleMax}`;
+      }
+
+      if (meta.unitKey) {
+        return `${value} ${q(meta.unitKey)}`;
+      }
+    }
+
+    if (typeof value === "string" && value.length > 0) {
+      return value;
+    }
+
+    return t("notAvailable");
+  }
+
+  async function handleKidmedConsentChange(checked: boolean) {
+    setUpdatingKidmedConsent(true);
+
+    try {
+      const res = await fetch(`/api/students/${student.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ kidmedConsentGranted: checked }),
+      });
+      await readApiResponse(res);
+      toast.success(
+        checked ? t("kidmedConsentActivatedSuccess") : t("kidmedConsentRevokedSuccess"),
+      );
+      router.refresh();
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : common("connectionError"));
+    } finally {
+      setUpdatingKidmedConsent(false);
+    }
+  }
 
   const handleSave = async (values: StudentEditValues) => {
     try {
@@ -346,19 +438,116 @@ export function StudentDetailClient({ student }: Props) {
 
         <Section icon={<ClipboardList className="size-4" />} title={t("questionnaires")}>
           {student.questionnaires.length > 0 ? (
-            <ul className="text-sm space-y-1">
-              {student.questionnaires.map((q, i) => (
-                <li key={i} className="flex justify-between">
-                  <span className="font-medium">{q.type}</span>
-                  <span className="text-muted-foreground">
-                    {new Date(q.submittedAt).toLocaleDateString(locale)}
-                  </span>
+            <ul className="space-y-2 text-sm">
+              {student.questionnaires.map((questionnaire, i) => (
+                <li key={i} className="rounded-xl border border-border/40 bg-card p-3 shadow-sm">
+                  <div className="flex flex-wrap items-start justify-between gap-2">
+                    <span className="font-medium">
+                      {q(getQuestionnaireTypeLabelKey(questionnaire.type))}
+                    </span>
+                    <span className="text-muted-foreground">
+                      {new Date(questionnaire.submittedAt).toLocaleDateString(locale)}
+                    </span>
+                  </div>
+
+                  <div className="mt-2 flex flex-wrap gap-2 text-xs text-muted-foreground">
+                    {getQuestionnairePreviewItems({
+                      ...questionnaire,
+                      payload: (questionnaire.payload ?? {}) as Record<string, unknown>,
+                    }).map((item) => {
+                      if (item.key === "classification" && typeof item.value === "string") {
+                        return (
+                          <span
+                            key={item.key}
+                            className="rounded-full border border-border/60 bg-background/60 px-2.5 py-1"
+                          >
+                            {q(getKidmedClassificationLabelKey(item.value as KidmedClassification))}
+                          </span>
+                        );
+                      }
+
+                      if (item.key === "period") {
+                        const label = getQuestionnairePeriodLabel(questionnaire);
+
+                        return label ? (
+                          <span
+                            key={item.key}
+                            className="rounded-full border border-border/60 bg-background/60 px-2.5 py-1"
+                          >
+                            {label}
+                          </span>
+                        ) : null;
+                      }
+
+                      const meta = QUESTIONNAIRE_FIELD_META[item.key] ?? item;
+
+                      return (
+                        <span
+                          key={item.key}
+                          className="rounded-full border border-border/60 bg-background/60 px-2.5 py-1"
+                        >
+                          {q(item.labelKey)}: {formatQuestionnaireValue(item.key, item.value, meta)}
+                        </span>
+                      );
+                    })}
+                  </div>
                 </li>
               ))}
             </ul>
           ) : (
             <Empty />
           )}
+        </Section>
+
+        <Section icon={<ShieldCheck className="size-4" />} title={t("kidmedConsentTitle")}>
+          <div className="flex flex-col gap-4 text-sm">
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <p className="font-medium text-foreground">
+                  {student.kidmedConsentAt
+                    ? t("kidmedConsentActive")
+                    : t("kidmedConsentInactive")}
+                </p>
+                <p className="mt-1 text-muted-foreground">{t("kidmedConsentDescription")}</p>
+              </div>
+              {canManageStudent ? (
+                <Switch
+                  checked={Boolean(student.kidmedConsentAt)}
+                  onCheckedChange={handleKidmedConsentChange}
+                  disabled={updatingKidmedConsent}
+                  aria-label={t("kidmedConsentToggle")}
+                />
+              ) : null}
+            </div>
+
+            <div className="rounded-xl border border-border/40 bg-card p-3 shadow-sm">
+              <div className="flex items-start gap-2">
+                {student.kidmedConsentAt ? (
+                  <ShieldCheck className="mt-0.5 size-4 text-success-600 dark:text-success-400" />
+                ) : (
+                  <ShieldAlert className="mt-0.5 size-4 text-warning-600 dark:text-warning-400" />
+                )}
+                <div>
+                  <p className="font-medium text-foreground">
+                    {student.kidmedConsentAt
+                      ? t("kidmedConsentRecordedAtLabel", {
+                          date: new Date(student.kidmedConsentAt).toLocaleDateString(locale),
+                        })
+                      : t("kidmedConsentMissingLabel")}
+                  </p>
+                  <p className="mt-1 text-muted-foreground">
+                    {student.kidmedConsentRecordedBy
+                      ? t("kidmedConsentRecordedByLabel", {
+                          name:
+                            student.kidmedConsentRecordedBy.name ??
+                            student.kidmedConsentRecordedBy.email,
+                        })
+                      : t("kidmedConsentInstitutionalNote")}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
         </Section>
 
         <Section icon={<ShieldOff className="size-4" />} title={t("dispensas")}>
@@ -416,9 +605,9 @@ function Section({
   title,
   children,
 }: {
-  icon: React.ReactNode;
+  icon: ReactNode;
   title: string;
-  children: React.ReactNode;
+  children: ReactNode;
 }) {
   return (
     <PageSection
@@ -443,7 +632,7 @@ function Stat({
 }: {
   label: string;
   value: string;
-  extra?: React.ReactNode;
+  extra?: ReactNode;
 }) {
   return (
     <div className="flex flex-col gap-0.5">

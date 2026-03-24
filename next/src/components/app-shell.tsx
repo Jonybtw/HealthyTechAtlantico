@@ -185,10 +185,6 @@ export function AppShell({ user, children }: AppShellProps) {
     visibleItems.find((item) => isActivePath(pathname, item.href)) ??
     visibleItems[0] ??
     null;
-  const currentPageLabel = currentItem
-    ? t(currentItem.label as Parameters<typeof t>[0])
-    : t("nav.dashboard");
-  const compactTopbar = user.role === "ALUNO" && pathname.startsWith("/questionarios");
 
   const roleLabels: Record<Role, string> = {
     ADMIN: t("roles.ADMIN"),
@@ -294,27 +290,6 @@ export function AppShell({ user, children }: AppShellProps) {
                 >
                   <Menu className="size-5" />
                 </Button>
-                <div className="min-w-0">
-                  {compactTopbar ? (
-                    <span className="truncate text-sm font-semibold tracking-tight text-foreground sm:text-[15px]">
-                      {currentPageLabel}
-                    </span>
-                  ) : (
-                    <>
-                      <div className="flex flex-wrap items-center gap-2">
-                        {!(user.role === "ALUNO" && pathname.startsWith("/protocolos")) && (
-                          <span className="rounded-full border border-border/70 bg-card/70 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-                            {roleLabels[user.role]}
-                          </span>
-                        )}
-                        <span className="truncate text-sm font-semibold tracking-tight text-foreground sm:text-[15px]">
-                          {currentPageLabel}
-                        </span>
-                      </div>
-                      <p className="hidden text-xs text-muted-foreground sm:block">{displayName}</p>
-                    </>
-                  )}
-                </div>
               </div>
 
               <div className="flex items-center gap-2">

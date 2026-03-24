@@ -12,6 +12,7 @@ import {
   validationError,
 } from "@/lib/api-response";
 import { auditLog } from "@/lib/audit";
+import { AUDIT_ACTIONS } from "@/lib/audit-actions";
 import { prisma } from "@/lib/prisma";
 import { PERMISSIONS } from "@/lib/rbac";
 import { getStudentAccessContext } from "@/lib/student-access";
@@ -45,7 +46,7 @@ export async function GET(
 
     await auditLog({
       userId: session.user.id,
-      action: "read_tests",
+      action: AUDIT_ACTIONS.READ_TESTS,
       targetId: id,
     }).catch(console.error);
 
@@ -105,7 +106,7 @@ export async function POST(
 
     await auditLog({
       userId: session.user.id,
-      action: "record_tests",
+      action: AUDIT_ACTIONS.RECORD_TESTS,
       targetId: id,
     }).catch(console.error);
 

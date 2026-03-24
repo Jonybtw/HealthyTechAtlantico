@@ -11,6 +11,7 @@ import {
   validationError,
 } from "@/lib/api-response";
 import { auditLog } from "@/lib/audit";
+import { AUDIT_ACTIONS } from "@/lib/audit-actions";
 import { prisma } from "@/lib/prisma";
 import { changePasswordSchema } from "@/lib/validations";
 
@@ -44,7 +45,7 @@ export async function PUT(req: NextRequest) {
 
     await auditLog({
       userId: session.user.id,
-      action: "change_password",
+      action: AUDIT_ACTIONS.CHANGE_PASSWORD,
       targetId: session.user.id,
     }).catch(console.error);
 

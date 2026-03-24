@@ -19,6 +19,38 @@ export interface DashboardCardData {
   accent: "blue" | "gold" | "red" | "green";
 }
 
+export interface DashboardPsychologistAlertItem {
+  id: string;
+  studentId: string;
+  studentName: string;
+  className: string | null;
+  createdAt: string;
+}
+
+export interface DashboardPsychologistQuestionnaireItem {
+  id: string;
+  studentId: string;
+  studentName: string;
+  type: string;
+  submittedAt: string;
+}
+
+export interface DashboardParentStudentItem {
+  id: string;
+  name: string;
+  className: string | null;
+  schoolYear: string | null;
+  lastReportAt: string | null;
+  lastQuestionnaireAt: string | null;
+}
+
+export interface DashboardParentReportItem {
+  id: string;
+  title: string;
+  studentName: string;
+  createdAt: string;
+}
+
 export type DashboardSummary =
   | {
       variant: "student";
@@ -37,10 +69,20 @@ export type DashboardSummary =
       zafByYear: ZafYearStat[];
     }
   | {
-      variant: "psychologist" | "parent";
+      variant: "psychologist";
       studentSummary: null;
       cards: DashboardCardData[];
       zafByYear: null;
+      openAlerts: DashboardPsychologistAlertItem[];
+      recentQuestionnaires: DashboardPsychologistQuestionnaireItem[];
+    }
+  | {
+      variant: "parent";
+      studentSummary: null;
+      cards: DashboardCardData[];
+      zafByYear: null;
+      linkedStudents: DashboardParentStudentItem[];
+      recentReports: DashboardParentReportItem[];
     };
 
 async function getRecentZafStats(): Promise<ZafYearStat[]> {
@@ -107,9 +149,45 @@ export async function getDashboardSummaryForUser(user: {
   }
 
   if (user.role === "PSICOLOGO") {
-    const [openSos, questionnaireCount] = await Promise.all([
+    const [openSos, questionnaireCount, followedStudents, recentAlerts, recentQuestionnaires] = await Promise.all([
       prisma.sosAlert.count({ where: { resolved: false } }),
       prisma.questionnaire.count(),
+      prisma.sosAlert.findMany({
+        where: { resolved: false },
+        distinct: ["studentId"],
+        select: { studentId: true },
+      }),
+      prisma.sosAlert.findMany({
+        where: { resolved: false },
+        orderBy: { createdAt: "desc" },
+        take: 4,
+        select: {
+          id: true,
+          createdAt: true,
+          student: {
+            select: {
+              id: true,
+              name: true,
+              className: true,
+            },
+          },
+        },
+      }),
+      prisma.questionnaire.findMany({
+        orderBy: { submittedAt: "desc" },
+        take: 4,
+        select: {
+          id: true,
+          type: true,
+          submittedAt: true,
+          student: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
+        },
+      }),
     ]);
 
     return {
@@ -127,13 +205,35 @@ export async function getDashboardSummaryForUser(user: {
         },
         {
           id: "questionnaires",
-          titleKey: "questionnairesReviewed",
+          titleKey: "questionnairesAvailable",
           descriptionKey: "questionnaireQueue",
           value: questionnaireCount,
           icon: "book",
           accent: "gold",
         },
+        {
+          id: "students-in-follow-up",
+          titleKey: "studentsInFollowUp",
+          descriptionKey: "studentsInFollowUpDesc",
+          value: followedStudents.length,
+          icon: "users",
+          accent: "blue",
+        },
       ],
+      openAlerts: recentAlerts.map((alert) => ({
+        id: alert.id,
+        studentId: alert.student.id,
+        studentName: alert.student.name,
+        className: alert.student.className,
+        createdAt: alert.createdAt.toISOString(),
+      })),
+      recentQuestionnaires: recentQuestionnaires.map((questionnaire) => ({
+        id: questionnaire.id,
+        studentId: questionnaire.student.id,
+        studentName: questionnaire.student.name,
+        type: questionnaire.type,
+        submittedAt: questionnaire.submittedAt.toISOString(),
+      })),
     };
   }
 
@@ -143,11 +243,51 @@ export async function getDashboardSummaryForUser(user: {
       select: { studentId: true },
     });
     const linkedStudentIds = guardianLinks.map((link) => link.studentId);
-    const reportCount = linkedStudentIds.length
-      ? await prisma.report.count({
-          where: { studentId: { in: linkedStudentIds } },
-        })
-      : 0;
+    const [reportCount, questionnaireCount, linkedStudents, recentReports] = linkedStudentIds.length
+      ? await Promise.all([
+          prisma.report.count({
+            where: { studentId: { in: linkedStudentIds } },
+          }),
+          prisma.questionnaire.count({
+            where: { studentId: { in: linkedStudentIds } },
+          }),
+          prisma.student.findMany({
+            where: { id: { in: linkedStudentIds } },
+            orderBy: { name: "asc" },
+            select: {
+              id: true,
+              name: true,
+              className: true,
+              schoolYear: true,
+              reports: {
+                orderBy: { createdAt: "desc" },
+                take: 1,
+                select: { createdAt: true },
+              },
+              questionnaires: {
+                orderBy: { submittedAt: "desc" },
+                take: 1,
+                select: { submittedAt: true },
+              },
+            },
+          }),
+          prisma.report.findMany({
+            where: { studentId: { in: linkedStudentIds } },
+            orderBy: { createdAt: "desc" },
+            take: 4,
+            select: {
+              id: true,
+              title: true,
+              createdAt: true,
+              student: {
+                select: {
+                  name: true,
+                },
+              },
+            },
+          }),
+        ])
+      : [0, 0, [], []];
 
     return {
       variant: "parent",
@@ -170,7 +310,29 @@ export async function getDashboardSummaryForUser(user: {
           icon: "file",
           accent: "green",
         },
+        {
+          id: "family-questionnaires",
+          titleKey: "questionnairesAvailable",
+          descriptionKey: "familyQuestionnairesDesc",
+          value: questionnaireCount,
+          icon: "book",
+          accent: "gold",
+        },
       ],
+      linkedStudents: linkedStudents.map((student) => ({
+        id: student.id,
+        name: student.name,
+        className: student.className,
+        schoolYear: student.schoolYear,
+        lastReportAt: student.reports[0]?.createdAt?.toISOString() ?? null,
+        lastQuestionnaireAt: student.questionnaires[0]?.submittedAt?.toISOString() ?? null,
+      })),
+      recentReports: recentReports.map((report) => ({
+        id: report.id,
+        title: report.title,
+        studentName: report.student.name,
+        createdAt: report.createdAt.toISOString(),
+      })),
     };
   }
 

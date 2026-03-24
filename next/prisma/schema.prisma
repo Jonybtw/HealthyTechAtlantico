@@ -22,6 +22,13 @@ enum Sex {
 enum QuestionnaireType {
   AUTOCONCEITO
   AUTOESTIMA
+  KIDMED
+}
+
+enum QuestionnaireClassification {
+  OPTIMAL
+  AVERAGE
+  VERY_LOW
 }
 
 model User {
@@ -37,6 +44,7 @@ model User {
 
   linkedStudent    Student?            @relation("LinkedStudentUser")
   createdStudents  Student[]           @relation("StudentCreator")
+  recordedKidmedConsents Student[]     @relation("KidmedConsentRecorder")
   guardianLinks    StudentGuardian[]   @relation("Guardian")
   createdGuardians StudentGuardian[]   @relation("GuardianCreator")
   createdSessions  EvaluationSession[]
@@ -52,17 +60,20 @@ model Student {
   id           String    @id @default(cuid())
   linkedUserId String?   @unique @map("linked_user_id")
   createdById  String?   @map("created_by")
+  kidmedConsentRecordedById String? @map("kidmed_consent_recorded_by")
   name         String
   sex          Sex
   birthDate    DateTime? @map("birth_date") @db.Date
   age          Int?      @db.SmallInt
   schoolYear   String?   @map("school_year")
   className    String?   @map("class_name")
+  kidmedConsentAt DateTime? @map("kidmed_consent_at")
   createdAt    DateTime  @default(now()) @map("created_at")
   updatedAt    DateTime  @updatedAt @map("updated_at")
 
   linkedUser     User?              @relation("LinkedStudentUser", fields: [linkedUserId], references: [id], onDelete: SetNull)
   createdBy      User?              @relation("StudentCreator", fields: [createdById], references: [id], onDelete: SetNull)
+  kidmedConsentRecordedBy User?     @relation("KidmedConsentRecorder", fields: [kidmedConsentRecordedById], references: [id], onDelete: SetNull)
   biometrics     Biometric[]
   tests          Test[]
   questionnaires Questionnaire[]
@@ -74,6 +85,7 @@ model Student {
 
   @@index([linkedUserId])
   @@index([createdById])
+  @@index([kidmedConsentRecordedById])
   @@index([schoolYear])
   @@map("students")
 }
@@ -159,6 +171,11 @@ model Questionnaire {
   id            String            @id @default(cuid())
   studentId     String            @map("student_id")
   type          QuestionnaireType
+  instrumentVersion String?       @map("instrument_version")
+  schoolYear    String?           @map("school_year")
+  periodKey     String?           @map("period_key")
+  score         Int?
+  classification QuestionnaireClassification?
   payload       Json
   deferredCount Int               @default(0) @map("deferred_count")
   submittedAt   DateTime          @default(now()) @map("submitted_at")
@@ -166,6 +183,7 @@ model Questionnaire {
   student Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
 
   @@index([studentId, submittedAt(sort: Desc)])
+  @@unique([studentId, type, schoolYear, periodKey])
   @@map("questionnaires")
 }
 

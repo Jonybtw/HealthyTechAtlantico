@@ -9,6 +9,7 @@ import {
   unauthorized,
 } from "@/lib/api-response";
 import { auditLog } from "@/lib/audit";
+import { AUDIT_ACTIONS } from "@/lib/audit-actions";
 import { prisma } from "@/lib/prisma";
 import { canRole, PERMISSIONS } from "@/lib/rbac";
 import { normalizeSosAlerts } from "@/lib/sos-alerts";
@@ -74,7 +75,7 @@ export async function PATCH(
 
     await auditLog({
       userId: session.user.id,
-      action: "resolve_sos",
+      action: AUDIT_ACTIONS.RESOLVE_SOS,
       targetId: alertId,
     }).catch(console.error);
 

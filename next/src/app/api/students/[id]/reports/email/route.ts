@@ -13,6 +13,7 @@ import {
   validationError,
 } from "@/lib/api-response";
 import { auditLog } from "@/lib/audit";
+import { AUDIT_ACTIONS } from "@/lib/audit-actions";
 import { prisma } from "@/lib/prisma";
 import { isStaffRole, PERMISSIONS } from "@/lib/rbac";
 import { getStudentAccessContext } from "@/lib/student-access";
@@ -127,7 +128,7 @@ export async function POST(
 
     await auditLog({
       userId: session.user.id,
-      action: "send_report",
+      action: AUDIT_ACTIONS.SEND_REPORT,
       targetId: id,
     }).catch(console.error);
 

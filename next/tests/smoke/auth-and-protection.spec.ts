@@ -13,7 +13,7 @@ test("login and register pages render in both locales", async ({ page, context }
     },
   ]);
 
-  await page.goto("/register");
+  await page.goto("/login?mode=register");
   await expect(page.locator("html")).toHaveAttribute("lang", "en");
   await expect(page.locator("input[type='email']")).toBeVisible();
   await expect(page.locator("input[type='password']").first()).toBeVisible();

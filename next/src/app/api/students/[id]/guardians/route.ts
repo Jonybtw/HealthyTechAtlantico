@@ -13,6 +13,8 @@ import {
   unauthorized,
   validationError,
 } from "@/lib/api-response";
+import { auditLog } from "@/lib/audit";
+import { AUDIT_ACTIONS } from "@/lib/audit-actions";
 import { prisma } from "@/lib/prisma";
 import { PERMISSIONS } from "@/lib/rbac";
 import { getStudentAccessContext } from "@/lib/student-access";
@@ -107,6 +109,12 @@ export async function POST(
       },
     });
 
+    await auditLog({
+      userId: session.user.id,
+      action: AUDIT_ACTIONS.ADD_GUARDIAN,
+      targetId: link.id,
+    }).catch(console.error);
+
     return created(link);
   } catch (error: unknown) {
     if (error instanceof z.ZodError) {
@@ -149,6 +157,12 @@ export async function DELETE(
     await prisma.studentGuardian.deleteMany({
       where: { studentId: id, guardianUserId },
     });
+
+    await auditLog({
+      userId: session.user.id,
+      action: AUDIT_ACTIONS.REMOVE_GUARDIAN,
+      targetId: guardianUserId,
+    }).catch(console.error);
 
     return noContent();
   } catch (error) {

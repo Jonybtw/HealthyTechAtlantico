@@ -2,6 +2,8 @@ import { type NextRequest } from "next/server";
 import { hash } from "bcryptjs";
 import { z } from "zod";
 import { conflict, created, serverError, validationError } from "@/lib/api-response";
+import { auditLog } from "@/lib/audit";
+import { AUDIT_ACTIONS } from "@/lib/audit-actions";
 import { prisma } from "@/lib/prisma";
 import { registerSchema } from "@/lib/validations";
 
@@ -28,6 +30,12 @@ export async function POST(req: NextRequest) {
         consentRgpd: data.consentRgpd,
       },
     });
+
+    await auditLog({
+      userId: user.id,
+      action: AUDIT_ACTIONS.REGISTER,
+      targetId: user.id,
+    }).catch(console.error);
 
     return created({ id: user.id, email: user.email, role: user.role });
   } catch (error: unknown) {
