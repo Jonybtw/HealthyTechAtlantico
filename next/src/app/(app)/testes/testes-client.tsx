@@ -314,11 +314,13 @@ export default function TestesPage() {
             >
 
               {!lastResult ? (
-                <div className="flex flex-col items-center gap-3 py-6 text-center">
-                  <div className="size-16 rounded-full border-2 border-dashed border-border/40 flex items-center justify-center">
-                    <Timer className="size-7 text-muted-foreground/30" />
+                <div className="flex flex-col items-center gap-4 py-8 text-center">
+                  <div className="animate-pulse-ring rounded-full p-2">
+                    <div className="surface-utility flex size-10 items-center justify-center rounded-lg shadow-card">
+                      <Timer className="size-4 text-navy-700 dark:text-gold-300 animate-pulse" strokeWidth={1.8} />
+                    </div>
                   </div>
-                  <p className="text-xs text-muted-foreground leading-relaxed max-w-[200px]">{t("fillFormHint")}</p>
+                  <p className="text-[13px] font-medium text-muted-foreground max-w-[200px] leading-relaxed">{t("fillFormHint")}</p>
                 </div>
               ) : (
                 <div className="flex flex-col items-center gap-4 py-4 animate-scale-in">
@@ -334,4 +336,3 @@ export default function TestesPage() {
     </PageScaffold>
   );
 }
-

@@ -309,13 +309,11 @@ export default function TurmaPage() {
           description="Ainda não existem turmas para consultar nesta área."
         />
       ) : !classId ? (
-        <div className="flex min-h-[400px] items-center justify-center rounded-[22px] border border-dashed border-border/60 bg-muted/30 p-8 shadow-inner">
-          <EmptyState
-            icon={Users}
-            title="Seleciona uma turma"
-            description="Escolhe uma turma acima para ver alunos, gráficos e estatísticas."
-          />
-        </div>
+        <EmptyState
+          icon={Users}
+          title="Seleciona uma turma"
+          description="Escolhe uma turma acima para ver alunos, gráficos e estatísticas."
+        />
       ) : loading ? (
         <div className="flex flex-col gap-5 animate-fade-in">
           <Skeleton className="h-52 w-full rounded-2xl" />

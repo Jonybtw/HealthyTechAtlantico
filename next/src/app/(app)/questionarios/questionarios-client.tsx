@@ -353,9 +353,9 @@ export default function QuestionariosPage() {
     return (
       <PageScaffold headerProps={{ title: t("title"), description: t("description") }}>
         <div className="mx-auto grid w-full max-w-4xl gap-5">
-          <Skeleton className="h-[220px] rounded-[28px]" />
-          <Skeleton className="h-[420px] rounded-[28px]" />
-          <Skeleton className="h-[220px] rounded-[24px]" />
+          <Skeleton className="h-[220px] rounded-3xl" />
+          <Skeleton className="h-[420px] rounded-3xl" />
+          <Skeleton className="h-[220px] rounded-3xl" />
         </div>
       </PageScaffold>
     );
@@ -517,7 +517,7 @@ export default function QuestionariosPage() {
       <div className="mx-auto flex w-full max-w-4xl flex-col gap-5 pb-28">
         <PageSection tone="primary" layout="form" className="overflow-hidden">
           <div className="grid gap-6">
-            <div className="relative overflow-hidden rounded-[26px] border border-border/60 bg-[radial-gradient(circle_at_top_right,rgba(212,175,55,0.18),transparent_36%),linear-gradient(180deg,rgba(15,23,42,0.02),rgba(15,23,42,0.06))] p-5 sm:p-6">
+            <div className="relative overflow-hidden rounded-3xl border border-border/60 bg-[radial-gradient(circle_at_top_right,rgba(212,175,55,0.18),transparent_36%),linear-gradient(180deg,rgba(15,23,42,0.02),rgba(15,23,42,0.06))] p-5 sm:p-6">
               <div className="absolute inset-x-6 top-0 h-px bg-gradient-to-r from-transparent via-gold-300/70 to-transparent" />
               <div className="flex flex-col gap-4">
                 <div className="flex flex-wrap items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
@@ -580,7 +580,7 @@ export default function QuestionariosPage() {
                     aria-checked={active}
                     onClick={() => setQType(type)}
                     className={cn(
-                      "group rounded-[26px] border p-4 text-left transition-all duration-300",
+                      "group rounded-3xl border p-4 text-left transition-all duration-300",
                       active
                         ? "border-navy-900/75 bg-[radial-gradient(circle_at_top,rgba(245,158,11,0.16),transparent_48%),linear-gradient(180deg,rgba(2,6,23,0.96),rgba(15,23,42,0.92))] text-white shadow-[0_22px_44px_rgba(15,23,42,0.26)]"
                         : "border-border/70 bg-card/70 hover:-translate-y-1 hover:border-gold-400/45 hover:shadow-card-hover",
@@ -816,7 +816,7 @@ export default function QuestionariosPage() {
             </PageSection>
 
             <div className="sticky bottom-4 z-10">
-              <div className="overflow-hidden rounded-[24px] border border-border/70 bg-background/92 shadow-[0_18px_55px_rgba(15,23,42,0.2)] backdrop-blur">
+              <div className="overflow-hidden rounded-3xl border border-border/70 bg-background/92 shadow-[0_18px_55px_rgba(15,23,42,0.2)] backdrop-blur">
                 <div className="flex flex-col gap-4 p-4 sm:p-5 lg:flex-row lg:items-center lg:justify-between">
                   <div className="space-y-2">
                     <div className="flex flex-wrap items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
@@ -1083,7 +1083,7 @@ function QuestionBlock({
   children: ReactNode;
 }) {
   return (
-    <div className="rounded-[24px] border border-border/60 bg-background/35 p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] sm:p-5">
+    <div className="rounded-3xl border border-border/60 bg-background/35 p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] sm:p-5">
       <div className="mb-4">
         <p className="text-base font-semibold tracking-tight text-foreground">{title}</p>
         <p className="mt-1 text-sm leading-relaxed text-muted-foreground">{description}</p>

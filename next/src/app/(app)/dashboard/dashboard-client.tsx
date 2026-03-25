@@ -124,7 +124,6 @@ export function DashboardClient({ username, summary }: Props) {
             meta: todayLabel,
           }}
         >
-          <div className="flex min-h-[400px] items-center justify-center rounded-[22px] border border-dashed border-border/60 bg-muted/30 p-8 shadow-inner">
             <EmptyState
               icon={Link2}
               title={t("unlinkedTitle")}
@@ -135,7 +134,6 @@ export function DashboardClient({ username, summary }: Props) {
                 </Link>
               }
             />
-          </div>
         </PageScaffold>
       );
     }
