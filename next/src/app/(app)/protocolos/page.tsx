@@ -70,15 +70,9 @@ export default async function ProtocolosPage() {
   const t = await getTranslations("protocolos");
 
   return (
-    <PageScaffold
-      headerProps={{
-        title: t("title"),
-        description: t("description"),
-        eyebrow: t("eyebrow"),
-      }}
-    >
+    <PageScaffold>
       {/* ── Hero Banner ──────────────────────────────────────────────────────── */}
-      <div className="relative -mx-4 mb-2 overflow-hidden rounded-[24px] bg-gradient-to-br from-navy-800 via-navy-700 to-navy-600 px-6 py-8 shadow-xl lg:-mx-8 lg:px-10 lg:py-10">
+      <div className="relative mb-2 overflow-hidden rounded-[24px] bg-gradient-to-br from-navy-800 via-navy-700 to-navy-600 px-6 py-8 shadow-xl lg:px-10 lg:py-10">
         {/* Decorative blobs */}
         <div className="pointer-events-none absolute -right-12 -top-10 size-64 rounded-full bg-gold-400/10 blur-3xl" />
         <div className="pointer-events-none absolute -bottom-10 -left-8 size-52 rounded-full bg-navy-400/20 blur-3xl" />
@@ -130,7 +124,7 @@ export default async function ProtocolosPage() {
 
       <div className="flex flex-col gap-10 lg:gap-14">
         {/* ── Reference Tables ─────────────────────────────────────────────── */}
-        <section>
+        <section id="body-eval" className="scroll-mt-32">
           <div className="mb-5 flex items-center gap-3">
             <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-navy-100 dark:bg-navy-900/40">
               <Scale className="h-4 w-4 text-navy-600 dark:text-navy-300" />
