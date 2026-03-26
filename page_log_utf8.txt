@@ -1,0 +1,954 @@
+﻿commit a4c0f18790df17cfe8e14f97adb8055631cda317
+Author: Jonybtw <84144569+Jonybtw@users.noreply.github.com>
+Date:   Tue Mar 24 19:55:24 2026 +0000
+
+    feat: implement institutional questionnaires (KIDMED) and accompaniment module
+    
+    - Added new KIDMED and institutional questionnaires with API integration
+    - Created the new student accompaniment (acompanhamento) module
+    - Enhanced audit mechanisms and logging across the platform
+    - Updated UI components (stepper, sliders, dashboard layout)
+    - Expanded translation strings (PT/EN)
+
+diff --git a/next/src/app/(app)/protocolos/page.tsx b/next/src/app/(app)/protocolos/page.tsx
+index cbf9776..e69de29 100644
+--- a/next/src/app/(app)/protocolos/page.tsx
++++ b/next/src/app/(app)/protocolos/page.tsx
+@@ -1,142 +0,0 @@
+-import type { Metadata } from "next";
+-import { getTranslations } from "next-intl/server";
+-import type { LucideIcon } from "lucide-react";
+-import { Activity, Dumbbell, Gauge, HeartPulse, Ruler, Timer, Wind, Zap } from "lucide-react";
+-import { requireAnyRole } from "@/lib/auth-guard";
+-import { cn } from "@/lib/utils";
+-import { PageScaffold } from "@/components/ui/page-scaffold";
+-import { PageSection } from "@/components/ui/page-section";
+-import { ReferenceTable } from "@/components/ui/reference-table";
+-import { BMI_TABLE, TEST_ZONE_KEYS, WAIST_TABLE } from "@/lib/protocols";
+-
+-export async function generateMetadata(): Promise<Metadata> {
+-  const t = await getTranslations("protocolos");
+-
+-  return {
+-    title: t("title"),
+-    description: t("description"),
+-  };
+-}
+-
+-const TEST_ICONS: Record<string, LucideIcon> = {
+-  testVaiVem: Wind,
+-  testCooper: HeartPulse,
+-  testMilha: Timer,
+-  testVelocidade: Zap,
+-  testAgilidade: Activity,
+-  testAbdominais: Dumbbell,
+-  testExtensoes: Dumbbell,
+-  testSentaAlcanca: Ruler,
+-};
+-
+-const TABLE_SECTIONS = [
+-  {
+-    id: "bmi",
+-    titleKey: "bmiTableTitle",
+-    tableTitleKey: "bmiTable",
+-    captionKey: "bmiTableCaption",
+-    data: BMI_TABLE,
+-  },
+-  {
+-    id: "waist",
+-    titleKey: "waistTableTitle",
+-    tableTitleKey: "waistTable",
+-    captionKey: "waistTableCaption",
+-    data: WAIST_TABLE,
+-  },
+-] as const;
+-
+-export default async function ProtocolosPage() {
+-  await requireAnyRole(["ADMIN", "PROFESSOR", "ALUNO", "PAIS"]);
+-  const t = await getTranslations("protocolos");
+-
+-  return (
+-    <PageScaffold headerProps={{ title: t("title"), description: t("description"), eyebrow: t("eyebrow") }}>
+-      <PageSection
+-        tone="secondary"
+-        layout="list"
+-        className="animate-fade-in-up rounded-[22px] border border-border/60 p-2.5 sm:p-3"
+-      >
+-        <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-3">
+-          {TABLE_SECTIONS.map((section) => (
+-            <a
+-              key={section.id}
+-              href={`#${section.id}`}
+-              className="surface-secondary group relative overflow-hidden rounded-2xl border border-border/60 px-3.5 py-3 text-xs font-semibold tracking-tight text-foreground transition-all duration-300 hover:-translate-y-0.5 hover:shadow-card"
+-            >
+-              {t(section.titleKey)}
+-            </a>
+-          ))}
+-          <a
+-            href="#fitness"
+-            className="surface-secondary group relative overflow-hidden rounded-2xl border border-border/60 px-3.5 py-3 text-xs font-semibold tracking-tight text-foreground transition-all duration-300 hover:-translate-y-0.5 hover:shadow-card"
+-          >
+-            {t("fitnessTitle")}
+-          </a>
+-        </div>
+-      </PageSection>
+-
+-      <div className="grid grid-cols-1 items-start gap-5 lg:grid-cols-[1fr_360px]">
+-        <div className="flex flex-col gap-5">
+-          {TABLE_SECTIONS.map((section) => (
+-            <div key={section.id} id={section.id} className="scroll-mt-24">
+-              <PageSection
+-                tone="secondary"
+-                layout="list"
+-                className="animate-fade-in-up"
+-                title={t(section.titleKey)}
+-                description={t(section.tableTitleKey)}
+-              >
+-                <ReferenceTable
+-                  caption={t(section.captionKey)}
+-                  headers={[t("age"), t("male"), t("female")]}
+-                  rows={section.data.map((row) => ({ cells: [row.age, row.male, row.female] }))}
+-                />
+-              </PageSection>
+-            </div>
+-          ))}
+-        </div>
+-
+-        <div id="fitness" className="scroll-mt-24">
+-        <PageSection
+-          tone="secondary"
+-          layout="list"
+-          className="animate-fade-in-up rounded-[20px] border border-border/60 bg-card/70 lg:sticky lg:top-20"
+-          title={t("fitnessTitle")}
+-          description={t("testTable")}
+-        >
+-          <div className="grid grid-cols-1 gap-3">
+-            {TEST_ZONE_KEYS.map((item, index) => {
+-              const Icon = TEST_ICONS[item.testKey] ?? Gauge;
+-
+-              return (
+-                <article
+-                  key={item.testKey}
+-                  className={cn(
+-                    "surface-secondary rounded-[16px] border border-border/60 p-3.5 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-card",
+-                    "animate-fade-in-up"
+-                  )}
+-                  style={{ animationDelay: `${index * 55}ms` }}
+-                >
+-                  <div className="flex items-start gap-3">
+-                    <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-navy-100/70 text-navy-700 dark:bg-navy-800/60 dark:text-navy-200">
+-                      <Icon className="h-4.5 w-4.5" />
+-                    </span>
+-                    <div className="min-w-0">
+-                      <p className="text-sm font-semibold tracking-tight text-foreground">{t(item.testKey)}</p>
+-                      <p className="mt-0.5 text-xs leading-relaxed text-muted-foreground">{t(item.descKey)}</p>
+-                      <p className="mt-2 inline-flex rounded-full bg-muted px-2.5 py-1 text-[11px] font-semibold text-foreground/75">
+-                        {t("unitLabel")}: {t(item.unitKey)}
+-                      </p>
+-                    </div>
+-                  </div>
+-                </article>
+-              );
+-            })}
+-          </div>
+-        </PageSection>
+-        </div>
+-      </div>
+-    </PageScaffold>
+-  );
+-}
+
+commit 3de7a201adfbafe17f93d22877e2304bec340157
+Author: Jonybtw <84144569+Jonybtw@users.noreply.github.com>
+Date:   Mon Mar 23 22:50:26 2026 +0000
+
+    harden auth flows, role guards, and UI verification polish
+
+diff --git a/next/src/app/(app)/protocolos/page.tsx b/next/src/app/(app)/protocolos/page.tsx
+index 44bc586..cbf9776 100644
+--- a/next/src/app/(app)/protocolos/page.tsx
++++ b/next/src/app/(app)/protocolos/page.tsx
+@@ -1,7 +1,8 @@
+ import type { Metadata } from "next";
+ import { getTranslations } from "next-intl/server";
+ import type { LucideIcon } from "lucide-react";
+-import { Activity, Dumbbell, Gauge, HeartPulse, Ruler, Scale, Timer, Wind, Zap } from "lucide-react";
++import { Activity, Dumbbell, Gauge, HeartPulse, Ruler, Timer, Wind, Zap } from "lucide-react";
++import { requireAnyRole } from "@/lib/auth-guard";
+ import { cn } from "@/lib/utils";
+ import { PageScaffold } from "@/components/ui/page-scaffold";
+ import { PageSection } from "@/components/ui/page-section";
+@@ -46,6 +47,7 @@ const TABLE_SECTIONS = [
+ ] as const;
+ 
+ export default async function ProtocolosPage() {
++  await requireAnyRole(["ADMIN", "PROFESSOR", "ALUNO", "PAIS"]);
+   const t = await getTranslations("protocolos");
+ 
+   return (
+
+commit 04dcaf50643c9cf5ac990412de3b6c19f5e85538
+Author: Jonybtw <cego04643@gmail.com>
+Date:   Wed Mar 18 19:00:36 2026 +0000
+
+    Protocolos page updated + fixes
+
+diff --git a/next/src/app/(app)/protocolos/page.tsx b/next/src/app/(app)/protocolos/page.tsx
+index b597b40..44bc586 100644
+--- a/next/src/app/(app)/protocolos/page.tsx
++++ b/next/src/app/(app)/protocolos/page.tsx
+@@ -1,121 +1,140 @@
+ import type { Metadata } from "next";
+ import { getTranslations } from "next-intl/server";
++import type { LucideIcon } from "lucide-react";
++import { Activity, Dumbbell, Gauge, HeartPulse, Ruler, Scale, Timer, Wind, Zap } from "lucide-react";
++import { cn } from "@/lib/utils";
+ import { PageScaffold } from "@/components/ui/page-scaffold";
+ import { PageSection } from "@/components/ui/page-section";
++import { ReferenceTable } from "@/components/ui/reference-table";
++import { BMI_TABLE, TEST_ZONE_KEYS, WAIST_TABLE } from "@/lib/protocols";
+ 
+-export const metadata: Metadata = { title: "Protocolos" };
+-
+-const BMI_TABLE = [
+-  { age: "9", male: "<=18.4", female: "<=18.7" },
+-  { age: "10", male: "<=19.4", female: "<=19.9" },
+-  { age: "11", male: "<=20.2", female: "<=20.7" },
+-  { age: "12", male: "<=21.0", female: "<=21.7" },
+-  { age: "13", male: "<=21.8", female: "<=22.6" },
+-  { age: "14", male: "<=22.6", female: "<=23.3" },
+-  { age: "15", male: "<=23.5", female: "<=24.0" },
+-  { age: "16", male: "<=24.2", female: "<=24.4" },
+-  { age: "17", male: "<=24.9", female: "<=24.7" },
+-  { age: "18", male: "<=25.0", female: "<=25.0" },
+-];
++export async function generateMetadata(): Promise<Metadata> {
++  const t = await getTranslations("protocolos");
+ 
+-const WAIST_TABLE = [
+-  { age: "9", male: "<=66.1", female: "<=62.6" },
+-  { age: "10", male: "<=68.0", female: "<=64.3" },
+-  { age: "11", male: "<=70.0", female: "<=66.5" },
+-  { age: "12", male: "<=72.2", female: "<=68.8" },
+-  { age: "13", male: "<=74.4", female: "<=70.4" },
+-  { age: "14", male: "<=76.3", female: "<=71.6" },
+-  { age: "15", male: "<=78.1", female: "<=72.6" },
+-  { age: "16", male: "<=80.0", female: "<=73.4" },
+-  { age: "17", male: "<=81.7", female: "<=74.0" },
+-  { age: "18", male: "<=83.2", female: "<=74.7" },
+-];
++  return {
++    title: t("title"),
++    description: t("description"),
++  };
++}
+ 
+-const TEST_ZONE_KEYS = [
+-  { testKey: "testVaiVem", unitKey: "testVaiVemUnit", descKey: "testVaiVemDesc" },
+-  { testKey: "testCooper", unitKey: "testCooperUnit", descKey: "testCooperDesc" },
+-  { testKey: "testMilha", unitKey: "testMilhaUnit", descKey: "testMilhaDesc" },
+-  { testKey: "testVelocidade", unitKey: "testVelocidadeUnit", descKey: "testVelocidadeDesc" },
+-  { testKey: "testAgilidade", unitKey: "testAgilidadeUnit", descKey: "testAgilidadeDesc" },
+-  { testKey: "testAbdominais", unitKey: "testAbdominaisUnit", descKey: "testAbdominaisDesc" },
+-  { testKey: "testExtensoes", unitKey: "testExtensoesUnit", descKey: "testExtensoesDesc" },
+-  { testKey: "testSentaAlcanca", unitKey: "testSentaAlcancaUnit", descKey: "testSentaAlcancaDesc" },
+-];
++const TEST_ICONS: Record<string, LucideIcon> = {
++  testVaiVem: Wind,
++  testCooper: HeartPulse,
++  testMilha: Timer,
++  testVelocidade: Zap,
++  testAgilidade: Activity,
++  testAbdominais: Dumbbell,
++  testExtensoes: Dumbbell,
++  testSentaAlcanca: Ruler,
++};
+ 
+-function ReferenceTable({
+-  title,
+-  headers,
+-  rows,
+-}: {
+-  title: string;
+-  headers: string[];
+-  rows: { cells: string[] }[];
+-}) {
+-  return (
+-    <div className="flex flex-col gap-3 animate-fade-in-up">
+-      <h3 className="text-base font-semibold tracking-tight">{title}</h3>
+-      <div className="surface-secondary overflow-x-auto rounded-[20px]">
+-        <table className="w-full text-sm">
+-          <thead>
+-            <tr className="bg-navy-50/50 dark:bg-navy-900/30">
+-              {headers.map((header) => (
+-                <th key={header} className="px-4 py-2.5 text-left font-semibold">
+-                  {header}
+-                </th>
+-              ))}
+-            </tr>
+-          </thead>
+-          <tbody>
+-            {rows.map((row, rowIndex) => (
+-              <tr key={rowIndex} className="border-t border-border/50 transition-colors hover:bg-muted/30">
+-                {row.cells.map((cell, cellIndex) => (
+-                  <td key={cellIndex} className="px-4 py-3 font-medium">
+-                    {cell}
+-                  </td>
+-                ))}
+-              </tr>
+-            ))}
+-          </tbody>
+-        </table>
+-      </div>
+-    </div>
+-  );
+-}
++const TABLE_SECTIONS = [
++  {
++    id: "bmi",
++    titleKey: "bmiTableTitle",
++    tableTitleKey: "bmiTable",
++    captionKey: "bmiTableCaption",
++    data: BMI_TABLE,
++  },
++  {
++    id: "waist",
++    titleKey: "waistTableTitle",
++    tableTitleKey: "waistTable",
++    captionKey: "waistTableCaption",
++    data: WAIST_TABLE,
++  },
++] as const;
+ 
+ export default async function ProtocolosPage() {
+   const t = await getTranslations("protocolos");
+ 
+   return (
+-    <PageScaffold headerProps={{ title: t("title"), description: t("description") }} className="max-w-4xl">
+-      <PageSection tone="secondary" title={t("bmiTableTitle")} layout="list">
+-        <ReferenceTable
+-          title={t("bmiTableTitle")}
+-          headers={[t("age"), t("male"), t("female")]}
+-          rows={BMI_TABLE.map((row) => ({ cells: [row.age, row.male, row.female] }))}
+-        />
+-      </PageSection>
+-
+-      <PageSection tone="secondary" title={t("waistTableTitle")} layout="list">
+-        <ReferenceTable
+-          title={t("waistTableTitle")}
+-          headers={[t("age"), t("male"), t("female")]}
+-          rows={WAIST_TABLE.map((row) => ({ cells: [row.age, row.male, row.female] }))}
+-        />
++    <PageScaffold headerProps={{ title: t("title"), description: t("description"), eyebrow: t("eyebrow") }}>
++      <PageSection
++        tone="secondary"
++        layout="list"
++        className="animate-fade-in-up rounded-[22px] border border-border/60 p-2.5 sm:p-3"
++      >
++        <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-3">
++          {TABLE_SECTIONS.map((section) => (
++            <a
++              key={section.id}
++              href={`#${section.id}`}
++              className="surface-secondary group relative overflow-hidden rounded-2xl border border-border/60 px-3.5 py-3 text-xs font-semibold tracking-tight text-foreground transition-all duration-300 hover:-translate-y-0.5 hover:shadow-card"
++            >
++              {t(section.titleKey)}
++            </a>
++          ))}
++          <a
++            href="#fitness"
++            className="surface-secondary group relative overflow-hidden rounded-2xl border border-border/60 px-3.5 py-3 text-xs font-semibold tracking-tight text-foreground transition-all duration-300 hover:-translate-y-0.5 hover:shadow-card"
++          >
++            {t("fitnessTitle")}
++          </a>
++        </div>
+       </PageSection>
+ 
+-      <PageSection tone="utility" title={t("fitnessTitle")} layout="list">
+-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+-          {TEST_ZONE_KEYS.map((item) => (
+-            <div key={item.testKey} className="surface-secondary rounded-[20px] p-4 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-card">
+-              <p className="text-sm font-semibold">{t(item.testKey)}</p>
+-              <p className="mt-1 text-xs text-muted-foreground">{t(item.descKey)}</p>
+-              <p className="mt-2 text-xs font-medium text-navy-600 dark:text-navy-300">
+-                {t("unitLabel")}: {t(item.unitKey)}
+-              </p>
++      <div className="grid grid-cols-1 items-start gap-5 lg:grid-cols-[1fr_360px]">
++        <div className="flex flex-col gap-5">
++          {TABLE_SECTIONS.map((section) => (
++            <div key={section.id} id={section.id} className="scroll-mt-24">
++              <PageSection
++                tone="secondary"
++                layout="list"
++                className="animate-fade-in-up"
++                title={t(section.titleKey)}
++                description={t(section.tableTitleKey)}
++              >
++                <ReferenceTable
++                  caption={t(section.captionKey)}
++                  headers={[t("age"), t("male"), t("female")]}
++                  rows={section.data.map((row) => ({ cells: [row.age, row.male, row.female] }))}
++                />
++              </PageSection>
+             </div>
+           ))}
+         </div>
+-      </PageSection>
++
++        <div id="fitness" className="scroll-mt-24">
++        <PageSection
++          tone="secondary"
++          layout="list"
++          className="animate-fade-in-up rounded-[20px] border border-border/60 bg-card/70 lg:sticky lg:top-20"
++          title={t("fitnessTitle")}
++          description={t("testTable")}
++        >
++          <div className="grid grid-cols-1 gap-3">
++            {TEST_ZONE_KEYS.map((item, index) => {
++              const Icon = TEST_ICONS[item.testKey] ?? Gauge;
++
++              return (
++                <article
++                  key={item.testKey}
++                  className={cn(
++                    "surface-secondary rounded-[16px] border border-border/60 p-3.5 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-card",
++                    "animate-fade-in-up"
++                  )}
++                  style={{ animationDelay: `${index * 55}ms` }}
++                >
++                  <div className="flex items-start gap-3">
++                    <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-navy-100/70 text-navy-700 dark:bg-navy-800/60 dark:text-navy-200">
++                      <Icon className="h-4.5 w-4.5" />
++                    </span>
++                    <div className="min-w-0">
++                      <p className="text-sm font-semibold tracking-tight text-foreground">{t(item.testKey)}</p>
++                      <p className="mt-0.5 text-xs leading-relaxed text-muted-foreground">{t(item.descKey)}</p>
++                      <p className="mt-2 inline-flex rounded-full bg-muted px-2.5 py-1 text-[11px] font-semibold text-foreground/75">
++                        {t("unitLabel")}: {t(item.unitKey)}
++                      </p>
++                    </div>
++                  </div>
++                </article>
++              );
++            })}
++          </div>
++        </PageSection>
++        </div>
++      </div>
+     </PageScaffold>
+   );
+ }
+
+commit d815e5e708d5ee900fc5772324619e37110c9d3c
+Author: Jonybtw <84144569+Jonybtw@users.noreply.github.com>
+Date:   Tue Mar 17 01:32:52 2026 +0000
+
+    Overall updates + fixes
+
+diff --git a/next/src/app/(app)/protocolos/page.tsx b/next/src/app/(app)/protocolos/page.tsx
+index 0e13b77..b597b40 100644
+--- a/next/src/app/(app)/protocolos/page.tsx
++++ b/next/src/app/(app)/protocolos/page.tsx
+@@ -1,35 +1,34 @@
+ import type { Metadata } from "next";
+ import { getTranslations } from "next-intl/server";
+-import { PageHeader } from "@/components/ui/page-header";
++import { PageScaffold } from "@/components/ui/page-scaffold";
++import { PageSection } from "@/components/ui/page-section";
+ 
+ export const metadata: Metadata = { title: "Protocolos" };
+ 
+-/* ÔöÇÔöÇ Static ZAF reference tables (server component) ÔöÇÔöÇ */
+-
+ const BMI_TABLE = [
+-  { age: "9", male: "Ôëñ18.4", female: "Ôëñ18.7" },
+-  { age: "10", male: "Ôëñ19.4", female: "Ôëñ19.9" },
+-  { age: "11", male: "Ôëñ20.2", female: "Ôëñ20.7" },
+-  { age: "12", male: "Ôëñ21.0", female: "Ôëñ21.7" },
+-  { age: "13", male: "Ôëñ21.8", female: "Ôëñ22.6" },
+-  { age: "14", male: "Ôëñ22.6", female: "Ôëñ23.3" },
+-  { age: "15", male: "Ôëñ23.5", female: "Ôëñ24.0" },
+-  { age: "16", male: "Ôëñ24.2", female: "Ôëñ24.4" },
+-  { age: "17", male: "Ôëñ24.9", female: "Ôëñ24.7" },
+-  { age: "18", male: "Ôëñ25.0", female: "Ôëñ25.0" },
++  { age: "9", male: "<=18.4", female: "<=18.7" },
++  { age: "10", male: "<=19.4", female: "<=19.9" },
++  { age: "11", male: "<=20.2", female: "<=20.7" },
++  { age: "12", male: "<=21.0", female: "<=21.7" },
++  { age: "13", male: "<=21.8", female: "<=22.6" },
++  { age: "14", male: "<=22.6", female: "<=23.3" },
++  { age: "15", male: "<=23.5", female: "<=24.0" },
++  { age: "16", male: "<=24.2", female: "<=24.4" },
++  { age: "17", male: "<=24.9", female: "<=24.7" },
++  { age: "18", male: "<=25.0", female: "<=25.0" },
+ ];
+ 
+ const WAIST_TABLE = [
+-  { age: "9", male: "Ôëñ66.1", female: "Ôëñ62.6" },
+-  { age: "10", male: "Ôëñ68.0", female: "Ôëñ64.3" },
+-  { age: "11", male: "Ôëñ70.0", female: "Ôëñ66.5" },
+-  { age: "12", male: "Ôëñ72.2", female: "Ôëñ68.8" },
+-  { age: "13", male: "Ôëñ74.4", female: "Ôëñ70.4" },
+-  { age: "14", male: "Ôëñ76.3", female: "Ôëñ71.6" },
+-  { age: "15", male: "Ôëñ78.1", female: "Ôëñ72.6" },
+-  { age: "16", male: "Ôëñ80.0", female: "Ôëñ73.4" },
+-  { age: "17", male: "Ôëñ81.7", female: "Ôëñ74.0" },
+-  { age: "18", male: "Ôëñ83.2", female: "Ôëñ74.7" },
++  { age: "9", male: "<=66.1", female: "<=62.6" },
++  { age: "10", male: "<=68.0", female: "<=64.3" },
++  { age: "11", male: "<=70.0", female: "<=66.5" },
++  { age: "12", male: "<=72.2", female: "<=68.8" },
++  { age: "13", male: "<=74.4", female: "<=70.4" },
++  { age: "14", male: "<=76.3", female: "<=71.6" },
++  { age: "15", male: "<=78.1", female: "<=72.6" },
++  { age: "16", male: "<=80.0", female: "<=73.4" },
++  { age: "17", male: "<=81.7", female: "<=74.0" },
++  { age: "18", male: "<=83.2", female: "<=74.7" },
+ ];
+ 
+ const TEST_ZONE_KEYS = [
+@@ -54,24 +53,24 @@ function ReferenceTable({
+ }) {
+   return (
+     <div className="flex flex-col gap-3 animate-fade-in-up">
+-      <h3 className="text-lg font-bold tracking-tight">{title}</h3>
+-      <div className="overflow-x-auto rounded-2xl border border-border/50 bg-card/85 glass shadow-float">
++      <h3 className="text-base font-semibold tracking-tight">{title}</h3>
++      <div className="surface-secondary overflow-x-auto rounded-[20px]">
+         <table className="w-full text-sm">
+           <thead>
+             <tr className="bg-navy-50/50 dark:bg-navy-900/30">
+-              {headers.map((h) => (
+-                <th key={h} className="px-4 py-2.5 text-left font-semibold">
+-                  {h}
++              {headers.map((header) => (
++                <th key={header} className="px-4 py-2.5 text-left font-semibold">
++                  {header}
+                 </th>
+               ))}
+             </tr>
+           </thead>
+           <tbody>
+-            {rows.map((r, i) => (
+-              <tr key={i} className="border-t border-border/50 hover:bg-muted/30 transition-colors">
+-                {r.cells.map((c, j) => (
+-                  <td key={j} className="px-4 py-3 font-medium">
+-                    {c}
++            {rows.map((row, rowIndex) => (
++              <tr key={rowIndex} className="border-t border-border/50 transition-colors hover:bg-muted/30">
++                {row.cells.map((cell, cellIndex) => (
++                  <td key={cellIndex} className="px-4 py-3 font-medium">
++                    {cell}
+                   </td>
+                 ))}
+               </tr>
+@@ -85,49 +84,38 @@ function ReferenceTable({
+ 
+ export default async function ProtocolosPage() {
+   const t = await getTranslations("protocolos");
+-  return (
+-    <div className="flex flex-col gap-5 max-w-3xl">
+-      <PageHeader
+-        title={t("title")}
+-        description={t("description")}
+-      />
+ 
+-      {/* BMI table */}
+-      <ReferenceTable
+-        title={t("bmiTableTitle")}
+-        headers={[t("age"), t("male"), t("female")]}
+-        rows={BMI_TABLE.map((r) => ({
+-          cells: [r.age, r.male, r.female],
+-        }))}
+-      />
++  return (
++    <PageScaffold headerProps={{ title: t("title"), description: t("description") }} className="max-w-4xl">
++      <PageSection tone="secondary" title={t("bmiTableTitle")} layout="list">
++        <ReferenceTable
++          title={t("bmiTableTitle")}
++          headers={[t("age"), t("male"), t("female")]}
++          rows={BMI_TABLE.map((row) => ({ cells: [row.age, row.male, row.female] }))}
++        />
++      </PageSection>
+ 
+-      {/* Waist table */}
+-      <ReferenceTable
+-        title={t("waistTableTitle")}
+-        headers={[t("age"), t("male"), t("female")]}
+-        rows={WAIST_TABLE.map((r) => ({
+-          cells: [r.age, r.male, r.female],
+-        }))}
+-      />
++      <PageSection tone="secondary" title={t("waistTableTitle")} layout="list">
++        <ReferenceTable
++          title={t("waistTableTitle")}
++          headers={[t("age"), t("male"), t("female")]}
++          rows={WAIST_TABLE.map((row) => ({ cells: [row.age, row.male, row.female] }))}
++        />
++      </PageSection>
+ 
+-      {/* Fitness tests overview */}
+-      <div className="flex flex-col gap-4 mb-10 animate-fade-in-up delay-100">
+-        <h3 className="text-lg font-bold tracking-tight">{t("fitnessTitle")}</h3>
+-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+-          {TEST_ZONE_KEYS.map((tz) => (
+-            <div
+-              key={tz.testKey}
+-              className="bg-card/85 glass rounded-2xl border border-border/50 shadow-sm p-5 flex flex-col gap-1.5 transition-all duration-300 hover:shadow-float hover:-translate-y-1"
+-            >
+-              <span className="font-semibold">{t(tz.testKey)}</span>
+-              <span className="text-xs text-muted-foreground">{t(tz.descKey)}</span>
+-              <span className="text-xs text-navy-600 font-medium mt-1">
+-                {t("unitLabel")}: {t(tz.unitKey)}
+-              </span>
++      <PageSection tone="utility" title={t("fitnessTitle")} layout="list">
++        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
++          {TEST_ZONE_KEYS.map((item) => (
++            <div key={item.testKey} className="surface-secondary rounded-[20px] p-4 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-card">
++              <p className="text-sm font-semibold">{t(item.testKey)}</p>
++              <p className="mt-1 text-xs text-muted-foreground">{t(item.descKey)}</p>
++              <p className="mt-2 text-xs font-medium text-navy-600 dark:text-navy-300">
++                {t("unitLabel")}: {t(item.unitKey)}
++              </p>
+             </div>
+           ))}
+         </div>
+-      </div>
+-    </div>
++      </PageSection>
++    </PageScaffold>
+   );
+ }
+
+commit dc742279e0b077675d15f721d8aad61721cf9400
+Author: Jonybtw <cego04643@gmail.com>
+Date:   Thu Mar 12 00:04:06 2026 +0000
+
+    update UI components with internationalization support
+
+diff --git a/next/src/app/(app)/protocolos/page.tsx b/next/src/app/(app)/protocolos/page.tsx
+index 9f44a4f..0e13b77 100644
+--- a/next/src/app/(app)/protocolos/page.tsx
++++ b/next/src/app/(app)/protocolos/page.tsx
+@@ -1,6 +1,9 @@
++import type { Metadata } from "next";
+ import { getTranslations } from "next-intl/server";
+ import { PageHeader } from "@/components/ui/page-header";
+ 
++export const metadata: Metadata = { title: "Protocolos" };
++
+ /* ÔöÇÔöÇ Static ZAF reference tables (server component) ÔöÇÔöÇ */
+ 
+ const BMI_TABLE = [
+@@ -29,15 +32,15 @@ const WAIST_TABLE = [
+   { age: "18", male: "Ôëñ83.2", female: "Ôëñ74.7" },
+ ];
+ 
+-const TEST_ZONES = [
+-  { test: "Vai e Vem", unit: "percursos", description: "Corrida de vai e vem 20m (PACER)" },
+-  { test: "Cooper", unit: "metros", description: "Corrida de 12 minutos" },
+-  { test: "Milha", unit: "mm:ss", description: "Corrida de 1 milha" },
+-  { test: "Velocidade", unit: "segundos", description: "Sprint 40 jardas" },
+-  { test: "Agilidade", unit: "segundos", description: "Corrida de agilidade 4├ù10m" },
+-  { test: "Abdominais", unit: "repeti├º├Áes", description: "Abdominais em 60 segundos" },
+-  { test: "Extens├Áes de bra├ºos", unit: "repeti├º├Áes", description: "Extens├Áes sem cad├¬ncia" },
+-  { test: "Senta e Alcan├ºa", unit: "cm", description: "Flexibilidade do tronco" },
++const TEST_ZONE_KEYS = [
++  { testKey: "testVaiVem", unitKey: "testVaiVemUnit", descKey: "testVaiVemDesc" },
++  { testKey: "testCooper", unitKey: "testCooperUnit", descKey: "testCooperDesc" },
++  { testKey: "testMilha", unitKey: "testMilhaUnit", descKey: "testMilhaDesc" },
++  { testKey: "testVelocidade", unitKey: "testVelocidadeUnit", descKey: "testVelocidadeDesc" },
++  { testKey: "testAgilidade", unitKey: "testAgilidadeUnit", descKey: "testAgilidadeDesc" },
++  { testKey: "testAbdominais", unitKey: "testAbdominaisUnit", descKey: "testAbdominaisDesc" },
++  { testKey: "testExtensoes", unitKey: "testExtensoesUnit", descKey: "testExtensoesDesc" },
++  { testKey: "testSentaAlcanca", unitKey: "testSentaAlcancaUnit", descKey: "testSentaAlcancaDesc" },
+ ];
+ 
+ function ReferenceTable({
+@@ -91,8 +94,8 @@ export default async function ProtocolosPage() {
+ 
+       {/* BMI table */}
+       <ReferenceTable
+-        title="IMC ÔÇö Valores de corte (Zona Saud├ível)"
+-        headers={["Idade", "Masculino (Ôëñ)", "Feminino (Ôëñ)"]}
++        title={t("bmiTableTitle")}
++        headers={[t("age"), t("male"), t("female")]}
+         rows={BMI_TABLE.map((r) => ({
+           cells: [r.age, r.male, r.female],
+         }))}
+@@ -100,8 +103,8 @@ export default async function ProtocolosPage() {
+ 
+       {/* Waist table */}
+       <ReferenceTable
+-        title="Per├¡metro da Cintura ÔÇö Valores de corte (Zona Saud├ível)"
+-        headers={["Idade", "Masculino (Ôëñ)", "Feminino (Ôëñ)"]}
++        title={t("waistTableTitle")}
++        headers={[t("age"), t("male"), t("female")]}
+         rows={WAIST_TABLE.map((r) => ({
+           cells: [r.age, r.male, r.female],
+         }))}
+@@ -109,17 +112,17 @@ export default async function ProtocolosPage() {
+ 
+       {/* Fitness tests overview */}
+       <div className="flex flex-col gap-4 mb-10 animate-fade-in-up delay-100">
+-        <h3 className="text-lg font-bold tracking-tight">Testes de Aptid├úo F├¡sica</h3>
++        <h3 className="text-lg font-bold tracking-tight">{t("fitnessTitle")}</h3>
+         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+-          {TEST_ZONES.map((t) => (
++          {TEST_ZONE_KEYS.map((tz) => (
+             <div
+-              key={t.test}
++              key={tz.testKey}
+               className="bg-card/85 glass rounded-2xl border border-border/50 shadow-sm p-5 flex flex-col gap-1.5 transition-all duration-300 hover:shadow-float hover:-translate-y-1"
+             >
+-              <span className="font-semibold">{t.test}</span>
+-              <span className="text-xs text-muted-foreground">{t.description}</span>
++              <span className="font-semibold">{t(tz.testKey)}</span>
++              <span className="text-xs text-muted-foreground">{t(tz.descKey)}</span>
+               <span className="text-xs text-navy-600 font-medium mt-1">
+-                Unidade: {t.unit}
++                {t("unitLabel")}: {t(tz.unitKey)}
+               </span>
+             </div>
+           ))}
+
+commit 61a72bc7aa8a42c21de219c6f261379c76238a6e
+Author: Jonybtw <cego04643@gmail.com>
+Date:   Wed Mar 11 03:02:44 2026 +0000
+
+    Overall update 3
+
+diff --git a/next/src/app/(app)/protocolos/page.tsx b/next/src/app/(app)/protocolos/page.tsx
+index 5102a46..9f44a4f 100644
+--- a/next/src/app/(app)/protocolos/page.tsx
++++ b/next/src/app/(app)/protocolos/page.tsx
+@@ -83,7 +83,7 @@ function ReferenceTable({
+ export default async function ProtocolosPage() {
+   const t = await getTranslations("protocolos");
+   return (
+-    <div className="flex flex-col gap-8">
++    <div className="flex flex-col gap-5 max-w-3xl">
+       <PageHeader
+         title={t("title")}
+         description={t("description")}
+
+commit a7a52352f9571f9122591aa7cb5cbaaa383bbe85
+Author: Jonybtw <cego04643@gmail.com>
+Date:   Fri Mar 6 04:42:34 2026 +0000
+
+    Full Next.js rewrite, UI update
+
+diff --git a/next/src/app/(app)/protocolos/page.tsx b/next/src/app/(app)/protocolos/page.tsx
+index 95e4ea9..5102a46 100644
+--- a/next/src/app/(app)/protocolos/page.tsx
++++ b/next/src/app/(app)/protocolos/page.tsx
+@@ -1,3 +1,4 @@
++import { getTranslations } from "next-intl/server";
+ import { PageHeader } from "@/components/ui/page-header";
+ 
+ /* ÔöÇÔöÇ Static ZAF reference tables (server component) ÔöÇÔöÇ */
+@@ -49,12 +50,12 @@ function ReferenceTable({
+   rows: { cells: string[] }[];
+ }) {
+   return (
+-    <div className="flex flex-col gap-2">
+-      <h3 className="text-base font-semibold">{title}</h3>
+-      <div className="overflow-x-auto rounded-xl border border-border">
++    <div className="flex flex-col gap-3 animate-fade-in-up">
++      <h3 className="text-lg font-bold tracking-tight">{title}</h3>
++      <div className="overflow-x-auto rounded-2xl border border-border/50 bg-card/85 glass shadow-float">
+         <table className="w-full text-sm">
+           <thead>
+-            <tr className="bg-navy-50 dark:bg-navy-900/60">
++            <tr className="bg-navy-50/50 dark:bg-navy-900/30">
+               {headers.map((h) => (
+                 <th key={h} className="px-4 py-2.5 text-left font-semibold">
+                   {h}
+@@ -64,9 +65,9 @@ function ReferenceTable({
+           </thead>
+           <tbody>
+             {rows.map((r, i) => (
+-              <tr key={i} className="border-t border-border">
++              <tr key={i} className="border-t border-border/50 hover:bg-muted/30 transition-colors">
+                 {r.cells.map((c, j) => (
+-                  <td key={j} className="px-4 py-2">
++                  <td key={j} className="px-4 py-3 font-medium">
+                     {c}
+                   </td>
+                 ))}
+@@ -79,12 +80,13 @@ function ReferenceTable({
+   );
+ }
+ 
+-export default function ProtocolosPage() {
++export default async function ProtocolosPage() {
++  const t = await getTranslations("protocolos");
+   return (
+     <div className="flex flex-col gap-8">
+       <PageHeader
+-        title="Protocolos ZAF"
+-        description="Tabelas de refer├¬ncia da Zona de Aptid├úo F├¡sica"
++        title={t("title")}
++        description={t("description")}
+       />
+ 
+       {/* BMI table */}
+@@ -106,13 +108,13 @@ export default function ProtocolosPage() {
+       />
+ 
+       {/* Fitness tests overview */}
+-      <div className="flex flex-col gap-2">
+-        <h3 className="text-base font-semibold">Testes de Aptid├úo F├¡sica</h3>
+-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
++      <div className="flex flex-col gap-4 mb-10 animate-fade-in-up delay-100">
++        <h3 className="text-lg font-bold tracking-tight">Testes de Aptid├úo F├¡sica</h3>
++        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+           {TEST_ZONES.map((t) => (
+             <div
+               key={t.test}
+-              className="bg-card rounded-xl border border-border p-4 flex flex-col gap-1"
++              className="bg-card/85 glass rounded-2xl border border-border/50 shadow-sm p-5 flex flex-col gap-1.5 transition-all duration-300 hover:shadow-float hover:-translate-y-1"
+             >
+               <span className="font-semibold">{t.test}</span>
+               <span className="text-xs text-muted-foreground">{t.description}</span>
+
+commit 6191cfca24b3c5d6276a1fa425656f901bb6f799
+Author: Jonybtw <cego04643@gmail.com>
+Date:   Thu Mar 5 03:51:34 2026 +0000
+
+    Next.js rewrite
+
+diff --git a/next/src/app/(app)/protocolos/page.tsx b/next/src/app/(app)/protocolos/page.tsx
+new file mode 100644
+index 0000000..95e4ea9
+--- /dev/null
++++ b/next/src/app/(app)/protocolos/page.tsx
+@@ -0,0 +1,128 @@
++import { PageHeader } from "@/components/ui/page-header";
++
++/* ÔöÇÔöÇ Static ZAF reference tables (server component) ÔöÇÔöÇ */
++
++const BMI_TABLE = [
++  { age: "9", male: "Ôëñ18.4", female: "Ôëñ18.7" },
++  { age: "10", male: "Ôëñ19.4", female: "Ôëñ19.9" },
++  { age: "11", male: "Ôëñ20.2", female: "Ôëñ20.7" },
++  { age: "12", male: "Ôëñ21.0", female: "Ôëñ21.7" },
++  { age: "13", male: "Ôëñ21.8", female: "Ôëñ22.6" },
++  { age: "14", male: "Ôëñ22.6", female: "Ôëñ23.3" },
++  { age: "15", male: "Ôëñ23.5", female: "Ôëñ24.0" },
++  { age: "16", male: "Ôëñ24.2", female: "Ôëñ24.4" },
++  { age: "17", male: "Ôëñ24.9", female: "Ôëñ24.7" },
++  { age: "18", male: "Ôëñ25.0", female: "Ôëñ25.0" },
++];
++
++const WAIST_TABLE = [
++  { age: "9", male: "Ôëñ66.1", female: "Ôëñ62.6" },
++  { age: "10", male: "Ôëñ68.0", female: "Ôëñ64.3" },
++  { age: "11", male: "Ôëñ70.0", female: "Ôëñ66.5" },
++  { age: "12", male: "Ôëñ72.2", female: "Ôëñ68.8" },
++  { age: "13", male: "Ôëñ74.4", female: "Ôëñ70.4" },
++  { age: "14", male: "Ôëñ76.3", female: "Ôëñ71.6" },
++  { age: "15", male: "Ôëñ78.1", female: "Ôëñ72.6" },
++  { age: "16", male: "Ôëñ80.0", female: "Ôëñ73.4" },
++  { age: "17", male: "Ôëñ81.7", female: "Ôëñ74.0" },
++  { age: "18", male: "Ôëñ83.2", female: "Ôëñ74.7" },
++];
++
++const TEST_ZONES = [
++  { test: "Vai e Vem", unit: "percursos", description: "Corrida de vai e vem 20m (PACER)" },
++  { test: "Cooper", unit: "metros", description: "Corrida de 12 minutos" },
++  { test: "Milha", unit: "mm:ss", description: "Corrida de 1 milha" },
++  { test: "Velocidade", unit: "segundos", description: "Sprint 40 jardas" },
++  { test: "Agilidade", unit: "segundos", description: "Corrida de agilidade 4├ù10m" },
++  { test: "Abdominais", unit: "repeti├º├Áes", description: "Abdominais em 60 segundos" },
++  { test: "Extens├Áes de bra├ºos", unit: "repeti├º├Áes", description: "Extens├Áes sem cad├¬ncia" },
++  { test: "Senta e Alcan├ºa", unit: "cm", description: "Flexibilidade do tronco" },
++];
++
++function ReferenceTable({
++  title,
++  headers,
++  rows,
++}: {
++  title: string;
++  headers: string[];
++  rows: { cells: string[] }[];
++}) {
++  return (
++    <div className="flex flex-col gap-2">
++      <h3 className="text-base font-semibold">{title}</h3>
++      <div className="overflow-x-auto rounded-xl border border-border">
++        <table className="w-full text-sm">
++          <thead>
++            <tr className="bg-navy-50 dark:bg-navy-900/60">
++              {headers.map((h) => (
++                <th key={h} className="px-4 py-2.5 text-left font-semibold">
++                  {h}
++                </th>
++              ))}
++            </tr>
++          </thead>
++          <tbody>
++            {rows.map((r, i) => (
++              <tr key={i} className="border-t border-border">
++                {r.cells.map((c, j) => (
++                  <td key={j} className="px-4 py-2">
++                    {c}
++                  </td>
++                ))}
++              </tr>
++            ))}
++          </tbody>
++        </table>
++      </div>
++    </div>
++  );
++}
++
++export default function ProtocolosPage() {
++  return (
++    <div className="flex flex-col gap-8">
++      <PageHeader
++        title="Protocolos ZAF"
++        description="Tabelas de refer├¬ncia da Zona de Aptid├úo F├¡sica"
++      />
++
++      {/* BMI table */}
++      <ReferenceTable
++        title="IMC ÔÇö Valores de corte (Zona Saud├ível)"
++        headers={["Idade", "Masculino (Ôëñ)", "Feminino (Ôëñ)"]}
++        rows={BMI_TABLE.map((r) => ({
++          cells: [r.age, r.male, r.female],
++        }))}
++      />
++
++      {/* Waist table */}
++      <ReferenceTable
++        title="Per├¡metro da Cintura ÔÇö Valores de corte (Zona Saud├ível)"
++        headers={["Idade", "Masculino (Ôëñ)", "Feminino (Ôëñ)"]}
++        rows={WAIST_TABLE.map((r) => ({
++          cells: [r.age, r.male, r.female],
++        }))}
++      />
++
++      {/* Fitness tests overview */}
++      <div className="flex flex-col gap-2">
++        <h3 className="text-base font-semibold">Testes de Aptid├úo F├¡sica</h3>
++        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
++          {TEST_ZONES.map((t) => (
++            <div
++              key={t.test}
++              className="bg-card rounded-xl border border-border p-4 flex flex-col gap-1"
++            >
++              <span className="font-semibold">{t.test}</span>
++              <span className="text-xs text-muted-foreground">{t.description}</span>
++              <span className="text-xs text-navy-600 font-medium mt-1">
++                Unidade: {t.unit}
++              </span>
++            </div>
++          ))}
++        </div>
++      </div>
++    </div>
++  );
++}

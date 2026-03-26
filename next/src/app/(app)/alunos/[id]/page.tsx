@@ -33,6 +33,7 @@ export default async function StudentDetailPage({ params }: Props) {
       tests: { orderBy: { recordedAt: "desc" }, take: 5 },
       questionnaires: { orderBy: { submittedAt: "desc" }, take: 5 },
       dispensas: { orderBy: { startDate: "desc" } },
+      kidmedConsentRecordedBy: { select: { id: true, name: true, email: true } },
       guardians: { include: { guardian: true } },
     },
   });
@@ -43,6 +44,14 @@ export default async function StudentDetailPage({ params }: Props) {
   const serialized = {
     ...student,
     birthDate: student.birthDate?.toISOString() ?? null,
+    kidmedConsentAt: student.kidmedConsentAt?.toISOString() ?? null,
+    kidmedConsentRecordedBy: student.kidmedConsentRecordedBy
+      ? {
+          id: student.kidmedConsentRecordedBy.id,
+          name: student.kidmedConsentRecordedBy.name,
+          email: student.kidmedConsentRecordedBy.email,
+        }
+      : null,
     createdAt: student.createdAt.toISOString(),
     updatedAt: student.updatedAt.toISOString(),
     biometrics: student.biometrics.map((b) => ({

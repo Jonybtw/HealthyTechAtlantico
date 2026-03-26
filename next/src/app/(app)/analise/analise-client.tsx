@@ -15,7 +15,7 @@ import {
   ResponsiveContainer,
   Legend,
 } from "recharts";
-import { Activity, CheckCircle2, LineChart as ChartIcon, Link2, ShieldAlert, Users, Ruler, Scale } from "lucide-react";
+import { Activity, CheckCircle2, LineChart as ChartIcon, ShieldAlert, Users, Ruler, Scale } from "lucide-react";
 import { PageScaffold } from "@/components/ui/page-scaffold";
 import { PageSection } from "@/components/ui/page-section";
 import { StudentPicker } from "@/components/ui/student-picker";
@@ -23,6 +23,7 @@ import { PillSelect } from "@/components/ui/pill-select";
 import { ClassPicker } from "@/components/ui/class-picker";
 import { EmptyState } from "@/components/ui/empty-state";
 import { ChartTooltip } from "@/components/ui/chart-tooltip";
+import { ChartFrame } from "@/components/ui/chart-frame";
 import { useUser } from "@/components/user-context";
 import { useClasses } from "@/hooks/use-queries";
 import { readApiResponse } from "@/lib/api-client";
@@ -39,8 +40,7 @@ export default function AnalisePage() {
   const { role } = useUser();
   const locale = useLocale();
 
-  const isStudent = role === "ALUNO";
-  const canViewAnalysis = role === "ADMIN" || role === "PROFESSOR" || isStudent;
+  const canViewAnalysis = role === "ADMIN" || role === "PROFESSOR";
 
   const [students, setStudents] = useState<{ id: string; name: string; className?: string | null }[]>([]);
   const [loadingStudents, setLoadingStudents] = useState(true);
@@ -48,7 +48,7 @@ export default function AnalisePage() {
   const [chart, setChart] = useState<ChartType>("height");
   const [bioData, setBioData] = useState<{ date: string; imc: number; height: number; weight: number }[]>([]);
   const [testData, setTestData] = useState<Record<string, string | number>[]>([]);
-  const { data: classes = [] } = useClasses({ enabled: !isStudent && canViewAnalysis });
+  const { data: classes = [] } = useClasses({ enabled: canViewAnalysis });
   const [classId, setClassId] = useState<string>("");
   const [classData, setClassData] = useState<
     { name: string; ZSAF: number; ZMF: number; noData: number }[]
@@ -78,9 +78,6 @@ export default function AnalisePage() {
           className: student.className ?? null,
         }));
         setStudents(nextStudents);
-        if (isStudent && nextStudents.length === 1) {
-          setStudentId(nextStudents[0].id);
-        }
       } catch {
         if (!active) {
           return;
@@ -98,8 +95,7 @@ export default function AnalisePage() {
     return () => {
       active = false;
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [canViewAnalysis, isStudent]);
+  }, [canViewAnalysis, common]);
 
   useEffect(() => {
     if (!studentId) {
@@ -229,7 +225,7 @@ export default function AnalisePage() {
     { value: "weight", label: t("chartWeight"), icon: <Scale className="size-4" /> },
     { value: "bmi", label: t("chartBmi"), icon: <Activity className="size-4" /> },
     { value: "tests", label: t("chartTests"), icon: <CheckCircle2 className="size-4" /> },
-    ...(!isStudent ? [{ value: "class", label: t("chartClass"), icon: <Users className="size-4" /> }] : []),
+    { value: "class", label: t("chartClass"), icon: <Users className="size-4" /> },
   ];
 
   if (!canViewAnalysis) {
@@ -244,26 +240,12 @@ export default function AnalisePage() {
     );
   }
 
-  if (isStudent && !loadingStudents && students.length === 0) {
-    return (
-      <PageScaffold
-        headerProps={{ title: t("title"), description: t("descriptionStudent") }}
-      >
-        <EmptyState
-          icon={Link2}
-          title={t("unlinkedTitle")}
-          description={t("unlinkedDescription")}
-        />
-      </PageScaffold>
-    );
-  }
-
   return (
     <PageScaffold headerProps={{ title: t("title"), description: t("description") }}>
 
       <PageSection tone="secondary" layout="list">
         <div className="flex flex-wrap items-end gap-4">
-          {chart !== "class" && !isStudent ? (
+          {chart !== "class" ? (
             <div className="w-full max-w-xs">
               <StudentPicker
                 students={students}
@@ -311,7 +293,7 @@ export default function AnalisePage() {
             description={t("noStudentSelectedDesc")}
           />
         ) : chart === "bmi" || chart === "height" || chart === "weight" ? (
-          <div className="h-80 w-full animate-fade-in">
+          <ChartFrame className="h-80 w-full animate-fade-in">
             <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
               <AreaChart data={bioData} margin={{ top: 20, right: 20, left: 0, bottom: 0 }}>
                 <defs>
@@ -386,9 +368,9 @@ export default function AnalisePage() {
                 )}
               </AreaChart>
             </ResponsiveContainer>
-          </div>
+          </ChartFrame>
         ) : chart === "tests" ? (
-          <div className="h-80 w-full animate-fade-in">
+          <ChartFrame className="h-80 w-full animate-fade-in">
             <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
               <BarChart data={testData} margin={{ top: 20, right: 20, left: 0, bottom: 0 }} barSize={32}>
                 <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" vertical={false} />
@@ -401,7 +383,7 @@ export default function AnalisePage() {
                 <Bar dataKey="bracos" name={t("barExtensoes")} fill="var(--color-blue-400)" radius={[6, 6, 0, 0]} animationDuration={1000} />
               </BarChart>
             </ResponsiveContainer>
-          </div>
+          </ChartFrame>
         ) : !classId ? (
           <EmptyState
             icon={Users}
@@ -413,7 +395,7 @@ export default function AnalisePage() {
             <Activity className="size-8 animate-pulse text-muted-foreground opacity-50" />
           </div>
         ) : (
-          <div className="h-72 w-full animate-fade-in">
+          <ChartFrame className="h-72 w-full animate-fade-in">
             <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
               <BarChart data={classData} layout="vertical" margin={{ top: 0, right: 20, left: 20, bottom: 0 }} barSize={40}>
                 <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" horizontal={false} />
@@ -426,7 +408,7 @@ export default function AnalisePage() {
                 <Bar dataKey="noData" name={t("noDataLabel")} fill="var(--color-muted-foreground)" stackId="a" radius={[0, 4, 4, 0]} animationDuration={1000} />
               </BarChart>
             </ResponsiveContainer>
-          </div>
+          </ChartFrame>
         )}
       </PageSection>
     </PageScaffold>

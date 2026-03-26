@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
+import { requireAnyRole } from "@/lib/auth-guard";
 import GuardioesClient from "./guardioes-client";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -10,6 +11,7 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-export default function GuardioesPage() {
+export default async function GuardioesPage() {
+  await requireAnyRole(["ADMIN", "PROFESSOR"]);
   return <GuardioesClient />;
 }

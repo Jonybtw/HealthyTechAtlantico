@@ -13,6 +13,8 @@ import {
   unauthorized,
   validationError,
 } from "@/lib/api-response";
+import { auditLog } from "@/lib/audit";
+import { AUDIT_ACTIONS } from "@/lib/audit-actions";
 import { prisma } from "@/lib/prisma";
 import { PERMISSIONS } from "@/lib/rbac";
 import { getStudentAccessContext } from "@/lib/student-access";
@@ -88,6 +90,12 @@ export async function POST(
       },
     });
 
+    await auditLog({
+      userId: session.user.id,
+      action: AUDIT_ACTIONS.CREATE_DISPENSA,
+      targetId: dispensa.id,
+    }).catch(console.error);
+
     return created(dispensa);
   } catch (error: unknown) {
     if (error instanceof z.ZodError) {
@@ -133,6 +141,13 @@ export async function DELETE(
     }
 
     await prisma.dispensa.delete({ where: { id: dispensaId } });
+
+    await auditLog({
+      userId: session.user.id,
+      action: AUDIT_ACTIONS.DELETE_DISPENSA,
+      targetId: dispensaId,
+    }).catch(console.error);
+
     return noContent();
   } catch (error) {
     console.error("DELETE dispensas error:", error);

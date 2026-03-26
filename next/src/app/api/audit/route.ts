@@ -9,6 +9,7 @@ import {
   unauthorized,
   validationError,
 } from "@/lib/api-response";
+import type { AuditLogListItem, AuditLogListResponse } from "@/lib/audit-actions";
 import { prisma } from "@/lib/prisma";
 import { canRole, PERMISSIONS } from "@/lib/rbac";
 import { listAuditQuerySchema } from "@/lib/validations";
@@ -46,27 +47,35 @@ export async function GET(req: NextRequest) {
         : {}),
     };
 
-    const logs = await prisma.auditLog.findMany({
-      where,
-      skip,
-      take: limit,
-      orderBy: { [sortBy]: sortDir },
-      include: {
-        user: { select: { email: true, name: true } },
-      },
-    });
+    const [logs, total] = await Promise.all([
+      prisma.auditLog.findMany({
+        where,
+        skip,
+        take: limit,
+        orderBy: { [sortBy]: sortDir },
+        include: {
+          user: { select: { email: true, name: true } },
+        },
+      }),
+      prisma.auditLog.count({ where }),
+    ]);
 
-    return ok(
-      logs.map((log) => ({
-        id: log.id,
-        action: log.action,
-        targetId: log.targetId,
-        ipAddress: log.ipAddress,
-        createdAt: log.createdAt.toISOString(),
-        userEmail: log.user?.email ?? null,
-        userName: log.user?.name ?? null,
-      })),
-    );
+    const serializedLogs: AuditLogListItem[] = logs.map((log) => ({
+      id: log.id,
+      action: log.action,
+      targetId: log.targetId,
+      ipAddress: log.ipAddress,
+      createdAt: log.createdAt.toISOString(),
+      userEmail: log.user?.email ?? null,
+      userName: log.user?.name ?? null,
+    }));
+
+    return ok<AuditLogListResponse>({
+      logs: serializedLogs,
+      total,
+      page,
+      pages: Math.max(1, Math.ceil(total / limit)),
+    });
   } catch (error: unknown) {
     if (error instanceof z.ZodError) {
       return validationError(error.issues);

@@ -108,10 +108,12 @@ export function StudentPicker({
       return;
     }
 
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setOpen(false);
-     
-    setSearch("");
+    const frame = window.requestAnimationFrame(() => {
+      setOpen(false);
+      setSearch("");
+    });
+
+    return () => window.cancelAnimationFrame(frame);
   }, [loading]);
 
   useEffect(() => {

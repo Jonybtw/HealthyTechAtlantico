@@ -10,6 +10,8 @@ import {
   unauthorized,
   validationError,
 } from "@/lib/api-response";
+import { auditLog } from "@/lib/audit";
+import { AUDIT_ACTIONS } from "@/lib/audit-actions";
 import { prisma } from "@/lib/prisma";
 import { canRole, isStaffRole, PERMISSIONS } from "@/lib/rbac";
 import { createStudentSchema, listStudentsQuerySchema } from "@/lib/validations";
@@ -68,6 +70,7 @@ export async function GET(req: NextRequest) {
           age: true,
           schoolYear: true,
           className: true,
+          kidmedConsentAt: true,
           linkedUserId: true,
         },
       }),
@@ -117,6 +120,12 @@ export async function POST(req: NextRequest) {
         createdById: session.user.id,
       },
     });
+
+    await auditLog({
+      userId: session.user.id,
+      action: AUDIT_ACTIONS.CREATE_STUDENT,
+      targetId: student.id,
+    }).catch(console.error);
 
     return created(student);
   } catch (error: unknown) {

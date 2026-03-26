@@ -4,12 +4,13 @@ import { useActionState, useEffect, useRef, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { CalendarDays, FileUp, Mars, UserPlus, Venus } from "lucide-react";
+import { FileUp, Mars, UserPlus, Venus } from "lucide-react";
 import { FadeIn, AnimatePresence } from "@/components/ui/motion";
 import { PageScaffold } from "@/components/ui/page-scaffold";
 import { PageSection } from "@/components/ui/page-section";
 import { DataTable, type Column } from "@/components/ui/data-table";
 import { Button } from "@/components/ui/button";
+import { DateField } from "@/components/ui/date-field";
 import { Input } from "@/components/ui/input";
 import { PillSelect } from "@/components/ui/pill-select";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -45,8 +46,15 @@ export function AlunosClient({ initialStudents }: AlunosClientProps) {
     birthDate: "",
   });
   const [state, formAction, isPending] = useActionState(createStudentAction, null);
+  const lastHandledStateRef = useRef<typeof state>(null);
 
   useEffect(() => {
+    if (!state || lastHandledStateRef.current === state) {
+      return;
+    }
+
+    lastHandledStateRef.current = state;
+
     if (state?.error) {
       toast.error(state.error);
       return;
@@ -200,15 +208,12 @@ export function AlunosClient({ initialStudents }: AlunosClientProps) {
                   onChange={(value) => setForm((current) => ({ ...current, sex: value }))}
                 />
                 <input type="hidden" name="sex" value={form.sex} />
-                <Input
+                <DateField
                   name="birthDate"
                   label={t("birthDateLabel")}
-                  type="date"
                   value={form.birthDate}
-                  leftIcon={<CalendarDays className="size-4" />}
-                  hint="dd/mm/aaaa"
-                  onChange={(event) =>
-                    setForm((current) => ({ ...current, birthDate: event.target.value }))
+                  onChange={(nextValue) =>
+                    setForm((current) => ({ ...current, birthDate: nextValue }))
                   }
                   required
                 />

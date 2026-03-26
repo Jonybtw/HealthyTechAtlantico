@@ -12,10 +12,12 @@ import {
   unauthorized,
   validationError,
 } from "@/lib/api-response";
+import { auditLog } from "@/lib/audit";
+import { AUDIT_ACTIONS } from "@/lib/audit-actions";
 import { prisma } from "@/lib/prisma";
 import { isStaffRole, PERMISSIONS } from "@/lib/rbac";
 import { getStudentAccessContext } from "@/lib/student-access";
-import { createStudentSchema } from "@/lib/validations";
+import { updateStudentSchema } from "@/lib/validations";
 
 // GET /api/students/[id]
 export async function GET(
@@ -75,7 +77,15 @@ export async function PUT(
 
     const { id } = await params;
     const body = await req.json();
-    const data = createStudentSchema.partial().parse(body);
+    const data = updateStudentSchema.parse(body);
+    const shouldLogStudentUpdate =
+      data.name !== undefined ||
+      data.sex !== undefined ||
+      data.birthDate !== undefined ||
+      data.age !== undefined ||
+      data.schoolYear !== undefined ||
+      data.className !== undefined;
+    const shouldLogConsentUpdate = data.kidmedConsentGranted !== undefined;
 
     const student = await prisma.student.update({
       where: { id },
@@ -88,8 +98,28 @@ export async function PUT(
         ...(data.age !== undefined && { age: data.age }),
         ...(data.schoolYear !== undefined && { schoolYear: data.schoolYear }),
         ...(data.className !== undefined && { className: data.className }),
+        ...(data.kidmedConsentGranted !== undefined && {
+          kidmedConsentAt: data.kidmedConsentGranted ? new Date() : null,
+          kidmedConsentRecordedById: data.kidmedConsentGranted ? session.user.id : null,
+        }),
       },
     });
+
+    if (shouldLogStudentUpdate) {
+      await auditLog({
+        userId: session.user.id,
+        action: AUDIT_ACTIONS.UPDATE_STUDENT,
+        targetId: student.id,
+      }).catch(console.error);
+    }
+
+    if (shouldLogConsentUpdate) {
+      await auditLog({
+        userId: session.user.id,
+        action: AUDIT_ACTIONS.UPDATE_CONSENT,
+        targetId: student.id,
+      }).catch(console.error);
+    }
 
     return ok(student);
   } catch (error: unknown) {
@@ -124,6 +154,13 @@ export async function DELETE(
     }
 
     await prisma.student.delete({ where: { id } });
+
+    await auditLog({
+      userId: session.user.id,
+      action: AUDIT_ACTIONS.DELETE_STUDENT,
+      targetId: id,
+    }).catch(console.error);
+
     return noContent();
   } catch (error) {
     console.error("DELETE /api/students/[id] error:", error);

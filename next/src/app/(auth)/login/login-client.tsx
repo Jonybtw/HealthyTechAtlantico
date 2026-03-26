@@ -9,7 +9,7 @@ import { useTranslations } from "next-intl";
 import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import type { z } from "zod";
-import { registerFormSchema } from "@/lib/validations";
+import { loginSchema, registerFormSchema } from "@/lib/validations";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -66,6 +66,12 @@ export default function LoginClient() {
   const registeredSuccess = searchParams.get("registered") === "1";
 
   useEffect(() => {
+    const requestedMode = searchParams.get("mode");
+    setMode(requestedMode === "register" ? "register" : "login");
+    setApiError(null);
+  }, [searchParams]);
+
+  useEffect(() => {
     document.title = `${mode === "login" ? t("login") : t("register")} · HTA`;
   }, [mode, t]);
 
@@ -116,11 +122,24 @@ export default function LoginClient() {
 
   const handleLogin = async () => {
     setApiError(null);
-    const valid = await form.trigger(["email", "password"]);
-    if (!valid) return;
+    form.clearErrors(["email", "password"]);
+    const loginValues = {
+      email: form.getValues("email"),
+      password: form.getValues("password"),
+    };
+    const parsed = loginSchema.safeParse(loginValues);
+    if (!parsed.success) {
+      for (const issue of parsed.error.issues) {
+        const field = issue.path[0];
+        if (field === "email" || field === "password") {
+          form.setError(field, { type: "manual", message: issue.message });
+        }
+      }
+      return;
+    }
     setIsLoading(true);
     try {
-      const { email, password } = form.getValues();
+      const { email, password } = parsed.data;
       const result = await signIn("credentials", {
         email,
         password,
@@ -253,7 +272,7 @@ export default function LoginClient() {
           className="space-y-5 p-6"
         >
           {registeredSuccess && !apiError ? (
-            <div role="status" className="flex items-center gap-2.5 rounded-2xl border border-success-300/60 bg-success-50/80 px-4 py-3 text-sm text-success-700 dark:border-success-900/30 dark:bg-success-950/20 dark:text-success-300">
+              <div role="status" className="flex items-center gap-2.5 rounded-2xl border border-success-200 bg-success-50 px-4 py-3 text-sm font-medium text-success-800 shadow-sm dark:border-success-900/50 dark:bg-success-950/40 dark:text-success-200">
               <CheckCircle2 className="size-4 shrink-0" />
               {t("registeredSuccess")}
             </div>
@@ -267,7 +286,7 @@ export default function LoginClient() {
               initial={{ x: 0 }}
               animate={{ x: [-5, 5, -4, 4, -2, 2, 0] }}
               transition={{ duration: 0.4, ease: "easeOut" }}
-              className="rounded-2xl border border-danger-300/60 bg-danger-50/80 px-4 py-3 text-sm text-danger-700 dark:border-danger-900/30 dark:bg-danger-950/20 dark:text-danger-200"
+              className="rounded-2xl border border-danger-200 bg-danger-50 px-4 py-3 text-sm font-medium text-danger-900 shadow-sm dark:border-danger-900/50 dark:bg-danger-950/40 dark:text-danger-200"
             >
               {apiError}
             </motion.div>

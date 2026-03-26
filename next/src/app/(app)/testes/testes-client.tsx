@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
-import { Dumbbell, FileUp, Link2, Timer, Wind, Zap, Ruler } from "lucide-react";
+import { Dumbbell, FileUp, Timer, Wind, Zap, Ruler, ShieldAlert } from "lucide-react";
 import { PageScaffold } from "@/components/ui/page-scaffold";
 import { PageSection } from "@/components/ui/page-section";
 import { StudentPicker } from "@/components/ui/student-picker";
@@ -55,7 +55,8 @@ export default function TestesPage() {
   const t = useTranslations("testes");
   const common = useTranslations("common");
   const { role } = useUser();
-  const canImportCsv = role === "ADMIN" || role === "PROFESSOR";
+  const canManageTests = role === "ADMIN" || role === "PROFESSOR";
+  const canImportCsv = canManageTests;
 
   const [students, setStudents] = useState<StudentOption[]>([]);
   const [loadingStudents, setLoadingStudents] = useState(true);
@@ -94,15 +95,12 @@ export default function TestesPage() {
         })
       );
       setStudents(mapped);
-      if (role === "ALUNO" && mapped.length === 1) {
-        setStudentId(mapped[0].id);
-      }
     } catch {
       toast.error(common("studentListLoadError"));
     } finally {
       setLoadingStudents(false);
     }
-  }, [role, common]);
+  }, [common]);
 
   useEffect(() => {
     loadStudents();
@@ -111,13 +109,13 @@ export default function TestesPage() {
   const selectedStudent = students.find((s) => s.id === studentId);
   const currentTest = TEST_OPTIONS.find((opt) => opt.id === selectedTest)!;
 
-  if (role === "ALUNO" && students.length === 0) {
+  if (!canManageTests) {
     return (
       <PageScaffold headerProps={{ title: t("title"), description: t("description") }}>
         <EmptyState
-          icon={Link2}
-          title={t("unlinkedTitle")}
-          description={t("unlinkedDescription")}
+          icon={ShieldAlert}
+          title={common("noPermission")}
+          description={t("description")}
         />
       </PageScaffold>
     );
@@ -258,13 +256,11 @@ export default function TestesPage() {
           {/* LEFT — Form */}
           <PageSection tone="primary" layout="form" className="animate-fade-in-up">
             <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-              {role !== "ALUNO" && (
-                <StudentPicker
-                  students={students}
-                  value={studentId}
-                  onChange={setStudentId}
-                />
-              )}
+              <StudentPicker
+                students={students}
+                value={studentId}
+                onChange={setStudentId}
+              />
 
             {/* Test selector */}
             <PillSelect
@@ -318,11 +314,13 @@ export default function TestesPage() {
             >
 
               {!lastResult ? (
-                <div className="flex flex-col items-center gap-3 py-6 text-center">
-                  <div className="size-16 rounded-full border-2 border-dashed border-border/40 flex items-center justify-center">
-                    <Timer className="size-7 text-muted-foreground/30" />
+                <div className="flex flex-col items-center gap-4 py-8 text-center">
+                  <div className="animate-pulse-ring rounded-full p-2">
+                    <div className="surface-utility flex size-10 items-center justify-center rounded-lg shadow-card">
+                      <Timer className="size-4 text-navy-700 dark:text-gold-300 animate-pulse" strokeWidth={1.8} />
+                    </div>
                   </div>
-                  <p className="text-xs text-muted-foreground leading-relaxed max-w-[200px]">{t("fillFormHint")}</p>
+                  <p className="text-[13px] font-medium text-muted-foreground max-w-[200px] leading-relaxed">{t("fillFormHint")}</p>
                 </div>
               ) : (
                 <div className="flex flex-col items-center gap-4 py-4 animate-scale-in">
@@ -338,4 +336,3 @@ export default function TestesPage() {
     </PageScaffold>
   );
 }
-

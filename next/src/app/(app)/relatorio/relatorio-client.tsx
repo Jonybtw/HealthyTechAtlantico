@@ -24,6 +24,14 @@ import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
 import { readApiResponse } from "@/lib/api-client";
 import { Skeleton } from "@/components/ui/skeleton";
+import { FieldShell } from "@/components/ui/field-shell";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 type BiometricEntry = {
   heightM?: number;
@@ -172,7 +180,7 @@ export default function RelatorioPage() {
 
   const selectedStudent = students.find((s) => s.id === studentId);
 
-  /* ── Generate PDF ── */
+  /* â”€â”€ Generate PDF â”€â”€ */
   const handleGeneratePdf = async () => {
     if (!studentId) {
       toast.error(t("selectStudent"));
@@ -195,7 +203,7 @@ export default function RelatorioPage() {
       const W = doc.internal.pageSize.getWidth();   // 210
       const H = doc.internal.pageSize.getHeight();  // 297
 
-      // ── Colour palette (Matching Site Theme) ──────────────────
+      // â”€â”€ Colour palette (Matching Site Theme) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
       const fgFull  = [9, 21, 35] as [number, number, number];      // --foreground (navy-950)
       const fgMuted = [95, 109, 123] as [number, number, number];  // --muted-foreground
       const bgSite  = [244, 241, 234] as [number, number, number];  // --background
@@ -217,7 +225,7 @@ export default function RelatorioPage() {
       fill(bgSite);
       doc.rect(0, 0, W, H, "F");
 
-      // ── Header ──────────────────────────────────────────────────
+      // â”€â”€ Header â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
       let headerTextX = 14;
       try {
         const logoRes = await fetch("/logo.png");
@@ -241,11 +249,11 @@ export default function RelatorioPage() {
 
       text(fgMuted);
       doc.setFontSize(8); doc.setFont("helvetica", "bold");
-      doc.text("HEALTHYTECH ATLÂNTICO", headerTextX, 17);
+      doc.text("HEALTHYTECH ATLÃ‚NTICO", headerTextX, 17);
 
       text(fgFull);
       doc.setFontSize(16); doc.setFont("helvetica", "bold");
-      doc.text("Relatório Individual", headerTextX, 24);
+      doc.text("RelatÃ³rio Individual", headerTextX, 24);
 
       const today = new Date().toLocaleDateString("pt-PT", { day: "2-digit", month: "long", year: "numeric" });
       text(fgMuted);
@@ -255,7 +263,7 @@ export default function RelatorioPage() {
       stroke(border); doc.setLineWidth(0.3);
       doc.line(14, 32, W - 14, 32);
 
-      // ── Student banner ───────────────────────────────────────────
+      // â”€â”€ Student banner â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
       let y = 42;
       fill(bgCard); doc.circle(14 + 6, y + 2, 6, "F");
       stroke(border); doc.setLineWidth(0.3); doc.circle(14 + 6, y + 2, 6, "S");
@@ -267,18 +275,18 @@ export default function RelatorioPage() {
 
       text(fgFull);
       doc.setFontSize(12); doc.setFont("helvetica", "bold");
-      doc.text(selectedStudent?.name ?? "—", 30, y + 2);
+      doc.text(selectedStudent?.name ?? "â€”", 30, y + 2);
       
       text(fgMuted);
       doc.setFontSize(8); doc.setFont("helvetica", "normal");
       const studentMeta = [
         selectedStudent?.className ? `Turma ${selectedStudent.className}` : null,
-      ].filter(Boolean).join("  ·  ") || "Aluno";
+      ].filter(Boolean).join("  Â·  ") || "Aluno";
       doc.text(studentMeta, 30, y + 6);
 
       y = 60;
 
-      // ── Section helper ───────────────────────────────────────────
+      // â”€â”€ Section helper â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
       const section = (title: string, subtitle?: string) => {
         text(fgFull);
         doc.setFontSize(10); doc.setFont("helvetica", "bold");
@@ -292,8 +300,8 @@ export default function RelatorioPage() {
         y += 6;
       };
 
-      // ── Biometria ─────────────────────────────────────────────────
-      section("Métricas Corporais", "Registos gerais mais recentes.");
+      // â”€â”€ Biometria â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+      section("MÃ©tricas Corporais", "Registos gerais mais recentes.");
 
       if (Array.isArray(bio) && bio.length) {
         const b = bio[0] as BiometricEntry;
@@ -306,10 +314,10 @@ export default function RelatorioPage() {
         else if (imc >= 30) { imcZoneColor = danger; imcZoneLabel = "Obesidade"; }
 
         const metrics = [
-          { label: "Altura", value: b.heightM ? `${b.heightM} m` : "—", badge: null },
-          { label: "Peso",   value: b.weightKg ? `${b.weightKg} kg` : "—", badge: null },
-          { label: "IMC",    value: b.imc ? String(b.imc) : "—", badge: { label: imcZoneLabel, color: imcZoneColor } },
-          { label: "Cintura", value: b.waistCm ? `${b.waistCm} cm` : "—", badge: null },
+          { label: "Altura", value: b.heightM ? `${b.heightM} m` : "â€”", badge: null },
+          { label: "Peso",   value: b.weightKg ? `${b.weightKg} kg` : "â€”", badge: null },
+          { label: "IMC",    value: b.imc ? String(b.imc) : "â€”", badge: { label: imcZoneLabel, color: imcZoneColor } },
+          { label: "Cintura", value: b.waistCm ? `${b.waistCm} cm` : "â€”", badge: null },
         ];
 
         const boxW = (W - 28 - 9) / 4;
@@ -340,16 +348,16 @@ export default function RelatorioPage() {
         y += 20;
       }
 
-      // ── Testes Físicos ────────────────────────────────────────────
+      // â”€â”€ Testes FÃ­sicos â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
       y += 2;
-      section("Aptidão Física", "Resultados atualizados por categoria.");
+      section("AptidÃ£o FÃ­sica", "Resultados atualizados por categoria.");
 
       const TEST_LABELS: Record<string, string> = {
         vai: "Vai e Vem", cooper: "Cooper", milha: "Milha 1609m",
-        velocidade: "Velocidade 40m", agilidade: "Agilidade 4×10m",
+        velocidade: "Velocidade 40m", agilidade: "Agilidade 4Ã—10m",
         abd: "Abdominais", abdominais: "Abdominais",
-        bracos: "Extensões de braços", extensoes: "Extensões de braços",
-        senta: "Senta e alcança", senta_alcanca: "Senta e alcança",
+        bracos: "ExtensÃµes de braÃ§os", extensoes: "ExtensÃµes de braÃ§os",
+        senta: "Senta e alcanÃ§a", senta_alcanca: "Senta e alcanÃ§a",
         vaivem: "Vai e Vem",
       };
 
@@ -369,10 +377,10 @@ export default function RelatorioPage() {
         y += rowH;
 
         const CATEGORIES: Record<string, string> = {
-          vai: "Capacidade Aeróbia", cooper: "Capacidade Aeróbia", milha: "Capacidade Aeróbia",
-          vaivem: "Capacidade Aeróbia",
+          vai: "Capacidade AerÃ³bia", cooper: "Capacidade AerÃ³bia", milha: "Capacidade AerÃ³bia",
+          vaivem: "Capacidade AerÃ³bia",
           velocidade: "Velocidade", agilidade: "Agilidade",
-          abd: "Força", abdominais: "Força", bracos: "Força", extensoes: "Força",
+          abd: "ForÃ§a", abdominais: "ForÃ§a", bracos: "ForÃ§a", extensoes: "ForÃ§a",
           senta: "Flexibilidade", senta_alcanca: "Flexibilidade",
         };
 
@@ -382,7 +390,7 @@ export default function RelatorioPage() {
           doc.rect(14, y, W - 28, rowH, "F");
 
           const label = TEST_LABELS[test.testId] ?? test.testId;
-          const cat   = CATEGORIES[test.testId] ?? "—";
+          const cat   = CATEGORIES[test.testId] ?? "â€”";
 
           text(fgFull); doc.setFontSize(8); doc.setFont("helvetica", "normal");
           doc.text(label, 18, y + 6);
@@ -412,18 +420,28 @@ export default function RelatorioPage() {
         y += 16;
       }
 
-      // ── Footer ────────────────────────────────────────────────────
+      // â”€â”€ Footer â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
       fill(fgFull); doc.rect(0, H - 16, W, 16, "F");
       fill(brand); doc.rect(0, H - 16, W, 1.5, "F");
       text(bgMuted); doc.setFontSize(6.5); doc.setFont("helvetica", "normal");
-      doc.text("HealthyTech Atlântico  ·  Documento gerado automaticamente", W / 2, H - 7.5, { align: "center" });
+      doc.text("HealthyTech AtlÃ¢ntico  Â·  Documento gerado automaticamente", W / 2, H - 7.5, { align: "center" });
       text(brand); doc.setFontSize(6); doc.setFont("helvetica", "bold");
-      doc.text("CONFIDENCIAL — USO INTERNO", W / 2, H - 3.5, { align: "center" });
+      doc.text("CONFIDENCIAL â€” USO INTERNO", W / 2, H - 3.5, { align: "center" });
 
-      // Em vez de baixar o ficheiro para o computador, abrir num separador novo para não persistir dados sensíveis
+      // Em vez de baixar o ficheiro para o computador, abrir num separador novo para nÃ£o persistir dados sensÃ­veis
       const blob = doc.output("blob");
       const url = URL.createObjectURL(blob);
-      window.open(url, "_blank");
+      const previewWindow = window.open("", "_blank", "noopener,noreferrer");
+      if (previewWindow) {
+        previewWindow.location.href = url;
+      } else {
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = `relatorio-${selectedStudent?.name ?? "hta"}.pdf`;
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+      }
       
       // Cleanup para performance
       setTimeout(() => URL.revokeObjectURL(url), 60000);
@@ -436,7 +454,7 @@ export default function RelatorioPage() {
     }
   };
 
-  /* ── Send by email ── */
+  /* â”€â”€ Send by email â”€â”€ */
   const handleSendEmail = async () => {
     if (!studentId) {
       toast.error(t("selectStudent"));
@@ -462,7 +480,7 @@ export default function RelatorioPage() {
     }
   };
 
-  /* ── IMC classification helper ── */
+  /* â”€â”€ IMC classification helper â”€â”€ */
   const imcLabel = (imc?: number) => {
     if (!imc) return null;
     if (imc < 18.5) return { text: t("lowWeight"), color: "text-gold-500" };
@@ -538,7 +556,7 @@ export default function RelatorioPage() {
                     {selectedStudent?.name ?? "A carregar..."}
                   </span>
                   <span className="truncate text-[10px] leading-none text-muted-foreground mt-0.5">
-                    {selectedStudent?.className ?? "Sem turma atribuída"}
+                    {selectedStudent?.className ?? "Sem turma atribuÃ­da"}
                   </span>
                 </span>
               </div>
@@ -567,17 +585,17 @@ export default function RelatorioPage() {
                     {
                       icon: <Ruler className="size-3.5" />,
                       label: t("heightLabel"),
-                      value: bio0.heightM ? `${bio0.heightM} m` : "—",
+                      value: bio0.heightM ? `${bio0.heightM} m` : "â€”",
                     },
                     {
                       icon: <Weight className="size-3.5" />,
                       label: t("weightLabel"),
-                      value: bio0.weightKg ? `${bio0.weightKg} kg` : "—",
+                      value: bio0.weightKg ? `${bio0.weightKg} kg` : "â€”",
                     },
                     {
                       icon: <Activity className="size-3.5" />,
                       label: t("imcLabel"),
-                      value: bio0.imc ? `${bio0.imc}` : "—",
+                      value: bio0.imc ? `${bio0.imc}` : "â€”",
                       extra: classification ? (
                         <span className={`text-[10px] font-medium ${classification.color}`}>
                           {classification.text}
@@ -587,7 +605,7 @@ export default function RelatorioPage() {
                     {
                       icon: <ChevronRight className="size-3.5" />,
                       label: t("waistLabel"),
-                      value: bio0.waistCm ? `${bio0.waistCm} cm` : "—",
+                      value: bio0.waistCm ? `${bio0.waistCm} cm` : "â€”",
                     },
                   ].map((m) => (
                     <div
@@ -722,19 +740,25 @@ export default function RelatorioPage() {
             <div className="flex flex-col gap-2">
               {guardians.length > 0 ? (
                 <>
-                  <select
-                    value={guardianUserId}
-                    onChange={(event) => setGuardianUserId(event.target.value)}
-                    className="w-full rounded-xl border border-border bg-muted/40 px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-navy-600/30 transition"
-                  >
-                    {guardians.map((guardian) => (
-                      <option key={guardian.id} value={guardian.id}>
-                        {(guardian.guardian.name ?? guardian.guardian.email) +
-                          " · " +
-                          guardian.guardian.email}
-                      </option>
-                    ))}
-                  </select>
+                  <FieldShell label={t("emailRecipientLabel")}>
+                    <Select value={guardianUserId} onValueChange={setGuardianUserId}>
+                      <SelectTrigger
+                        aria-label={t("emailRecipientLabel")}
+                        className="h-14 rounded-full px-4 pt-[1.45rem] pb-[0.45rem] text-left shadow-[inset_0_1px_0_rgba(255,255,255,0.3)] focus:ring-4 focus:ring-gold-400/15"
+                      >
+                        <SelectValue placeholder={t("selectGuardianError")} />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {guardians.map((guardian) => (
+                          <SelectItem key={guardian.id} value={guardian.id}>
+                            {(guardian.guardian.name ?? guardian.guardian.email) +
+                              " · " +
+                              guardian.guardian.email}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </FieldShell>
                   <Button
                     onClick={handleSendEmail}
                     loading={sendingEmail}
@@ -757,3 +781,4 @@ export default function RelatorioPage() {
     </PageScaffold>
   );
 }
+

@@ -15,7 +15,7 @@ export function BrandLogo({
   sizes?: string;
 }) {
   return (
-    <div className={cn("relative overflow-hidden", className)}>
+    <div className={cn("relative", className)}>
       <Image
         src="/logo.png"
         alt={alt}

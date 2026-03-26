@@ -2,6 +2,7 @@ import { auth } from "@/lib/auth";
 import { forbidden, ok, serverError, unauthorized } from "@/lib/api-response";
 import { prisma } from "@/lib/prisma";
 import { canAccessSosInbox } from "@/lib/rbac";
+import { normalizeSosAlerts } from "@/lib/sos-alerts";
 
 // GET /api/stats/sos-alerts
 export async function GET() {
@@ -38,7 +39,8 @@ export async function GET() {
       },
     });
 
-    return ok(alerts);
+    const normalizedAlerts = await normalizeSosAlerts(alerts);
+    return ok(normalizedAlerts);
   } catch (error) {
     console.error("GET sos-alerts error:", error);
     return serverError();

@@ -1,6 +1,7 @@
 import { auth } from "@/lib/auth";
 import { canRole, type Permission } from "@/lib/rbac";
 import { redirect } from "next/navigation";
+import type { Role } from "@prisma/client";
 import type { AppSessionUser } from "@/types";
 
 /**
@@ -13,6 +14,21 @@ export async function requireAuth(): Promise<AppSessionUser> {
     redirect("/login");
   }
   return session.user as AppSessionUser;
+}
+
+/**
+ * Require one of the given roles for app pages.
+ * Redirects authenticated-but-unauthorized users back to /dashboard.
+ */
+export async function requireAnyRole(
+  roles: readonly Role[],
+  redirectTo = "/dashboard"
+): Promise<SessionUser> {
+  const user = await requireAuth();
+  if (!roles.includes(user.role)) {
+    redirect(redirectTo);
+  }
+  return user;
 }
 
 /**

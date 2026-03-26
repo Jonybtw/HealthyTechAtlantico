@@ -12,6 +12,7 @@ import {
   ListFilter,
   Mail,
   RefreshCw,
+  User,
 } from "lucide-react";
 import { toast } from "sonner";
 import { PageScaffold } from "@/components/ui/page-scaffold";
@@ -63,6 +64,7 @@ export default function SosPage() {
   const common = useTranslations("common");
   const locale = useLocale();
   const { role } = useUser();
+  const studentProfileBasePath = role === "PSICOLOGO" ? "/acompanhamento" : "/alunos";
 
   const [form, setForm] = useState(EMPTY_FORM);
   const [linkedStudent, setLinkedStudent] = useState<LinkedStudent | null>(null);
@@ -241,7 +243,31 @@ export default function SosPage() {
     if (loadingStudent) {
       return (
         <PageScaffold headerProps={{ title: t("title"), description: t("descriptionStudent") }}>
-          <Skeleton className="h-4 w-32" />
+          <div className="grid gap-4 lg:grid-cols-2">
+            <PageSection tone="primary" layout="form" title={t("contactTitle")} description={t("contactDescription")}>
+              <div className="grid gap-4 md:grid-cols-2">
+                <Skeleton className="h-14 w-full rounded-full" />
+                <Skeleton className="h-14 w-full rounded-full" />
+              </div>
+              <div className="grid gap-4 md:grid-cols-2">
+                <Skeleton className="h-14 w-full rounded-full" />
+                <Skeleton className="h-14 w-full rounded-full" />
+              </div>
+              <Skeleton className="h-24 w-full rounded-2xl" />
+              <Skeleton className="h-11 w-44 rounded-full" />
+            </PageSection>
+
+            <PageSection tone="secondary" layout="list" title={t("activeAlertTitle")} description={t("activeAlertDescription")}>
+              <Skeleton className="h-24 w-full rounded-2xl" />
+              <Skeleton className="h-28 w-full rounded-2xl" />
+            </PageSection>
+          </div>
+          <PageSection tone="secondary" layout="list" title={t("historyTitle")} description={t("historyDescription")}>
+            <div className="flex flex-col gap-2">
+              <Skeleton className="h-20 w-full rounded-xl" />
+              <Skeleton className="h-20 w-full rounded-xl" />
+            </div>
+          </PageSection>
         </PageScaffold>
       );
     }
@@ -335,6 +361,7 @@ export default function SosPage() {
               <Input
                 label={t("psychLabel")}
                 placeholder={t("psych")}
+                leftIcon={<User className="size-4" />}
                 value={form.psych}
                 onChange={(event) =>
                   setForm((current) => ({ ...current, psych: event.target.value }))
@@ -345,6 +372,7 @@ export default function SosPage() {
               <Input
                 label={t("teacherLabel")}
                 placeholder={t("teacher")}
+                leftIcon={<User className="size-4" />}
                 value={form.teacher}
                 onChange={(event) =>
                   setForm((current) => ({ ...current, teacher: event.target.value }))
@@ -359,6 +387,7 @@ export default function SosPage() {
                 type="email"
                 label={t("psychEmailLabel")}
                 placeholder={t("emailOptional")}
+                leftIcon={<Mail className="size-4" />}
                 value={form.psychEmail}
                 onChange={(event) =>
                   setForm((current) => ({ ...current, psychEmail: event.target.value }))
@@ -369,6 +398,7 @@ export default function SosPage() {
                 type="email"
                 label={t("teacherEmailLabel")}
                 placeholder={t("emailOptional")}
+                leftIcon={<Mail className="size-4" />}
                 value={form.teacherEmail}
                 onChange={(event) =>
                   setForm((current) => ({ ...current, teacherEmail: event.target.value }))
@@ -377,13 +407,13 @@ export default function SosPage() {
               />
             </div>
 
-            <div className="rounded-xl border border-danger-200/70 bg-danger-50/70 dark:border-danger-900/30 dark:bg-danger-950/20 p-3 flex gap-3">
-              <AlertTriangle className="size-5 shrink-0 text-danger-600 dark:text-danger-400" />
+            <div className="rounded-xl border border-danger-200 bg-danger-50 dark:border-danger-900/50 dark:bg-danger-950/50 p-3 flex items-start gap-3 shadow-sm">
+              <AlertTriangle className="mt-0.5 size-5 shrink-0 text-danger-600 dark:text-danger-400" />
               <div className="space-y-1">
-                <p className="text-sm font-semibold text-danger-700 dark:text-danger-300">
+                <p className="text-sm font-semibold text-danger-800 dark:text-danger-200">
                   {t("confidentialTitle")}
                 </p>
-                <p className="text-sm text-danger-700/90 dark:text-danger-300/80">
+                <p className="text-sm text-danger-700 dark:text-danger-300">
                   {t("confidential")}
                 </p>
               </div>
@@ -442,22 +472,25 @@ export default function SosPage() {
                 </div>
               </div>
             ) : openAlert ? (
-              <div className="rounded-xl border border-danger-300/60 bg-danger-50/70 dark:border-danger-900/30 dark:bg-danger-950/20 p-3 flex flex-col gap-3">
-                <div className="flex items-center justify-between gap-3">
+              <div className="rounded-xl border border-danger-200 bg-danger-50 dark:border-danger-900/50 dark:bg-danger-950/50 p-4 flex flex-col gap-3 shadow-sm">
+                <div className="flex items-center justify-between gap-3 pb-2 border-b border-danger-200/50 dark:border-danger-800/50">
                   <span className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold ${statusClass(false)}`}>
                     {t("pending")}
                   </span>
-                  <span className="text-xs text-muted-foreground">
+                  <span className="text-xs font-medium text-danger-700/80 dark:text-danger-300/80">
                     {formatDateTime(openAlert.createdAt)}
                   </span>
                 </div>
-                <p className="text-sm">
-                  <span className="font-medium">{t("psychLabel")}:</span> {openAlert.psych}
+                <p className="text-sm text-danger-900 dark:text-danger-100">
+                  <span className="font-semibold text-danger-800 dark:text-danger-200">{t("psychLabel")}:</span> {openAlert.psych}
                 </p>
-                <p className="text-sm">
-                  <span className="font-medium">{t("teacherLabel")}:</span> {openAlert.teacher}
+                <p className="text-sm text-danger-900 dark:text-danger-100">
+                  <span className="font-semibold text-danger-800 dark:text-danger-200">{t("teacherLabel")}:</span> {openAlert.teacher}
                 </p>
-                <p className="text-sm text-muted-foreground">{t("alreadyOpenHint")}</p>
+                <p className="mt-1 text-xs font-medium text-danger-700 dark:text-danger-300 flex items-start gap-1.5 ">
+                  <AlertTriangle className="size-3.5 mt-0.5 shrink-0" />
+                  {t("alreadyOpenHint")}
+                </p>
               </div>
             ) : (
               <EmptyState
@@ -586,50 +619,66 @@ export default function SosPage() {
         </Button>
       }
     >
+      {loadingAlerts && !alertsLoadError ? (
+        <>
+          <div className="grid gap-4 sm:grid-cols-3">
+            <Skeleton className="h-28 w-full rounded-[20px]" />
+            <Skeleton className="h-28 w-full rounded-[20px]" />
+            <Skeleton className="h-28 w-full rounded-[20px]" />
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <Skeleton className="h-9 w-28 rounded-full" />
+            <Skeleton className="h-9 w-28 rounded-full" />
+            <Skeleton className="h-9 w-24 rounded-full" />
+          </div>
+        </>
+      ) : (
+        <>
+          <StaggerList className="grid gap-4 sm:grid-cols-3">
+            {[
+              { label: t("totalAlerts"), value: alerts.length, tone: "border-border/50", icon: ListFilter },
+              { label: t("pendingAlerts"), value: pendingAlerts.length, tone: "border-danger-300/60 text-danger-600 dark:text-danger-400", icon: Clock3 },
+              { label: t("resolvedAlerts"), value: resolvedAlerts.length, tone: "border-success-300/60 text-success-600 dark:text-success-400", icon: CheckCircle2 },
+            ].map((card) => (
+              <StaggerItem
+                key={card.label}
+                className={`surface-secondary relative overflow-hidden rounded-[20px] border ${card.tone.split(' ')[0]} p-5`}
+              >
+                <div className="flex items-center justify-between">
+                  <p className="text-sm font-medium text-muted-foreground">{card.label}</p>
+                  <card.icon className={`size-5 ${card.tone.includes('danger') ? 'text-danger-500' : card.tone.includes('success') ? 'text-success-500' : 'text-muted-foreground'}`} />
+                </div>
+                <p className={`mt-2 text-3xl font-extrabold tracking-tight ${card.tone.includes('danger') ? 'text-danger-600 dark:text-danger-400' : card.tone.includes('success') ? 'text-success-600 dark:text-success-400' : ''}`}>
+                  {card.value}
+                </p>
+              </StaggerItem>
+            ))}
+          </StaggerList>
 
-      <StaggerList className="grid gap-4 sm:grid-cols-3">
-        {[
-          { label: t("totalAlerts"), value: alerts.length, tone: "border-border/50", icon: ListFilter },
-          { label: t("pendingAlerts"), value: pendingAlerts.length, tone: "border-danger-300/60 text-danger-600 dark:text-danger-400", icon: Clock3 },
-          { label: t("resolvedAlerts"), value: resolvedAlerts.length, tone: "border-success-300/60 text-success-600 dark:text-success-400", icon: CheckCircle2 },
-        ].map((card) => (
-          <StaggerItem
-            key={card.label}
-            className={`surface-secondary relative overflow-hidden rounded-[20px] border ${card.tone.split(' ')[0]} p-5`}
-          >
-            <div className="flex items-center justify-between">
-              <p className="text-sm font-medium text-muted-foreground">{card.label}</p>
-              <card.icon className={`size-5 ${card.tone.includes('danger') ? 'text-danger-500' : card.tone.includes('success') ? 'text-success-500' : 'text-muted-foreground'}`} />
-            </div>
-            <p className={`mt-2 text-3xl font-extrabold tracking-tight ${card.tone.includes('danger') ? 'text-danger-600 dark:text-danger-400' : card.tone.includes('success') ? 'text-success-600 dark:text-success-400' : ''}`}>
-              {card.value}
-            </p>
-          </StaggerItem>
-        ))}
-      </StaggerList>
-
-      <div role="group" aria-label={t("filterLabel")} className="flex flex-wrap gap-2">
-        {([
-          ["pending", t("filterPending"), Clock3],
-          ["resolved", t("filterResolved"), CheckCircle2],
-          ["all", t("filterAll"), ListFilter],
-        ] as const).map(([value, label, Icon]) => (
-          <button
-            key={value}
-            type="button"
-            aria-pressed={filter === value}
-            onClick={() => setFilter(value)}
-            className={`flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-xs font-semibold transition-all border ${
-              filter === value
-                ? "border-navy-800 bg-navy-900 text-white shadow-float"
-                : "border-border/60 bg-card/70 text-muted-foreground hover:text-foreground hover:border-navy-300 hover:bg-muted/50"
-            }`}
-          >
-            <Icon className="size-3.5" />
-            {label}
-          </button>
-        ))}
-      </div>
+          <div role="group" aria-label={t("filterLabel")} className="flex flex-wrap gap-2">
+            {([
+              ["pending", t("filterPending"), Clock3],
+              ["resolved", t("filterResolved"), CheckCircle2],
+              ["all", t("filterAll"), ListFilter],
+            ] as const).map(([value, label, Icon]) => (
+              <button
+                key={value}
+                type="button"
+                aria-pressed={filter === value}
+                onClick={() => setFilter(value)}
+                className={`flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-xs font-semibold transition-all border ${
+                  filter === value
+                    ? "border-navy-800 bg-navy-900 text-white shadow-float"
+                    : "border-border/60 bg-card/70 text-muted-foreground hover:text-foreground hover:border-navy-300 hover:bg-muted/50"
+                }`}
+              >
+                <Icon className="size-3.5" />
+                {label}
+              </button>
+            ))}
+          </div>
+        </>
+      )}
 
       {alertsLoadError ? (
         <div className="rounded-2xl border border-warning-200/80 bg-warning-50/70 p-4 dark:border-warning-900/30 dark:bg-warning-950/20">
@@ -709,7 +758,7 @@ export default function SosPage() {
 
                 <div className="flex flex-wrap items-center gap-2">
                   <Link
-                    href={`/alunos/${alert.student.id}`}
+                    href={`${studentProfileBasePath}/${alert.student.id}`}
                     className="inline-flex items-center gap-2 rounded-xl border border-border/60 px-2.5 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:border-navy-300 hover:text-foreground"
                   >
                     <ExternalLink className="size-3.5" />

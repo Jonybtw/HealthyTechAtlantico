@@ -50,7 +50,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
               aria-invalid={error ? true : undefined}
               aria-describedby={error ? `${uid}-error` : hint ? `${uid}-hint` : undefined}
               className={cn(
-                "peer flex h-12 w-full rounded-full border border-border/70 bg-card px-4 pt-4 pb-1 text-sm text-foreground shadow-[inset_0_1px_0_rgba(255,255,255,0.3)] backdrop-blur-sm",
+                "peer flex h-14 w-full rounded-full border border-border/70 bg-card px-4 pt-[1.45rem] pb-[0.45rem] text-sm text-foreground shadow-[inset_0_1px_0_rgba(255,255,255,0.3)] backdrop-blur-sm",
                 "transition-all duration-300",
                 "focus:border-gold-500/60 focus:bg-card/50 focus:outline-none focus:ring-4 focus:ring-gold-400/15",
                 "hover:border-navy-300/40 hover:bg-muted/50",
@@ -72,8 +72,8 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
                 htmlFor={uid}
                 className={cn(
                   "pointer-events-none absolute left-0 top-1/2 -translate-y-1/2 text-muted-foreground transition-all duration-200",
-                  "peer-focus:top-3 peer-focus:-translate-y-0 peer-focus:text-[10px] peer-focus:font-semibold peer-focus:text-gold-500",
-                  "peer-[:not(:placeholder-shown)]:top-3 peer-[:not(:placeholder-shown)]:-translate-y-0 peer-[:not(:placeholder-shown)]:text-[10px] peer-[:not(:placeholder-shown)]:font-semibold",
+                  "peer-focus:top-[0.9rem] peer-focus:-translate-y-0 peer-focus:text-[10px] peer-focus:font-semibold peer-focus:text-gold-500",
+                  "peer-[:not(:placeholder-shown)]:top-[0.9rem] peer-[:not(:placeholder-shown)]:-translate-y-0 peer-[:not(:placeholder-shown)]:text-[10px] peer-[:not(:placeholder-shown)]:font-semibold",
                   leftIcon ? "pl-11" : "pl-4"
                 )}
               >

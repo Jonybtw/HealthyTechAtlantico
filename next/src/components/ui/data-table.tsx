@@ -7,6 +7,7 @@ import {
   ChevronRight,
   ChevronUp,
   Search,
+  type LucideIcon,
 } from "lucide-react";
 
 export interface Column<T> {
@@ -27,6 +28,7 @@ interface DataTableProps<T> {
   toolbarActions?: React.ReactNode;
   searchPlaceholder?: string;
   emptyMessage?: string;
+  emptyStateIcon?: LucideIcon;
   onRowClick?: (row: T) => void;
   rowKey: (row: T) => string;
 }
@@ -41,6 +43,7 @@ export function DataTable<T extends object>({
   toolbarActions,
   searchPlaceholder = "Pesquisar...",
   emptyMessage = "Sem registos.",
+  emptyStateIcon: EmptyIcon = Search,
   onRowClick,
   rowKey,
 }: DataTableProps<T>) {
@@ -179,11 +182,25 @@ export function DataTable<T extends object>({
             <tbody className="divide-y divide-border/55">
               {paged.length === 0 ? (
                 <tr>
-                  <td
-                    colSpan={columns.length}
-                    className="px-5 py-8 text-center text-sm text-muted-foreground"
-                  >
-                    {emptyMessage}
+                  <td colSpan={columns.length} className="group">
+                    <div className="flex min-h-[400px] w-full items-center justify-center p-8">
+                      <div className="flex max-w-[420px] flex-col items-center justify-center space-y-4 text-center">
+                        <div className="surface-utility relative flex h-20 w-20 items-center justify-center rounded-3xl border border-border/70 shadow-inner">
+                          <div className="absolute inset-0 animate-pulse-ring rounded-3xl border-2 border-primary/20" />
+                          <div className="absolute h-10 w-10 animate-spin-slow rounded-full border-2 border-dashed border-primary/20 border-t-transparent" />
+                          <div className="absolute inset-0 bg-gradient-to-tr from-primary/10 via-transparent to-transparent opacity-50" />
+                          <EmptyIcon className="relative z-10 h-8 w-8 text-primary shadow-sm drop-shadow-md" />
+                        </div>
+                        <div className="space-y-2">
+                          <h3 className="text-xl font-semibold tracking-tight text-foreground">
+                            Sem Resultados
+                          </h3>
+                          <p className="text-sm font-medium leading-relaxed text-muted-foreground">
+                            {emptyMessage}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
                   </td>
                 </tr>
               ) : (

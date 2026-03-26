@@ -3,12 +3,13 @@
 import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
-import { CalendarDays, Plus, RefreshCw, ShieldOff, Trash2 } from "lucide-react";
+import { Plus, RefreshCw, ShieldOff, Trash2 } from "lucide-react";
 import { FadeIn, StaggerList, StaggerItem, AnimatePresence } from "@/components/ui/motion";
 import { PageScaffold } from "@/components/ui/page-scaffold";
 import { PageSection } from "@/components/ui/page-section";
 import { StudentPicker } from "@/components/ui/student-picker";
 import { Button } from "@/components/ui/button";
+import { DateField } from "@/components/ui/date-field";
 import { Input } from "@/components/ui/input";
 import { ConfirmModal } from "@/components/ui/confirm-modal";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -138,25 +139,19 @@ export default function DispensasPage() {
                   required
                 />
                 <div className="grid grid-cols-2 gap-4">
-                  <Input
+                  <DateField
                     label={t("startDateShort")}
-                    type="date"
                     value={form.startDate}
-                    leftIcon={<CalendarDays className="size-4" />}
-                    hint="dd/mm/aaaa"
-                    onChange={(event) =>
-                      setForm((current) => ({ ...current, startDate: event.target.value }))
+                    onChange={(nextValue) =>
+                      setForm((current) => ({ ...current, startDate: nextValue }))
                     }
                     required
                   />
-                  <Input
+                  <DateField
                     label={t("endDateShort")}
-                    type="date"
                     value={form.endDate}
-                    leftIcon={<CalendarDays className="size-4" />}
-                    hint="dd/mm/aaaa"
-                    onChange={(event) =>
-                      setForm((current) => ({ ...current, endDate: event.target.value }))
+                    onChange={(nextValue) =>
+                      setForm((current) => ({ ...current, endDate: nextValue }))
                     }
                   />
                 </div>

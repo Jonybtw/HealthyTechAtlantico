@@ -3,6 +3,8 @@ import Credentials from "next-auth/providers/credentials";
 import type { JWT } from "next-auth/jwt";
 import { compare } from "bcryptjs";
 import type { Role } from "@prisma/client";
+import { auditLog } from "@/lib/audit";
+import { AUDIT_ACTIONS } from "@/lib/audit-actions";
 import { prisma } from "@/lib/prisma";
 import {
   getRolePermissions,
@@ -83,7 +85,56 @@ type SessionToken = JWT & {
   permissions?: Permission[];
 };
 
-function applyUserToToken(
+function getAuditActorId(message: unknown): string | null {
+  if (
+    typeof message === "object" &&
+    message !== null &&
+    "user" in message &&
+    message.user &&
+    typeof message.user === "object" &&
+    "id" in message.user &&
+    typeof message.user.id === "string"
+  ) {
+    return message.user.id;
+  }
+
+  if (
+    typeof message === "object" &&
+    message !== null &&
+    "session" in message &&
+    message.session &&
+    typeof message.session === "object" &&
+    "user" in message.session &&
+    message.session.user &&
+    typeof message.session.user === "object" &&
+    "id" in message.session.user &&
+    typeof message.session.user.id === "string"
+  ) {
+    return message.session.user.id;
+  }
+
+  if (
+    typeof message === "object" &&
+    message !== null &&
+    "token" in message &&
+    message.token &&
+    typeof message.token === "object"
+  ) {
+    const token = message.token as Record<string, unknown>;
+
+    if (typeof token.id === "string") {
+      return token.id;
+    }
+
+    if (typeof token.sub === "string") {
+      return token.sub;
+    }
+  }
+
+  return null;
+}
+
+export function applyUserToToken(
   token: SessionToken,
   user: Pick<
     AuthUser,
@@ -170,6 +221,20 @@ export const { handlers, auth } = NextAuth({
       },
     }),
   ],
+  events: {
+    async signIn(message) {
+      await auditLog({
+        userId: getAuditActorId({ user: message.user }),
+        action: AUDIT_ACTIONS.LOGIN,
+      }).catch(console.error);
+    },
+    async signOut(message) {
+      await auditLog({
+        userId: getAuditActorId(message),
+        action: AUDIT_ACTIONS.LOGOUT,
+      }).catch(console.error);
+    },
+  },
   callbacks: {
     async jwt({ token, user, trigger, session }) {
       let sessionToken = token as SessionToken;

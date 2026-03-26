@@ -72,10 +72,10 @@ const FormItem = React.forwardRef<
   React.HTMLAttributes<HTMLDivElement>
 >(({ className, ...props }, ref) => {
   const fieldContext = React.useContext(FormFieldContext);
-  const fallbackId = React.useId();
+  const generatedId = React.useId();
   const id =
     props.id ??
-    (fieldContext.name ? toFormItemId(String(fieldContext.name)) : fallbackId);
+    (fieldContext.name ? toFormItemId(String(fieldContext.name)) : generatedId);
 
   return (
     <FormItemContext.Provider value={{ id }}>

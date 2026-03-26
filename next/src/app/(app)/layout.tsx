@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { AppShell } from "@/components/app-shell";
+import { AuthSessionProvider } from "@/components/auth-session-provider";
 import { UserProvider } from "@/components/user-context";
 import { auth } from "@/lib/auth";
 
@@ -15,8 +16,10 @@ export default async function AppLayout({
   }
 
   return (
-    <UserProvider user={session.user}>
-      <AppShell user={session.user}>{children}</AppShell>
-    </UserProvider>
+    <AuthSessionProvider session={session}>
+      <UserProvider user={session.user}>
+        <AppShell user={session.user}>{children}</AppShell>
+      </UserProvider>
+    </AuthSessionProvider>
   );
 }

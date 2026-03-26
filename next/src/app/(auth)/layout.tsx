@@ -4,14 +4,14 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { Activity, ShieldCheck, Sparkles, Sun, Moon } from "lucide-react";
+import { Activity, ClipboardList, FileText, Sun, Moon } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { BrandLogo } from "@/components/brand-logo";
 import { usePreferences } from "@/hooks/use-preferences";
 
 const HIGHLIGHTS = [
   {
-    icon: ShieldCheck,
+    icon: ClipboardList,
     titleKey: "highlightSecurity" as const,
   },
   {
@@ -19,7 +19,7 @@ const HIGHLIGHTS = [
     titleKey: "highlightMonitoring" as const,
   },
   {
-    icon: Sparkles,
+    icon: FileText,
     titleKey: "highlightExperience" as const,
   },
 ];
@@ -207,10 +207,10 @@ export default function AuthLayout({
               <div className="order-2 hidden space-y-6 lg:order-1 lg:block">
                 <div className="flex items-center gap-4">
                   <BrandLogo
-                    className="h-[84px] w-[82px]"
+                    className="h-[116px] w-[114px]"
                     imageClassName="brightness-0 invert"
                     priority
-                    sizes="84px"
+                    sizes="116px"
                   />
                 </div>
 
@@ -235,9 +235,14 @@ export default function AuthLayout({
                   ))}
                 </div>
 
-                <p className="text-xs text-navy-200/55">
-                  {t("copyright", { year: new Date().getFullYear() })}
-                </p>
+                <div className="space-y-1">
+                  <p className="text-xs font-medium uppercase tracking-[0.18em] text-navy-100/70">
+                    {t("department")}
+                  </p>
+                  <p className="text-xs text-navy-200/55">
+                    {t("copyright", { year: new Date().getFullYear() })}
+                  </p>
+                </div>
               </div>
 
               {/* Right: big login card */}
@@ -247,10 +252,10 @@ export default function AuthLayout({
                   <div className="mb-4 flex items-center justify-between gap-3 lg:hidden">
                     <div className="flex items-center gap-3">
                       <BrandLogo
-                        className="h-[72px] w-[70px]"
+                        className="h-[88px] w-[86px]"
                         imageClassName="brightness-0 invert"
                         priority
-                        sizes="72px"
+                        sizes="88px"
                       />
                     </div>
                   </div>
@@ -260,9 +265,14 @@ export default function AuthLayout({
                   </div>
 
                   {/* Mobile compact footer */}
-                  <p className="mt-4 text-center text-xs text-navy-200/55 lg:hidden">
-                    {t("copyright", { year: new Date().getFullYear() })}
-                  </p>
+                  <div className="mt-4 space-y-1 text-center lg:hidden">
+                    <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-navy-100/70">
+                      {t("department")}
+                    </p>
+                    <p className="text-xs text-navy-200/55">
+                      {t("copyright", { year: new Date().getFullYear() })}
+                    </p>
+                  </div>
                 </div>
               </div>
             </div>
@@ -272,10 +282,10 @@ export default function AuthLayout({
         <div className="relative mx-auto flex w-full max-w-md flex-col items-center gap-7 px-4 py-12 pb-16">
           {/* Logo */}
           <BrandLogo
-            className="h-[86px] w-[84px]"
+            className="h-[98px] w-[96px]"
             imageClassName="brightness-0 invert"
             priority
-            sizes="86px"
+            sizes="98px"
           />
 
           {/* Headline */}
@@ -323,9 +333,14 @@ export default function AuthLayout({
           <div className="w-full">{children}</div>
 
           {/* Footer */}
-          <p className="text-center text-xs text-navy-200/45">
-            {t("copyright", { year: new Date().getFullYear() })}
-          </p>
+          <div className="space-y-1 text-center">
+            <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-navy-100/70">
+              {t("department")}
+            </p>
+            <p className="text-xs text-navy-200/45">
+              {t("copyright", { year: new Date().getFullYear() })}
+            </p>
+          </div>
         </div>
       )}
     </main>

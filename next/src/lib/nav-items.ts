@@ -27,8 +27,8 @@ export interface NavItem {
 
 export const NAV_ITEMS: NavItem[] = [
   { href: "/dashboard", label: "nav.dashboard", icon: Home, roles: ["ADMIN", "PROFESSOR", "ALUNO", "PSICOLOGO", "PAIS"], section: "core" },
-  { href: "/biometria", label: "nav.biometria", icon: Activity, roles: ["ADMIN", "ALUNO", "PROFESSOR"], section: "core" },
-  { href: "/testes", label: "nav.testes", icon: ClipboardList, roles: ["ADMIN", "ALUNO", "PROFESSOR"], section: "core" },
+  { href: "/biometria", label: "nav.biometria", icon: Activity, roles: ["ADMIN", "PROFESSOR"], section: "core" },
+  { href: "/testes", label: "nav.testes", icon: ClipboardList, roles: ["ADMIN", "PROFESSOR"], section: "core" },
   { href: "/questionarios", label: "nav.questionarios", icon: BookOpen, roles: ["ALUNO"], section: "core" },
   { href: "/sos", label: "nav.sos", icon: AlertTriangle, roles: ["ADMIN", "ALUNO", "PROFESSOR", "PSICOLOGO"], section: "core" },
   { href: "/relatorio", label: "nav.relatorio", icon: FileText, roles: ["ADMIN", "ALUNO", "PROFESSOR", "PAIS"], section: "core" },

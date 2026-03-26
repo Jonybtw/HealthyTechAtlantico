@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { getEmailRuleMessage, isAllowedEmailForRole, isInternalEmail } from "@/lib/email-rules";
+import { QUESTIONNAIRE_TYPES } from "@/lib/questionnaires";
 
 const emailSchema = z.string().trim().toLowerCase().email("Email invalido");
 
@@ -95,6 +96,10 @@ export const createStudentSchema = z.object({
   className: z.string().optional(),
 });
 
+export const updateStudentSchema = createStudentSchema.partial().extend({
+  kidmedConsentGranted: z.boolean().optional(),
+});
+
 export const biometricsSchema = z.object({
   heightM: z.number().min(0.5).max(2.5),
   weightKg: z.number().min(5).max(300),
@@ -120,11 +125,62 @@ export const testsSchema = z.object({
   sessionId: z.string().optional().nullable(),
 });
 
-export const questionnaireSchema = z.object({
-  type: z.enum(["AUTOCONCEITO", "AUTOESTIMA"]),
-  payload: z.record(z.string(), z.unknown()),
-  deferredCount: z.number().int().min(0).max(3).default(0),
+export const routineQuestionnairePayloadSchema = z.object({
+  sleepHours: z.number().min(0).max(12),
+  screenHours: z.number().min(0).max(16),
+  waterGlasses: z.number().int().min(0).max(15),
+  mealsCount: z.number().int().min(0).max(8),
+  energyLevel: z.number().int().min(0).max(10),
+  stressLevel: z.number().int().min(0).max(10),
+  wellnessLevel: z.number().int().min(0).max(10),
 });
+
+export const initialQuestionnairePayloadSchema = z.object({
+  physicalActivityFreq: z.number().int().min(0).max(7),
+  sportsPractice: z.boolean(),
+  hasAllergies: z.boolean(),
+  hasMedication: z.boolean(),
+  hasInjuries: z.boolean(),
+  eatsBreakfast: z.boolean(),
+  eatsFruitsVegetables: z.boolean(),
+  drinksWaterEnough: z.boolean(),
+});
+
+export const kidmedAnswersSchema = z.object({
+  fruitDaily: z.boolean(),
+  secondFruitDaily: z.boolean(),
+  vegetablesDaily: z.boolean(),
+  vegetablesMoreThanOnceDaily: z.boolean(),
+  fishRegularly: z.boolean(),
+  fastFoodWeekly: z.boolean(),
+  pulsesMoreThanOnceWeekly: z.boolean(),
+  wholeGrainPastaOrRice: z.boolean(),
+  wholeGrainsBreakfast: z.boolean(),
+  nutsRegularly: z.boolean(),
+  oliveOilAtHome: z.boolean(),
+  skipsBreakfast: z.boolean(),
+  dairyBreakfast: z.boolean(),
+  pastriesBreakfast: z.boolean(),
+  yogurtOrCheeseDaily: z.boolean(),
+  sweetsSeveralTimesDaily: z.boolean(),
+});
+
+export const questionnaireSchema = z.discriminatedUnion("type", [
+  z.object({
+    type: z.literal("AUTOCONCEITO"),
+    payload: routineQuestionnairePayloadSchema,
+    deferredCount: z.number().int().min(0).max(3).default(0),
+  }),
+  z.object({
+    type: z.literal("AUTOESTIMA"),
+    payload: initialQuestionnairePayloadSchema,
+    deferredCount: z.number().int().min(0).max(3).default(0),
+  }),
+  z.object({
+    type: z.literal("KIDMED"),
+    payload: kidmedAnswersSchema,
+  }),
+]);
 
 export const sosSchema = z.object({
   psych: z.string().trim().min(1, "Psicologo obrigatorio").max(120),
@@ -205,3 +261,17 @@ export const listAuditQuerySchema = z
       });
     }
   });
+
+export const listQuestionnairesQuerySchema = z.object({
+  type: z.preprocess(
+    (value) => {
+      if (value === undefined || value === null || value === "") {
+        return undefined;
+      }
+
+      return typeof value === "string" ? value.trim() : value;
+    },
+    z.enum(QUESTIONNAIRE_TYPES).optional(),
+  ),
+  limit: queryNumberSchema(z.number().min(1).max(100)).optional(),
+});

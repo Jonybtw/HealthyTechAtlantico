@@ -1,11 +1,22 @@
 "use client";
 
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations, useLocale } from "next-intl";
 import { toast } from "sonner";
-import { Ruler, Timer, ClipboardList, ShieldOff, Users, Pencil, Trash2, Check, TrendingUp } from "lucide-react";
-import { Area, Line, XAxis, YAxis, Tooltip as RechartsTooltip, ResponsiveContainer, CartesianGrid, ComposedChart } from "recharts";
+import {
+  Ruler,
+  Timer,
+  ClipboardList,
+  ShieldOff,
+  Users,
+  Pencil,
+  Trash2,
+  Check,
+  TrendingUp,
+  ShieldAlert,
+  ShieldCheck,
+} from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import type { z } from "zod";
@@ -13,6 +24,7 @@ import { createStudentSchema } from "@/lib/validations";
 import { PageScaffold } from "@/components/ui/page-scaffold";
 import { PageSection } from "@/components/ui/page-section";
 import { Button } from "@/components/ui/button";
+import { DateField } from "@/components/ui/date-field";
 import { Input } from "@/components/ui/input";
 import { ZoneBadge } from "@/components/ui/zone-badge";
 import { ConfirmModal } from "@/components/ui/confirm-modal";
@@ -30,8 +42,20 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { HeightPercentilesChart } from "@/components/ui/height-percentiles-chart";
+import { FieldShell } from "@/components/ui/field-shell";
+import { Switch } from "@/components/ui/switch";
 import { calcAgeFromBirthDate } from "@/lib/zaf";
 import { readApiResponse } from "@/lib/api-client";
+import {
+  getKidmedClassificationLabelKey,
+  getKidmedPeriodLabelKey,
+  getQuestionnairePreviewItems,
+  getQuestionnaireTypeLabelKey,
+  QUESTIONNAIRE_FIELD_META,
+  type KidmedClassification,
+  type QuestionnaireTypeValue,
+} from "@/lib/questionnaires";
 
 interface Props {
   student: {
@@ -42,6 +66,12 @@ interface Props {
     age: number | null;
     schoolYear: string | null;
     className: string | null;
+    kidmedConsentAt: string | null;
+    kidmedConsentRecordedBy: {
+      id: string;
+      name: string | null;
+      email: string;
+    } | null;
     biometrics: {
       heightM: number;
       weightKg: number;
@@ -62,8 +92,13 @@ interface Props {
       recordedAt: string;
     }[];
     questionnaires: {
-      type: string;
+      type: QuestionnaireTypeValue;
       payload: unknown;
+      score: number | null;
+      classification: KidmedClassification | null;
+      instrumentVersion: string | null;
+      schoolYear: string | null;
+      periodKey: string | null;
       submittedAt: string;
     }[];
     dispensas: {
@@ -84,6 +119,7 @@ export function StudentDetailClient({ student }: Props) {
   const router = useRouter();
   const { role } = useUser();
   const t = useTranslations("studentDetail");
+  const q = useTranslations("questionarios");
   const common = useTranslations("common");
   const locale = useLocale();
   const canManageStudent = role === "PROFESSOR" || role === "ADMIN";
@@ -109,6 +145,64 @@ export function StudentDetailClient({ student }: Props) {
 
   // Delete state
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const [updatingKidmedConsent, setUpdatingKidmedConsent] = useState(false);
+
+  function getQuestionnairePeriodLabel(questionnaire: Props["student"]["questionnaires"][number]) {
+    const period = questionnaire.periodKey?.split(":")[1];
+
+    if ((period === "P1" || period === "P2" || period === "P3") && questionnaire.schoolYear) {
+      return `${q(getKidmedPeriodLabelKey(period))} - ${questionnaire.schoolYear}`;
+    }
+
+    return questionnaire.schoolYear ?? questionnaire.periodKey ?? null;
+  }
+
+  function formatQuestionnaireValue(
+    key: string,
+    value: unknown,
+    meta: { unitKey?: string; scaleMax?: number }
+  ) {
+    if (typeof value === "boolean") {
+      return value ? q("yes") : q("no");
+    }
+
+    if (typeof value === "number") {
+      if (meta.scaleMax) {
+        return `${value}/${meta.scaleMax}`;
+      }
+
+      if (meta.unitKey) {
+        return `${value} ${q(meta.unitKey)}`;
+      }
+    }
+
+    if (typeof value === "string" && value.length > 0) {
+      return value;
+    }
+
+    return t("notAvailable");
+  }
+
+  async function handleKidmedConsentChange(checked: boolean) {
+    setUpdatingKidmedConsent(true);
+
+    try {
+      const res = await fetch(`/api/students/${student.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ kidmedConsentGranted: checked }),
+      });
+      await readApiResponse(res);
+      toast.success(
+        checked ? t("kidmedConsentActivatedSuccess") : t("kidmedConsentRevokedSuccess"),
+      );
+      router.refresh();
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : common("connectionError"));
+    } finally {
+      setUpdatingKidmedConsent(false);
+    }
+  }
 
   const handleSave = async (values: StudentEditValues) => {
     try {
@@ -182,7 +276,7 @@ export function StudentDetailClient({ student }: Props) {
         <Form {...editForm}>
           <form
             onSubmit={editForm.handleSubmit(handleSave)}
-            className="surface-primary rounded-[20px] p-5 flex flex-col gap-4 max-w-lg"
+            className="surface-primary flex max-w-lg flex-col gap-4 rounded-[20px] p-5"
           >
             <h3 className="font-semibold text-sm">{t("editTitle")}</h3>
             <FormField
@@ -200,17 +294,19 @@ export function StudentDetailClient({ student }: Props) {
                 </FormItem>
               )}
             />
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid gap-3 sm:grid-cols-2">
               <FormField
                 control={editForm.control}
                 name="sex"
                 render={({ field }) => (
                   <FormItem>
                     <FormControl>
-                      <div className="flex flex-col gap-1.5">
-                        <label className="text-sm font-semibold tracking-tight text-foreground">{t("sexLabel")}</label>
+                      <FieldShell label={t("sexLabel")}>
                         <Select value={field.value} onValueChange={field.onChange}>
-                          <SelectTrigger>
+                          <SelectTrigger
+                            aria-label={t("sexLabel")}
+                            className="h-14 rounded-full px-4 pt-[1.45rem] pb-[0.45rem] text-left shadow-[inset_0_1px_0_rgba(255,255,255,0.3)] focus:ring-4 focus:ring-gold-400/15"
+                          >
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
@@ -218,7 +314,7 @@ export function StudentDetailClient({ student }: Props) {
                             <SelectItem value="F">{t("female")}</SelectItem>
                           </SelectContent>
                         </Select>
-                      </div>
+                      </FieldShell>
                     </FormControl>
                   </FormItem>
                 )}
@@ -229,17 +325,19 @@ export function StudentDetailClient({ student }: Props) {
                 render={({ field }) => (
                   <FormItem>
                     <FormControl>
-                      <Input
+                      <DateField
                         label={t("birthDateLabel")}
-                        type="date"
-                        {...field}
+                        name={field.name}
+                        value={field.value ?? ""}
+                        onChange={field.onChange}
+                        onBlur={field.onBlur}
                       />
                     </FormControl>
                   </FormItem>
                 )}
               />
             </div>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid gap-3 sm:grid-cols-2">
               <FormField
                 control={editForm.control}
                 name="schoolYear"
@@ -340,19 +438,116 @@ export function StudentDetailClient({ student }: Props) {
 
         <Section icon={<ClipboardList className="size-4" />} title={t("questionnaires")}>
           {student.questionnaires.length > 0 ? (
-            <ul className="text-sm space-y-1">
-              {student.questionnaires.map((q, i) => (
-                <li key={i} className="flex justify-between">
-                  <span className="font-medium">{q.type}</span>
-                  <span className="text-muted-foreground">
-                    {new Date(q.submittedAt).toLocaleDateString(locale)}
-                  </span>
+            <ul className="space-y-2 text-sm">
+              {student.questionnaires.map((questionnaire, i) => (
+                <li key={i} className="rounded-xl border border-border/40 bg-card p-3 shadow-sm">
+                  <div className="flex flex-wrap items-start justify-between gap-2">
+                    <span className="font-medium">
+                      {q(getQuestionnaireTypeLabelKey(questionnaire.type))}
+                    </span>
+                    <span className="text-muted-foreground">
+                      {new Date(questionnaire.submittedAt).toLocaleDateString(locale)}
+                    </span>
+                  </div>
+
+                  <div className="mt-2 flex flex-wrap gap-2 text-xs text-muted-foreground">
+                    {getQuestionnairePreviewItems({
+                      ...questionnaire,
+                      payload: (questionnaire.payload ?? {}) as Record<string, unknown>,
+                    }).map((item) => {
+                      if (item.key === "classification" && typeof item.value === "string") {
+                        return (
+                          <span
+                            key={item.key}
+                            className="rounded-full border border-border/60 bg-background/60 px-2.5 py-1"
+                          >
+                            {q(getKidmedClassificationLabelKey(item.value as KidmedClassification))}
+                          </span>
+                        );
+                      }
+
+                      if (item.key === "period") {
+                        const label = getQuestionnairePeriodLabel(questionnaire);
+
+                        return label ? (
+                          <span
+                            key={item.key}
+                            className="rounded-full border border-border/60 bg-background/60 px-2.5 py-1"
+                          >
+                            {label}
+                          </span>
+                        ) : null;
+                      }
+
+                      const meta = QUESTIONNAIRE_FIELD_META[item.key] ?? item;
+
+                      return (
+                        <span
+                          key={item.key}
+                          className="rounded-full border border-border/60 bg-background/60 px-2.5 py-1"
+                        >
+                          {q(item.labelKey)}: {formatQuestionnaireValue(item.key, item.value, meta)}
+                        </span>
+                      );
+                    })}
+                  </div>
                 </li>
               ))}
             </ul>
           ) : (
             <Empty />
           )}
+        </Section>
+
+        <Section icon={<ShieldCheck className="size-4" />} title={t("kidmedConsentTitle")}>
+          <div className="flex flex-col gap-4 text-sm">
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <p className="font-medium text-foreground">
+                  {student.kidmedConsentAt
+                    ? t("kidmedConsentActive")
+                    : t("kidmedConsentInactive")}
+                </p>
+                <p className="mt-1 text-muted-foreground">{t("kidmedConsentDescription")}</p>
+              </div>
+              {canManageStudent ? (
+                <Switch
+                  checked={Boolean(student.kidmedConsentAt)}
+                  onCheckedChange={handleKidmedConsentChange}
+                  disabled={updatingKidmedConsent}
+                  aria-label={t("kidmedConsentToggle")}
+                />
+              ) : null}
+            </div>
+
+            <div className="rounded-xl border border-border/40 bg-card p-3 shadow-sm">
+              <div className="flex items-start gap-2">
+                {student.kidmedConsentAt ? (
+                  <ShieldCheck className="mt-0.5 size-4 text-success-600 dark:text-success-400" />
+                ) : (
+                  <ShieldAlert className="mt-0.5 size-4 text-warning-600 dark:text-warning-400" />
+                )}
+                <div>
+                  <p className="font-medium text-foreground">
+                    {student.kidmedConsentAt
+                      ? t("kidmedConsentRecordedAtLabel", {
+                          date: new Date(student.kidmedConsentAt).toLocaleDateString(locale),
+                        })
+                      : t("kidmedConsentMissingLabel")}
+                  </p>
+                  <p className="mt-1 text-muted-foreground">
+                    {student.kidmedConsentRecordedBy
+                      ? t("kidmedConsentRecordedByLabel", {
+                          name:
+                            student.kidmedConsentRecordedBy.name ??
+                            student.kidmedConsentRecordedBy.email,
+                        })
+                      : t("kidmedConsentInstitutionalNote")}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
         </Section>
 
         <Section icon={<ShieldOff className="size-4" />} title={t("dispensas")}>
@@ -410,9 +605,9 @@ function Section({
   title,
   children,
 }: {
-  icon: React.ReactNode;
+  icon: ReactNode;
   title: string;
-  children: React.ReactNode;
+  children: ReactNode;
 }) {
   return (
     <PageSection
@@ -437,7 +632,7 @@ function Stat({
 }: {
   label: string;
   value: string;
-  extra?: React.ReactNode;
+  extra?: ReactNode;
 }) {
   return (
     <div className="flex flex-col gap-0.5">
@@ -454,138 +649,3 @@ function Empty() {
   return <p className="text-sm text-muted-foreground">—</p>;
 }
 
-const WHO_HEIGHT_M: Record<number, { p5: number; p50: number; p95: number }> = {
-  10: { p5: 125, p50: 138, p95: 151 },
-  11: { p5: 130, p50: 143, p95: 158 },
-  12: { p5: 135, p50: 149, p95: 165 },
-  13: { p5: 141, p50: 156, p95: 173 },
-  14: { p5: 148, p50: 163, p95: 180 },
-  15: { p5: 154, p50: 169, p95: 185 },
-  16: { p5: 159, p50: 173, p95: 188 },
-  17: { p5: 161, p50: 175, p95: 189 },
-  18: { p5: 162, p50: 176, p95: 190 },
-};
-
-const WHO_HEIGHT_F: Record<number, { p5: number; p50: number; p95: number }> = {
-  10: { p5: 125, p50: 138, p95: 152 },
-  11: { p5: 132, p50: 144, p95: 159 },
-  12: { p5: 139, p50: 151, p95: 165 },
-  13: { p5: 145, p50: 156, p95: 169 },
-  14: { p5: 148, p50: 159, p95: 172 },
-  15: { p5: 150, p50: 161, p95: 173 },
-  16: { p5: 151, p50: 162, p95: 174 },
-  17: { p5: 151, p50: 162, p95: 174 },
-  18: { p5: 151, p50: 163, p95: 174 },
-};
-
-function HeightPercentilesChart({
-  biometrics,
-  sex,
-  birthDate,
-}: {
-  biometrics: { heightM: number; recordedAt: string }[];
-  sex: string;
-  birthDate: string | null;
-}) {
-  const whoTable = sex === "M" ? WHO_HEIGHT_M : WHO_HEIGHT_F;
-
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const chartData: any[] = [10, 11, 12, 13, 14, 15, 16, 17, 18].map((age) => ({
-    age,
-    range: [whoTable[age].p5, whoTable[age].p95],
-    p50: whoTable[age].p50,
-    studentHeight: null,
-  }));
-
-  if (birthDate) {
-    const bDate = new Date(birthDate);
-    biometrics.forEach((b) => {
-      const rDate = new Date(b.recordedAt);
-      const ageAtMeasurement =
-        (rDate.getTime() - bDate.getTime()) / (1000 * 60 * 60 * 24 * 365.25);
-      
-      if (ageAtMeasurement >= 9 && ageAtMeasurement <= 19) {
-        chartData.push({
-          age: Number(ageAtMeasurement.toFixed(2)),
-          range: null,
-          p50: null,
-          studentHeight: Math.round(b.heightM * 100),
-        });
-      }
-    });
-  }
-
-  chartData.sort((a, b) => a.age - b.age);
-
-  return (
-    <ResponsiveContainer width="100%" height="100%">
-      <ComposedChart data={chartData} margin={{ top: 10, right: 10, bottom: 20, left: -20 }}>
-        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--color-border)" />
-        <XAxis
-          dataKey="age"
-          type="number"
-          domain={[10, 18]}
-          tickCount={9}
-          tick={{ fill: "var(--color-muted-foreground)", fontSize: 12 }}
-          axisLine={false}
-          tickLine={false}
-          dy={10}
-        />
-        <YAxis
-          domain={["auto", "auto"]}
-          tick={{ fill: "var(--color-muted-foreground)", fontSize: 12 }}
-          axisLine={false}
-          tickLine={false}
-          tickFormatter={(v) => `${v} cm`}
-        />
-        <RechartsTooltip
-          cursor={{ stroke: "var(--color-border)", strokeWidth: 1, strokeDasharray: "4 4" }}
-          content={({ active, payload }) => {
-            if (active && payload && payload.length) {
-              const data = payload[0].payload;
-              return (
-                <div className="rounded-lg border border-border/60 bg-background p-2.5 text-xs shadow-sm">
-                  <p className="font-semibold mb-1">Idade: {data.age} anos</p>
-                  {data.studentHeight !== null && <p className="text-success-600 font-bold mt-1">Aluno: {data.studentHeight} cm</p>}
-                  {data.p50 !== null && <p className="text-muted-foreground mt-1">P50 (Médio): {data.p50} cm</p>}
-                  {data.range && <p className="text-muted-foreground">P5-P95: {data.range[0]} - {data.range[1]} cm</p>}
-                </div>
-              );
-            }
-            return null;
-          }}
-        />
-        <Area
-          type="monotone"
-          dataKey="range"
-          stroke="none"
-          fill="var(--color-success-500)"
-          fillOpacity={0.15}
-          connectNulls
-          activeDot={false}
-        />
-        <Line
-          type="monotone"
-          dataKey="p50"
-          stroke="var(--color-success-600)"
-          strokeOpacity={0.6}
-          strokeWidth={2}
-          strokeDasharray="4 4"
-          connectNulls
-          dot={false}
-          activeDot={false}
-        />
-        <Line
-          type="monotone"
-          dataKey="studentHeight"
-          stroke="var(--color-success-600)"
-          strokeWidth={3}
-          connectNulls
-          dot={{ r: 4, strokeWidth: 2, fill: "var(--color-background)", stroke: "var(--color-success-600)" }}
-          activeDot={{ r: 6, strokeWidth: 0, fill: "var(--color-success-600)" }}
-          isAnimationActive={true}
-        />
-      </ComposedChart>
-    </ResponsiveContainer>
-  );
-}
