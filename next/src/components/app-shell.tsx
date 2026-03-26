@@ -147,13 +147,30 @@ function NavLink({
 export function AppShell({ user, children }: AppShellProps) {
   const pathname = usePathname();
   const t = useTranslations();
-  const { theme, locale, toggleTheme, toggleLocale } = usePreferences();
+  const {
+    theme,
+    locale,
+    contrast,
+    fontScale,
+    toggleTheme,
+    toggleLocale,
+    setFontScale,
+    setContrastMode,
+  } = usePreferences();
   const isClient = useIsClient();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [cmdOpen, setCmdOpen] = useState(false);
 
   useHotkeys([
     { key: "k", mods: ["ctrl"], handler: () => setCmdOpen((value) => !value) },
+    {
+      key: "m",
+      mods: ["alt"],
+      handler: () => {
+        const firstNavLink = document.querySelector<HTMLAnchorElement>("nav a[href]");
+        firstNavLink?.focus();
+      },
+    },
   ]);
 
   const brandName = "HealthyTech Atlantico";
@@ -381,8 +398,12 @@ export function AppShell({ user, children }: AppShellProps) {
                         <span className="ml-auto text-xs font-medium text-muted-foreground">
                           {locale.toUpperCase()}
                         </span>
-                      </DropdownMenuItem>
-                      <DropdownMenuSeparator />
+                      </DropdownMenuItem>                      <DropdownMenuLabel>Acessibilidade</DropdownMenuLabel>
+                      <DropdownMenuItem onClick={() => setFontScale("small")}>Texto menor</DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => setFontScale("default")}>Texto médio</DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => setFontScale("large")}>Texto maior</DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => setContrastMode("normal")}>Contraste normal</DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => setContrastMode("high")}>Contraste alto</DropdownMenuItem>                      <DropdownMenuSeparator />
                       <DropdownMenuItem
                         className="text-danger-600 focus:text-danger-600"
                         onClick={() => signOut({ callbackUrl: "/login" })}

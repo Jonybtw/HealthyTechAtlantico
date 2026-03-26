@@ -196,6 +196,46 @@ body {
   color: var(--foreground);
 }
 
+:focus-visible {
+  outline: 3px solid rgba(232, 199, 102, 0.9);
+  outline-offset: 2px;
+}
+
+html.font-size-small {
+  font-size: 0.9rem;
+}
+
+html.font-size-default {
+  font-size: 1rem;
+}
+
+html.font-size-large {
+  font-size: 1.15rem;
+}
+
+html.high-contrast {
+  filter: contrast(1.25) saturate(1.2);
+}
+
+html.high-contrast body {
+  background-color: #ffffff;
+  color: #000000;
+}
+
+html.high-contrast [class*="text-muted"],
+html.high-contrast .text-muted-foreground,
+html.high-contrast .text-muted {
+  color: #000000 !important;
+}
+
+html.high-contrast .bg-muted,
+html.high-contrast .bg-card,
+html.high-contrast .bg-background,
+html.high-contrast .bg-white,
+html.high-contrast .bg-gray-100 {
+  background-color: #ffffff !important;
+}
+
 .bg-mesh {
   position: fixed;
   inset: -30%;
