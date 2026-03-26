@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 
-export type ApiSuccess<T> = { data: T };
-export type ApiError<TIssues = unknown> = {
+type ApiSuccess<T> = { data: T };
+type ApiError<TIssues = unknown> = {
   error: string;
   issues?: TIssues;
 };

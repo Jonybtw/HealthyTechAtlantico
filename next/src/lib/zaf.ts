@@ -84,9 +84,6 @@ export function calcAgeFromBirthDate(birthDate: Date | string | null): number | 
 
 // ── BMI Classification ───────────────────────────────────────────────────────
 
-export function calculateBmi(weightKg: number, heightM: number): number {
-  return weightKg / (heightM * heightM);
-}
 
 export function classifyBmi(
   imc: number,
@@ -116,5 +113,5 @@ export function classifyWaist(
 
 // ── Export tables for reference/protocols page ───────────────────────────────
 
-export { BMI_TABLE, WAIST_TABLE };
+
 export type { AgeKey };

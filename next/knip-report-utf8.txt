@@ -1,0 +1,84 @@
+﻿[93m[4mUnused exports[24m[39m (59)
+normalizeEmail                function  src/lib/email-rules.ts:5:17                               
+applyUserToToken              function  src/lib/auth.ts:86:17                                     
+applySessionUpdateToToken     function  src/lib/auth.ts:104:17                                    
+signIn                                  src/lib/auth.ts:120:32                                    
+signOut                                 src/lib/auth.ts:120:40                                    
+requireConsent                function  src/lib/auth-guard.ts:37:23                               
+getSessionUser                function  src/lib/auth-guard.ts:48:23                               
+isKnownRole                   function  src/lib/rbac.ts:90:17                                     
+isAdminRole                   function  src/lib/rbac.ts:94:17                                     
+getStudentSelfServiceProfile  function  src/lib/dashboard.ts:227:23                               
+loginSchema                             src/lib/validations.ts:57:14                              
+testItemSchema                          src/lib/validations.ts:114:14                             
+HeightPercentilesChart        function  src/app/(app)/alunos/[id]/student-detail-client.tsx:481:17
+MAX_CSV_FILE_BYTES                      src/lib/csv.ts:15:14                                      
+toSeconds                     function  src/lib/fitness-tests.ts:28:17                            
+TEST_TABLE                              src/lib/fitness-tests.ts:104:10                           
+calculateBmi                  function  src/lib/zaf.ts:87:17                                      
+BMI_TABLE                               src/lib/zaf.ts:119:10                                     
+WAIST_TABLE                             src/lib/zaf.ts:119:21                                     
+AvatarImage                             src/components/ui/avatar.tsx:49:18                        
+ScrollBar                               src/components/ui/scroll-area.tsx:45:22                   
+DropdownMenuCheckboxItem                src/components/ui/dropdown-menu.tsx:181:3                 
+DropdownMenuRadioItem                   src/components/ui/dropdown-menu.tsx:182:3                 
+DropdownMenuShortcut                    src/components/ui/dropdown-menu.tsx:185:3                 
+DropdownMenuGroup                       src/components/ui/dropdown-menu.tsx:186:3                 
+DropdownMenuPortal                      src/components/ui/dropdown-menu.tsx:187:3                 
+DropdownMenuSub                         src/components/ui/dropdown-menu.tsx:188:3                 
+DropdownMenuSubContent                  src/components/ui/dropdown-menu.tsx:189:3                 
+DropdownMenuSubTrigger                  src/components/ui/dropdown-menu.tsx:190:3                 
+DropdownMenuRadioGroup                  src/components/ui/dropdown-menu.tsx:191:3                 
+SheetTrigger                            src/components/ui/sheet.tsx:91:17                         
+SheetClose                              src/components/ui/sheet.tsx:91:31                         
+SheetHeader                             src/components/ui/sheet.tsx:91:57                         
+SheetFooter                             src/components/ui/sheet.tsx:91:70                         
+SheetTitle                              src/components/ui/sheet.tsx:91:83                         
+SheetDescription                        src/components/ui/sheet.tsx:91:95                         
+readTheme                     function  src/lib/theme.ts:10:17                                    
+ScaleIn                       function  src/components/ui/motion.tsx:163:17                       
+AnimatedNumber                function  src/components/ui/motion.tsx:191:17                       
+motion                                  src/components/ui/motion.tsx:214:27                       
+queryKeys                               src/hooks/use-queries.ts:60:14                            
+useStudent                    function  src/hooks/use-queries.ts:108:17                           
+useDashboard                  function  src/hooks/use-queries.ts:125:17                           
+unwrapApiData                 function  src/lib/api-client.ts:7:17                                
+useFormField                            src/components/ui/form.tsx:168:3                          
+FormLabel                               src/components/ui/form.tsx:171:3                          
+FormDescription                         src/components/ui/form.tsx:173:3                          
+FormMessage                             src/components/ui/form.tsx:174:3                          
+STUDENT_SWATCHES                        src/components/ui/student-picker.tsx:23:14                
+PERMISSIONS                             src/types/index.ts:18:10                                  
+SelectGroup                             src/components/ui/select.tsx:151:3                        
+SelectLabel                             src/components/ui/select.tsx:155:3                        
+SelectSeparator                         src/components/ui/select.tsx:157:3                        
+SelectScrollUpButton                    src/components/ui/select.tsx:158:3                        
+SelectScrollDownButton                  src/components/ui/select.tsx:159:3                        
+DialogClose                             src/components/ui/dialog.tsx:113:3                        
+DialogTrigger                           src/components/ui/dialog.tsx:114:3                        
+badgeVariants                           src/components/ui/badge.tsx:43:17                         
+PopoverAnchor                           src/components/ui/popover.tsx:32:51                       
+[93m[4mUnused exported types[24m[39m (23)
+AppLocale               type       src/lib/locale.ts:1:13                    
+SessionUser             type       src/lib/auth-guard.ts:6:13                
+ProtocolReferenceRow    interface  src/lib/protocols.ts:1:18                 
+ProtocolTestDefinition  interface  src/lib/protocols.ts:7:18                 
+ApiSuccess              type       src/lib/api-response.ts:3:13              
+ApiError                type       src/lib/api-response.ts:4:13              
+ParsedCsv               interface  src/lib/csv.ts:1:18                       
+StudentAccessResult     type       src/lib/student-access.ts:22:13           
+TestOption              interface  src/lib/fitness-tests.ts:7:18             
+Theme                   type       src/lib/theme.ts:6:13                     
+StudentListItem         interface  src/hooks/use-queries.ts:24:18            
+DashboardStats          interface  src/hooks/use-queries.ts:42:18            
+SosAlertSummary         interface  src/hooks/use-queries.ts:54:18            
+ClassOption             interface  src/hooks/use-queries.ts:82:18            
+ApiEnvelope             type       src/lib/api-client.ts:1:13                
+ApiErrorPayload         type       src/lib/api-client.ts:2:13                
+StudentPickerProps      interface  src/components/ui/student-picker.tsx:15:18
+AppSession              type       src/types/index.ts:10:13                  
+SessionUser             type       src/types/index.ts:14:15                  
+Permission              type       src/types/index.ts:17:15                  
+Role                    type       src/types/index.ts:21:15                  
+Sex                     type       src/types/index.ts:21:21                  
+QuestionnaireType       type       src/types/index.ts:21:26                  

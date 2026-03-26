@@ -1,0 +1,4 @@
+﻿Unused devDependencies
+* @tailwindcss/postcss
+* postcss
+* tailwindcss

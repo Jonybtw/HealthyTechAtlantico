@@ -21,7 +21,7 @@ async function mutateJson<T>(
   return readApiResponse<T>(response);
 }
 
-export interface StudentListItem {
+interface StudentListItem {
   id: string;
   name: string;
   sex: Sex;
@@ -39,7 +39,7 @@ export interface StaffUser {
   createdAt: string;
 }
 
-export interface DashboardStats {
+interface DashboardStats {
   studentCount?: number;
   openSos?: number;
   totalBiometrics?: number;
@@ -51,13 +51,13 @@ export interface DashboardStats {
   [key: string]: unknown;
 }
 
-export interface SosAlertSummary {
+interface SosAlertSummary {
   id: string;
   resolved: boolean;
   createdAt: string;
 }
 
-export const queryKeys = {
+const queryKeys = {
   students: (limit?: number) => ["students", { limit }] as const,
   student: (id: string) => ["student", id] as const,
   staff: () => ["staff"] as const,
@@ -79,7 +79,7 @@ export function useStudents(limit = 100) {
   });
 }
 
-export interface ClassOption {
+interface ClassOption {
   id: string;
   name: string;
   year: string;
@@ -105,7 +105,7 @@ export function useClasses(options?: { enabled?: boolean }) {
   });
 }
 
-export function useStudent(id: string) {
+function useStudent(id: string) {
   return useQuery({
     queryKey: queryKeys.student(id),
     queryFn: () => fetchJson<Record<string, unknown>>(`/api/students/${id}`),
@@ -122,7 +122,7 @@ export function useStaff() {
   });
 }
 
-export function useDashboard() {
+function useDashboard() {
   return useQuery({
     queryKey: queryKeys.dashboard(),
     queryFn: () => fetchJson<DashboardStats>("/api/stats/summary"),

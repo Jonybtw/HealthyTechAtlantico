@@ -1,10 +1,10 @@
-export type ApiEnvelope<T> = { data: T };
-export type ApiErrorPayload<TIssues = unknown> = {
+type ApiEnvelope<T> = { data: T };
+type ApiErrorPayload<TIssues = unknown> = {
   error?: string;
   issues?: TIssues;
 };
 
-export function unwrapApiData<T>(payload: ApiEnvelope<T> | T): T {
+function unwrapApiData<T>(payload: ApiEnvelope<T> | T): T {
   if (
     typeof payload === "object" &&
     payload !== null &&

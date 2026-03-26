@@ -19,7 +19,7 @@ type StudentAccessFailure = {
   error: string;
 };
 
-export type StudentAccessResult = StudentAccessSuccess | StudentAccessFailure;
+type StudentAccessResult = StudentAccessSuccess | StudentAccessFailure;
 
 export async function getStudentAccessContext(
   studentId: string,

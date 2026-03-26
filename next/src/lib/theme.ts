@@ -3,11 +3,11 @@
 import { useSyncExternalStore } from "react";
 import { THEME_COOKIE_NAME } from "@/lib/theme-cookie";
 
-export type Theme = "light" | "dark";
+type Theme = "light" | "dark";
 
 const THEME_EVENT = "healthytech:theme-change";
 
-export function readTheme(): Theme {
+function readTheme(): Theme {
   if (typeof document === "undefined") {
     return "light";
   }

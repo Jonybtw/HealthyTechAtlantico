@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 import type { LucideIcon } from "lucide-react";
-import { Activity, Dumbbell, Gauge, HeartPulse, Ruler, Scale, Timer, Wind, Zap } from "lucide-react";
+import { Activity, Dumbbell, Gauge, HeartPulse, Ruler, Timer, Wind, Zap } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { PageScaffold } from "@/components/ui/page-scaffold";
 import { PageSection } from "@/components/ui/page-section";

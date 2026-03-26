@@ -1,4 +1,4 @@
-export type AppLocale = "pt" | "en";
+type AppLocale = "pt" | "en";
 
 export const LOCALE_COOKIE_NAME = "NEXT_LOCALE";
 

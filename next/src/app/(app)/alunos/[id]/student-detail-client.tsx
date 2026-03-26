@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useTranslations, useLocale } from "next-intl";
 import { toast } from "sonner";
 import { Ruler, Timer, ClipboardList, ShieldOff, Users, Pencil, Trash2, Check, TrendingUp } from "lucide-react";
-import { AreaChart, Area, Line, XAxis, YAxis, Tooltip as RechartsTooltip, ResponsiveContainer, CartesianGrid, ComposedChart } from "recharts";
+import { Area, Line, XAxis, YAxis, Tooltip as RechartsTooltip, ResponsiveContainer, CartesianGrid, ComposedChart } from "recharts";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import type { z } from "zod";
@@ -478,7 +478,7 @@ const WHO_HEIGHT_F: Record<number, { p5: number; p50: number; p95: number }> = {
   18: { p5: 151, p50: 163, p95: 174 },
 };
 
-export function HeightPercentilesChart({
+function HeightPercentilesChart({
   biometrics,
   sex,
   birthDate,
@@ -489,6 +489,7 @@ export function HeightPercentilesChart({
 }) {
   const whoTable = sex === "M" ? WHO_HEIGHT_M : WHO_HEIGHT_F;
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const chartData: any[] = [10, 11, 12, 13, 14, 15, 16, 17, 18].map((age) => ({
     age,
     range: [whoTable[age].p5, whoTable[age].p95],

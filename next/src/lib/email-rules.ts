@@ -2,7 +2,7 @@ export const INTERNAL_EMAIL_DOMAIN = "colegioatlantico.pt";
 
 const INTERNAL_EMAIL_SUFFIX = `@${INTERNAL_EMAIL_DOMAIN}`;
 
-export function normalizeEmail(email: string): string {
+function normalizeEmail(email: string): string {
   return email.trim().toLowerCase();
 }
 

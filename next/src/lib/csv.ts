@@ -1,4 +1,4 @@
-export interface ParsedCsv {
+interface ParsedCsv {
   delimiter: "," | ";";
   headers: string[];
   rows: string[][];
@@ -12,7 +12,7 @@ const ALLOWED_CSV_MIME_TYPES = new Set([
   "",
 ]);
 
-export const MAX_CSV_FILE_BYTES = 5 * 1024 * 1024;
+const MAX_CSV_FILE_BYTES = 5 * 1024 * 1024;
 export const MAX_CSV_ROWS = 10_000;
 
 export function validateCsvUpload(file: File): string | null {

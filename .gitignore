@@ -20,9 +20,5 @@ Thumbs.db
 **/coverage/
 **/.turbo/
 
-# Test artefacts
-**/playwright-report/
-**/test-results/
-
 # TypeScript
 **/*.tsbuildinfo

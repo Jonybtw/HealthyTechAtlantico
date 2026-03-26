@@ -12,7 +12,7 @@ interface Student {
   sex?: string;
 }
 
-export interface StudentPickerProps {
+interface StudentPickerProps {
   students: Student[];
   value: string | null;
   onChange: (id: string | null) => void;
@@ -20,7 +20,7 @@ export interface StudentPickerProps {
   loading?: boolean;
 }
 
-export const STUDENT_SWATCHES = [
+const STUDENT_SWATCHES = [
   { background: "linear-gradient(135deg, #d8ad34 0%, #b88c19 100%)", color: "#091523" },
   { background: "linear-gradient(135deg, #2563eb 0%, #1e3a8a 100%)", color: "#eff6ff" },
   { background: "linear-gradient(135deg, #059669 0%, #065f46 100%)", color: "#ecfdf5" },
@@ -108,7 +108,9 @@ export function StudentPicker({
       return;
     }
 
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setOpen(false);
+     
     setSearch("");
   }, [loading]);
 

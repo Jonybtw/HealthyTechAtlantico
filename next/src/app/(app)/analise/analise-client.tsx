@@ -6,8 +6,6 @@ import { toast } from "sonner";
 import {
   AreaChart,
   Area,
-  LineChart,
-  Line,
   BarChart,
   Bar,
   XAxis,
@@ -100,6 +98,7 @@ export default function AnalisePage() {
     return () => {
       active = false;
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [canViewAnalysis, isStudent]);
 
   useEffect(() => {

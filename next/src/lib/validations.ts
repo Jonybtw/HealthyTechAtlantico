@@ -54,10 +54,6 @@ const optionalInternalEmailSchema = z
     message: getEmailRuleMessage("PROFESSOR"),
   });
 
-export const loginSchema = z.object({
-  email: emailSchema,
-  password: z.string().min(6, "Minimo 6 caracteres"),
-});
 
 export const registerSchema = registerBaseSchema.superRefine(validateRegisterRule);
 
@@ -111,7 +107,7 @@ export const biometricsSchema = z.object({
   sessionId: z.string().optional().nullable(),
 });
 
-export const testItemSchema = z.object({
+const testItemSchema = z.object({
   testId: z.string(),
   valueNum: z.number().optional().nullable(),
   valueText: z.string(),

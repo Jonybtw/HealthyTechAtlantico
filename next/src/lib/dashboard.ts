@@ -1,6 +1,5 @@
 import type { Role } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
-import { getLinkedStudentByUserId } from "@/lib/student-access";
 
 export interface ZafYearStat {
   year: string;
@@ -224,6 +223,3 @@ export async function getDashboardSummaryForUser(user: {
   };
 }
 
-export async function getStudentSelfServiceProfile(userId: string) {
-  return getLinkedStudentByUserId(userId);
-}

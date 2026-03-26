@@ -4,7 +4,7 @@ import { getAgeKey } from "@/lib/zaf";
 
 // ── Test Metadata ────────────────────────────────────────────────────────────
 
-export interface TestOption {
+interface TestOption {
   id: string;
   label: string;
   unit: string;
@@ -25,7 +25,7 @@ export const TEST_OPTIONS: TestOption[] = [
 
 // ── Time Helpers ─────────────────────────────────────────────────────────────
 
-export function toSeconds(value: string | number): number | null {
+function toSeconds(value: string | number): number | null {
   if (typeof value === "number") return isNaN(value) ? null : value;
   const parts = value.split(":");
   if (parts.length === 2) {
@@ -101,4 +101,4 @@ export function classifyTest(
 
 // ── Export table for protocols page ──────────────────────────────────────────
 
-export { TEST_TABLE };
+

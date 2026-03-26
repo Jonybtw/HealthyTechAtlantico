@@ -1,10 +1,10 @@
-export interface ProtocolReferenceRow {
+interface ProtocolReferenceRow {
   age: string;
   male: string;
   female: string;
 }
 
-export interface ProtocolTestDefinition {
+interface ProtocolTestDefinition {
   testKey: string;
   unitKey: string;
   descKey: string;

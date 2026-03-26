@@ -83,7 +83,7 @@ type SessionToken = JWT & {
   permissions?: Permission[];
 };
 
-export function applyUserToToken(
+function applyUserToToken(
   token: SessionToken,
   user: Pick<
     AuthUser,
@@ -101,7 +101,7 @@ export function applyUserToToken(
   };
 }
 
-export function applySessionUpdateToToken(
+function applySessionUpdateToToken(
   token: SessionToken,
   session: SessionUpdate
 ): SessionToken {
@@ -117,7 +117,7 @@ export function applySessionUpdateToToken(
   };
 }
 
-export const { handlers, auth, signIn, signOut } = NextAuth({
+export const { handlers, auth } = NextAuth({
   trustHost: true,
   pages: {
     signIn: "/login",

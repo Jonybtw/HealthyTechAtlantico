@@ -3,18 +3,16 @@ import { canRole, type Permission } from "@/lib/rbac";
 import { redirect } from "next/navigation";
 import type { AppSessionUser } from "@/types";
 
-export type SessionUser = AppSessionUser;
-
 /**
  * Require an authenticated session. Redirects to /login if not authenticated.
  * Use in Server Components and Server Actions.
  */
-export async function requireAuth(): Promise<SessionUser> {
+export async function requireAuth(): Promise<AppSessionUser> {
   const session = await auth();
   if (!session?.user?.id) {
     redirect("/login");
   }
-  return session.user as SessionUser;
+  return session.user as AppSessionUser;
 }
 
 /**
@@ -23,30 +21,10 @@ export async function requireAuth(): Promise<SessionUser> {
  */
 export async function requirePermission(
   permission: Permission
-): Promise<SessionUser> {
+): Promise<AppSessionUser> {
   const user = await requireAuth();
   if (!canRole(user.role, permission)) {
     throw new Error("FORBIDDEN");
   }
   return user;
-}
-
-/**
- * Require RGPD consent for health data access.
- */
-export async function requireConsent(): Promise<SessionUser> {
-  const user = await requireAuth();
-  if (!user.consentRgpd) {
-    throw new Error("CONSENT_REQUIRED");
-  }
-  return user;
-}
-
-/**
- * Get current session user or null (non-redirecting).
- */
-export async function getSessionUser(): Promise<SessionUser | null> {
-  const session = await auth();
-  if (!session?.user?.id) return null;
-  return session.user as SessionUser;
 }
