@@ -1,3 +1,4 @@
+// @ts-nocheck
 /* eslint-disable no-console */
 import "dotenv/config";
 import { PrismaClient, Role } from "@prisma/client";

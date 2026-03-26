@@ -56,6 +56,11 @@ const optionalInternalEmailSchema = z
   });
 
 
+export const loginSchema = z.object({
+  email: emailSchema,
+  password: z.string().min(1, "A palavra-passe é obrigatória"),
+});
+
 export const registerSchema = registerBaseSchema.superRefine(validateRegisterRule);
 
 export const registerFormSchema = registerBaseSchema

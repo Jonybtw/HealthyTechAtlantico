@@ -1,173 +1,117 @@
 # HealthyTech Atlantico
 
-Production-grade Next.js application for school health operations, including biometrics, fitness tests, SOS workflows, guardian reporting, and auditability.
+HealthyTech Atlantico is a robust, full-stack Progressive Web Application (PWA) designed to manage and monitor the health, physical fitness, and psychological well-being of students. Designed with a premium aesthetic and modern architecture, this platform facilitates data tracking and reporting for schools, physical education teachers, psychologists, and administrators.
 
-## Stack
+## 🚀 Features
 
-| Layer | Technology |
-| --- | --- |
-| Framework | Next.js 16 App Router |
-| Language | TypeScript 5 |
-| Auth | Auth.js / next-auth v5 with JWT sessions |
-| Data | Prisma 7 + PostgreSQL |
-| Styling | Tailwind CSS v4 |
-| i18n | next-intl (`pt`, `en`) |
-| Testing | Vitest + Testing Library + Playwright |
+- **Role-Based Access Control (RBAC):** Tailored dashboards and permissions for Administrators, Teachers (*Professor*), Psychologists (*Psicólogo*), Students (*Aluno*), and Parents (*Pais*).
+- **Student Management & Biometrics:** Track height, weight, BMI, body fat percentage, and developmental percentiles (WHO standards).
+- **Fitness & Psychological Evaluations:**
+  - Standardized physical fitness tests.
+  - Psychological state questionnaires (KIDMED, Self-concept, Self-esteem).
+- **SOS Alert System:** Real-time alert system allowing teachers and staff to raise psychological/safety alerts for students, directly notifying the school psychologist.
+- **Reporting & Auditing:** Generate and email PDF reports of student progress. Keep a secure audit log of all system actions.
+- **PWA Optimized:** Fully installable as a Progressive Web App for offline capabilities and native-like mobile experience.
 
-## Role model
+## 🛠️ Tech Stack
 
-| Role | Scope |
-| --- | --- |
-| `ADMIN` | Full platform access, audit, staff management |
-| `PROFESSOR` | Student operations, reports, guardians, class views, SOS inbox |
-| `PSICOLOGO` | SOS inbox and questionnaire review |
-| `PAIS` | Read-only access to linked students only |
-| `ALUNO` | Self-service only for the linked student profile |
+This project is built using modern, cutting-edge web technologies:
 
-Important security rules:
+- **Framework:** [Next.js 16.2.1](https://nextjs.org/) (App Router, Server Components & Server Actions, Turbopack)
+- **UI/UX:** [React 19](https://react.dev/), [TailwindCSS v4](https://tailwindcss.com/) & [shadcn/ui](https://ui.shadcn.com/)
+- **Database & ORM:** [PostgreSQL](https://www.postgresql.org/) managed by [Prisma ORM](https://www.prisma.io/)
+- **Authentication:** [NextAuth.js (v5 Beta)](https://authjs.dev/) with Credentials and Role verification
+- **Validation:** [Zod](https://zod.dev/) & React Hook Form
+- **Data Fetching:** [@tanstack/react-query](https://tanstack.com/query/latest)
+- **Charts & Visualization:** [Recharts](https://recharts.org/)
+- **Testing:** [Vitest](https://vitest.dev/) & [@testing-library/react](https://testing-library.com/)
 
-- `ALUNO` and `PAIS` never access global SOS inbox data.
-- Student-level routes are enforced with ownership / guardian linkage checks in `src/lib/student-access.ts`.
-- Consent updates are pushed into the active JWT session through `useSession().update(...)`.
+---
 
-## Environment
+## 💻 Getting Started
 
-Copy `.env.example` to `.env` and set the required values.
+### Prerequisites
 
-### Required variables
+- **Node.js:** v18+ (v22+ recommended)
+- **Database:** A running PostgreSQL database instance.
 
-```env
-DATABASE_URL="postgresql://user:password@host:5432/dbname"
-AUTH_SECRET="replace_with_a_strong_random_secret"
-NEXTAUTH_SECRET="replace_with_a_strong_random_secret"
-NEXTAUTH_URL="http://127.0.0.1:3000"
-```
-
-### Database TLS
-
-SSL is environment-driven through `src/lib/database-ssl.ts`.
-
-```env
-PGSSLMODE="require"
-PGSSL_REJECT_UNAUTHORIZED="true"
-# Optional:
-# DATABASE_SSL="disable"
-# PGSSL_CA="-----BEGIN CERTIFICATE-----\n...\n-----END CERTIFICATE-----"
-```
-
-Defaults:
-
-- production enables certificate verification
-- `PGSSLMODE=disable` or `DATABASE_SSL=disable` disables SSL
-- `PGSSL_CA` / `DATABASE_CA_CERT` injects a custom CA bundle
-
-### SMTP
-
-```env
-SMTP_HOST="smtp.office365.com"
-SMTP_PORT=587
-SMTP_USER="your_mailbox@yourdomain.pt"
-SMTP_FROM="HealthyTech Atlantico <your_mailbox@yourdomain.pt>"
-SMTP_AUTH_TYPE="login"
-SMTP_PASS="your_mailbox_password_or_app_password"
-```
-
-OAuth2 is also supported through `SMTP_CLIENT_ID`, `SMTP_CLIENT_SECRET`, `SMTP_REFRESH_TOKEN`, and `SMTP_ACCESS_TOKEN`.
-
-## Local development
-
+### 1. Clone & Install
+Clone the repository and install the dependencies:
 ```bash
 npm install
-copy .env.example .env
-npm exec prisma generate
-npx prisma db seed
+```
+
+### 2. Environment Variables
+Create a `.env` file in the root directory (you can copy `.env.example` if available). Example setup:
+
+```env
+# Database connection string
+DATABASE_URL="postgresql://user:password@localhost:5432/healthytech"
+
+# NextAuth Configuration
+NEXTAUTH_URL="http://localhost:3000"
+NEXTAUTH_SECRET="your-super-secret-key"
+```
+
+### 3. Database Setup (Prisma)
+Push the Prisma schema to your PostgreSQL database and generate the Prisma Client:
+
+```bash
+npx prisma db push
+npx prisma generate
+```
+
+### 4. Seeding the Database
+To populate the database with initial configurations, academic years, and the default administrator account:
+
+```bash
+npm run bootstrap:admin
+```
+*(Optionally run `npx tsx seed-sos.ts` or `prisma/seed.ts` if additional mocked data is required for development).*
+
+### 5. Running the Application
+Start the development server with Turbopack for ultra-fast compilation:
+
+```bash
 npm run dev
 ```
+Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-Useful commands:
+---
 
+## 🏗️ Project Structure
+
+```text
+├── src/
+│   ├── app/              # Next.js App Router pages, APIs, and layouts
+│   ├── components/       # Reusable React components (UI, Forms, Charts)
+│   ├── hooks/            # Custom React hooks (e.g., use-queries)
+│   ├── lib/              # Utility functions, Prisma instance, auth guards, RBAC
+│   └── types/            # TypeScript type definitions
+├── prisma/               # Prisma schema and seed scripts
+├── public/               # Static assets, PWA manifests, icons
+├── tests/                # Unit and Integration tests (Vitest)
+├── scripts/              # Utility scripts for bootstrap & UI consistency
+└── tailwind.config.ts    # TailwindCSS configuration
+```
+
+## 🧪 Testing
+The project uses `vitest` for reliable and fast testing. To run the test suite:
 ```bash
-npm run lint
-npm run typecheck
-npm test
+npm run vitest
+```
+*(Or specify `npx vitest run` for a CI execution).*
+
+## 📦 Building for Production
+
+To create an optimized production build:
+```bash
 npm run build
 ```
-
-## Health checks
-
-`GET /api/health` validates process readiness and database connectivity.
-
-Response shape:
-
-```json
-{
-  "data": {
-    "ok": true,
-    "status": "ready",
-    "services": {
-      "database": "up"
-    },
-    "latencyMs": 8,
-    "timestamp": "2026-03-10T12:00:00.000Z"
-  }
-}
-```
-
-When the database is unavailable, the endpoint returns `503` with `data.status: "degraded"`.
-
-## Tests
-
-Unit and component coverage lives under `next/tests/`.
-
+Once the build concludes, start the production server:
 ```bash
-npm test
-npx playwright install chromium
-npm run test:smoke
+npm run start
 ```
 
-`npm run test:smoke` performs a fresh production build and boots the standalone server from `.next/standalone/server.js`.
-
-Current automated coverage includes:
-
-- RBAC rules and owner / guardian access checks
-- SOS inbox protection for non-staff roles
-- consent refresh in the profile flow
-- authenticated shell navigation rendering
-- public auth pages and protected-route smoke checks
-
-## Docker
-
-```bash
-docker build -t healthytech-atlantico -f next/Dockerfile next
-docker run -p 3000:3000 \
-  -e DATABASE_URL="..." \
-  -e AUTH_SECRET="..." \
-  -e NEXTAUTH_SECRET="..." \
-  -e NEXTAUTH_URL="https://your-domain.com" \
-  healthytech-atlantico
-```
-
-The Docker image:
-
-- uses a multi-stage build
-- generates Prisma Client during the build stage
-- runs the standalone Next.js output
-- uses a non-root runtime user
-
-## CI
-
-GitHub Actions runs:
-
-1. Prisma Client generation
-2. lint
-3. type-check
-4. Vitest suite
-5. production build
-6. Playwright smoke tests
-
-## Notes
-
-- Active application code lives in `next/`.
-- There is no `old/` archive directory in this repo.
-- Security headers are applied in `src/proxy.ts`.
-- For multi-instance production rate limiting, replace the in-memory limiter in `src/proxy.ts` with Redis or another shared backend.
+---
+*Developed for HealthyTech Atlantico.*

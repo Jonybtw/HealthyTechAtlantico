@@ -23,7 +23,7 @@ export async function requireAuth(): Promise<AppSessionUser> {
 export async function requireAnyRole(
   roles: readonly Role[],
   redirectTo = "/dashboard"
-): Promise<SessionUser> {
+): Promise<AppSessionUser> {
   const user = await requireAuth();
   if (!roles.includes(user.role)) {
     redirect(redirectTo);
