@@ -3,12 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { toast } from "sonner";
-import {
-  FileSearch,
-  Filter,
-  RefreshCw,
-  ShieldOff,
-} from "lucide-react";
+import { FileSearch, Filter, RefreshCw, ShieldOff } from "lucide-react";
 import { PageScaffold } from "@/components/ui/page-scaffold";
 import { PageSection } from "@/components/ui/page-section";
 import { Button } from "@/components/ui/button";
@@ -64,11 +59,16 @@ export default function AuditoriaPage() {
   const [loading, setLoading] = useState(role === "ADMIN");
   const [loadError, setLoadError] = useState<string | null>(null);
 
-  const filterActive = action !== "all" || Boolean(startDate) || Boolean(endDate);
+  const filterActive =
+    action !== "all" || Boolean(startDate) || Boolean(endDate);
 
   const actionOptions = useMemo(
-    () => AUDIT_ACTION_VALUES.map((value) => ({ value, label: t(`actions.${value}`) })),
-    [t]
+    () =>
+      AUDIT_ACTION_VALUES.map((value) => ({
+        value,
+        label: t(`actions.${value}`),
+      })),
+    [t],
   );
 
   const labelAction = useCallback(
@@ -79,7 +79,7 @@ export default function AuditoriaPage() {
 
       return value;
     },
-    [t]
+    [t],
   );
 
   const loadLogs = useCallback(async () => {
@@ -158,7 +158,13 @@ export default function AuditoriaPage() {
 
   if (role !== "ADMIN") {
     return (
-      <PageScaffold headerProps={{ title: t("title"), description: t("description"), eyebrow: "SISTEMA · AUDITORIA" }}>
+      <PageScaffold
+        headerProps={{
+          title: t("title"),
+          description: t("description"),
+          eyebrow: "SISTEMA · AUDITORIA",
+        }}
+      >
         <EmptyState
           icon={ShieldOff}
           title={t("blockedTitle")}
@@ -288,7 +294,9 @@ export default function AuditoriaPage() {
             <EmptyState
               icon={FileSearch}
               title={filterActive ? t("emptyFilteredTitle") : t("emptyTitle")}
-              description={filterActive ? t("emptyFilteredDescription") : t("noLogs")}
+              description={
+                filterActive ? t("emptyFilteredDescription") : t("noLogs")
+              }
             />
           </div>
         ) : null}
@@ -303,7 +311,7 @@ export default function AuditoriaPage() {
             <div className="surface-utility overflow-x-auto rounded-[20px] p-1">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="border-b border-border/50 bg-navy-50/50 dark:bg-navy-900/30">
+                  <tr className="border-b border-white/20 dark:border-white/10 bg-navy-50/50 dark:bg-navy-900/30">
                     <th className="whitespace-nowrap px-5 py-3 text-left font-semibold text-muted-foreground">
                       {t("colDatetime")}
                     </th>
@@ -325,7 +333,7 @@ export default function AuditoriaPage() {
                   {logs.map((entry) => (
                     <tr
                       key={entry.id}
-                      className="border-b border-border/50 transition-colors hover:bg-muted/50"
+                      className="border-b border-white/20 dark:border-white/10 transition-colors hover:bg-navy-50/50 dark:bg-navy-900/30 ring-1 ring-white/10"
                     >
                       <td className="whitespace-nowrap px-5 py-3 text-xs font-medium text-muted-foreground">
                         {new Date(entry.createdAt).toLocaleString(locale, {
@@ -340,12 +348,14 @@ export default function AuditoriaPage() {
                         {labelAction(entry.action)}
                       </td>
                       <td className="px-5 py-3 text-muted-foreground">
-                        {entry.userName ?? entry.userEmail ?? <span className="italic opacity-50">-</span>}
+                        {entry.userName ?? entry.userEmail ?? (
+                          <span className="italic opacity-50">-</span>
+                        )}
                       </td>
                       <td className="px-5 py-3 font-mono text-xs text-muted-foreground">
                         {entry.targetId ? (
                           <span
-                            className="rounded-md border border-border/50 bg-muted/80 px-2 py-1 shadow-inner"
+                            className="rounded-md border border-white/20 dark:border-white/10 bg-muted/80 px-2 py-1 shadow-inner"
                             title={entry.targetId}
                           >
                             {entry.targetId.slice(0, 8)}...
@@ -372,11 +382,15 @@ export default function AuditoriaPage() {
               >
                 {t("previousPage")}
               </Button>
-              <p className="text-sm text-muted-foreground">{t("pageSummary", { page, pages, total })}</p>
+              <p className="text-sm text-muted-foreground">
+                {t("pageSummary", { page, pages, total })}
+              </p>
               <Button
                 size="sm"
                 variant="secondary"
-                onClick={() => setPage((current) => Math.min(pages, current + 1))}
+                onClick={() =>
+                  setPage((current) => Math.min(pages, current + 1))
+                }
                 disabled={page >= pages}
               >
                 {t("nextPage")}

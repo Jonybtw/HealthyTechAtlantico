@@ -50,17 +50,17 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
               aria-invalid={error ? true : undefined}
               aria-describedby={error ? `${uid}-error` : hint ? `${uid}-hint` : undefined}
               className={cn(
-                "peer flex h-14 w-full rounded-full border border-border/70 bg-card px-4 pt-[1.45rem] pb-[0.45rem] text-sm text-foreground shadow-[inset_0_1px_0_rgba(255,255,255,0.3)] backdrop-blur-sm",
+                "peer flex h-14 w-full rounded-2xl border border-white/20 dark:border-white/10 bg-white/50 dark:bg-navy-950/40 px-4 pt-[1.45rem] pb-[0.45rem] text-sm text-navy-950 dark:text-white shadow-inner backdrop-blur-md",
                 "transition-all duration-300",
-                "focus:border-gold-500/60 focus:bg-card/50 focus:outline-none focus:ring-4 focus:ring-gold-400/15",
-                "hover:border-navy-300/40 hover:bg-muted/50",
-                "placeholder:text-transparent focus:placeholder:text-muted-foreground/50",
+                "focus:border-gold-400 focus:bg-white/80 dark:focus:bg-navy-900/60 focus:outline-none focus:ring-4 focus:ring-gold-400/20",
+                "hover:border-navy-300/60 dark:hover:border-navy-400/50 hover:bg-white/70 dark:hover:bg-navy-900/40",
+                "placeholder:text-transparent focus:placeholder:text-navy-950/50 dark:focus:placeholder:text-white/30",
                 "file:border-0 file:bg-transparent file:text-sm file:font-medium",
                 "disabled:cursor-not-allowed disabled:opacity-50",
                 "[&:-webkit-autofill]:transition-colors [&:-webkit-autofill]:duration-[50000s] [&:-webkit-autofill]:ease-in-out [&:-webkit-autofill]:text-foreground",
                 error
                   ? "border-danger-500/60 focus:border-danger-500 focus:ring-danger-500/15"
-                  : "border-border/80",
+                  : "",
                 leftIcon ? "pl-11" : "pl-4",
                 isPassword && "pr-11",
                 className
@@ -121,16 +121,16 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
             aria-invalid={error ? true : undefined}
             aria-describedby={error ? `${uid}-error` : hint ? `${uid}-hint` : undefined}
             className={cn(
-              "flex h-12 w-full rounded-full border bg-card px-4 py-2 text-sm text-foreground shadow-[inset_0_1px_0_rgba(255,255,255,0.3)] backdrop-blur-sm",
-              "placeholder:text-muted-foreground/60 transition-all duration-300",
-              "focus:border-gold-500/60 focus:bg-card/50 focus:outline-none focus:ring-4 focus:ring-gold-400/15",
-              "hover:border-navy-300/40 hover:bg-muted/50",
+              "flex h-12 w-full rounded-2xl border border-white/20 dark:border-white/10 bg-white/50 dark:bg-navy-950/40 px-4 py-2 text-sm text-navy-950 dark:text-white shadow-inner backdrop-blur-md",
+              "placeholder:text-navy-950/40 dark:placeholder:text-white/30 transition-all duration-300",
+              "focus:border-gold-400 focus:bg-white/80 dark:focus:bg-navy-900/60 focus:outline-none focus:ring-4 focus:ring-gold-400/20",
+              "hover:border-navy-300/60 dark:hover:border-navy-400/50 hover:bg-white/70 dark:hover:bg-navy-900/40",
               "file:border-0 file:bg-transparent file:text-sm file:font-medium",
               "disabled:cursor-not-allowed disabled:opacity-50",
               "[&:-webkit-autofill]:transition-colors [&:-webkit-autofill]:duration-[50000s] [&:-webkit-autofill]:ease-in-out [&:-webkit-autofill]:text-foreground",
               error
                 ? "border-danger-500/60 focus:border-danger-500 focus:ring-danger-500/15"
-                : "border-border/80",
+                : "",
               leftIcon && "pl-11",
               isPassword && "pr-11",
               className

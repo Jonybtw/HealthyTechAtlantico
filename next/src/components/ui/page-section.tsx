@@ -13,9 +13,12 @@ interface PageSectionProps {
 }
 
 const toneClasses: Record<NonNullable<PageSectionProps["tone"]>, string> = {
-  primary: "glass page-frame shadow-[0_20px_50px_rgba(0,0,0,0.3)] border-white/5",
-  secondary: "glass page-frame",
-  utility: "glass rounded-xl p-4",
+  primary:
+    "rounded-xl border border-white/25 bg-white/78 p-5 shadow-float backdrop-blur-xl dark:border-white/10 dark:bg-navy-950/70 sm:p-6",
+  secondary:
+    "rounded-lg border border-white/20 bg-white/65 p-5 shadow-card backdrop-blur-xl dark:border-navy-800 dark:bg-navy-950/58",
+  utility:
+    "rounded-[22px] border border-white/18 bg-white/55 p-4 shadow-card backdrop-blur-md dark:border-navy-800 dark:bg-navy-950/48",
 };
 
 const layoutClasses: Record<NonNullable<PageSectionProps["layout"]>, string> = {
@@ -53,7 +56,9 @@ export function PageSection({
         </div>
       ) : null}
 
-      <div className={cn(layoutClasses[layout], contentClassName)}>{children}</div>
+      <div className={cn(layoutClasses[layout], contentClassName)}>
+        {children}
+      </div>
     </section>
   );
 }

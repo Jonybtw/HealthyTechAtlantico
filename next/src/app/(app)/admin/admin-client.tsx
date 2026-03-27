@@ -5,7 +5,14 @@ import { useLocale, useTranslations } from "next-intl";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, useWatch } from "react-hook-form";
 import { toast } from "sonner";
-import { Lock, RefreshCw, Settings, ShieldOff, Trash2, UserPlus } from "lucide-react";
+import {
+  Lock,
+  RefreshCw,
+  Settings,
+  ShieldOff,
+  Trash2,
+  UserPlus,
+} from "lucide-react";
 import type { z } from "zod";
 import { FadeIn } from "@/components/ui/motion";
 import { PageScaffold } from "@/components/ui/page-scaffold";
@@ -20,12 +27,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/ui/empty-state";
 import { readApiResponse } from "@/lib/api-client";
 import { createStaffSchema } from "@/lib/validations";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-} from "@/components/ui/form";
+import { Form, FormControl, FormField, FormItem } from "@/components/ui/form";
 
 type StaffValues = z.infer<typeof createStaffSchema>;
 
@@ -39,14 +41,19 @@ export default function AdminPage() {
   const locale = useLocale();
   const { role } = useUser();
 
-  const { data: staff = [], isLoading: loading, refetch: loadStaff } = useStaff();
+  const {
+    data: staff = [],
+    isLoading: loading,
+    refetch: loadStaff,
+  } = useStaff();
   const deleteStaffMutation = useDeleteStaff();
 
   const form = useForm<StaffValues>({
     resolver: zodResolver(createStaffSchema),
     defaultValues: { name: "", email: "", password: "", role: "PROFESSOR" },
   });
-  const selectedRole = useWatch({ control: form.control, name: "role" }) ?? "PROFESSOR";
+  const selectedRole =
+    useWatch({ control: form.control, name: "role" }) ?? "PROFESSOR";
 
   const [deleteTarget, setDeleteTarget] = useState<StaffUser | null>(null);
 
@@ -68,7 +75,9 @@ export default function AdminPage() {
       form.reset();
       loadStaff();
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : common("connectionError"));
+      toast.error(
+        error instanceof Error ? error.message : common("connectionError"),
+      );
     }
   }
 
@@ -82,13 +91,21 @@ export default function AdminPage() {
       toast.success(t("deleteSuccess"));
       setDeleteTarget(null);
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : common("connectionError"));
+      toast.error(
+        error instanceof Error ? error.message : common("connectionError"),
+      );
     }
   }
 
   if (role !== "ADMIN") {
     return (
-      <PageScaffold headerProps={{ title: t("title"), description: t("description"), eyebrow: "SISTEMA · ADMINISTRAÇÃO" }}>
+      <PageScaffold
+        headerProps={{
+          title: t("title"),
+          description: t("description"),
+          eyebrow: "SISTEMA · ADMINISTRAÇÃO",
+        }}
+      >
         <EmptyState
           icon={ShieldOff}
           title={common("noPermission")}
@@ -106,11 +123,17 @@ export default function AdminPage() {
         meta: roles(role),
       }}
     >
-
       <FadeIn delay={0.1}>
-        <PageSection title={t("createTitle")} description={t("description")} tone="primary">
+        <PageSection
+          title={t("createTitle")}
+          description={t("description")}
+          tone="primary"
+        >
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(handleCreate)} className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <form
+              onSubmit={form.handleSubmit(handleCreate)}
+              className="grid grid-cols-1 gap-4 sm:grid-cols-2"
+            >
               <FormField
                 control={form.control}
                 name="name"
@@ -175,7 +198,9 @@ export default function AdminPage() {
                     label: roles(value),
                   }))}
                   value={selectedRole}
-                  onChange={(value) => form.setValue("role", value as "PROFESSOR" | "PSICOLOGO")}
+                  onChange={(value) =>
+                    form.setValue("role", value as "PROFESSOR" | "PSICOLOGO")
+                  }
                 />
               </div>
               <div className="sm:col-span-2">
@@ -229,11 +254,19 @@ export default function AdminPage() {
             <div className="surface-utility overflow-x-auto rounded-[20px] p-1">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="border-b border-border/50 bg-muted/30">
-                    <th className="px-4 py-3 text-left font-semibold text-muted-foreground">{t("nameLabel")}</th>
-                    <th className="px-4 py-3 text-left font-semibold text-muted-foreground">{t("emailLabel")}</th>
-                    <th className="px-4 py-3 text-left font-semibold text-muted-foreground">{t("roleLabel")}</th>
-                    <th className="px-4 py-3 text-left font-semibold text-muted-foreground">{t("createdAtLabel")}</th>
+                  <tr className="border-b border-white/20 dark:border-white/10 bg-muted/30">
+                    <th className="px-4 py-3 text-left font-semibold text-muted-foreground">
+                      {t("nameLabel")}
+                    </th>
+                    <th className="px-4 py-3 text-left font-semibold text-muted-foreground">
+                      {t("emailLabel")}
+                    </th>
+                    <th className="px-4 py-3 text-left font-semibold text-muted-foreground">
+                      {t("roleLabel")}
+                    </th>
+                    <th className="px-4 py-3 text-left font-semibold text-muted-foreground">
+                      {t("createdAtLabel")}
+                    </th>
                     <th className="px-4 py-3" />
                   </tr>
                 </thead>
@@ -241,10 +274,12 @@ export default function AdminPage() {
                   {staff.map((staffUser) => (
                     <tr
                       key={staffUser.id}
-                      className="border-b border-border/50 transition-colors hover:bg-muted/30"
+                      className="border-b border-white/20 dark:border-white/10 transition-colors hover:bg-muted/30"
                     >
                       <td className="px-4 py-3">{staffUser.name ?? "-"}</td>
-                      <td className="px-4 py-3 text-muted-foreground">{staffUser.email}</td>
+                      <td className="px-4 py-3 text-muted-foreground">
+                        {staffUser.email}
+                      </td>
                       <td className="px-4 py-3">
                         <span
                           className={`inline-block rounded-xl px-2.5 py-1 text-xs font-medium ${
@@ -257,7 +292,9 @@ export default function AdminPage() {
                         </span>
                       </td>
                       <td className="px-4 py-3 text-muted-foreground">
-                        {new Date(staffUser.createdAt).toLocaleDateString(locale)}
+                        {new Date(staffUser.createdAt).toLocaleDateString(
+                          locale,
+                        )}
                       </td>
                       <td className="px-4 py-3 text-right">
                         <button

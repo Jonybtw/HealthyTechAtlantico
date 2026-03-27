@@ -1,23 +1,39 @@
 "use client";
 
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
-import { Dumbbell, FileUp, Timer, Wind, Zap, Ruler, ShieldAlert, Scale, ArrowUpDown } from "lucide-react";
+import {
+  ArrowUpDown,
+  CheckCircle2,
+  Clock3,
+  Dumbbell,
+  FileUp,
+  Gauge,
+  MoveRight,
+  Ruler,
+  Save,
+  Scale,
+  ShieldAlert,
+  Timer,
+  UserRound,
+  Wind,
+  Zap,
+} from "lucide-react";
+import type { LucideIcon } from "lucide-react";
+import type { Sex } from "@prisma/client";
 import { PageScaffold } from "@/components/ui/page-scaffold";
 import { PageSection } from "@/components/ui/page-section";
 import { StudentPicker } from "@/components/ui/student-picker";
 import { UnitInput } from "@/components/ui/unit-input";
-import { PillSelect } from "@/components/ui/pill-select";
 import { Button } from "@/components/ui/button";
 import { ZoneBadge } from "@/components/ui/zone-badge";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useUser } from "@/components/user-context";
-import { TEST_OPTIONS, classifyTest } from "@/lib/fitness-tests";
-import { calcAgeFromBirthDate } from "@/lib/zaf";
-import type { Sex } from "@prisma/client";
 import { readApiResponse } from "@/lib/api-client";
+import { classifyTest } from "@/lib/fitness-tests";
+import { calcAgeFromBirthDate, classifyBmi } from "@/lib/zaf";
 
 interface StudentOption {
   id: string;
@@ -27,28 +43,145 @@ interface StudentOption {
   className?: string | null;
 }
 
-// Map test IDs to Lucide icons (for pills)
-const TEST_ICONS: Record<string, React.ReactNode> = {
-  vai:        <Wind className="size-3.5" />,
-  cooper:     <Wind className="size-3.5" />,
-  milha:      <Timer className="size-3.5" />,
-  velocidade: <Zap className="size-3.5" />,
-  agilidade:  <Zap className="size-3.5" />,
-  abd:        <Dumbbell className="size-3.5" />,
-  bracos:     <Dumbbell className="size-3.5" />,
-  senta:      <Ruler className="size-3.5" />,
+type TestFieldId =
+  | "vai"
+  | "cooper"
+  | "milha"
+  | "velocidade"
+  | "agilidade"
+  | "abd"
+  | "bracos"
+  | "senta";
+
+interface TestFieldMeta {
+  id: TestFieldId;
+  label: string;
+  unit: string;
+  placeholder: string;
+  type?: "number" | "text";
+  step?: string;
+  icon: React.ReactNode;
+}
+
+interface CategoryMeta {
+  id: string;
+  title: string;
+  description: string;
+  icon: LucideIcon;
+  fields: TestFieldMeta[];
+}
+
+const HEADER_EYEBROW = "AVALIACAO · TESTES FISICOS";
+
+const TEST_FIELD_MAP: Record<TestFieldId, TestFieldMeta> = {
+  vai: {
+    id: "vai",
+    label: "Vai-e-vem (20m)",
+    unit: "percursos",
+    placeholder: "0",
+    step: "1",
+    icon: <Wind className="size-4" />,
+  },
+  cooper: {
+    id: "cooper",
+    label: "Cooper (12 min)",
+    unit: "voltas",
+    placeholder: "0",
+    step: "1",
+    icon: <Wind className="size-4" />,
+  },
+  milha: {
+    id: "milha",
+    label: "Milha 1609m",
+    unit: "mm:ss",
+    placeholder: "08:30",
+    type: "text",
+    icon: <Clock3 className="size-4" />,
+  },
+  velocidade: {
+    id: "velocidade",
+    label: "Velocidade 40m",
+    unit: "s",
+    placeholder: "6.4",
+    step: "0.1",
+    icon: <Zap className="size-4" />,
+  },
+  agilidade: {
+    id: "agilidade",
+    label: "Agilidade 4x10m",
+    unit: "s",
+    placeholder: "10.8",
+    step: "0.1",
+    icon: <MoveRight className="size-4" />,
+  },
+  abd: {
+    id: "abd",
+    label: "Abdominais",
+    unit: "reps",
+    placeholder: "0",
+    step: "1",
+    icon: <Dumbbell className="size-4" />,
+  },
+  bracos: {
+    id: "bracos",
+    label: "Extensoes de bracos",
+    unit: "reps",
+    placeholder: "0",
+    step: "1",
+    icon: <Dumbbell className="size-4" />,
+  },
+  senta: {
+    id: "senta",
+    label: "Sentar e alcancar",
+    unit: "cm",
+    placeholder: "0.0",
+    step: "0.1",
+    icon: <Ruler className="size-4" />,
+  },
 };
 
-// Map test IDs to larger icons for the value input
-const INPUT_ICONS: Record<string, React.ReactNode> = {
-  vai:        <Wind className="size-4" />,
-  cooper:     <Wind className="size-4" />,
-  milha:      <Timer className="size-4" />,
-  velocidade: <Zap className="size-4" />,
-  agilidade:  <Zap className="size-4" />,
-  abd:        <Dumbbell className="size-4" />,
-  bracos:     <Dumbbell className="size-4" />,
-  senta:      <Ruler className="size-4" />,
+const CATEGORY_SECTIONS: CategoryMeta[] = [
+  {
+    id: "aerobica",
+    title: "Capacidade aerobica",
+    description: "Resultados de resistencia e esforco continuo.",
+    icon: Wind,
+    fields: [TEST_FIELD_MAP.vai, TEST_FIELD_MAP.cooper, TEST_FIELD_MAP.milha],
+  },
+  {
+    id: "velocidade",
+    title: "Velocidade e agilidade",
+    description: "Tempo, explosao e mudanca de direcao.",
+    icon: Zap,
+    fields: [TEST_FIELD_MAP.velocidade, TEST_FIELD_MAP.agilidade],
+  },
+  {
+    id: "forca",
+    title: "Forca muscular",
+    description: "Capacidade de repeticao e suporte do proprio peso.",
+    icon: Dumbbell,
+    fields: [TEST_FIELD_MAP.abd, TEST_FIELD_MAP.bracos],
+  },
+  {
+    id: "flexibilidade",
+    title: "Flexibilidade",
+    description: "Amplitude e alcance do tronco.",
+    icon: Ruler,
+    fields: [TEST_FIELD_MAP.senta],
+  },
+];
+
+const INITIAL_FORM: Record<TestFieldId | "weightKg" | "heightM", string> = {
+  vai: "",
+  cooper: "",
+  milha: "",
+  velocidade: "",
+  agilidade: "",
+  abd: "",
+  bracos: "",
+  senta: "",
+  weightKg: "",
+  heightM: "",
 };
 
 export default function TestesPage() {
@@ -56,57 +189,130 @@ export default function TestesPage() {
   const common = useTranslations("common");
   const { role } = useUser();
   const canManageTests = role === "ADMIN" || role === "PROFESSOR";
-  const canImportCsv = canManageTests;
 
   const [students, setStudents] = useState<StudentOption[]>([]);
   const [loadingStudents, setLoadingStudents] = useState(true);
   const [studentId, setStudentId] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
-  const [lastResult, setLastResult] = useState<{ zone: string } | null>(null);
   const [isImportingCsv, setIsImportingCsv] = useState(false);
+  const [form, setForm] =
+    useState<Record<TestFieldId | "weightKg" | "heightM", string>>(INITIAL_FORM);
+  const [lastSubmission, setLastSubmission] = useState<{
+    count: number;
+    zone: string | null;
+    biometricsSaved: boolean;
+  } | null>(null);
+
   const importInputRef = useRef<HTMLInputElement | null>(null);
 
-  const [form, setForm] = useState<Record<string, string>>({
-    vai: "",
-    abd: "",
-    bracos: "",
-    senta: "",
-    weightKg: "",
-    heightM: "",
-  });
+  const selectedStudent = useMemo(
+    () => students.find((student) => student.id === studentId) ?? null,
+    [studentId, students],
+  );
 
-  const updateField = (field: string) => (v: string) => {
-    setForm((prev) => ({ ...prev, [field]: v }));
-    setLastResult(null); // Clear last result on change to encourage re-eval
-  };
+  const selectedStudentAge = useMemo(() => {
+    if (!selectedStudent) {
+      return null;
+    }
+    return calcAgeFromBirthDate(selectedStudent.birthDate);
+  }, [selectedStudent]);
+
+  const completedTestsCount = useMemo(
+    () =>
+      Object.entries(form).filter(
+        ([key, value]) =>
+          !["weightKg", "heightM"].includes(key) && value.trim().length > 0,
+      ).length,
+    [form],
+  );
+
+  const previewResults = useMemo(() => {
+    if (!selectedStudent) {
+      return [];
+    }
+
+    return Object.values(TEST_FIELD_MAP).flatMap((field) => {
+      const value = form[field.id];
+      if (!value.trim()) {
+        return [];
+      }
+
+      const zone =
+        selectedStudentAge !== null
+          ? classifyTest(field.id, value, selectedStudent.sex, selectedStudentAge)
+          : null;
+
+      return [
+        {
+          id: field.id,
+          label: field.label,
+          value,
+          unit: field.unit,
+          zone,
+        },
+      ];
+    });
+  }, [form, selectedStudent, selectedStudentAge]);
+
+  const healthyPreviewCount = previewResults.filter(
+    (result) =>
+      result.zone?.includes("Saud") || result.zone?.includes("Healthy"),
+  ).length;
+  const resolvedPreviewCount = previewResults.filter((result) =>
+    Boolean(result.zone),
+  ).length;
+
+  const biometricsReady = Boolean(form.weightKg && form.heightM);
+  const biometricsPreview = useMemo(() => {
+    if (!biometricsReady || !selectedStudent) {
+      return null;
+    }
+
+    const height = parseFloat(form.heightM);
+    const weight = parseFloat(form.weightKg);
+    if (!(height > 0 && weight > 0)) {
+      return null;
+    }
+
+    const bmi = Math.round((weight / (height * height)) * 10) / 10;
+    const age = selectedStudentAge ?? 14;
+    const imcResult = classifyBmi(bmi, selectedStudent.sex, age);
+    return {
+      bmi,
+      zone:
+        imcResult?.zone ??
+        (bmi <= 25 ? "Zona Saudavel" : t("improvementZone")),
+    };
+  }, [biometricsReady, form.heightM, form.weightKg, selectedStudent, selectedStudentAge, t]);
 
   const loadStudents = useCallback(async () => {
     setLoadingStudents(true);
     try {
-      const res = await fetch("/api/students?limit=500");
-      if (!res.ok) {
+      const response = await fetch("/api/students?limit=500");
+      if (!response.ok) {
         toast.error(common("studentListLoadError"));
         return;
       }
+
       const body = await readApiResponse<{
-        students: {
+        students: Array<{
           id: string;
           name: string;
-          sex: string;
+          sex: Sex | null;
           birthDate: string | null;
           className?: string | null;
-        }[];
-      }>(res);
-      const mapped: StudentOption[] = body.students.map(
-        (s: { id: string; name: string; sex: string; birthDate: string | null; className?: string | null }) => ({
-          id: s.id,
-          name: s.name,
-          sex: s.sex as Sex,
-          birthDate: s.birthDate ?? null,
-          className: s.className ?? null,
-        })
+        }>;
+      }>(response);
+
+      setStudents(
+        body.students.map((student) => ({
+          id: student.id,
+          name: student.name,
+          sex: student.sex ?? "M",
+          birthDate: student.birthDate ?? null,
+          className: student.className ?? null,
+        })),
       );
-      setStudents(mapped);
     } catch {
       toast.error(common("studentListLoadError"));
     } finally {
@@ -115,86 +321,88 @@ export default function TestesPage() {
   }, [common]);
 
   useEffect(() => {
-    loadStudents();
+    void loadStudents();
   }, [loadStudents]);
 
-  const selectedStudent = students.find((s) => s.id === studentId);
+  const updateField =
+    (field: TestFieldId | "weightKg" | "heightM") => (value: string) => {
+      setForm((current) => ({ ...current, [field]: value }));
+      setLastSubmission(null);
+    };
 
-  if (!canManageTests) {
-    return (
-      <PageScaffold headerProps={{ title: t("title"), description: t("description"), eyebrow: "AVALIAÇÃO · TESTES" }}>
-        <EmptyState
-          icon={ShieldAlert}
-          title={common("noPermission")}
-          description={t("description")}
-        />
-      </PageScaffold>
-    );
-  }
+  const handleSubmit = async (event: React.FormEvent) => {
+    event.preventDefault();
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!studentId) {
+    if (!studentId || !selectedStudent) {
       toast.error(t("selectStudent"));
       return;
     }
 
-    const age = selectedStudent?.birthDate ? calcAgeFromBirthDate(selectedStudent.birthDate) : null;
-    const sex = selectedStudent?.sex ?? ("M" as Sex);
+    const testsToSave = Object.values(TEST_FIELD_MAP)
+      .filter((field) => form[field.id].trim().length > 0)
+      .map((field) => {
+        const zone =
+          selectedStudentAge !== null
+            ? classifyTest(field.id, form[field.id], selectedStudent.sex, selectedStudentAge) ??
+              t("improvementZone")
+            : t("improvementZone");
 
-    // Prepare tests to save
-    const testsToSave = Object.entries(form)
-      .filter(([id, val]) => val.trim() !== "" && !["weightKg", "heightM"].includes(id))
-      .map(([id, val]) => {
-        const testOpt = TEST_OPTIONS.find((o) => o.id === id)!;
-        const numValue = id === "milha" ? null : parseFloat(val);
-        const zone = age !== null ? (classifyTest(id, val, sex, age) ?? t("improvementZone")) : t("improvementZone");
-        
         return {
-          testId: id,
-          valueNum: numValue,
-          valueText: val,
-          unit: testOpt.unit,
+          testId: field.id,
+          valueNum: field.type === "text" ? null : parseFloat(form[field.id]),
+          valueText: form[field.id],
+          unit: field.unit,
           zone,
         };
       });
 
-    if (testsToSave.length === 0 && !form.weightKg && !form.heightM) {
-        toast.error(t("fillValue"));
-        return;
+    if (testsToSave.length === 0 && !biometricsReady) {
+      toast.error(t("fillValue"));
+      return;
     }
 
     setSaving(true);
 
     try {
-      // 1. Save Tests
+      let primaryZone: string | null = null;
+
       if (testsToSave.length > 0) {
-        const res = await fetch(`/api/students/${studentId}/tests`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ tests: testsToSave }),
+        const response = await fetch(`/api/students/${studentId}/tests`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ tests: testsToSave }),
         });
-        const body = await readApiResponse<{ tests: { zone: string }[] }>(res);
-        setLastResult({ zone: body.tests[0]?.zone ?? "Zona Saudável" });
+        const body = await readApiResponse<{
+          count: number;
+          tests: Array<{ zone: string }>;
+        }>(response);
+        primaryZone = body.tests[0]?.zone ?? null;
       }
 
-      // 2. Save Biometria if provided
-      if (form.weightKg || form.heightM) {
-          await fetch(`/api/students/${studentId}/biometria`, {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                  weightKg: form.weightKg ? parseFloat(form.weightKg) : null,
-                  heightM: form.heightM ? parseFloat(form.heightM) : null,
-              }),
-          });
+      if (biometricsReady && biometricsPreview) {
+        await fetch(`/api/students/${studentId}/biometrics`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            heightM: parseFloat(form.heightM),
+            weightKg: parseFloat(form.weightKg),
+            imc: biometricsPreview.bmi,
+            imcZone: biometricsPreview.zone,
+          }),
+        }).then(readApiResponse);
       }
 
+      setLastSubmission({
+        count: testsToSave.length,
+        zone: primaryZone,
+        biometricsSaved: biometricsReady,
+      });
+      setForm(INITIAL_FORM);
       toast.success(t("success"));
-      // Clear form
-      setForm({ vai: "", abd: "", bracos: "", senta: "", weightKg: "", heightM: "" });
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : t("connectionError"));
+      toast.error(
+        error instanceof Error ? error.message : t("connectionError"),
+      );
     } finally {
       setSaving(false);
     }
@@ -225,261 +433,491 @@ export default function TestesPage() {
         toast.warning(`${result.failed} linhas falharam validacao`);
       }
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Erro na importacao CSV");
+      toast.error(
+        error instanceof Error ? error.message : "Erro na importacao CSV",
+      );
     } finally {
       event.target.value = "";
       setIsImportingCsv(false);
     }
   };
 
+  if (!canManageTests) {
+    return (
+      <PageScaffold
+        headerProps={{
+          title: t("title"),
+          description: t("description"),
+          eyebrow: HEADER_EYEBROW,
+        }}
+      >
+        <EmptyState
+          icon={ShieldAlert}
+          title={common("noPermission")}
+          description={t("description")}
+        />
+      </PageScaffold>
+    );
+  }
+
   return (
     <PageScaffold
-      headerProps={{ 
-        title: t("title"), 
-        description: t("description"), 
-        eyebrow: "AVALIAÇÃO · TESTES FÍSICOS" 
+      className="gap-6"
+      headerProps={{
+        title: t("title"),
+        description: t("description"),
+        eyebrow: HEADER_EYEBROW,
       }}
       headerActions={
-        canImportCsv ? (
-          <>
-            <input
-              ref={importInputRef}
-              type="file"
-              accept=".csv,text/csv"
-              className="hidden"
-              onChange={importTestsCsv}
-            />
-            <Button
-              size="sm"
-              variant="ghost"
-              icon={<FileUp className="size-4" />}
-              loading={isImportingCsv}
-              onClick={() => importInputRef.current?.click()}
-            >
-              {common("importCsv")}
-            </Button>
-          </>
-        ) : undefined
+        <>
+          <input
+            ref={importInputRef}
+            type="file"
+            accept=".csv,text/csv"
+            className="hidden"
+            onChange={importTestsCsv}
+          />
+          <Button
+            size="sm"
+            variant="secondary"
+            icon={<FileUp className="size-4" />}
+            loading={isImportingCsv}
+            onClick={() => importInputRef.current?.click()}
+          >
+            {common("importCsv")}
+          </Button>
+        </>
       }
     >
-
       {loadingStudents ? (
-        <div className="grid grid-cols-1 lg:grid-cols-[1fr_380px] gap-8 items-start">
-          <div className="space-y-6">
-            <PageSection tone="primary" layout="form" contentClassName="gap-4">
-                <Skeleton className="h-14 w-full rounded-2xl" />
-            </PageSection>
-            {[1, 2, 3, 4].map((item) => (
-                <Skeleton key={item} className="h-48 w-full rounded-3xl" />
-            ))}
-          </div>
-          <div className="flex flex-col gap-6">
-            <Skeleton className="h-64 w-full rounded-3xl" />
-            <Skeleton className="h-48 w-full rounded-3xl" />
-          </div>
-        </div>
+        <TestsLoadingState />
       ) : (
-        <div className="grid grid-cols-1 lg:grid-cols-[1fr_380px] gap-8 items-start">
+        <>
+          <div className="grid gap-4 md:grid-cols-3">
+            <OverviewCard
+              icon={UserRound}
+              label="Aluno em foco"
+              value={selectedStudent?.name ?? "Sem aluno selecionado"}
+              description={
+                selectedStudent?.className ?? "Seleciona o aluno antes de registar os resultados."
+              }
+            />
+            <OverviewCard
+              icon={Gauge}
+              label="Testes preenchidos"
+              value={`${completedTestsCount}/8`}
+              description={
+                completedTestsCount > 0
+                  ? resolvedPreviewCount > 0
+                    ? `${healthyPreviewCount} em zona saudavel`
+                    : "Sem referencia etaria para classificar."
+                  : "Ainda nao ha resultados introduzidos."
+              }
+              accent={completedTestsCount > 0 ? "gold" : "default"}
+            />
+            <OverviewCard
+              icon={CheckCircle2}
+              label="Estado do registo"
+              value={biometricsReady || completedTestsCount > 0 ? "Pronto" : "Pendente"}
+              description={
+                biometricsReady || completedTestsCount > 0
+                  ? "Ja ha informacao suficiente para guardar a sessao."
+                  : "Preenche pelo menos um teste ou altura e peso."
+              }
+              accent={biometricsReady || completedTestsCount > 0 ? "success" : "default"}
+            />
+          </div>
 
-          {/* LEFT — Forms */}
-          <div className="space-y-8 animate-fade-in-up">
-            <PageSection tone="primary" layout="form" className="shadow-none !bg-transparent !border-none !p-0">
-               <div className="space-y-2">
-                <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60 ml-1">
-                  Seleção de Aluno
-                </label>
-                <StudentPicker
+          <div className="grid grid-cols-1 items-start gap-6 xl:grid-cols-[minmax(0,1fr)_360px]">
+            <PageSection
+              tone="primary"
+              layout="form"
+              eyebrow="Sessao guiada"
+              title="Registo de testes"
+              description="Agrupa os resultados por familia para registar a sessao de forma rapida e consistente."
+            >
+              <form onSubmit={handleSubmit} className="flex flex-col gap-6">
+                <div className="rounded-[24px] border border-white/35 bg-white/72 p-4 shadow-card backdrop-blur-md dark:border-white/10 dark:bg-navy-950/42">
+                  <div className="mb-3 flex items-center justify-between gap-3">
+                    <div>
+                      <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-muted-foreground">
+                        Selecao de aluno
+                      </p>
+                      <p className="mt-1 text-sm text-muted-foreground">
+                        Escolhe o contexto antes de introduzir resultados.
+                      </p>
+                    </div>
+                    <span className="hidden rounded-full border border-gold-400/25 bg-gold-400/10 px-2.5 py-1 text-[11px] font-semibold text-gold-700 dark:text-gold-200 sm:inline-flex">
+                      {students.length} alunos
+                    </span>
+                  </div>
+
+                  <StudentPicker
                     students={students}
                     value={studentId}
                     onChange={setStudentId}
-                />
-               </div>
-            </PageSection>
-
-            {/* Capacidade Aeróbia */}
-            <PageSection
-              tone="primary"
-              title={
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary">
-                    <span className="material-symbols-outlined">fitness_center</span>
-                  </div>
-                  <h2 className="text-lg font-bold tracking-tight">Capacidade Aeróbia</h2>
+                  />
                 </div>
-              }
-              className="group overflow-hidden relative"
-            >
-               <div className="mesh-glow -right-20 -top-20 opacity-20" />
-               <UnitInput
-                  label="Vai-e-Vem (20m)"
-                  unit="percursos"
-                  value={form.vai}
-                  onChange={updateField("vai")}
-                  placeholder="0"
-                  icon={<Wind className="size-4" />}
-                />
-            </PageSection>
 
-            {/* Composição Corporal */}
-            <PageSection
-              tone="primary"
-              title={
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-secondary/10 flex items-center justify-center text-secondary">
-                    <span className="material-symbols-outlined">monitor_weight</span>
-                  </div>
-                  <h2 className="text-lg font-bold tracking-tight">Composição Corporal</h2>
+                <div className="grid gap-4">
+                  {CATEGORY_SECTIONS.map((section) => (
+                    <CategoryCard key={section.id} section={section}>
+                      <div
+                        className={`grid gap-4 ${
+                          section.fields.length > 1 ? "md:grid-cols-2" : "grid-cols-1"
+                        }`}
+                      >
+                        {section.fields.map((field) => (
+                          <UnitInput
+                            key={field.id}
+                            label={field.label}
+                            unit={field.unit}
+                            value={form[field.id]}
+                            onChange={updateField(field.id)}
+                            placeholder={field.placeholder}
+                            step={field.step}
+                            type={field.type}
+                            icon={field.icon}
+                          />
+                        ))}
+                      </div>
+                    </CategoryCard>
+                  ))}
+
+                  <CategoryCard
+                    section={{
+                      id: "biometria",
+                      title: "Composicao corporal de apoio",
+                      description:
+                        "Se preencher altura e peso, a pagina guarda tambem a biometria base desta sessao.",
+                      icon: Scale,
+                      fields: [],
+                    }}
+                  >
+                    <div className="grid gap-4 md:grid-cols-2">
+                      <UnitInput
+                        label="Peso"
+                        unit="kg"
+                        value={form.weightKg}
+                        onChange={updateField("weightKg")}
+                        placeholder="53.4"
+                        step="0.1"
+                        icon={<Scale className="size-4" />}
+                      />
+                      <UnitInput
+                        label="Altura"
+                        unit="m"
+                        value={form.heightM}
+                        onChange={updateField("heightM")}
+                        placeholder="1.62"
+                        step="0.01"
+                        icon={<ArrowUpDown className="size-4" />}
+                      />
+                    </div>
+                  </CategoryCard>
                 </div>
-              }
-            >
-              <div className="grid grid-cols-2 gap-4">
-                <UnitInput
-                    label="Peso"
-                    unit="kg"
-                    value={form.weightKg}
-                    onChange={updateField("weightKg")}
-                    placeholder="0.0"
-                    icon={<Scale className="size-4" />}
-                />
-                <UnitInput
-                    label="Altura"
-                    unit="m"
-                    value={form.heightM}
-                    onChange={updateField("heightM")}
-                    placeholder="0.00"
-                    icon={<ArrowUpDown className="size-4" />}
-                />
-              </div>
-            </PageSection>
 
-            {/* Aptidão Neuromuscular */}
-            <PageSection
-              tone="primary"
-              title={
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary">
-                    <span className="material-symbols-outlined">bolt</span>
+                <div className="rounded-[24px] border border-gold-400/18 bg-gradient-to-r from-gold-400/10 via-white/70 to-white/55 p-4 shadow-card dark:from-gold-400/10 dark:via-navy-950/60 dark:to-navy-950/50">
+                  <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+                    <div className="space-y-2">
+                      <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-muted-foreground">
+                        Fecho da sessao
+                      </p>
+                      <p className="text-sm text-muted-foreground">
+                        Guarda todos os testes preenchidos de uma vez e inclui biometria apenas se altura e peso estiverem completos.
+                      </p>
+                    </div>
+
+                    <Button
+                      type="submit"
+                      variant="gold"
+                      size="xl"
+                      loading={saving}
+                      icon={<Save className="size-4" />}
+                      className="w-full md:w-auto"
+                    >
+                      Gravar sessao de testes
+                    </Button>
                   </div>
-                  <h2 className="text-lg font-bold tracking-tight">Aptidão Neuromuscular</h2>
                 </div>
-              }
-            >
-               <div className="space-y-6">
-                <UnitInput
-                    label="Abdominais"
-                    unit="reps"
-                    value={form.abd}
-                    onChange={updateField("abd")}
-                    placeholder="0"
-                    icon={<Dumbbell className="size-4" />}
-                />
-                <UnitInput
-                    label="Flexões"
-                    unit="reps"
-                    value={form.bracos}
-                    onChange={updateField("bracos")}
-                    placeholder="0"
-                    icon={<Dumbbell className="size-4" />}
-                />
-               </div>
+              </form>
             </PageSection>
 
-            {/* Flexibilidade */}
-            <PageSection
-              tone="primary"
-              title={
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-secondary/10 flex items-center justify-center text-secondary">
-                    <span className="material-symbols-outlined">straighten</span>
-                  </div>
-                  <h2 className="text-lg font-bold tracking-tight">Flexibilidade</h2>
-                </div>
-              }
-            >
-                <UnitInput
-                    label="Sentar e Alcançar"
-                    unit="cm"
-                    value={form.senta}
-                    onChange={updateField("senta")}
-                    placeholder="0.0"
-                    icon={<Ruler className="size-4" />}
-                />
-            </PageSection>
-
-            <Button
-                onClick={handleSubmit}
-                variant="sanctuary"
-                size="xl"
-                loading={saving}
-                icon={<span className="material-symbols-outlined mr-2">save</span>}
-                className="w-full text-lg shadow-glow mt-4"
-              >
-                Gravar todos os testes
-            </Button>
-          </div>
-
-          {/* RIGHT — Info Panel */}
-          <aside className="flex flex-col gap-6 lg:sticky lg:top-24">
-            <PageSection
+            <aside className="flex flex-col gap-6 xl:sticky xl:top-24">
+              <PageSection
                 tone="secondary"
-                title={
-                    <span className="text-xs font-bold uppercase tracking-widest text-muted-foreground/70">
-                        Status da Avaliação
-                    </span>
-                }
                 layout="analytics"
-                className="relative overflow-hidden group"
-            >
-                {!lastResult ? (
-                    <div className="flex flex-col items-center gap-4 py-8 text-center">
-                        <div className="relative">
-                            <svg width="120" height="120" viewBox="0 0 120 120" className="text-muted-foreground/10">
-                                <circle cx="60" cy="60" r="48" fill="none" stroke="currentColor" strokeWidth="8" strokeDasharray="6 4" />
-                            </svg>
-                            <div className="absolute inset-0 flex items-center justify-center">
-                                <Timer className="size-8 text-muted-foreground/20" />
-                            </div>
-                        </div>
-                        <p className="text-sm font-medium text-muted-foreground/60 px-4">
-                            Preencha os resultados para ver a classificação
-                        </p>
-                    </div>
+                eyebrow="Leitura imediata"
+                title="Preview ZAF"
+                description="Resumo em tempo real dos testes preenchidos nesta sessao."
+              >
+                {!selectedStudent ? (
+                  <EmptyPanelMessage>
+                    Seleciona um aluno para ativar a leitura de zonas por idade e sexo.
+                  </EmptyPanelMessage>
+                ) : previewResults.length === 0 ? (
+                  <EmptyPanelMessage>
+                    Introduz pelo menos um resultado para ver a classificacao esperada.
+                  </EmptyPanelMessage>
                 ) : (
-                    <div className="flex flex-col items-center gap-4 py-4">
-                        <ZoneBadge zone={lastResult.zone} />
-                        <p className="text-xs font-bold text-secondary uppercase tracking-widest">Registado com Sucesso</p>
-                    </div>
+                  <div className="grid gap-3">
+                    {previewResults.map((result) => (
+                      <div
+                        key={result.id}
+                        className="rounded-[18px] border border-border/60 bg-background/45 p-4"
+                      >
+                        <div className="flex items-start justify-between gap-3">
+                          <div>
+                            <p className="text-sm font-semibold text-foreground">
+                              {result.label}
+                            </p>
+                            <p className="mt-1 text-xs text-muted-foreground">
+                              {result.value} {result.unit}
+                            </p>
+                          </div>
+                          {result.zone ? (
+                            <ZoneBadge zone={result.zone} size="sm" />
+                          ) : (
+                            <span className="text-xs font-semibold text-muted-foreground">
+                              Sem referencia etaria
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 )}
-            </PageSection>
+              </PageSection>
 
-            <PageSection
-              tone="secondary"
-              title={
-                <span className="text-xs font-bold uppercase tracking-widest text-muted-foreground/70">
-                  Referência ZAF
-                </span>
-              }
-              layout="list"
-              contentClassName="gap-3"
-            >
-              <div className="space-y-3">
-                <div className="flex items-center justify-between p-4 bg-white/5 rounded-full border border-transparent">
-                  <div className="flex items-center gap-4">
-                    <div className="w-3 h-3 rounded-full bg-emerald-500 shadow-[0_0_15px_rgba(16,185,129,0.5)]" />
-                    <span className="font-bold text-foreground text-sm">Saudável (ZSAF)</span>
+              <PageSection
+                tone="utility"
+                layout="list"
+                eyebrow="Contexto"
+                title={selectedStudent?.name ?? "Sem aluno selecionado"}
+                description="Confirma rapidamente os dados base antes de gravar."
+              >
+                {selectedStudent ? (
+                  <div className="grid gap-3">
+                    <MetaRow label="Turma" value={selectedStudent.className ?? "-"} />
+                    <MetaRow
+                      label="Idade"
+                      value={
+                        selectedStudentAge !== null
+                          ? String(selectedStudentAge)
+                          : "Sem registo"
+                      }
+                    />
+                    <MetaRow
+                      label="Sexo"
+                      value={selectedStudent.sex === "F" ? "Feminino" : "Masculino"}
+                    />
+                    <MetaRow
+                      label="Biometria de apoio"
+                      value={biometricsReady ? "Completa" : "Opcional"}
+                    />
                   </div>
-                </div>
-                <div className="flex items-center justify-between p-4 bg-white/5 rounded-full border border-transparent">
-                  <div className="flex items-center gap-4">
-                    <div className="w-3 h-3 rounded-full bg-amber-500 shadow-[0_0_15px_rgba(245,158,11,0.5)]" />
-                    <span className="font-bold text-foreground text-sm">Melhoria (ZMF)</span>
+                ) : (
+                  <p className="text-sm leading-relaxed text-muted-foreground">
+                    O contexto do aluno aparece aqui assim que o escolheres.
+                  </p>
+                )}
+              </PageSection>
+
+              <PageSection
+                tone="utility"
+                layout="list"
+                eyebrow="Sessao"
+                title="Estado atual"
+                description="Resumo do que esta pronto para ser guardado."
+              >
+                <MetaRow label="Testes com valor" value={String(completedTestsCount)} />
+                <MetaRow
+                  label="Biometria base"
+                  value={biometricsPreview ? `${biometricsPreview.bmi} IMC` : "Nao pronta"}
+                />
+                <MetaRow
+                  label="Ultimo envio"
+                  value={
+                    lastSubmission
+                      ? `${lastSubmission.count} testes${lastSubmission.biometricsSaved ? " + biometria" : ""}`
+                      : "Ainda sem envio"
+                  }
+                />
+                {lastSubmission?.zone ? (
+                  <div className="pt-1">
+                    <ZoneBadge zone={lastSubmission.zone} />
                   </div>
-                </div>
-              </div>
-            </PageSection>
-          </aside>
-        </div>
+                ) : null}
+              </PageSection>
+
+              <PageSection
+                tone="utility"
+                layout="list"
+                eyebrow="Referencia ZAF"
+                title="Leitura rapida"
+                description="Guia simples para interpretar os estados antes de gravar."
+              >
+                <ReferenceRow
+                  tone="success"
+                  title="Zona Saudavel"
+                  description="Resultado dentro do patamar esperado para o contexto do aluno."
+                />
+                <ReferenceRow
+                  tone="warning"
+                  title="Zona de Melhoria"
+                  description="Resultado que merece acompanhamento e nova recolha."
+                />
+              </PageSection>
+            </aside>
+          </div>
+        </>
       )}
     </PageScaffold>
+  );
+}
+
+function TestsLoadingState() {
+  return (
+    <>
+      <div className="grid gap-4 md:grid-cols-3">
+        {[1, 2, 3].map((item) => (
+          <Skeleton key={item} className="h-28 rounded-[24px]" />
+        ))}
+      </div>
+
+      <div className="grid grid-cols-1 items-start gap-6 xl:grid-cols-[minmax(0,1fr)_360px]">
+        <PageSection tone="primary" layout="form" contentClassName="gap-6">
+          <Skeleton className="h-24 rounded-[24px]" />
+          {[1, 2, 3].map((item) => (
+            <Skeleton key={item} className="h-48 rounded-[24px]" />
+          ))}
+        </PageSection>
+
+        <div className="flex flex-col gap-6">
+          <Skeleton className="h-64 rounded-[24px]" />
+          <Skeleton className="h-52 rounded-[24px]" />
+          <Skeleton className="h-48 rounded-[24px]" />
+        </div>
+      </div>
+    </>
+  );
+}
+
+function CategoryCard({
+  section,
+  children,
+}: {
+  section: CategoryMeta;
+  children: React.ReactNode;
+}) {
+  const Icon = section.icon;
+
+  return (
+    <div className="rounded-[24px] border border-white/30 bg-white/72 p-5 shadow-card backdrop-blur-md dark:border-white/10 dark:bg-navy-950/46">
+      <div className="mb-4 flex items-start gap-3">
+        <span className="flex size-11 items-center justify-center rounded-2xl bg-navy-100 text-navy-800 dark:bg-white/10 dark:text-gold-200">
+          <Icon className="size-5" />
+        </span>
+        <div>
+          <h3 className="text-base font-semibold tracking-[-0.03em] text-foreground">
+            {section.title}
+          </h3>
+          <p className="mt-1 text-sm text-muted-foreground">
+            {section.description}
+          </p>
+        </div>
+      </div>
+
+      {children}
+    </div>
+  );
+}
+
+function OverviewCard({
+  icon: Icon,
+  label,
+  value,
+  description,
+  accent = "default",
+}: {
+  icon: LucideIcon;
+  label: string;
+  value: string;
+  description: string;
+  accent?: "default" | "gold" | "success";
+}) {
+  const accentClass =
+    accent === "gold"
+      ? "bg-gold-400/18 text-gold-700 dark:text-gold-200"
+      : accent === "success"
+        ? "bg-emerald-500/15 text-emerald-700 dark:text-emerald-200"
+        : "bg-navy-100 text-navy-800 dark:bg-white/10 dark:text-navy-100";
+
+  return (
+    <div className="rounded-[24px] border border-white/30 bg-white/72 p-5 shadow-card backdrop-blur-md dark:border-white/10 dark:bg-navy-950/58">
+      <div className="flex items-start justify-between gap-4">
+        <div className="space-y-2">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-muted-foreground">
+            {label}
+          </p>
+          <p className="text-2xl font-black tracking-[-0.04em] text-foreground">
+            {value}
+          </p>
+          <p className="text-sm leading-relaxed text-muted-foreground">
+            {description}
+          </p>
+        </div>
+        <span
+          className={`flex size-11 items-center justify-center rounded-2xl ${accentClass}`}
+        >
+          <Icon className="size-5" />
+        </span>
+      </div>
+    </div>
+  );
+}
+
+function MetaRow({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="flex items-center justify-between gap-3 rounded-[18px] border border-border/60 bg-background/45 px-4 py-3">
+      <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+        {label}
+      </span>
+      <span className="text-sm font-semibold text-foreground">{value}</span>
+    </div>
+  );
+}
+
+function EmptyPanelMessage({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="rounded-[24px] border border-dashed border-border/70 bg-background/40 px-4 py-8 text-center">
+      <Timer className="mx-auto size-8 text-muted-foreground/35" />
+      <p className="mt-3 text-sm text-muted-foreground">{children}</p>
+    </div>
+  );
+}
+
+function ReferenceRow({
+  title,
+  description,
+  tone,
+}: {
+  title: string;
+  description: string;
+  tone: "success" | "warning";
+}) {
+  const toneClass =
+    tone === "success" ? "bg-emerald-500" : "bg-amber-500";
+
+  return (
+    <div className="rounded-[18px] border border-border/60 bg-background/45 p-4">
+      <div className="flex items-center gap-3">
+        <span className={`size-2.5 rounded-full ${toneClass}`} />
+        <p className="text-sm font-semibold text-foreground">{title}</p>
+      </div>
+      <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+        {description}
+      </p>
+    </div>
   );
 }

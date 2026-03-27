@@ -4,7 +4,16 @@ import { useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { signIn } from "next-auth/react";
 import { AnimatePresence, motion } from "motion/react";
-import { ArrowLeft, ArrowRight, CheckCircle2, LogIn, UserPlus, Mail, Lock, User } from "lucide-react";
+import {
+  ArrowLeft,
+  ArrowRight,
+  CheckCircle2,
+  LogIn,
+  UserPlus,
+  Mail,
+  Lock,
+  User,
+} from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -14,12 +23,7 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { PillSelect } from "@/components/ui/pill-select";
-import {
-  Form,
-  FormField,
-  FormItem,
-  FormControl,
-} from "@/components/ui/form";
+import { Form, FormField, FormItem, FormControl } from "@/components/ui/form";
 import { readApiResponse } from "@/lib/api-client";
 
 type RegisterValues = z.infer<typeof registerFormSchema>;
@@ -87,21 +91,47 @@ export default function LoginClient() {
     },
   });
 
-  const passwordValue = useWatch({ control: form.control, name: "password" }) ?? "";
-  const roleValue = useWatch({ control: form.control, name: "role" }) ?? "ALUNO";
-  const consentRgpd = useWatch({ control: form.control, name: "consentRgpd" }) ?? false;
+  const passwordValue =
+    useWatch({ control: form.control, name: "password" }) ?? "";
+  const roleValue =
+    useWatch({ control: form.control, name: "role" }) ?? "ALUNO";
+  const consentRgpd =
+    useWatch({ control: form.control, name: "consentRgpd" }) ?? false;
   const strength = getPasswordStrength(passwordValue);
   const strengthData = [
     null,
-    { label: t("strengthWeak"),   bar: "bg-danger-500",  text: "text-danger-600 dark:text-danger-400" },
-    { label: t("strengthFair"),   bar: "bg-orange-400",  text: "text-orange-500 dark:text-orange-400" },
-    { label: t("strengthGood"),   bar: "bg-gold-400",    text: "text-gold-700 dark:text-gold-400" },
-    { label: t("strengthStrong"), bar: "bg-success-500", text: "text-success-600 dark:text-success-400" },
+    {
+      label: t("strengthWeak"),
+      bar: "bg-danger-500",
+      text: "text-danger-600 dark:text-danger-400",
+    },
+    {
+      label: t("strengthFair"),
+      bar: "bg-orange-400",
+      text: "text-orange-500 dark:text-orange-400",
+    },
+    {
+      label: t("strengthGood"),
+      bar: "bg-gold-400",
+      text: "text-gold-700 dark:text-gold-400",
+    },
+    {
+      label: t("strengthStrong"),
+      bar: "bg-success-500",
+      text: "text-success-600 dark:text-success-400",
+    },
   ];
   const strengthInfo = strengthData[strength];
 
   const switchToRegister = () => {
-    form.reset({ name: "", email: form.getValues("email"), password: "", confirmPassword: "", role: "ALUNO", consentRgpd: false });
+    form.reset({
+      name: "",
+      email: form.getValues("email"),
+      password: "",
+      confirmPassword: "",
+      role: "ALUNO",
+      consentRgpd: false,
+    });
     setApiError(null);
     setMode("register");
   };
@@ -176,18 +206,30 @@ export default function LoginClient() {
       await readApiResponse(response);
       router.push("/login?registered=1");
     } catch (error) {
-      setApiError(error instanceof Error ? error.message : t("connectionError"));
+      setApiError(
+        error instanceof Error ? error.message : t("connectionError"),
+      );
     } finally {
       setIsLoading(false);
     }
   });
 
   return (
-    <div className="animate-fade-in-up w-full max-w-md overflow-hidden rounded-[24px] mx-auto" style={{ background: "rgba(255,255,255,0.82)", backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)", border: "1px solid rgba(255,255,255,0.6)", boxShadow: "0 8px 32px rgba(0,35,111,0.10), 0 2px 8px rgba(0,35,111,0.06)" }}>
+    <div
+      className="animate-fade-in-up mx-auto w-full max-w-md rounded-[24px] overflow-hidden"
+      style={{
+        background: "rgba(255,255,255,0.82)",
+        backdropFilter: "blur(16px)",
+        WebkitBackdropFilter: "blur(16px)",
+        border: "1px solid rgba(255,255,255,0.6)",
+        boxShadow:
+          "0 8px 32px rgba(0,35,111,0.10), 0 2px 8px rgba(0,35,111,0.06)",
+      }}
+    >
       {/* Gold accent line */}
       <div className="h-px bg-gradient-to-r from-transparent via-gold-400/60 to-transparent" />
       {/* Header */}
-      <div className="flex items-center gap-3 border-b border-slate-200/50 dark:border-slate-800/50 px-6 py-5">
+      <div className="flex items-start gap-3 border-b border-slate-200/50 px-5 py-4 dark:border-slate-800/50 sm:items-center sm:px-6 sm:py-5">
         <div className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-navy-900 text-gold-300">
           <AnimatePresence mode="wait" initial={false}>
             {mode === "login" ? (
@@ -246,16 +288,26 @@ export default function LoginClient() {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.18 }}
-              className="max-w-xs text-xs text-muted-foreground"
-            >
-              {mode === "login" ? t("loginSubtitle") : t("registerSubtitle")}
-            </motion.p>
+            className="max-w-xs text-xs leading-relaxed text-muted-foreground"
+          >
+            {mode === "login" ? t("loginSubtitle") : t("registerSubtitle")}
+          </motion.p>
           </AnimatePresence>
         </div>
         {/* Step indicator */}
         <div className="ml-auto flex shrink-0 items-center gap-1.5">
-          <div className={cn("h-1.5 rounded-full transition-all duration-500", mode === "login" ? "w-5 bg-gold-400" : "w-1.5 bg-border/50")} />
-          <div className={cn("h-1.5 rounded-full transition-all duration-500", mode === "register" ? "w-5 bg-gold-400" : "w-1.5 bg-border/50")} />
+          <div
+            className={cn(
+              "h-1.5 rounded-full transition-all duration-500",
+              mode === "login" ? "w-5 bg-gold-400" : "w-1.5 bg-border/50",
+            )}
+          />
+          <div
+            className={cn(
+              "h-1.5 rounded-full transition-all duration-500",
+              mode === "register" ? "w-5 bg-gold-400" : "w-1.5 bg-border/50",
+            )}
+          />
         </div>
       </div>
 
@@ -269,10 +321,13 @@ export default function LoginClient() {
               handleRegister();
             }
           }}
-          className="space-y-5 p-6"
+          className="space-y-4 p-5 sm:space-y-5 sm:p-6"
         >
           {registeredSuccess && !apiError ? (
-              <div role="status" className="flex items-center gap-2.5 rounded-2xl border border-success-200 bg-success-50 px-4 py-3 text-sm font-medium text-success-800 shadow-sm dark:border-success-900/50 dark:bg-success-950/40 dark:text-success-200">
+            <div
+              role="status"
+              className="flex items-center gap-2.5 rounded-2xl border border-success-200 bg-success-50 px-4 py-3 text-sm font-medium text-success-800 shadow-sm dark:border-success-900/50 dark:bg-success-950/40 dark:text-success-200"
+            >
               <CheckCircle2 className="size-4 shrink-0" />
               {t("registeredSuccess")}
             </div>
@@ -361,7 +416,9 @@ export default function LoginClient() {
                   <Input
                     label={t("password")}
                     type="password"
-                    autoComplete={mode === "login" ? "current-password" : "new-password"}
+                    autoComplete={
+                      mode === "login" ? "current-password" : "new-password"
+                    }
                     showPasswordLabel={t("showPassword")}
                     hidePasswordLabel={t("hidePassword")}
                     floatingLabel
@@ -392,13 +449,20 @@ export default function LoginClient() {
                         key={i}
                         className={cn(
                           "h-1 flex-1 rounded-full transition-all duration-500",
-                          strengthInfo && i <= strength ? strengthInfo.bar : "bg-border/50"
+                          strengthInfo && i <= strength
+                            ? strengthInfo.bar
+                            : "bg-border/50",
                         )}
                       />
                     ))}
                   </div>
                   {strengthInfo ? (
-                    <p className={cn("text-right text-[11px] font-medium", strengthInfo.text)}>
+                    <p
+                      className={cn(
+                        "text-right text-[11px] font-medium",
+                        strengthInfo.text,
+                      )}
+                    >
                       {strengthInfo.label}
                     </p>
                   ) : null}
@@ -418,7 +482,7 @@ export default function LoginClient() {
                 exit="exit"
                 className="overflow-hidden"
               >
-                <div className="space-y-5">
+                <div className="space-y-4 sm:space-y-5">
                   <FormField
                     control={form.control}
                     name="confirmPassword"
@@ -433,7 +497,9 @@ export default function LoginClient() {
                             hidePasswordLabel={t("hidePassword")}
                             floatingLabel
                             leftIcon={<Lock className="size-4" />}
-                            error={form.formState.errors.confirmPassword?.message}
+                            error={
+                              form.formState.errors.confirmPassword?.message
+                            }
                             {...field}
                           />
                         </FormControl>
@@ -441,7 +507,7 @@ export default function LoginClient() {
                     )}
                   />
 
-                  <div className="space-y-1.5">
+                  <div className="space-y-2">
                     <label className="text-sm font-semibold tracking-tight text-foreground">
                       {t("roleLabel")}
                     </label>
@@ -457,19 +523,26 @@ export default function LoginClient() {
                     />
                   </div>
 
-                  <div className="rounded-xl border border-border/70 bg-background/65 p-3.5">
-                    <label htmlFor="register-rgpd" className="flex cursor-pointer items-start gap-3">
+                  <div className="rounded-xl border border-white/20 bg-white/50 p-3.5 backdrop-blur-sm dark:border-white/10 dark:bg-navy-950/40 sm:p-4">
+                    <label
+                      htmlFor="register-rgpd"
+                      className="flex cursor-pointer items-start gap-3"
+                    >
                       <input
                         type="checkbox"
                         id="register-rgpd"
-                        aria-describedby={form.formState.errors.consentRgpd ? "register-rgpd-error" : undefined}
+                        aria-describedby={
+                          form.formState.errors.consentRgpd
+                            ? "register-rgpd-error"
+                            : undefined
+                        }
                         checked={consentRgpd}
                         onChange={(e) =>
                           form.setValue("consentRgpd", e.target.checked, {
                             shouldValidate: true,
                           })
                         }
-                        className="mt-1 h-4 w-4 rounded border-border accent-navy-900"
+                        className="mt-1 h-4 w-4 rounded border-white/20 dark:border-white/10 accent-navy-900"
                       />
                       <span className="text-sm leading-relaxed text-muted-foreground">
                         {t("rgpdConsent")}
@@ -493,13 +566,19 @@ export default function LoginClient() {
           <Button
             type="submit"
             loading={isLoading}
-            icon={mode === "login" ? <LogIn className="size-4" /> : <UserPlus className="size-4" />}
+            icon={
+              mode === "login" ? (
+                <LogIn className="size-4" />
+              ) : (
+                <UserPlus className="size-4" />
+              )
+            }
             className="w-full justify-center text-base h-12"
           >
             {mode === "login" ? t("enter") : t("createAccount")}
           </Button>
 
-          <div className="mt-2 flex items-center justify-between gap-3 rounded-2xl border border-border/60 bg-background/70 px-4 py-3 text-sm">
+          <div className="mt-2 flex flex-col items-start gap-3 rounded-2xl border border-white/20 bg-white/50 px-4 py-3 text-sm backdrop-blur-sm dark:border-white/10 dark:bg-navy-950/40 sm:flex-row sm:items-center sm:justify-between">
             {mode === "login" ? (
               <>
                 <p className="text-muted-foreground">{t("noAccount")}</p>

@@ -1,5 +1,7 @@
+import { Card, CardContent } from "@/components/ui/card";
 import type { LucideIcon } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import { cn } from "@/lib/utils";
 
 function useAnimatedNumber(target: number, duration = 600) {
   const [display, setDisplay] = useState(target);
@@ -23,7 +25,9 @@ function useAnimatedNumber(target: number, duration = 600) {
     };
     previousTarget.current = target;
     raf.current = requestAnimationFrame(tick);
-    return () => { if (raf.current) cancelAnimationFrame(raf.current); };
+    return () => {
+      if (raf.current) cancelAnimationFrame(raf.current);
+    };
   }, [target, duration]);
 
   return display;
@@ -55,7 +59,8 @@ const accents = {
     barFill: "bg-danger-600",
   },
   blue: {
-    iconBg: "bg-navy-900 text-white shadow-lg shadow-navy-900/30 dark:bg-navy-800",
+    iconBg:
+      "bg-navy-900 text-white shadow-lg shadow-navy-900/30 dark:bg-navy-800",
     barFill: "bg-navy-900 dark:bg-gold-300",
   },
 };
@@ -72,27 +77,78 @@ export function KpiCard({
   const styles = accents[accent];
   const isNumeric = typeof value === "number";
   const animatedValue = useAnimatedNumber(isNumeric ? value : 0);
+  const heroCard = emphasis === "hero";
 
   return (
-    <div
-      className={`bg-white dark:bg-navy-950/80 p-6 sm:p-8 rounded-[24px] shadow-[0_10px_40px_-15px_rgba(0,35,111,0.08)] dark:shadow-[0_10px_40px_-15px_rgba(0,0,0,0.5)] border border-border/50 group hover:-translate-y-2 transition-all duration-300`}
-    >
-      <div className="flex justify-between items-start mb-6">
-        <div className={`p-3 rounded-2xl ${styles.iconBg} transition-transform group-hover:scale-110 duration-300`}>
-          <Icon className="size-6" />
-        </div>
-      </div>
-      <h3 className="text-muted-foreground text-sm font-semibold mb-1 tracking-wide">{title}</h3>
-      <p className="text-3xl font-extrabold text-foreground mb-4 tabular-nums tracking-tight">
-        {isNumeric ? animatedValue : value}
-        {description ? <span className="text-sm font-medium text-muted-foreground ml-2 block sm:inline mt-1 sm:mt-0">{description}</span> : null}
-      </p>
-      {emphasis === "default" && (
-        <div className="h-1.5 w-full bg-muted/60 dark:bg-navy-900 rounded-full overflow-hidden mt-2">
-           <div className={`h-full ${styles.barFill} rounded-full opacity-60 transition-all duration-1000 group-hover:opacity-100`} style={{ width: "100%" }}></div>
-        </div>
+    <Card
+      className={cn(
+        "group relative overflow-hidden rounded-xl border border-white/25 bg-white/78 shadow-float backdrop-blur-xl transition-all duration-300 hover:-translate-y-1.5 hover:shadow-card-hover dark:border-white/10 dark:bg-navy-950/72",
+        heroCard &&
+          "bg-gradient-to-br from-navy-800 via-navy-700 to-navy-600 text-white dark:from-navy-900 dark:via-navy-800 dark:to-navy-700",
       )}
-      {footer ? <div className="mt-4 border-t border-border/50 pt-3">{footer}</div> : null}
-    </div>
+    >
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(216,173,52,0.14),transparent_24%),radial-gradient(circle_at_bottom_left,rgba(255,255,255,0.08),transparent_32%)]" />
+      <CardContent className="relative p-6 sm:p-7">
+        <div className="mb-6 flex items-start justify-between">
+          <div
+            className={cn(
+              "rounded-2xl p-3 transition-transform duration-300 group-hover:scale-110",
+              styles.iconBg,
+            )}
+          >
+            <Icon className="size-6" />
+          </div>
+        </div>
+
+        <h3
+          className={cn(
+            "mb-1 text-sm font-semibold tracking-wide",
+            heroCard ? "text-white/72" : "text-muted-foreground",
+          )}
+        >
+          {title}
+        </h3>
+        <p
+          className={cn(
+            "mb-4 text-3xl font-extrabold tabular-nums tracking-tight",
+            heroCard ? "text-white" : "text-navy-950 dark:text-white",
+          )}
+        >
+          {isNumeric ? animatedValue : value}
+          {description ? (
+            <span
+              className={cn(
+                "ml-2 mt-1 block text-sm font-medium sm:mt-0 sm:inline",
+                heroCard
+                  ? "text-white/74"
+                  : "text-navy-900/60 dark:text-navy-200/60",
+              )}
+            >
+              {description}
+            </span>
+          ) : null}
+        </p>
+
+        {!heroCard ? (
+          <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-navy-100 dark:bg-navy-900">
+            <div
+              className={`h-full ${styles.barFill} rounded-full opacity-70 transition-all duration-1000 group-hover:opacity-100`}
+              style={{ width: "100%" }}
+            />
+          </div>
+        ) : null}
+
+        {footer ? (
+          <div
+            className={cn(
+              "mt-4 border-t pt-3",
+              heroCard ? "border-white/12" : "border-navy-200 dark:border-navy-800",
+            )}
+          >
+            {footer}
+          </div>
+        ) : null}
+      </CardContent>
+    </Card>
   );
 }

@@ -28,12 +28,7 @@ import { Input } from "@/components/ui/input";
 import { ZoneBadge } from "@/components/ui/zone-badge";
 import { ConfirmModal } from "@/components/ui/confirm-modal";
 import { useUser } from "@/components/user-context";
-import {
-  Form,
-  FormField,
-  FormItem,
-  FormControl,
-} from "@/components/ui/form";
+import { Form, FormField, FormItem, FormControl } from "@/components/ui/form";
 import {
   Select,
   SelectContent,
@@ -129,7 +124,8 @@ function getAvatarColor(name: string) {
     { bg: "#f0fdf4", text: "#166534" },
   ];
   let hash = 0;
-  for (let i = 0; i < name.length; i++) hash = name.charCodeAt(i) + ((hash << 5) - hash);
+  for (let i = 0; i < name.length; i++)
+    hash = name.charCodeAt(i) + ((hash << 5) - hash);
   return colors[Math.abs(hash) % colors.length];
 }
 
@@ -163,9 +159,14 @@ export function StudentDetailClient({ student }: Props) {
     },
   });
 
-  function getQuestionnairePeriodLabel(questionnaire: Props["student"]["questionnaires"][number]) {
+  function getQuestionnairePeriodLabel(
+    questionnaire: Props["student"]["questionnaires"][number],
+  ) {
     const period = questionnaire.periodKey?.split(":")[1];
-    if ((period === "P1" || period === "P2" || period === "P3") && questionnaire.schoolYear) {
+    if (
+      (period === "P1" || period === "P2" || period === "P3") &&
+      questionnaire.schoolYear
+    ) {
       return `${q(getKidmedPeriodLabelKey(period))} - ${questionnaire.schoolYear}`;
     }
     return questionnaire.schoolYear ?? questionnaire.periodKey ?? null;
@@ -174,7 +175,7 @@ export function StudentDetailClient({ student }: Props) {
   function formatQuestionnaireValue(
     key: string,
     value: unknown,
-    meta: { unitKey?: string; scaleMax?: number }
+    meta: { unitKey?: string; scaleMax?: number },
   ) {
     if (typeof value === "boolean") return value ? q("yes") : q("no");
     if (typeof value === "number") {
@@ -194,10 +195,16 @@ export function StudentDetailClient({ student }: Props) {
         body: JSON.stringify({ kidmedConsentGranted: checked }),
       });
       await readApiResponse(res);
-      toast.success(checked ? t("kidmedConsentActivatedSuccess") : t("kidmedConsentRevokedSuccess"));
+      toast.success(
+        checked
+          ? t("kidmedConsentActivatedSuccess")
+          : t("kidmedConsentRevokedSuccess"),
+      );
       router.refresh();
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : common("connectionError"));
+      toast.error(
+        error instanceof Error ? error.message : common("connectionError"),
+      );
     } finally {
       setUpdatingKidmedConsent(false);
     }
@@ -221,18 +228,24 @@ export function StudentDetailClient({ student }: Props) {
       setEditing(false);
       router.refresh();
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : common("connectionError"));
+      toast.error(
+        error instanceof Error ? error.message : common("connectionError"),
+      );
     }
   };
 
   const handleDelete = async () => {
     try {
-      const res = await fetch(`/api/students/${student.id}`, { method: "DELETE" });
+      const res = await fetch(`/api/students/${student.id}`, {
+        method: "DELETE",
+      });
       await readApiResponse(res);
       toast.success(t("deleteSuccess"));
       router.push("/alunos");
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : common("connectionError"));
+      toast.error(
+        error instanceof Error ? error.message : common("connectionError"),
+      );
     }
   };
 
@@ -248,7 +261,9 @@ export function StudentDetailClient({ student }: Props) {
         {/* ── Hero Banner ── */}
         <div
           className="relative overflow-hidden px-8 py-10"
-          style={{ background: "linear-gradient(135deg, #1e3a8a 0%, #00236f 100%)" }}
+          style={{
+            background: "linear-gradient(135deg, #1e3a8a 0%, #00236f 100%)",
+          }}
         >
           {/* Decorative large circle */}
           <div className="pointer-events-none absolute -right-24 -top-24 h-72 w-72 rounded-full bg-white opacity-[0.04]" />
@@ -270,7 +285,10 @@ export function StudentDetailClient({ student }: Props) {
               {/* Avatar */}
               <div
                 className="flex size-20 shrink-0 items-center justify-center rounded-2xl text-3xl font-extrabold shadow-xl ring-4 ring-white/20"
-                style={{ backgroundColor: avatarColor.bg, color: avatarColor.text }}
+                style={{
+                  backgroundColor: avatarColor.bg,
+                  color: avatarColor.text,
+                }}
               >
                 {initials}
               </div>
@@ -294,7 +312,9 @@ export function StudentDetailClient({ student }: Props) {
                   type="button"
                   onClick={() => setEditing((e) => !e)}
                   className="flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-bold text-[#2a1700] shadow-md transition-all hover:-translate-y-0.5 hover:shadow-lg active:scale-95"
-                  style={{ background: "linear-gradient(135deg, #fea619, #f59e0b)" }}
+                  style={{
+                    background: "linear-gradient(135deg, #fea619, #f59e0b)",
+                  }}
                 >
                   <Pencil className="size-4" />
                   {editing ? t("cancelBtn") : t("editBtn")}
@@ -356,7 +376,10 @@ export function StudentDetailClient({ student }: Props) {
                         <FormItem>
                           <FormControl>
                             <FieldShell label={t("sexLabel")}>
-                              <Select value={field.value} onValueChange={field.onChange}>
+                              <Select
+                                value={field.value}
+                                onValueChange={field.onChange}
+                              >
                                 <SelectTrigger
                                   aria-label={t("sexLabel")}
                                   className="h-14 rounded-full px-4 pt-[1.45rem] pb-[0.45rem] text-left shadow-[inset_0_1px_0_rgba(255,255,255,0.3)] focus:ring-4 focus:ring-gold-400/15"
@@ -365,7 +388,9 @@ export function StudentDetailClient({ student }: Props) {
                                 </SelectTrigger>
                                 <SelectContent>
                                   <SelectItem value="M">{t("male")}</SelectItem>
-                                  <SelectItem value="F">{t("female")}</SelectItem>
+                                  <SelectItem value="F">
+                                    {t("female")}
+                                  </SelectItem>
                                 </SelectContent>
                               </Select>
                             </FieldShell>
@@ -398,7 +423,11 @@ export function StudentDetailClient({ student }: Props) {
                       render={({ field }) => (
                         <FormItem>
                           <FormControl>
-                            <Input label={t("schoolYearLabel")} placeholder="2025/2026" {...field} />
+                            <Input
+                              label={t("schoolYearLabel")}
+                              placeholder="2025/2026"
+                              {...field}
+                            />
                           </FormControl>
                         </FormItem>
                       )}
@@ -409,7 +438,11 @@ export function StudentDetailClient({ student }: Props) {
                       render={({ field }) => (
                         <FormItem>
                           <FormControl>
-                            <Input label={t("classNameLabel")} placeholder="8A" {...field} />
+                            <Input
+                              label={t("classNameLabel")}
+                              placeholder="8A"
+                              {...field}
+                            />
                           </FormControl>
                         </FormItem>
                       )}
@@ -430,7 +463,6 @@ export function StudentDetailClient({ student }: Props) {
 
           {/* Bento Grid */}
           <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
-
             {/* ── Biometrics Card ── */}
             <GlassCard
               icon={<Ruler className="size-4 text-[#1e3a8a]" />}
@@ -439,8 +471,14 @@ export function StudentDetailClient({ student }: Props) {
               {lastBio ? (
                 <div className="flex flex-col gap-5">
                   <div className="grid grid-cols-3 gap-3">
-                    <StatTile label={t("height")} value={`${lastBio.heightM} m`} />
-                    <StatTile label={t("weight")} value={`${lastBio.weightKg} kg`} />
+                    <StatTile
+                      label={t("height")}
+                      value={`${lastBio.heightM} m`}
+                    />
+                    <StatTile
+                      label={t("weight")}
+                      value={`${lastBio.weightKg} kg`}
+                    />
                     <StatTile
                       label={t("bmi")}
                       value={lastBio.imc.toFixed(1)}
@@ -456,7 +494,9 @@ export function StudentDetailClient({ student }: Props) {
                     />
                     <StatTile
                       label={t("date")}
-                      value={new Date(lastBio.recordedAt).toLocaleDateString(locale)}
+                      value={new Date(lastBio.recordedAt).toLocaleDateString(
+                        locale,
+                      )}
                     />
                   </div>
 
@@ -465,7 +505,8 @@ export function StudentDetailClient({ student }: Props) {
                     <div
                       className="overflow-hidden rounded-2xl p-4"
                       style={{
-                        background: "linear-gradient(135deg, #1e3a8a 0%, #00236f 100%)",
+                        background:
+                          "linear-gradient(135deg, #1e3a8a 0%, #00236f 100%)",
                       }}
                     >
                       <div className="mb-2 flex items-center gap-2">
@@ -538,26 +579,39 @@ export function StudentDetailClient({ student }: Props) {
                           {q(getQuestionnaireTypeLabelKey(questionnaire.type))}
                         </p>
                         <time className="text-[10px] font-bold uppercase tracking-widest text-slate-400">
-                          {new Date(questionnaire.submittedAt).toLocaleDateString(locale)}
+                          {new Date(
+                            questionnaire.submittedAt,
+                          ).toLocaleDateString(locale)}
                         </time>
                       </div>
                       <div className="mt-2 flex flex-wrap gap-1.5">
                         {getQuestionnairePreviewItems({
                           ...questionnaire,
-                          payload: (questionnaire.payload ?? {}) as Record<string, unknown>,
+                          payload: (questionnaire.payload ?? {}) as Record<
+                            string,
+                            unknown
+                          >,
                         }).map((item) => {
-                          if (item.key === "classification" && typeof item.value === "string") {
+                          if (
+                            item.key === "classification" &&
+                            typeof item.value === "string"
+                          ) {
                             return (
                               <span
                                 key={item.key}
                                 className="rounded-full bg-blue-50 px-2.5 py-1 text-[10px] font-bold text-[#1e3a8a]"
                               >
-                                {q(getKidmedClassificationLabelKey(item.value as KidmedClassification))}
+                                {q(
+                                  getKidmedClassificationLabelKey(
+                                    item.value as KidmedClassification,
+                                  ),
+                                )}
                               </span>
                             );
                           }
                           if (item.key === "period") {
-                            const label = getQuestionnairePeriodLabel(questionnaire);
+                            const label =
+                              getQuestionnairePeriodLabel(questionnaire);
                             return label ? (
                               <span
                                 key={item.key}
@@ -567,13 +621,19 @@ export function StudentDetailClient({ student }: Props) {
                               </span>
                             ) : null;
                           }
-                          const meta = QUESTIONNAIRE_FIELD_META[item.key] ?? item;
+                          const meta =
+                            QUESTIONNAIRE_FIELD_META[item.key] ?? item;
                           return (
                             <span
                               key={item.key}
                               className="rounded-full bg-[#ecf5fb] px-2.5 py-1 text-[10px] font-medium text-[#444651]"
                             >
-                              {q(item.labelKey)}: {formatQuestionnaireValue(item.key, item.value, meta)}
+                              {q(item.labelKey)}:{" "}
+                              {formatQuestionnaireValue(
+                                item.key,
+                                item.value,
+                                meta,
+                              )}
                             </span>
                           );
                         })}
@@ -595,9 +655,13 @@ export function StudentDetailClient({ student }: Props) {
                 <div className="flex items-start justify-between gap-4">
                   <div>
                     <p className="text-sm font-bold text-[#00236f]">
-                      {student.kidmedConsentAt ? t("kidmedConsentActive") : t("kidmedConsentInactive")}
+                      {student.kidmedConsentAt
+                        ? t("kidmedConsentActive")
+                        : t("kidmedConsentInactive")}
                     </p>
-                    <p className="mt-1 text-sm text-slate-500">{t("kidmedConsentDescription")}</p>
+                    <p className="mt-1 text-sm text-slate-500">
+                      {t("kidmedConsentDescription")}
+                    </p>
                   </div>
                   {canManageStudent && (
                     <Switch
@@ -618,7 +682,9 @@ export function StudentDetailClient({ student }: Props) {
                     <p className="text-sm font-bold text-[#00236f]">
                       {student.kidmedConsentAt
                         ? t("kidmedConsentRecordedAtLabel", {
-                            date: new Date(student.kidmedConsentAt).toLocaleDateString(locale),
+                            date: new Date(
+                              student.kidmedConsentAt,
+                            ).toLocaleDateString(locale),
                           })
                         : t("kidmedConsentMissingLabel")}
                     </p>
@@ -648,7 +714,9 @@ export function StudentDetailClient({ student }: Props) {
                       key={d.id}
                       className="flex items-start justify-between rounded-xl bg-[#ecf5fb] px-4 py-3"
                     >
-                      <span className="text-sm font-medium text-[#141d21]">{d.reason}</span>
+                      <span className="text-sm font-medium text-[#141d21]">
+                        {d.reason}
+                      </span>
                       <span className="shrink-0 text-xs text-slate-400">
                         {new Date(d.startDate).toLocaleDateString(locale)} →{" "}
                         {new Date(d.endDate).toLocaleDateString(locale)}
@@ -675,9 +743,13 @@ export function StudentDetailClient({ student }: Props) {
                     >
                       <span className="text-sm font-medium text-[#141d21]">
                         {g.guardian.name}{" "}
-                        <span className="text-xs text-slate-400">({g.relationship})</span>
+                        <span className="text-xs text-slate-400">
+                          ({g.relationship})
+                        </span>
                       </span>
-                      <span className="text-xs text-slate-400">{g.guardian.email}</span>
+                      <span className="text-xs text-slate-400">
+                        {g.guardian.email}
+                      </span>
                     </li>
                   ))}
                 </ul>
@@ -727,7 +799,9 @@ function GlassCard({
     >
       <div className="flex items-center gap-2">
         {icon}
-        <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400">{title}</p>
+        <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400">
+          {title}
+        </p>
       </div>
       {children}
     </div>

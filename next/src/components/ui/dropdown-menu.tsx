@@ -21,7 +21,7 @@ const DropdownMenuSubTrigger = React.forwardRef<
   <DropdownMenuPrimitive.SubTrigger
     ref={ref}
     className={cn(
-      "flex cursor-default select-none items-center gap-2 rounded-lg px-3 py-2 text-sm outline-none focus:bg-muted/60 data-[state=open]:bg-muted/60",
+      "flex cursor-default select-none items-center gap-2 rounded-lg px-3 py-2 text-sm outline-none transition-colors focus-visible:outline-none data-[highlighted]:bg-navy-100/80 data-[highlighted]:text-navy-900 data-[state=open]:bg-navy-100/80 data-[state=open]:text-navy-900 dark:data-[highlighted]:bg-white/10 dark:data-[highlighted]:text-white dark:data-[state=open]:bg-white/10 dark:data-[state=open]:text-white",
       inset && "pl-8",
       className
     )}
@@ -40,7 +40,7 @@ const DropdownMenuSubContent = React.forwardRef<
   <DropdownMenuPrimitive.SubContent
     ref={ref}
     className={cn(
-      "z-50 min-w-[8rem] overflow-hidden rounded-[18px] border border-border/70 bg-card/95 p-1.5 shadow-float backdrop-blur-xl",
+      "z-50 min-w-[8rem] overflow-hidden rounded-[18px] border border-border/70 bg-card/95 p-1.5 shadow-float backdrop-blur-xl outline-none",
       "data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95",
       className
     )}
@@ -58,7 +58,7 @@ const DropdownMenuContent = React.forwardRef<
       ref={ref}
       sideOffset={sideOffset}
       className={cn(
-      "z-50 min-w-[8rem] overflow-hidden rounded-[18px] border border-border/70 bg-card/95 p-1.5 shadow-float backdrop-blur-xl",
+      "z-50 min-w-[8rem] overflow-hidden rounded-[18px] border border-border/70 bg-card/95 p-1.5 shadow-float backdrop-blur-xl outline-none",
         "data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95",
         className
       )}
@@ -77,7 +77,7 @@ const DropdownMenuItem = React.forwardRef<
   <DropdownMenuPrimitive.Item
     ref={ref}
     className={cn(
-      "relative flex cursor-default select-none items-center gap-2 rounded-lg px-3 py-2 text-sm outline-none transition-colors focus:bg-muted/60 focus:text-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50 [&_svg]:size-4 [&_svg]:shrink-0",
+      "relative flex cursor-default select-none items-center gap-2 rounded-lg px-3 py-2 text-sm outline-none transition-colors focus-visible:outline-none data-[highlighted]:bg-navy-100/80 data-[highlighted]:text-navy-900 dark:data-[highlighted]:bg-white/10 dark:data-[highlighted]:text-white data-[disabled]:pointer-events-none data-[disabled]:opacity-50 [&_svg]:size-4 [&_svg]:shrink-0",
       inset && "pl-8",
       className
     )}
@@ -93,7 +93,7 @@ const DropdownMenuCheckboxItem = React.forwardRef<
   <DropdownMenuPrimitive.CheckboxItem
     ref={ref}
     className={cn(
-      "relative flex cursor-default select-none items-center rounded-lg py-2 pl-8 pr-3 text-sm outline-none transition-colors focus:bg-muted/60 focus:text-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
+      "relative flex cursor-default select-none items-center rounded-lg py-2 pl-8 pr-3 text-sm outline-none transition-colors focus-visible:outline-none data-[highlighted]:bg-navy-100/80 data-[highlighted]:text-navy-900 dark:data-[highlighted]:bg-white/10 dark:data-[highlighted]:text-white data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
       className
     )}
     checked={checked}
@@ -116,7 +116,7 @@ const DropdownMenuRadioItem = React.forwardRef<
   <DropdownMenuPrimitive.RadioItem
     ref={ref}
     className={cn(
-      "relative flex cursor-default select-none items-center rounded-lg py-2 pl-8 pr-3 text-sm outline-none transition-colors focus:bg-muted/60 focus:text-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
+      "relative flex cursor-default select-none items-center rounded-lg py-2 pl-8 pr-3 text-sm outline-none transition-colors focus-visible:outline-none data-[highlighted]:bg-navy-100/80 data-[highlighted]:text-navy-900 dark:data-[highlighted]:bg-white/10 dark:data-[highlighted]:text-white data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
       className
     )}
     {...props}

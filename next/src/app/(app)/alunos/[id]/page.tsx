@@ -33,7 +33,9 @@ export default async function StudentDetailPage({ params }: Props) {
       tests: { orderBy: { recordedAt: "desc" }, take: 5 },
       questionnaires: { orderBy: { submittedAt: "desc" }, take: 5 },
       dispensas: { orderBy: { startDate: "desc" } },
-      kidmedConsentRecordedBy: { select: { id: true, name: true, email: true } },
+      kidmedConsentRecordedBy: {
+        select: { id: true, name: true, email: true },
+      },
       guardians: { include: { guardian: true } },
     },
   });

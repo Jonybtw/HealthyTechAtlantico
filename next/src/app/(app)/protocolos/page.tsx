@@ -43,26 +43,109 @@ const TEST_ICONS: Record<string, LucideIcon> = {
 };
 
 // Category grouping for test cards
-const TEST_CATEGORIES: Record<string, { label: string; color: string; bg: string; border: string; darkBg: string; darkBorder: string; darkText: string }> = {
-  testVaiVem:      { label: "Aeróbia", color: "text-sky-700", bg: "bg-sky-50", border: "border-sky-200/60", darkBg: "dark:bg-sky-900/20", darkBorder: "dark:border-sky-700/30", darkText: "dark:text-sky-300" },
-  testCooper:      { label: "Aeróbia", color: "text-sky-700", bg: "bg-sky-50", border: "border-sky-200/60", darkBg: "dark:bg-sky-900/20", darkBorder: "dark:border-sky-700/30", darkText: "dark:text-sky-300" },
-  testMilha:       { label: "Aeróbia", color: "text-sky-700", bg: "bg-sky-50", border: "border-sky-200/60", darkBg: "dark:bg-sky-900/20", darkBorder: "dark:border-sky-700/30", darkText: "dark:text-sky-300" },
-  testVelocidade:  { label: "Velocidade", color: "text-amber-700", bg: "bg-amber-50", border: "border-amber-200/60", darkBg: "dark:bg-amber-900/20", darkBorder: "dark:border-amber-700/30", darkText: "dark:text-amber-300" },
-  testAgilidade:   { label: "Agilidade", color: "text-amber-700", bg: "bg-amber-50", border: "border-amber-200/60", darkBg: "dark:bg-amber-900/20", darkBorder: "dark:border-amber-700/30", darkText: "dark:text-amber-300" },
-  testAbdominais:  { label: "Força", color: "text-emerald-700", bg: "bg-emerald-50", border: "border-emerald-200/60", darkBg: "dark:bg-emerald-900/20", darkBorder: "dark:border-emerald-700/30", darkText: "dark:text-emerald-300" },
-  testExtensoes:   { label: "Força", color: "text-emerald-700", bg: "bg-emerald-50", border: "border-emerald-200/60", darkBg: "dark:bg-emerald-900/20", darkBorder: "dark:border-emerald-700/30", darkText: "dark:text-emerald-300" },
-  testSentaAlcanca:{ label: "Flexibilidade", color: "text-violet-700", bg: "bg-violet-50", border: "border-violet-200/60", darkBg: "dark:bg-violet-900/20", darkBorder: "dark:border-violet-700/30", darkText: "dark:text-violet-300" },
+const TEST_CATEGORIES: Record<
+  string,
+  {
+    label: string;
+    color: string;
+    bg: string;
+    border: string;
+    darkBg: string;
+    darkBorder: string;
+    darkText: string;
+  }
+> = {
+  testVaiVem: {
+    label: "Aeróbia",
+    color: "text-sky-700",
+    bg: "bg-sky-50",
+    border: "border-sky-200/60",
+    darkBg: "dark:bg-sky-900/20",
+    darkBorder: "dark:border-sky-700/30",
+    darkText: "dark:text-sky-300",
+  },
+  testCooper: {
+    label: "Aeróbia",
+    color: "text-sky-700",
+    bg: "bg-sky-50",
+    border: "border-sky-200/60",
+    darkBg: "dark:bg-sky-900/20",
+    darkBorder: "dark:border-sky-700/30",
+    darkText: "dark:text-sky-300",
+  },
+  testMilha: {
+    label: "Aeróbia",
+    color: "text-sky-700",
+    bg: "bg-sky-50",
+    border: "border-sky-200/60",
+    darkBg: "dark:bg-sky-900/20",
+    darkBorder: "dark:border-sky-700/30",
+    darkText: "dark:text-sky-300",
+  },
+  testVelocidade: {
+    label: "Velocidade",
+    color: "text-amber-700",
+    bg: "bg-amber-50",
+    border: "border-amber-200/60",
+    darkBg: "dark:bg-amber-900/20",
+    darkBorder: "dark:border-amber-700/30",
+    darkText: "dark:text-amber-300",
+  },
+  testAgilidade: {
+    label: "Agilidade",
+    color: "text-amber-700",
+    bg: "bg-amber-50",
+    border: "border-amber-200/60",
+    darkBg: "dark:bg-amber-900/20",
+    darkBorder: "dark:border-amber-700/30",
+    darkText: "dark:text-amber-300",
+  },
+  testAbdominais: {
+    label: "Força",
+    color: "text-emerald-700",
+    bg: "bg-emerald-50",
+    border: "border-emerald-200/60",
+    darkBg: "dark:bg-emerald-900/20",
+    darkBorder: "dark:border-emerald-700/30",
+    darkText: "dark:text-emerald-300",
+  },
+  testExtensoes: {
+    label: "Força",
+    color: "text-emerald-700",
+    bg: "bg-emerald-50",
+    border: "border-emerald-200/60",
+    darkBg: "dark:bg-emerald-900/20",
+    darkBorder: "dark:border-emerald-700/30",
+    darkText: "dark:text-emerald-300",
+  },
+  testSentaAlcanca: {
+    label: "Flexibilidade",
+    color: "text-violet-700",
+    bg: "bg-violet-50",
+    border: "border-violet-200/60",
+    darkBg: "dark:bg-violet-900/20",
+    darkBorder: "dark:border-violet-700/30",
+    darkText: "dark:text-violet-300",
+  },
 };
 
 const ICON_BG_CLASSES: Record<string, string> = {
-  testVaiVem:       "from-sky-100 to-sky-50 text-sky-600 group-hover:from-sky-200 group-hover:to-sky-100 dark:from-sky-900/40 dark:to-sky-900/20 dark:text-sky-300",
-  testCooper:       "from-sky-100 to-sky-50 text-sky-600 group-hover:from-sky-200 group-hover:to-sky-100 dark:from-sky-900/40 dark:to-sky-900/20 dark:text-sky-300",
-  testMilha:        "from-sky-100 to-sky-50 text-sky-600 group-hover:from-sky-200 group-hover:to-sky-100 dark:from-sky-900/40 dark:to-sky-900/20 dark:text-sky-300",
-  testVelocidade:   "from-amber-100 to-amber-50 text-amber-600 group-hover:from-amber-200 group-hover:to-amber-100 dark:from-amber-900/40 dark:to-amber-900/20 dark:text-amber-300",
-  testAgilidade:    "from-amber-100 to-amber-50 text-amber-600 group-hover:from-amber-200 group-hover:to-amber-100 dark:from-amber-900/40 dark:to-amber-900/20 dark:text-amber-300",
-  testAbdominais:   "from-emerald-100 to-emerald-50 text-emerald-600 group-hover:from-emerald-200 group-hover:to-emerald-100 dark:from-emerald-900/40 dark:to-emerald-900/20 dark:text-emerald-300",
-  testExtensoes:    "from-emerald-100 to-emerald-50 text-emerald-600 group-hover:from-emerald-200 group-hover:to-emerald-100 dark:from-emerald-900/40 dark:to-emerald-900/20 dark:text-emerald-300",
-  testSentaAlcanca: "from-violet-100 to-violet-50 text-violet-600 group-hover:from-violet-200 group-hover:to-violet-100 dark:from-violet-900/40 dark:to-violet-900/20 dark:text-violet-300",
+  testVaiVem:
+    "from-sky-100 to-sky-50 text-sky-600 group-hover:from-sky-200 group-hover:to-sky-100 dark:from-sky-900/40 dark:to-sky-900/20 dark:text-sky-300",
+  testCooper:
+    "from-sky-100 to-sky-50 text-sky-600 group-hover:from-sky-200 group-hover:to-sky-100 dark:from-sky-900/40 dark:to-sky-900/20 dark:text-sky-300",
+  testMilha:
+    "from-sky-100 to-sky-50 text-sky-600 group-hover:from-sky-200 group-hover:to-sky-100 dark:from-sky-900/40 dark:to-sky-900/20 dark:text-sky-300",
+  testVelocidade:
+    "from-amber-100 to-amber-50 text-amber-600 group-hover:from-amber-200 group-hover:to-amber-100 dark:from-amber-900/40 dark:to-amber-900/20 dark:text-amber-300",
+  testAgilidade:
+    "from-amber-100 to-amber-50 text-amber-600 group-hover:from-amber-200 group-hover:to-amber-100 dark:from-amber-900/40 dark:to-amber-900/20 dark:text-amber-300",
+  testAbdominais:
+    "from-emerald-100 to-emerald-50 text-emerald-600 group-hover:from-emerald-200 group-hover:to-emerald-100 dark:from-emerald-900/40 dark:to-emerald-900/20 dark:text-emerald-300",
+  testExtensoes:
+    "from-emerald-100 to-emerald-50 text-emerald-600 group-hover:from-emerald-200 group-hover:to-emerald-100 dark:from-emerald-900/40 dark:to-emerald-900/20 dark:text-emerald-300",
+  testSentaAlcanca:
+    "from-violet-100 to-violet-50 text-violet-600 group-hover:from-violet-200 group-hover:to-violet-100 dark:from-violet-900/40 dark:to-violet-900/20 dark:text-violet-300",
 };
 
 export default async function ProtocolosPage() {
@@ -110,8 +193,12 @@ export default async function ProtocolosPage() {
               >
                 <Icon className="h-4 w-4 text-gold-300" />
                 <div>
-                  <div className="text-sm font-bold text-white leading-none">{value}</div>
-                  <div className="mt-0.5 text-[11px] text-navy-200/70">{label}</div>
+                  <div className="text-sm font-bold text-white leading-none">
+                    {value}
+                  </div>
+                  <div className="mt-0.5 text-[11px] text-navy-200/70">
+                    {label}
+                  </div>
                 </div>
               </div>
             ))}
@@ -130,8 +217,12 @@ export default async function ProtocolosPage() {
               <Scale className="h-4 w-4 text-navy-600 dark:text-navy-300" />
             </div>
             <div>
-              <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">Avaliação Corporal</p>
-              <h2 className="font-display text-base font-bold text-foreground sm:text-lg">Valores de Referência ZAF</h2>
+              <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+                Avaliação Corporal
+              </p>
+              <h2 className="font-display text-base font-bold text-foreground sm:text-lg">
+                Valores de Referência ZAF
+              </h2>
             </div>
           </div>
 
@@ -149,8 +240,12 @@ export default async function ProtocolosPage() {
                       <Scale className="h-5 w-5 text-navy-600 dark:text-navy-300" />
                     </div>
                     <div>
-                      <h3 className="font-display text-sm font-bold text-navy-900 dark:text-navy-100">{t("bmiTableTitle")}</h3>
-                      <p className="mt-0.5 text-[11px] text-muted-foreground">{t("bmiTableCaption")}</p>
+                      <h3 className="font-display text-sm font-bold text-navy-900 dark:text-navy-100">
+                        {t("bmiTableTitle")}
+                      </h3>
+                      <p className="mt-0.5 text-[11px] text-muted-foreground">
+                        {t("bmiTableCaption")}
+                      </p>
                     </div>
                   </div>
                   <span className="mt-1 inline-flex items-center rounded-full bg-navy-100/80 px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-navy-600 dark:bg-navy-800/60 dark:text-navy-300">
@@ -162,18 +257,31 @@ export default async function ProtocolosPage() {
                   <table className="w-full text-sm">
                     <thead>
                       <tr className="bg-navy-100/70 dark:bg-navy-900/50">
-                        <th scope="col" className="w-[22%] border-b border-navy-200/60 px-5 py-3 text-left text-[10px] font-bold uppercase tracking-[0.12em] text-navy-600 dark:border-navy-800/50 dark:text-navy-300">
+                        <th
+                          scope="col"
+                          className="w-[22%] border-b border-navy-200/60 px-5 py-3 text-left text-[10px] font-bold uppercase tracking-[0.12em] text-navy-600 dark:border-navy-800/50 dark:text-navy-300"
+                        >
                           {t("age")}
                         </th>
-                        <th scope="col" className="w-[39%] border-b border-navy-200/60 px-5 py-3 text-left text-[10px] font-bold uppercase tracking-[0.12em] text-navy-600 dark:border-navy-800/50 dark:text-navy-300">
+                        <th
+                          scope="col"
+                          className="w-[39%] border-b border-navy-200/60 px-5 py-3 text-left text-[10px] font-bold uppercase tracking-[0.12em] text-navy-600 dark:border-navy-800/50 dark:text-navy-300"
+                        >
                           <span className="inline-flex items-center gap-1.5">
-                            <span className="inline-flex h-4 w-4 items-center justify-center rounded-full bg-navy-600 text-[9px] font-bold text-white dark:bg-navy-400">♂</span>
+                            <span className="inline-flex h-4 w-4 items-center justify-center rounded-full bg-navy-600 text-[9px] font-bold text-white dark:bg-navy-400">
+                              ♂
+                            </span>
                             {t("male")}
                           </span>
                         </th>
-                        <th scope="col" className="w-[39%] border-b border-navy-200/60 px-5 py-3 text-left text-[10px] font-bold uppercase tracking-[0.12em] text-navy-600 dark:border-navy-800/50 dark:text-navy-300">
+                        <th
+                          scope="col"
+                          className="w-[39%] border-b border-navy-200/60 px-5 py-3 text-left text-[10px] font-bold uppercase tracking-[0.12em] text-navy-600 dark:border-navy-800/50 dark:text-navy-300"
+                        >
                           <span className="inline-flex items-center gap-1.5">
-                            <span className="inline-flex h-4 w-4 items-center justify-center rounded-full bg-gold-500 text-[9px] font-bold text-white dark:bg-gold-400">♀</span>
+                            <span className="inline-flex h-4 w-4 items-center justify-center rounded-full bg-gold-500 text-[9px] font-bold text-white dark:bg-gold-400">
+                              ♀
+                            </span>
                             {t("female")}
                           </span>
                         </th>
@@ -185,7 +293,9 @@ export default async function ProtocolosPage() {
                           key={row.age}
                           className={cn(
                             "group/row border-t border-navy-100/60 transition-colors hover:bg-navy-50/80 dark:border-navy-800/30 dark:hover:bg-navy-900/40",
-                            idx % 2 === 0 ? "bg-transparent" : "bg-navy-50/30 dark:bg-navy-950/30"
+                            idx % 2 === 0
+                              ? "bg-transparent"
+                              : "bg-navy-50/30 dark:bg-navy-950/30",
                           )}
                         >
                           <th scope="row" className="px-5 py-3.5 text-left">
@@ -208,7 +318,10 @@ export default async function ProtocolosPage() {
             </div>
 
             {/* ── Waist Table ───────────────────────────────────────────── */}
-            <div id="waist" className="scroll-mt-40 animate-fade-in-up delay-100">
+            <div
+              id="waist"
+              className="scroll-mt-40 animate-fade-in-up delay-100"
+            >
               <div className="group relative overflow-hidden rounded-[24px] border border-gold-200/60 bg-gradient-to-br from-gold-50/80 via-white/60 to-gold-50/40 shadow-[0_8px_32px_-16px_rgb(9_21_35_/_0.12)] backdrop-blur-sm transition-all duration-300 hover:shadow-[0_16px_40px_-20px_rgb(184_140_25_/_0.2)] dark:border-gold-800/30 dark:from-gold-950/40 dark:via-navy-950/40 dark:to-gold-950/20">
                 {/* Top accent stripe */}
                 <div className="h-1 w-full bg-gradient-to-r from-gold-600 via-gold-400 to-gold-300" />
@@ -220,8 +333,12 @@ export default async function ProtocolosPage() {
                       <Scissors className="h-5 w-5 text-gold-600 dark:text-gold-300" />
                     </div>
                     <div>
-                      <h3 className="font-display text-sm font-bold text-gold-900 dark:text-gold-100">{t("waistTableTitle")}</h3>
-                      <p className="mt-0.5 text-[11px] text-muted-foreground">{t("waistTableCaption")}</p>
+                      <h3 className="font-display text-sm font-bold text-gold-900 dark:text-gold-100">
+                        {t("waistTableTitle")}
+                      </h3>
+                      <p className="mt-0.5 text-[11px] text-muted-foreground">
+                        {t("waistTableCaption")}
+                      </p>
                     </div>
                   </div>
                   <span className="mt-1 inline-flex items-center rounded-full bg-gold-100/80 px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-gold-700 dark:bg-gold-900/40 dark:text-gold-300">
@@ -233,18 +350,31 @@ export default async function ProtocolosPage() {
                   <table className="w-full text-sm">
                     <thead>
                       <tr className="bg-gold-100/60 dark:bg-gold-900/30">
-                        <th scope="col" className="w-[22%] border-b border-gold-200/60 px-5 py-3 text-left text-[10px] font-bold uppercase tracking-[0.12em] text-gold-700 dark:border-gold-800/40 dark:text-gold-300">
+                        <th
+                          scope="col"
+                          className="w-[22%] border-b border-gold-200/60 px-5 py-3 text-left text-[10px] font-bold uppercase tracking-[0.12em] text-gold-700 dark:border-gold-800/40 dark:text-gold-300"
+                        >
                           {t("age")}
                         </th>
-                        <th scope="col" className="w-[39%] border-b border-gold-200/60 px-5 py-3 text-left text-[10px] font-bold uppercase tracking-[0.12em] text-gold-700 dark:border-gold-800/40 dark:text-gold-300">
+                        <th
+                          scope="col"
+                          className="w-[39%] border-b border-gold-200/60 px-5 py-3 text-left text-[10px] font-bold uppercase tracking-[0.12em] text-gold-700 dark:border-gold-800/40 dark:text-gold-300"
+                        >
                           <span className="inline-flex items-center gap-1.5">
-                            <span className="inline-flex h-4 w-4 items-center justify-center rounded-full bg-navy-600 text-[9px] font-bold text-white dark:bg-navy-400">♂</span>
+                            <span className="inline-flex h-4 w-4 items-center justify-center rounded-full bg-navy-600 text-[9px] font-bold text-white dark:bg-navy-400">
+                              ♂
+                            </span>
                             {t("male")}
                           </span>
                         </th>
-                        <th scope="col" className="w-[39%] border-b border-gold-200/60 px-5 py-3 text-left text-[10px] font-bold uppercase tracking-[0.12em] text-gold-700 dark:border-gold-800/40 dark:text-gold-300">
+                        <th
+                          scope="col"
+                          className="w-[39%] border-b border-gold-200/60 px-5 py-3 text-left text-[10px] font-bold uppercase tracking-[0.12em] text-gold-700 dark:border-gold-800/40 dark:text-gold-300"
+                        >
                           <span className="inline-flex items-center gap-1.5">
-                            <span className="inline-flex h-4 w-4 items-center justify-center rounded-full bg-gold-500 text-[9px] font-bold text-white dark:bg-gold-400">♀</span>
+                            <span className="inline-flex h-4 w-4 items-center justify-center rounded-full bg-gold-500 text-[9px] font-bold text-white dark:bg-gold-400">
+                              ♀
+                            </span>
                             {t("female")}
                           </span>
                         </th>
@@ -256,7 +386,9 @@ export default async function ProtocolosPage() {
                           key={row.age}
                           className={cn(
                             "group/row border-t border-gold-100/60 transition-colors hover:bg-gold-50/80 dark:border-gold-900/20 dark:hover:bg-gold-900/20",
-                            idx % 2 === 0 ? "bg-transparent" : "bg-gold-50/30 dark:bg-gold-950/20"
+                            idx % 2 === 0
+                              ? "bg-transparent"
+                              : "bg-gold-50/30 dark:bg-gold-950/20",
                           )}
                         >
                           <th scope="row" className="px-5 py-3.5 text-left">
@@ -289,8 +421,12 @@ export default async function ProtocolosPage() {
                 <Activity className="h-4 w-4 text-navy-600 dark:text-navy-300" />
               </div>
               <div>
-                <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">Aptidão Física</p>
-                <h2 className="font-display text-base font-bold text-foreground sm:text-lg">{t("fitnessTitle")}</h2>
+                <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+                  Aptidão Física
+                </p>
+                <h2 className="font-display text-base font-bold text-foreground sm:text-lg">
+                  {t("fitnessTitle")}
+                </h2>
               </div>
             </div>
             <p className="text-sm text-muted-foreground">{t("testTable")}</p>
@@ -299,13 +435,39 @@ export default async function ProtocolosPage() {
           {/* Category legend */}
           <div className="mb-5 flex flex-wrap items-center gap-2">
             {[
-              { label: "Aeróbia", color: "bg-sky-100 text-sky-700 border-sky-200/60 dark:bg-sky-900/30 dark:text-sky-300 dark:border-sky-700/30" },
-              { label: "Velocidade", color: "bg-amber-100 text-amber-700 border-amber-200/60 dark:bg-amber-900/30 dark:text-amber-300 dark:border-amber-700/30" },
-              { label: "Agilidade", color: "bg-amber-100 text-amber-700 border-amber-200/60 dark:bg-amber-900/30 dark:text-amber-300 dark:border-amber-700/30" },
-              { label: "Força", color: "bg-emerald-100 text-emerald-700 border-emerald-200/60 dark:bg-emerald-900/30 dark:text-emerald-300 dark:border-emerald-700/30" },
-              { label: "Flexibilidade", color: "bg-violet-100 text-violet-700 border-violet-200/60 dark:bg-violet-900/30 dark:text-violet-300 dark:border-violet-700/30" },
+              {
+                label: "Aeróbia",
+                color:
+                  "bg-sky-100 text-sky-700 border-sky-200/60 dark:bg-sky-900/30 dark:text-sky-300 dark:border-sky-700/30",
+              },
+              {
+                label: "Velocidade",
+                color:
+                  "bg-amber-100 text-amber-700 border-amber-200/60 dark:bg-amber-900/30 dark:text-amber-300 dark:border-amber-700/30",
+              },
+              {
+                label: "Agilidade",
+                color:
+                  "bg-amber-100 text-amber-700 border-amber-200/60 dark:bg-amber-900/30 dark:text-amber-300 dark:border-amber-700/30",
+              },
+              {
+                label: "Força",
+                color:
+                  "bg-emerald-100 text-emerald-700 border-emerald-200/60 dark:bg-emerald-900/30 dark:text-emerald-300 dark:border-emerald-700/30",
+              },
+              {
+                label: "Flexibilidade",
+                color:
+                  "bg-violet-100 text-violet-700 border-violet-200/60 dark:bg-violet-900/30 dark:text-violet-300 dark:border-violet-700/30",
+              },
             ].map(({ label, color }) => (
-              <span key={label} className={cn("inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-[11px] font-semibold", color)}>
+              <span
+                key={label}
+                className={cn(
+                  "inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-[11px] font-semibold",
+                  color,
+                )}
+              >
                 <span className="size-1.5 rounded-full bg-current opacity-70" />
                 {label}
               </span>
@@ -317,16 +479,18 @@ export default async function ProtocolosPage() {
             {TEST_ZONE_KEYS.map((item, index) => {
               const Icon = TEST_ICONS[item.testKey] ?? Gauge;
               const category = TEST_CATEGORIES[item.testKey];
-              const iconBg = ICON_BG_CLASSES[item.testKey] ?? "from-muted to-muted/50 text-muted-foreground";
+              const iconBg =
+                ICON_BG_CLASSES[item.testKey] ??
+                "from-muted to-muted/50 text-muted-foreground";
 
               return (
                 <article
                   key={item.testKey}
                   className={cn(
-                    "group relative flex flex-col overflow-hidden rounded-[22px] border bg-card/80 shadow-[0_4px_20px_-10px_rgb(9_21_35_/_0.12)] backdrop-blur-sm transition-all duration-300",
+                    "group relative flex flex-col overflow-hidden rounded-[22px] border bg-white/60 dark:bg-navy-950/40 backdrop-blur-md/80 shadow-[0_4px_20px_-10px_rgb(9_21_35_/_0.12)] backdrop-blur-sm transition-all duration-300",
                     "hover:-translate-y-1.5 hover:shadow-[0_16px_40px_-16px_rgb(9_21_35_/_0.18)]",
                     "animate-fade-in-up",
-                    "border-border/50 hover:border-border/80"
+                    "border-white/20 dark:border-white/10 hover:border-white/20 dark:border-white/10/80",
                   )}
                   style={{ animationDelay: `${index * 55}ms` }}
                 >
@@ -334,31 +498,44 @@ export default async function ProtocolosPage() {
                   <div
                     className={cn(
                       "h-0.5 w-full",
-                      item.testKey.includes("Vai") || item.testKey === "testVaiVem" || item.testKey === "testCooper" || item.testKey === "testMilha"
+                      item.testKey.includes("Vai") ||
+                        item.testKey === "testVaiVem" ||
+                        item.testKey === "testCooper" ||
+                        item.testKey === "testMilha"
                         ? "bg-gradient-to-r from-sky-400 to-sky-300"
-                        : item.testKey === "testVelocidade" || item.testKey === "testAgilidade"
+                        : item.testKey === "testVelocidade" ||
+                            item.testKey === "testAgilidade"
                           ? "bg-gradient-to-r from-amber-400 to-amber-300"
-                          : item.testKey === "testAbdominais" || item.testKey === "testExtensoes"
+                          : item.testKey === "testAbdominais" ||
+                              item.testKey === "testExtensoes"
                             ? "bg-gradient-to-r from-emerald-400 to-emerald-300"
-                            : "bg-gradient-to-r from-violet-400 to-violet-300"
+                            : "bg-gradient-to-r from-violet-400 to-violet-300",
                     )}
                   />
 
                   <div className="flex flex-1 flex-col p-5">
                     {/* Icon + category badge */}
                     <div className="mb-4 flex items-start justify-between">
-                      <div className={cn(
-                        "inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br shadow-sm transition-all duration-300",
-                        iconBg
-                      )}>
+                      <div
+                        className={cn(
+                          "inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br shadow-sm transition-all duration-300",
+                          iconBg,
+                        )}
+                      >
                         <Icon className="h-5 w-5" />
                       </div>
                       {category && (
-                        <span className={cn(
-                          "inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-semibold",
-                          category.bg, category.color, category.border,
-                          category.darkBg, category.darkBorder, category.darkText
-                        )}>
+                        <span
+                          className={cn(
+                            "inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-semibold",
+                            category.bg,
+                            category.color,
+                            category.border,
+                            category.darkBg,
+                            category.darkBorder,
+                            category.darkText,
+                          )}
+                        >
                           {category.label}
                         </span>
                       )}
@@ -373,16 +550,25 @@ export default async function ProtocolosPage() {
                     </p>
 
                     {/* Footer: unit */}
-                    <div className="mt-4 flex items-center justify-between border-t border-border/30 pt-3.5">
+                    <div className="mt-4 flex items-center justify-between border-t border-white/20 dark:border-white/10/30 pt-3.5">
                       <span className="text-[11px] font-medium uppercase tracking-[0.08em] text-muted-foreground">
                         {t("unitLabel")}
                       </span>
-                      <span className={cn(
-                        "inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-bold",
-                        category
-                          ? cn(category.bg, category.color, category.border, category.darkBg, category.darkText, "border")
-                          : "bg-muted text-foreground/80"
-                      )}>
+                      <span
+                        className={cn(
+                          "inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-bold",
+                          category
+                            ? cn(
+                                category.bg,
+                                category.color,
+                                category.border,
+                                category.darkBg,
+                                category.darkText,
+                                "border",
+                              )
+                            : "bg-muted text-foreground/80",
+                        )}
+                      >
                         <ChevronRight className="size-2.5 opacity-60" />
                         {t(item.unitKey)}
                       </span>

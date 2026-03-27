@@ -75,12 +75,13 @@ export function StudentPicker({
     }
 
     const rect = triggerRef.current.getBoundingClientRect();
-    const maxLeft = Math.max(12, window.innerWidth - rect.width - 12);
+    const safeWidth = Math.min(Math.max(rect.width, 280), window.innerWidth - 24);
+    const safeLeft = Math.min(rect.left, window.innerWidth - safeWidth - 12);
 
     setMenuStyle({
-      left: Math.min(rect.left, maxLeft),
+      left: Math.max(12, safeLeft),
       top: rect.bottom + 8,
-      width: rect.width,
+      width: safeWidth,
     });
   };
 
@@ -122,7 +123,6 @@ export function StudentPicker({
     }
 
     updateMenuPosition();
-
     const timeout = window.setTimeout(() => inputRef.current?.focus(), 30);
     const handleViewportChange = () => updateMenuPosition();
 
@@ -163,10 +163,10 @@ export function StudentPicker({
       ? createPortal(
           <div
             ref={menuRef}
-            className="animate-scale-in glass fixed z-[120] overflow-hidden rounded-[18px] shadow-float"
+            className="animate-scale-in fixed z-[140] overflow-hidden rounded-[18px] border border-border/70 bg-card/98 shadow-float backdrop-blur-xl"
             style={menuStyle}
           >
-            <div className="max-h-64 overflow-y-auto p-2">
+            <div className="max-h-72 overflow-y-auto p-2">
               {filtered.length === 0 ? (
                 <p className="px-3 py-6 text-center text-sm text-muted-foreground">
                   Nenhum aluno encontrado.
@@ -214,7 +214,7 @@ export function StudentPicker({
       : null;
 
   return (
-    <div ref={rootRef} className={`relative ${open ? "z-20" : ""}`}>
+    <div ref={rootRef} className={`relative ${open ? "z-30" : ""}`}>
       <div
         ref={triggerRef}
         onClick={() => {
@@ -226,7 +226,7 @@ export function StudentPicker({
             setOpen(true);
           }
         }}
-        className={`flex h-[46px] w-full cursor-pointer items-center justify-between rounded-[18px] border px-4 text-left transition-all duration-300 outline-none focus-within:ring-1 focus-within:ring-ring ${
+        className={`flex h-[46px] w-full cursor-pointer items-center justify-between rounded-[18px] border px-4 text-left transition-all duration-300 ${
           open
             ? "border-gold-500/50 bg-card shadow-card"
             : "border-input bg-card shadow-sm hover:border-navy-300/40 hover:bg-muted/50 hover:text-foreground"
@@ -289,7 +289,7 @@ export function StudentPicker({
                 value={search}
                 onChange={(event) => setSearch(event.target.value)}
                 placeholder={placeholder || "Procurar aluno..."}
-                className="w-full bg-transparent text-sm font-medium text-foreground outline-none placeholder:text-muted-foreground"
+                className="w-full border-0 bg-transparent text-sm font-medium text-foreground shadow-none outline-none ring-0 focus:border-0 focus:outline-none focus:ring-0 focus-visible:!outline-none focus-visible:!ring-0 placeholder:text-muted-foreground"
               />
             </div>
             {open && (

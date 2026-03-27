@@ -67,7 +67,7 @@ export default function TurmaPage() {
 
     (async () => {
       const res = await fetch(
-        `/api/classes/report?classId=${encodeURIComponent(classId)}`
+        `/api/classes/report?classId=${encodeURIComponent(classId)}`,
       );
       const body = await readApiResponse<StudentRow[]>(res);
       if (!active) return;
@@ -96,30 +96,40 @@ export default function TurmaPage() {
         ? `"${s.replace(/"/g, '""')}"`
         : s;
     };
-    const headers = [t("colName"), t("colSex"), t("colBmi"), t("colZone"), t("colTests")];
+    const headers = [
+      t("colName"),
+      t("colSex"),
+      t("colBmi"),
+      t("colZone"),
+      t("colTests"),
+    ];
     const rows = students.map((student) =>
       [
         escapeCsv(student.name),
         escapeCsv(student.sex),
-        student.latestBiometric ? Number(student.latestBiometric.imc).toFixed(1) : "",
+        student.latestBiometric
+          ? Number(student.latestBiometric.imc).toFixed(1)
+          : "",
         escapeCsv(student.latestBiometric?.imcZone ?? ""),
         student.testCount,
-      ].join(",")
+      ].join(","),
     );
-      const csv = [headers.join(","), ...rows].join("\n");
-      const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      link.href = url;
-      link.download = "turma_report.csv";
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-      setTimeout(() => URL.revokeObjectURL(url), 1000);
-      toast.success(common("exportCsv"));
-    };
+    const csv = [headers.join(","), ...rows].join("\n");
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "turma_report.csv";
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+    toast.success(common("exportCsv"));
+  };
 
-  const importClassesCsv = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const importClassesCsv = async (
+    event: React.ChangeEvent<HTMLInputElement>,
+  ) => {
     const file = event.target.files?.[0];
     if (!file) {
       return;
@@ -149,7 +159,9 @@ export default function TurmaPage() {
 
       await refetchClasses();
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Erro na importacao CSV");
+      toast.error(
+        error instanceof Error ? error.message : "Erro na importacao CSV",
+      );
     } finally {
       event.target.value = "";
       setIsImportingCsv(false);
@@ -163,7 +175,8 @@ export default function TurmaPage() {
     let pendingCount = 0;
     for (const student of students) {
       const zone = student.latestBiometric?.imcZone ?? "";
-      if (zone.toLowerCase().includes("saud") || zone === "ZSAF") healthyCount++;
+      if (zone.toLowerCase().includes("saud") || zone === "ZSAF")
+        healthyCount++;
       if (!student.latestBiometric) pendingCount++;
     }
     return {
@@ -196,7 +209,13 @@ export default function TurmaPage() {
 
   if (!canViewClassReports) {
     return (
-      <PageScaffold headerProps={{ title: t("title"), description: t("description"), eyebrow: "GESTÃO · TURMA" }}>
+      <PageScaffold
+        headerProps={{
+          title: t("title"),
+          description: t("description"),
+          eyebrow: "GESTÃO · TURMA",
+        }}
+      >
         <EmptyState
           icon={ShieldOff}
           title="Sem acesso a relatórios de turma"
@@ -208,10 +227,10 @@ export default function TurmaPage() {
 
   return (
     <PageScaffold
-      headerProps={{ 
-        title: t("title"), 
-        description: t("description"), 
-        eyebrow: "GESTÃO · TURMA" 
+      headerProps={{
+        title: t("title"),
+        description: t("description"),
+        eyebrow: "GESTÃO · TURMA",
       }}
       headerActions={
         <div className="flex items-center gap-2">
@@ -245,7 +264,6 @@ export default function TurmaPage() {
         </div>
       }
     >
-
       {/* Class Selection */}
       <div className="mb-8">
         {loadingClasses ? (
@@ -256,7 +274,11 @@ export default function TurmaPage() {
             title="Erro ao carregar turmas"
             description="Tente novamente para selecionar uma turma."
             action={
-              <Button size="sm" variant="secondary" onClick={() => void refetchClasses()}>
+              <Button
+                size="sm"
+                variant="secondary"
+                onClick={() => void refetchClasses()}
+              >
                 Recarregar
               </Button>
             }
@@ -292,105 +314,143 @@ export default function TurmaPage() {
       ) : loading ? (
         <div className="space-y-8 animate-fade-in">
           <div className="flex gap-4 overflow-x-auto pb-4 no-scrollbar">
-            {[1, 2, 3].map(i => <Skeleton key={i} className="h-40 min-w-[200px] rounded-3xl" />)}
+            {[1, 2, 3].map((i) => (
+              <Skeleton key={i} className="h-40 min-w-[200px] rounded-3xl" />
+            ))}
           </div>
           <Skeleton className="h-96 w-full rounded-[2.5rem]" />
         </div>
       ) : (
         <div className="space-y-10">
-          
           {/* Dashboard Summary Cards */}
           <section className="flex gap-4 overflow-x-auto pb-4 no-scrollbar animate-fade-in-up">
             {/* Total Alunos */}
             <div className="glass shadow-xl min-w-[180px] p-6 rounded-[2rem] flex flex-col gap-4 border border-white/5 relative overflow-hidden group">
-                <div className="absolute -right-6 -top-6 w-20 h-20 bg-primary/5 rounded-full blur-2xl group-hover:bg-primary/10 transition-colors" />
-                <div className="w-10 h-10 rounded-2xl bg-primary/10 flex items-center justify-center text-primary">
-                  <span className="material-symbols-outlined text-2xl">groups</span>
-                </div>
-                <div>
-                  <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60 mb-1">Total Alunos</p>
-                  <h2 className="text-3xl font-black text-foreground italic">{stats.total}</h2>
-                </div>
+              <div className="absolute -right-6 -top-6 w-20 h-20 bg-primary/5 rounded-full blur-2xl group-hover:bg-primary/10 transition-colors" />
+              <div className="w-10 h-10 rounded-2xl bg-primary/10 flex items-center justify-center text-primary">
+                <span className="material-symbols-outlined text-2xl">
+                  groups
+                </span>
+              </div>
+              <div>
+                <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60 mb-1">
+                  Total Alunos
+                </p>
+                <h2 className="text-3xl font-black text-foreground italic">
+                  {stats.total}
+                </h2>
+              </div>
             </div>
 
             {/* ZAF Saudável */}
             <div className="glass shadow-xl min-w-[240px] p-6 rounded-[2rem] flex flex-col gap-4 border border-white/5 relative overflow-hidden group">
-                <div className="absolute -right-6 -top-6 w-24 h-24 bg-secondary/5 rounded-full blur-2xl group-hover:bg-secondary/10 transition-colors" />
-                <div className="flex items-center justify-between">
-                   <div className="w-10 h-10 rounded-2xl bg-secondary/10 flex items-center justify-center text-secondary">
-                      <span className="material-symbols-outlined text-2xl">verified_user</span>
-                   </div>
-                   <span className="text-secondary font-black text-lg italic">{stats.healthyPct}%</span>
+              <div className="absolute -right-6 -top-6 w-24 h-24 bg-secondary/5 rounded-full blur-2xl group-hover:bg-secondary/10 transition-colors" />
+              <div className="flex items-center justify-between">
+                <div className="w-10 h-10 rounded-2xl bg-secondary/10 flex items-center justify-center text-secondary">
+                  <span className="material-symbols-outlined text-2xl">
+                    verified_user
+                  </span>
                 </div>
-                <div className="space-y-3">
-                  <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">ZAF Saudável</p>
-                  <div className="w-full bg-white/5 rounded-full h-2 overflow-hidden">
-                    <div 
-                      className="h-full bg-gradient-to-r from-[#eec147] to-[#f59e0b] shadow-[0_0_15px_rgba(238,193,71,0.3)] transition-all duration-1000" 
-                      style={{ width: `${stats.healthyPct}%` }}
-                    />
-                  </div>
+                <span className="text-secondary font-black text-lg italic">
+                  {stats.healthyPct}%
+                </span>
+              </div>
+              <div className="space-y-3">
+                <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">
+                  ZAF Saudável
+                </p>
+                <div className="w-full bg-white/5 rounded-full h-2 overflow-hidden">
+                  <div
+                    className="h-full bg-gradient-to-r from-[#eec147] to-[#f59e0b] shadow-[0_0_15px_rgba(238,193,71,0.3)] transition-all duration-1000"
+                    style={{ width: `${stats.healthyPct}%` }}
+                  />
                 </div>
+              </div>
             </div>
 
             {/* Pendente */}
             <div className="glass shadow-xl min-w-[180px] p-6 rounded-[2rem] flex flex-col gap-4 border border-white/5 relative overflow-hidden group">
-                <div className="absolute -right-6 -top-6 w-20 h-20 bg-danger-500/5 rounded-full blur-2xl" />
-                <div className="w-10 h-10 rounded-2xl bg-danger-500/10 flex items-center justify-center text-danger-400">
-                  <span className="material-symbols-outlined text-2xl">report_problem</span>
-                </div>
-                <div>
-                  <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60 mb-1">Pendente</p>
-                  <h2 className="text-3xl font-black text-danger-400 italic">{stats.pending.toString().padStart(2, '0')}</h2>
-                </div>
+              <div className="absolute -right-6 -top-6 w-20 h-20 bg-danger-500/5 rounded-full blur-2xl" />
+              <div className="w-10 h-10 rounded-2xl bg-danger-500/10 flex items-center justify-center text-danger-400">
+                <span className="material-symbols-outlined text-2xl">
+                  report_problem
+                </span>
+              </div>
+              <div>
+                <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60 mb-1">
+                  Pendente
+                </p>
+                <h2 className="text-3xl font-black text-danger-400 italic">
+                  {stats.pending.toString().padStart(2, "0")}
+                </h2>
+              </div>
             </div>
           </section>
 
           <div className="grid grid-cols-1 lg:grid-cols-[1fr_400px] gap-10 items-start">
-            
             {/* Main Student List */}
             <div className="space-y-6 animate-fade-in-up">
               <div className="flex justify-between items-center px-4">
-                <h3 className="text-xs font-black uppercase tracking-widest text-muted-foreground/70 italic">Lista Escolar</h3>
-                <span className="text-[10px] font-bold text-muted-foreground/40 bg-white/5 px-3 py-1 rounded-full">{students.length} RESULTADOS</span>
+                <h3 className="text-xs font-black uppercase tracking-widest text-muted-foreground/70 italic">
+                  Lista Escolar
+                </h3>
+                <span className="text-[10px] font-bold text-muted-foreground/40 bg-white/5 px-3 py-1 rounded-full">
+                  {students.length} RESULTADOS
+                </span>
               </div>
 
               <div className="grid grid-cols-1 gap-3">
                 {students.map((student, idx) => {
-                  const isHealthy = student.latestBiometric?.imcZone.toLowerCase().includes("saud") || student.latestBiometric?.imcZone === "ZSAF";
+                  const isHealthy =
+                    student.latestBiometric?.imcZone
+                      .toLowerCase()
+                      .includes("saud") ||
+                    student.latestBiometric?.imcZone === "ZSAF";
                   const isPending = !student.latestBiometric;
 
                   return (
-                    <div 
-                      key={student.id} 
+                    <div
+                      key={student.id}
                       className="glass p-5 rounded-[1.5rem] flex items-center justify-between border border-white/5 transition-all hover:scale-[1.01] hover:bg-white/[0.03] group animate-fade-in-up"
                       style={{ animationDelay: `${idx * 50}ms` }}
                     >
                       <div className="flex items-center gap-5">
-                          <Avatar className="size-14 rounded-2xl ring-2 ring-white/5 transition-transform group-hover:scale-110">
-                            <AvatarFallback 
-                              className="rounded-2xl text-xs font-black shadow-inner italic"
-                              style={getStudentSwatch(student)}
-                            >
-                              {getInitials(student.name)}
-                            </AvatarFallback>
-                          </Avatar>
-                          <div className="flex flex-col gap-1">
-                            <h4 className="font-black text-foreground tracking-tight group-hover:text-primary transition-colors">{student.name}</h4>
-                            <p className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-widest">
-                                {isPending ? "Pendente de Avaliação" : "Última Biometria: 12 Out"}
-                            </p>
-                          </div>
+                        <Avatar className="size-14 rounded-2xl ring-2 ring-white/5 transition-transform group-hover:scale-110">
+                          <AvatarFallback
+                            className="rounded-2xl text-xs font-black shadow-inner italic"
+                            style={getStudentSwatch(student)}
+                          >
+                            {getInitials(student.name)}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="flex flex-col gap-1">
+                          <h4 className="font-black text-foreground tracking-tight group-hover:text-primary transition-colors">
+                            {student.name}
+                          </h4>
+                          <p className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-widest">
+                            {isPending
+                              ? "Pendente de Avaliação"
+                              : "Última Biometria: 12 Out"}
+                          </p>
+                        </div>
                       </div>
                       <div className="flex flex-col items-end gap-2">
                         {isPending ? (
-                          <span className="px-4 py-1.5 bg-danger-500/10 text-danger-400 text-[10px] font-black uppercase tracking-wider rounded-full border border-danger-500/20 shadow-sm shadow-danger-500/20 italic">Pendente</span>
+                          <span className="px-4 py-1.5 bg-danger-500/10 text-danger-400 text-[10px] font-black uppercase tracking-wider rounded-full border border-danger-500/20 shadow-sm shadow-danger-500/20 italic">
+                            Pendente
+                          </span>
                         ) : isHealthy ? (
-                          <span className="px-4 py-1.5 bg-emerald-500/10 text-emerald-400 text-[10px] font-black uppercase tracking-wider rounded-full border border-emerald-500/20 shadow-sm shadow-emerald-500/20 italic">Saudável</span>
+                          <span className="px-4 py-1.5 bg-emerald-500/10 text-emerald-400 text-[10px] font-black uppercase tracking-wider rounded-full border border-emerald-500/20 shadow-sm shadow-emerald-500/20 italic">
+                            Saudável
+                          </span>
                         ) : (
-                          <span className="px-4 py-1.5 bg-secondary/10 text-secondary text-[10px] font-black uppercase tracking-wider rounded-full border border-secondary/20 shadow-sm shadow-secondary/20 italic">Em Risco</span>
+                          <span className="px-4 py-1.5 bg-secondary/10 text-secondary text-[10px] font-black uppercase tracking-wider rounded-full border border-secondary/20 shadow-sm shadow-secondary/20 italic">
+                            Em Risco
+                          </span>
                         )}
-                        <span className="text-[9px] font-bold text-muted-foreground/30 uppercase tracking-tighter">Clique para ver perfil</span>
+                        <span className="text-[9px] font-bold text-muted-foreground/30 uppercase tracking-tighter">
+                          Clique para ver perfil
+                        </span>
                       </div>
                     </div>
                   );
@@ -405,72 +465,98 @@ export default function TurmaPage() {
                 layout="analytics"
                 title={
                   <div className="flex items-center gap-2">
-                    <span className="material-symbols-outlined text-secondary text-2xl">analytics</span>
-                    <span className="text-xs font-black uppercase tracking-widest text-muted-foreground/70">Distribuição ZAF</span>
+                    <span className="material-symbols-outlined text-secondary text-2xl">
+                      analytics
+                    </span>
+                    <span className="text-xs font-black uppercase tracking-widest text-muted-foreground/70">
+                      Distribuição ZAF
+                    </span>
                   </div>
                 }
                 className="animate-fade-in-up delay-200"
               >
                 <div className="h-[300px] w-full mt-4">
                   <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={zoneChartData} layout="vertical" margin={{ left: -20 }}>
+                    <BarChart
+                      data={zoneChartData}
+                      layout="vertical"
+                      margin={{ left: -20 }}
+                    >
                       <XAxis type="number" hide />
                       <YAxis type="category" dataKey="name" hide />
-                      <Tooltip content={<ChartTooltip />} cursor={{ fill: 'transparent' }} />
-                      <Bar 
-                        dataKey={t("healthyZone")} 
-                        fill="#10b981" 
-                        stackId="a" 
-                        radius={[20, 0, 0, 20]} 
+                      <Tooltip
+                        content={<ChartTooltip />}
+                        cursor={{ fill: "transparent" }}
                       />
-                      <Bar 
-                        dataKey={t("improvementZone")} 
-                        fill="#fbbf24" 
-                        stackId="a" 
+                      <Bar
+                        dataKey={t("healthyZone")}
+                        fill="#10b981"
+                        stackId="a"
+                        radius={[20, 0, 0, 20]}
                       />
-                      <Bar 
-                        dataKey={t("noDataLabel")} 
-                        fill="#4b5563" 
-                        stackId="a" 
-                        radius={[0, 20, 20, 0]} 
+                      <Bar
+                        dataKey={t("improvementZone")}
+                        fill="#fbbf24"
+                        stackId="a"
+                      />
+                      <Bar
+                        dataKey={t("noDataLabel")}
+                        fill="#4b5563"
+                        stackId="a"
+                        radius={[0, 20, 20, 0]}
                       />
                     </BarChart>
                   </ResponsiveContainer>
                 </div>
                 <div className="flex justify-between items-center mt-6 pt-6 border-t border-white/5 px-2">
-                    <div className="flex flex-col items-center gap-1">
-                        <span className="text-emerald-400 font-black text-xl italic">{stats.healthyPct}%</span>
-                        <span className="text-[9px] font-bold text-muted-foreground/50 uppercase tracking-widest italic">Saudável</span>
-                    </div>
-                    <div className="flex flex-col items-center gap-1">
-                        <span className="text-amber-400 font-black text-xl italic">{100 - stats.healthyPct}%</span>
-                        <span className="text-[9px] font-bold text-muted-foreground/50 uppercase tracking-widest italic">Intervenção</span>
-                    </div>
+                  <div className="flex flex-col items-center gap-1">
+                    <span className="text-emerald-400 font-black text-xl italic">
+                      {stats.healthyPct}%
+                    </span>
+                    <span className="text-[9px] font-bold text-muted-foreground/50 uppercase tracking-widest italic">
+                      Saudável
+                    </span>
+                  </div>
+                  <div className="flex flex-col items-center gap-1">
+                    <span className="text-amber-400 font-black text-xl italic">
+                      {100 - stats.healthyPct}%
+                    </span>
+                    <span className="text-[9px] font-bold text-muted-foreground/50 uppercase tracking-widest italic">
+                      Intervenção
+                    </span>
+                  </div>
                 </div>
               </PageSection>
 
               <div className="rounded-[2rem] p-[1px] bg-gradient-to-br from-white/10 to-transparent">
-                  <div className="bg-navy-950/40 backdrop-blur-xl rounded-[2rem] p-8 border border-white/5 space-y-4">
-                      <div className="flex items-center gap-4">
-                          <div className="w-12 h-12 rounded-2xl bg-secondary/10 flex items-center justify-center text-secondary">
-                              <span className="material-symbols-outlined text-3xl">insights</span>
-                          </div>
-                      </div>
-                      <h3 className="text-lg font-black text-foreground italic">Insight da Turma</h3>
-                      <p className="text-sm font-medium text-muted-foreground leading-relaxed">
-                          Baseado nos últimos testes, a turma apresenta um bom desenvolvimento aeróbio, mas necessita de foco em flexibilidade.
-                      </p>
-                      <Button variant="sanctuary" className="w-full h-14 rounded-3xl font-black italic uppercase tracking-widest text-xs">
-                          Ver Relatório IA
-                      </Button>
+                <div className="bg-navy-950/40 backdrop-blur-xl rounded-[2rem] p-8 border border-white/5 space-y-4">
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 rounded-2xl bg-secondary/10 flex items-center justify-center text-secondary">
+                      <span className="material-symbols-outlined text-3xl">
+                        insights
+                      </span>
+                    </div>
                   </div>
+                  <h3 className="text-lg font-black text-foreground italic">
+                    Insight da Turma
+                  </h3>
+                  <p className="text-sm font-medium text-muted-foreground leading-relaxed">
+                    Baseado nos últimos testes, a turma apresenta um bom
+                    desenvolvimento aeróbio, mas necessita de foco em
+                    flexibilidade.
+                  </p>
+                  <Button
+                    variant="sanctuary"
+                    className="w-full h-14 rounded-3xl font-black italic uppercase tracking-widest text-xs"
+                  >
+                    Ver Relatório IA
+                  </Button>
+                </div>
               </div>
             </aside>
-
           </div>
         </div>
       )}
     </PageScaffold>
   );
 }
-

@@ -3,7 +3,17 @@
 import { useState } from "react";
 import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
-import { Lock, ShieldCheck, Share2, User, Check, X, Save, Key, Shield } from "lucide-react";
+import {
+  Lock,
+  ShieldCheck,
+  Share2,
+  User,
+  Check,
+  X,
+  Save,
+  Key,
+  Shield,
+} from "lucide-react";
 import { toast } from "sonner";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -33,11 +43,17 @@ export default function PerfilPage() {
   const { data: session, update } = useSession();
   const user = session?.user;
 
-  const [updatingConsent, setUpdatingConsent] = useState<"rgpd" | "share" | null>(null);
+  const [updatingConsent, setUpdatingConsent] = useState<
+    "rgpd" | "share" | null
+  >(null);
 
   const pwForm = useForm<PasswordValues>({
     resolver: zodResolver(changePasswordFormSchema),
-    defaultValues: { currentPassword: "", newPassword: "", confirmPassword: "" },
+    defaultValues: {
+      currentPassword: "",
+      newPassword: "",
+      confirmPassword: "",
+    },
   });
 
   const onPasswordSubmit = async (values: PasswordValues) => {
@@ -55,11 +71,16 @@ export default function PerfilPage() {
       toast.success(t("passwordSuccess"));
       pwForm.reset();
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : common("connectionError"));
+      toast.error(
+        error instanceof Error ? error.message : common("connectionError"),
+      );
     }
   };
 
-  const syncConsent = async (field: "consentRgpd" | "consentShare", value: boolean) => {
+  const syncConsent = async (
+    field: "consentRgpd" | "consentShare",
+    value: boolean,
+  ) => {
     setUpdatingConsent(field === "consentRgpd" ? "rgpd" : "share");
 
     try {
@@ -84,14 +105,22 @@ export default function PerfilPage() {
         toast.success(value ? t("activate") : t("deactivate"));
       }
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : common("connectionError"));
+      toast.error(
+        error instanceof Error ? error.message : common("connectionError"),
+      );
     } finally {
       setUpdatingConsent(null);
     }
   };
 
   return (
-    <PageScaffold headerProps={{ title: t("title"), description: t("description"), eyebrow: "CONTA · PERFIL" }}>
+    <PageScaffold
+      headerProps={{
+        title: t("title"),
+        description: t("description"),
+        eyebrow: "CONTA · PERFIL",
+      }}
+    >
       <div className="grid gap-4 xl:grid-cols-2">
         <PageSection
           tone="secondary"
@@ -232,7 +261,9 @@ export default function PerfilPage() {
                           showPasswordLabel={auth("showPassword")}
                           hidePasswordLabel={auth("hidePassword")}
                           leftIcon={<Lock className="size-4" />}
-                          error={pwForm.formState.errors.currentPassword?.message}
+                          error={
+                            pwForm.formState.errors.currentPassword?.message
+                          }
                           {...field}
                         />
                       </FormControl>
@@ -272,7 +303,9 @@ export default function PerfilPage() {
                           showPasswordLabel={auth("showPassword")}
                           hidePasswordLabel={auth("hidePassword")}
                           leftIcon={<Shield className="size-4" />}
-                          error={pwForm.formState.errors.confirmPassword?.message}
+                          error={
+                            pwForm.formState.errors.confirmPassword?.message
+                          }
                           {...field}
                         />
                       </FormControl>
@@ -287,7 +320,11 @@ export default function PerfilPage() {
                   loading={pwForm.formState.isSubmitting}
                   icon={<Save className="size-4" />}
                   className="rounded-full px-6 font-semibold shadow-lg transition-all hover:scale-[1.03]"
-                  style={{ background: "linear-gradient(135deg, #1E3A8A, #10243a)", color: "#fff", border: "none" }}
+                  style={{
+                    background: "linear-gradient(135deg, #1E3A8A, #10243a)",
+                    color: "#fff",
+                    border: "none",
+                  }}
                 >
                   {t("savePassword")}
                 </Button>

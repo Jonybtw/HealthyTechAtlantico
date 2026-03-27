@@ -28,9 +28,7 @@ export default function AppError({
 
       <div className="flex flex-col gap-2 max-w-md">
         <h2 className="text-xl font-semibold text-foreground">{t("title")}</h2>
-        <p className="text-sm text-muted-foreground">
-          {t("description")}
-        </p>
+        <p className="text-sm text-muted-foreground">{t("description")}</p>
         {error.digest && (
           <p className="text-xs text-muted-foreground/60 font-mono">
             {t("reference")}: {error.digest}

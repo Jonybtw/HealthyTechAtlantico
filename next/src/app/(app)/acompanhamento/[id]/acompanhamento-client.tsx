@@ -76,7 +76,8 @@ function formatStudentAge(birthDate: string | null) {
   let age = today.getFullYear() - birth.getFullYear();
   const hasBirthdayPassed =
     today.getMonth() > birth.getMonth() ||
-    (today.getMonth() === birth.getMonth() && today.getDate() >= birth.getDate());
+    (today.getMonth() === birth.getMonth() &&
+      today.getDate() >= birth.getDate());
 
   if (!hasBirthdayPassed) {
     age -= 1;
@@ -85,15 +86,23 @@ function formatStudentAge(birthDate: string | null) {
   return age >= 0 ? age : null;
 }
 
-export function AcompanhamentoClient({ student }: { student: StudentIdentity }) {
+export function AcompanhamentoClient({
+  student,
+}: {
+  student: StudentIdentity;
+}) {
   const t = useTranslations("acompanhamento");
   const q = useTranslations("questionarios");
   const locale = useLocale();
   const [loading, setLoading] = useState(true);
   const [sosAlerts, setSosAlerts] = useState<SosAlert[]>([]);
-  const [questionnaires, setQuestionnaires] = useState<QuestionnaireRecord[]>([]);
+  const [questionnaires, setQuestionnaires] = useState<QuestionnaireRecord[]>(
+    [],
+  );
   const [sosError, setSosError] = useState<string | null>(null);
-  const [questionnaireError, setQuestionnaireError] = useState<string | null>(null);
+  const [questionnaireError, setQuestionnaireError] = useState<string | null>(
+    null,
+  );
 
   const formatDateTime = useCallback(
     (value: string | null) => {
@@ -101,12 +110,15 @@ export function AcompanhamentoClient({ student }: { student: StudentIdentity }) 
         return "-";
       }
 
-      return new Date(value).toLocaleString(locale === "en" ? "en-GB" : "pt-PT", {
-        dateStyle: "medium",
-        timeStyle: "short",
-      });
+      return new Date(value).toLocaleString(
+        locale === "en" ? "en-GB" : "pt-PT",
+        {
+          dateStyle: "medium",
+          timeStyle: "short",
+        },
+      );
     },
-    [locale]
+    [locale],
   );
 
   const loadContext = useCallback(async () => {
@@ -115,9 +127,11 @@ export function AcompanhamentoClient({ student }: { student: StudentIdentity }) 
     setQuestionnaireError(null);
 
     const [sosResult, questionnairesResult] = await Promise.allSettled([
-      fetch(`/api/students/${student.id}/sos`).then((response) => readApiResponse<SosAlert[]>(response)),
+      fetch(`/api/students/${student.id}/sos`).then((response) =>
+        readApiResponse<SosAlert[]>(response),
+      ),
       fetch(`/api/students/${student.id}/questionnaires`).then((response) =>
-        readApiResponse<QuestionnaireRecord[]>(response)
+        readApiResponse<QuestionnaireRecord[]>(response),
       ),
     ]);
 
@@ -125,7 +139,9 @@ export function AcompanhamentoClient({ student }: { student: StudentIdentity }) 
       setSosAlerts(sosResult.value);
     } else {
       const message =
-        sosResult.reason instanceof Error ? sosResult.reason.message : t("loadSosError");
+        sosResult.reason instanceof Error
+          ? sosResult.reason.message
+          : t("loadSosError");
       setSosAlerts([]);
       setSosError(message);
       toast.error(message);
@@ -156,7 +172,7 @@ export function AcompanhamentoClient({ student }: { student: StudentIdentity }) 
 
   const pendingSosCount = useMemo(
     () => sosAlerts.filter((alert) => !alert.resolved).length,
-    [sosAlerts]
+    [sosAlerts],
   );
   const lastQuestionnaireAt = questionnaires[0]?.submittedAt ?? null;
   const studentAge = formatStudentAge(student.birthDate);
@@ -168,7 +184,10 @@ export function AcompanhamentoClient({ student }: { student: StudentIdentity }) 
   function getQuestionnairePeriodLabel(questionnaire: QuestionnaireRecord) {
     const period = questionnaire.periodKey?.split(":")[1];
 
-    if ((period === "P1" || period === "P2" || period === "P3") && questionnaire.schoolYear) {
+    if (
+      (period === "P1" || period === "P2" || period === "P3") &&
+      questionnaire.schoolYear
+    ) {
       return `${q(getKidmedPeriodLabelKey(period))} - ${questionnaire.schoolYear}`;
     }
 
@@ -178,7 +197,7 @@ export function AcompanhamentoClient({ student }: { student: StudentIdentity }) 
   function formatPayloadValue(
     key: string,
     value: unknown,
-    meta: { unitKey?: string; scaleMax?: number }
+    meta: { unitKey?: string; scaleMax?: number },
   ) {
     if (typeof value === "boolean") {
       return value ? q("yes") : q("no");
@@ -209,7 +228,9 @@ export function AcompanhamentoClient({ student }: { student: StudentIdentity }) 
         return {
           key: item.key,
           label: q(item.labelKey),
-          value: q(getKidmedClassificationLabelKey(item.value as KidmedClassification)),
+          value: q(
+            getKidmedClassificationLabelKey(item.value as KidmedClassification),
+          ),
         };
       }
 
@@ -217,7 +238,8 @@ export function AcompanhamentoClient({ student }: { student: StudentIdentity }) 
         return {
           key: item.key,
           label: q(item.labelKey),
-          value: getQuestionnairePeriodLabel(questionnaire) ?? t("notAvailable"),
+          value:
+            getQuestionnairePeriodLabel(questionnaire) ?? t("notAvailable"),
         };
       }
 
@@ -264,7 +286,7 @@ export function AcompanhamentoClient({ student }: { student: StudentIdentity }) 
           description={t("studentContextDescription")}
         >
           <div className="grid gap-3 sm:grid-cols-2">
-            <div className="rounded-[20px] border border-border/60 bg-background/50 p-4">
+            <div className="rounded-[20px] border border-white/20 dark:border-white/10 bg-white/50 dark:bg-navy-950/40 backdrop-blur-sm p-4">
               <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
                 {t("studentLabel")}
               </p>
@@ -273,15 +295,19 @@ export function AcompanhamentoClient({ student }: { student: StudentIdentity }) 
                   <UserRound className="size-5" />
                 </span>
                 <div>
-                  <p className="text-base font-semibold text-foreground">{student.name}</p>
+                  <p className="text-base font-semibold text-foreground">
+                    {student.name}
+                  </p>
                   <p className="text-sm text-muted-foreground">
-                    {[student.className, student.schoolYear].filter(Boolean).join(" - ") || "-"}
+                    {[student.className, student.schoolYear]
+                      .filter(Boolean)
+                      .join(" - ") || "-"}
                   </p>
                 </div>
               </div>
             </div>
 
-            <div className="rounded-[20px] border border-border/60 bg-background/50 p-4">
+            <div className="rounded-[20px] border border-white/20 dark:border-white/10 bg-white/50 dark:bg-navy-950/40 backdrop-blur-sm p-4">
               <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
                 {t("contextSummary")}
               </p>
@@ -307,7 +333,12 @@ export function AcompanhamentoClient({ student }: { student: StudentIdentity }) 
           </div>
         </PageSection>
 
-        <PageSection tone="secondary" layout="list" title={t("signalsTitle")} description={t("signalsDescription")}>
+        <PageSection
+          tone="secondary"
+          layout="list"
+          title={t("signalsTitle")}
+          description={t("signalsDescription")}
+        >
           <div className="grid gap-3 sm:grid-cols-2">
             <div className="rounded-[18px] border border-danger-300/50 bg-danger-50/50 p-4 dark:border-danger-900/30 dark:bg-danger-950/20">
               <p className="text-xs uppercase tracking-[0.18em] text-danger-700 dark:text-danger-300">
@@ -316,7 +347,9 @@ export function AcompanhamentoClient({ student }: { student: StudentIdentity }) 
               <p className="mt-2 text-3xl font-extrabold tracking-tight text-danger-700 dark:text-danger-300">
                 {pendingSosCount}
               </p>
-              <p className="mt-1 text-sm text-muted-foreground">{t("pendingSosDescription")}</p>
+              <p className="mt-1 text-sm text-muted-foreground">
+                {t("pendingSosDescription")}
+              </p>
             </div>
             <div className="rounded-[18px] border border-gold-300/50 bg-gold-50/50 p-4 dark:border-gold-900/30 dark:bg-gold-950/20">
               <p className="text-xs uppercase tracking-[0.18em] text-gold-700 dark:text-gold-300">
@@ -372,7 +405,7 @@ export function AcompanhamentoClient({ student }: { student: StudentIdentity }) 
               {sosAlerts.map((alert) => (
                 <StaggerItem
                   key={alert.id}
-                  className="surface-secondary rounded-[18px] border border-border/50 p-4"
+                  className="surface-secondary rounded-[18px] border border-white/20 dark:border-white/10 p-4"
                 >
                   <div className="flex flex-wrap items-start justify-between gap-3">
                     <div>
@@ -405,25 +438,35 @@ export function AcompanhamentoClient({ student }: { student: StudentIdentity }) 
                   </div>
 
                   <div className="mt-4 grid gap-3 sm:grid-cols-2">
-                    <div className="rounded-xl border border-border/60 bg-background/40 p-3">
+                    <div className="rounded-xl border border-white/20 dark:border-white/10 bg-white/50 dark:bg-navy-950/40 backdrop-blur-sm p-3">
                       <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
                         {t("psychLabel")}
                       </p>
-                      <p className="mt-1 font-medium text-foreground">{alert.psych}</p>
-                      <p className="mt-2 text-sm text-muted-foreground">{alert.psychEmail ?? "-"}</p>
+                      <p className="mt-1 font-medium text-foreground">
+                        {alert.psych}
+                      </p>
+                      <p className="mt-2 text-sm text-muted-foreground">
+                        {alert.psychEmail ?? "-"}
+                      </p>
                     </div>
-                    <div className="rounded-xl border border-border/60 bg-background/40 p-3">
+                    <div className="rounded-xl border border-white/20 dark:border-white/10 bg-white/50 dark:bg-navy-950/40 backdrop-blur-sm p-3">
                       <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
                         {t("teacherLabel")}
                       </p>
-                      <p className="mt-1 font-medium text-foreground">{alert.teacher}</p>
-                      <p className="mt-2 text-sm text-muted-foreground">{alert.teacherEmail ?? "-"}</p>
+                      <p className="mt-1 font-medium text-foreground">
+                        {alert.teacher}
+                      </p>
+                      <p className="mt-2 text-sm text-muted-foreground">
+                        {alert.teacherEmail ?? "-"}
+                      </p>
                     </div>
                   </div>
 
                   <p className="mt-4 text-sm text-muted-foreground">
                     {t("resolvedBy")}:{" "}
-                    {alert.resolvedBy ? alert.resolvedBy.name ?? alert.resolvedBy.email : t("notAvailable")}
+                    {alert.resolvedBy
+                      ? (alert.resolvedBy.name ?? alert.resolvedBy.email)
+                      : t("notAvailable")}
                   </p>
                 </StaggerItem>
               ))}
@@ -472,7 +515,7 @@ export function AcompanhamentoClient({ student }: { student: StudentIdentity }) 
                 return (
                   <StaggerItem
                     key={questionnaire.id}
-                    className="surface-secondary rounded-[18px] border border-border/50 p-4"
+                    className="surface-secondary rounded-[18px] border border-white/20 dark:border-white/10 p-4"
                   >
                     <div className="flex flex-wrap items-start justify-between gap-3">
                       <div>
@@ -484,12 +527,15 @@ export function AcompanhamentoClient({ student }: { student: StudentIdentity }) 
                         </p>
                       </div>
                       {questionnaire.type === "KIDMED" ? (
-                        <span className="rounded-full border border-border/60 bg-background/50 px-2.5 py-1 text-xs font-semibold text-muted-foreground">
-                          {getQuestionnairePeriodLabel(questionnaire) ?? q("kidmed")}
+                        <span className="rounded-full border border-white/20 dark:border-white/10 bg-white/50 dark:bg-navy-950/40 backdrop-blur-sm px-2.5 py-1 text-xs font-semibold text-muted-foreground">
+                          {getQuestionnairePeriodLabel(questionnaire) ??
+                            q("kidmed")}
                         </span>
                       ) : (
-                        <span className="rounded-full border border-border/60 bg-background/50 px-2.5 py-1 text-xs font-semibold text-muted-foreground">
-                          {t("deferralsUsed", { count: questionnaire.deferredCount })}
+                        <span className="rounded-full border border-white/20 dark:border-white/10 bg-white/50 dark:bg-navy-950/40 backdrop-blur-sm px-2.5 py-1 text-xs font-semibold text-muted-foreground">
+                          {t("deferralsUsed", {
+                            count: questionnaire.deferredCount,
+                          })}
                         </span>
                       )}
                     </div>
@@ -499,17 +545,21 @@ export function AcompanhamentoClient({ student }: { student: StudentIdentity }) 
                         {highlights.map((item) => (
                           <div
                             key={item.key}
-                            className="rounded-xl border border-border/60 bg-background/40 p-3"
+                            className="rounded-xl border border-white/20 dark:border-white/10 bg-white/50 dark:bg-navy-950/40 backdrop-blur-sm p-3"
                           >
                             <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
                               {item.label}
                             </p>
-                            <p className="mt-1 text-sm font-medium text-foreground">{item.value}</p>
+                            <p className="mt-1 text-sm font-medium text-foreground">
+                              {item.value}
+                            </p>
                           </div>
                         ))}
                       </div>
                     ) : (
-                      <p className="mt-4 text-sm text-muted-foreground">{t("noQuestionnairePreview")}</p>
+                      <p className="mt-4 text-sm text-muted-foreground">
+                        {t("noQuestionnairePreview")}
+                      </p>
                     )}
                   </StaggerItem>
                 );

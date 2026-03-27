@@ -3,8 +3,21 @@
 import { useEffect, useState, useMemo } from "react";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
-import { Plus, RefreshCw, ShieldOff, Trash2, Calendar, FileText, Activity } from "lucide-react";
-import { FadeIn, StaggerList, StaggerItem, AnimatePresence } from "@/components/ui/motion";
+import {
+  Plus,
+  RefreshCw,
+  ShieldOff,
+  Trash2,
+  Calendar,
+  FileText,
+  Activity,
+} from "lucide-react";
+import {
+  FadeIn,
+  StaggerList,
+  StaggerItem,
+  AnimatePresence,
+} from "@/components/ui/motion";
 import { PageScaffold } from "@/components/ui/page-scaffold";
 import { PageSection } from "@/components/ui/page-section";
 import { StudentPicker } from "@/components/ui/student-picker";
@@ -36,14 +49,19 @@ export default function DispensasPage() {
     isError: studentsError,
     refetch: refetchStudents,
   } = useStudents();
-  
-  const students = useMemo(() => 
-    studentsList.map((s) => ({ id: s.id, name: s.name, className: s.className ?? null })),
-    [studentsList]
+
+  const students = useMemo(
+    () =>
+      studentsList.map((s) => ({
+        id: s.id,
+        name: s.name,
+        className: s.className ?? null,
+      })),
+    [studentsList],
   );
 
   const [studentId, setStudentId] = useState<string | null>(null);
-  
+
   const {
     data: dispensas = [],
     isLoading: loading,
@@ -82,7 +100,9 @@ export default function DispensasPage() {
       setShowForm(false);
       setForm({ reason: "", startDate: "", endDate: "" });
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : t("connectionError"));
+      toast.error(
+        error instanceof Error ? error.message : t("connectionError"),
+      );
     }
   };
 
@@ -106,7 +126,13 @@ export default function DispensasPage() {
 
   if (!canManageDispensas) {
     return (
-      <PageScaffold headerProps={{ title: t("title"), description: t("description"), eyebrow: "GESTÃO · DISPENSAS" }}>
+      <PageScaffold
+        headerProps={{
+          title: t("title"),
+          description: t("description"),
+          eyebrow: "GESTÃO · DISPENSAS",
+        }}
+      >
         <EmptyState
           icon={ShieldOff}
           title="Sem acesso às dispensas"
@@ -118,10 +144,10 @@ export default function DispensasPage() {
 
   return (
     <PageScaffold
-      headerProps={{ 
-        title: t("title"), 
-        description: t("description"), 
-        eyebrow: "GESTÃO · DISPENSAS" 
+      headerProps={{
+        title: t("title"),
+        description: t("description"),
+        eyebrow: "GESTÃO · DISPENSAS",
       }}
       headerActions={
         <Button
@@ -158,16 +184,23 @@ export default function DispensasPage() {
                   <div className="size-8 rounded-full bg-primary-500/10 flex items-center justify-center">
                     <Plus className="size-4 text-primary-400" />
                   </div>
-                  <h3 className="text-lg font-bold text-white uppercase tracking-wider">{t("createBtn")}</h3>
+                  <h3 className="text-lg font-bold text-white uppercase tracking-wider">
+                    {t("createBtn")}
+                  </h3>
                 </div>
-                
-                <form onSubmit={handleCreate} className="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+                <form
+                  onSubmit={handleCreate}
+                  className="grid grid-cols-1 md:grid-cols-2 gap-6"
+                >
                   <div className="md:col-span-2">
                     <Input
                       label={t("reason")}
                       placeholder="Ex: Recuperação Pós-Cirúrgica"
                       value={form.reason}
-                      onChange={(e) => setForm((f) => ({ ...f, reason: e.target.value }))}
+                      onChange={(e) =>
+                        setForm((f) => ({ ...f, reason: e.target.value }))
+                      }
                       required
                       className="glass-input"
                     />
@@ -175,7 +208,9 @@ export default function DispensasPage() {
                   <DateField
                     label={t("startDateShort")}
                     value={form.startDate}
-                    onChange={(val) => setForm((f) => ({ ...f, startDate: val }))}
+                    onChange={(val) =>
+                      setForm((f) => ({ ...f, startDate: val }))
+                    }
                     required
                   />
                   <DateField
@@ -183,7 +218,7 @@ export default function DispensasPage() {
                     value={form.endDate}
                     onChange={(val) => setForm((f) => ({ ...f, endDate: val }))}
                   />
-                  
+
                   <div className="md:col-span-2 flex justify-end mt-2">
                     <Button
                       type="submit"
@@ -248,7 +283,10 @@ export default function DispensasPage() {
           ) : loading ? (
             <div className="grid gap-4">
               {[1, 2, 3].map((i) => (
-                <div key={i} className="glass-card p-6 flex justify-between items-center opacity-50">
+                <div
+                  key={i}
+                  className="glass-card p-6 flex justify-between items-center opacity-50"
+                >
                   <div className="flex flex-col gap-3">
                     <Skeleton className="h-4 w-48 bg-white/5" />
                     <Skeleton className="h-3 w-32 bg-white/5" />
@@ -281,31 +319,46 @@ export default function DispensasPage() {
                 const active = isDispensaActive(dispensa.endDate);
                 return (
                   <StaggerItem key={dispensa.id}>
-                    <div className={cn(
-                      "glass-card group p-6 flex items-center justify-between transition-all duration-500 hover:scale-[1.01]",
-                      active ? "border-gold-500/30" : "opacity-60 border-white/5"
-                    )}>
+                    <div
+                      className={cn(
+                        "glass-card group p-6 flex items-center justify-between transition-all duration-500 hover:scale-[1.01]",
+                        active
+                          ? "border-gold-500/30"
+                          : "opacity-60 border-white/5",
+                      )}
+                    >
                       <div className="flex items-center gap-5">
-                        <div className={cn(
-                          "size-12 rounded-full flex items-center justify-center shrink-0 border transition-all duration-500 group-hover:scale-110",
-                          active 
-                            ? "bg-gold-500/10 border-gold-500/20 shadow-[0_0_15px_rgba(216,173,52,0.15)]" 
-                            : "bg-white/5 border-white/10"
-                        )}>
-                          <ShieldOff className={cn(
-                            "size-5 transition-transform group-hover:rotate-12",
-                            active ? "text-gold-500 shadow-glow" : "text-slate-500"
-                          )} />
+                        <div
+                          className={cn(
+                            "size-12 rounded-full flex items-center justify-center shrink-0 border transition-all duration-500 group-hover:scale-110",
+                            active
+                              ? "bg-gold-500/10 border-gold-500/20 shadow-[0_0_15px_rgba(216,173,52,0.15)]"
+                              : "bg-white/5 border-white/10",
+                          )}
+                        >
+                          <ShieldOff
+                            className={cn(
+                              "size-5 transition-transform group-hover:rotate-12",
+                              active
+                                ? "text-gold-500 shadow-glow"
+                                : "text-slate-500",
+                            )}
+                          />
                         </div>
-                        
+
                         <div className="flex flex-col">
-                          <h4 className="text-white font-bold text-base tracking-tight mb-1">{dispensa.reason}</h4>
+                          <h4 className="text-white font-bold text-base tracking-tight mb-1">
+                            {dispensa.reason}
+                          </h4>
                           <div className="flex items-center gap-3">
                             <div className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-widest text-slate-400">
                               <Calendar className="size-3" />
                               <span>
-                                {new Date(dispensa.startDate).toLocaleDateString("pt-PT")}
-                                {dispensa.endDate && ` — ${new Date(dispensa.endDate).toLocaleDateString("pt-PT")}`}
+                                {new Date(
+                                  dispensa.startDate,
+                                ).toLocaleDateString("pt-PT")}
+                                {dispensa.endDate &&
+                                  ` — ${new Date(dispensa.endDate).toLocaleDateString("pt-PT")}`}
                               </span>
                             </div>
                             {active ? (

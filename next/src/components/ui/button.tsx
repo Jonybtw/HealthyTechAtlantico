@@ -13,17 +13,21 @@ const buttonVariants = cva(
     variants: {
       variant: {
         primary:
-          "border border-navy-900/70 bg-gradient-to-b from-navy-800 to-navy-950 text-white shadow-card hover:shadow-card-hover",
+          "border border-navy-800 bg-gradient-to-b from-navy-800 via-navy-700 to-navy-600 text-white shadow-card hover:from-navy-700 hover:via-navy-600 hover:to-navy-500 dark:border-navy-800 dark:bg-navy-950/60",
         secondary:
-          "border border-gold-500/30 bg-gradient-to-b from-gold-200 to-gold-400 text-navy-950 shadow-card hover:shadow-card-hover",
+          "border border-white/20 bg-white/10 text-navy-900 backdrop-blur-md shadow-card hover:bg-white/20 dark:text-white dark:border-white/10 dark:bg-white/5 dark:hover:bg-white/10 font-bold",
+        gold:
+          "border border-gold-400 bg-gold-500 text-navy-950 shadow-card hover:bg-gold-400 dark:bg-gold-400 dark:hover:bg-gold-300 font-bold",
+        danger:
+          "border border-danger-600 bg-gradient-to-b from-danger-500 to-danger-700 text-white shadow-card hover:from-danger-400 hover:to-danger-600",
+        ghost:
+          "border border-transparent bg-transparent text-foreground hover:bg-white/10 dark:hover:bg-white/5",
+        glass:
+          "border border-white/20 bg-white/10 text-navy-900 backdrop-blur-md shadow-[0_4px_30px_rgba(0,0,0,0.1)] hover:bg-white/20 dark:border-white/10 dark:bg-white/5 dark:text-white dark:hover:bg-white/10",
         progress:
           "border border-gold-300/40 bg-[linear-gradient(135deg,rgba(244,211,94,0.98),rgba(234,179,8,0.94))] text-navy-950 shadow-[0_16px_34px_rgba(234,179,8,0.28)] hover:-translate-y-0.5 hover:shadow-[0_22px_42px_rgba(234,179,8,0.34)]",
-        danger:
-          "border border-danger-700/30 bg-gradient-to-b from-danger-500 to-danger-700 text-white shadow-card hover:shadow-card-hover",
         sanctuary:
-          "border border-primary/20 bg-gradient-to-br from-[#1e3a8a] to-[#b6c4ff] text-[#05297a] shadow-[0_10px_30px_rgba(30,58,138,0.3)] hover:scale-[1.02] active:scale-95",
-        ghost:
-          "border border-border/70 bg-card/60 text-foreground shadow-none hover:border-navy-300/50 hover:bg-card",
+          "border border-navy-800 bg-gradient-to-b from-navy-700 to-navy-900 text-white shadow-card hover:from-navy-600 hover:to-navy-800",
         outline:
           "border border-border bg-transparent text-foreground shadow-sm hover:bg-accent/10 hover:border-accent/40",
         link: "text-accent underline-offset-4 hover:underline border-0 shadow-none",

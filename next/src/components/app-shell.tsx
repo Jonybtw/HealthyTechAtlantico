@@ -11,7 +11,9 @@ import {
   Menu,
   Moon,
   Search,
+  Settings2,
   Sun,
+  Type,
   User,
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
@@ -31,7 +33,10 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
   DropdownMenuSeparator,
+  DropdownMenuShortcut,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
@@ -56,8 +61,8 @@ interface AppShellProps {
 const MOBILE_PRIORITIES: Record<Role, string[]> = {
   ADMIN: ["/dashboard", "/alunos", "/analise", "/sos", "/admin"],
   PROFESSOR: ["/dashboard", "/turma", "/biometria", "/testes", "/sos"],
-  ALUNO: ["/dashboard", "/biometria", "/testes", "/sos", "/relatorio"],
-  PSICOLOGO: ["/dashboard", "/sos", "/protocolos", "/perfil"],
+  ALUNO: ["/dashboard", "/questionarios", "/sos", "/relatorio", "/protocolos"],
+  PSICOLOGO: ["/dashboard", "/sos", "/perfil"],
   PAIS: ["/dashboard", "/relatorio", "/protocolos", "/perfil"],
 };
 
@@ -121,25 +126,25 @@ function NavLink({
       onClick={onClick}
       aria-current={active ? "page" : undefined}
       className={cn(
-        "group relative flex items-center gap-3 rounded-xl px-2.5 py-2.5 text-xs font-medium transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400/40 focus-visible:ring-offset-2 focus-visible:ring-offset-navy-900",
+        "group relative flex items-center gap-3 rounded-xl px-2.5 py-2.5 text-xs font-medium transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400/40 focus-visible:ring-offset-2",
         active
-          ? "bg-[linear-gradient(135deg,rgba(255,255,255,0.14),rgba(255,255,255,0.06))] text-white shadow-[0_18px_36px_rgba(4,10,18,0.22)]"
-          : "text-navy-200/78 hover:bg-white/6 hover:text-white"
+          ? "bg-navy-200/50 dark:bg-[linear-gradient(135deg,rgba(255,255,255,0.14),rgba(255,255,255,0.06))] text-navy-900 dark:text-white shadow-sm dark:shadow-[0_18px_36px_rgba(4,10,18,0.22)]"
+          : "text-navy-600 dark:text-navy-200/78 hover:bg-navy-200/30 dark:hover:bg-white/6 hover:text-navy-900 dark:hover:text-white"
       )}
     >
       <span
         className={cn(
           "flex size-8 items-center justify-center rounded-xl ring-1 transition-colors",
           active
-            ? "bg-gold-300/15 text-gold-300 ring-gold-300/20"
-            : "bg-white/5 text-navy-200/70 ring-white/10 group-hover:text-gold-200"
+            ? "bg-gold-400/20 text-gold-600 ring-gold-400/30 dark:bg-gold-300/15 dark:text-gold-300 dark:ring-gold-300/20"
+            : "bg-navy-200/20 text-navy-600 ring-navy-300/30 group-hover:text-gold-600 dark:bg-white/5 dark:text-navy-200/70 dark:ring-white/10 dark:group-hover:text-gold-200"
         )}
       >
         <Icon className="size-4" />
       </span>
       <span className="flex-1 truncate">{label}</span>
       {active ? (
-        <span className="h-1.5 w-1.5 rounded-full bg-gold-300 shadow-[0_0_10px_rgba(245,194,66,0.7)]" />
+        <span className="h-1.5 w-1.5 rounded-full bg-gold-500 shadow-[0_0_10px_rgba(234,179,8,0.5)] dark:bg-gold-300 dark:shadow-[0_0_10px_rgba(245,194,66,0.7)]" />
       ) : null}
     </Link>
   );
@@ -149,10 +154,10 @@ export function AppShell({ user, children }: AppShellProps) {
   const pathname = usePathname();
   const t = useTranslations();
   const {
-    theme,
-    locale,
     contrast,
     fontScale,
+    theme,
+    locale,
     toggleTheme,
     toggleLocale,
     setFontScale,
@@ -161,6 +166,7 @@ export function AppShell({ user, children }: AppShellProps) {
   const isClient = useIsClient();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [cmdOpen, setCmdOpen] = useState(false);
+  const [accessibilityOpen, setAccessibilityOpen] = useState(false);
 
   useHotkeys([
     { key: "k", mods: ["ctrl"], handler: () => setCmdOpen((value) => !value) },
@@ -203,6 +209,9 @@ export function AppShell({ user, children }: AppShellProps) {
     visibleItems.find((item) => isActivePath(pathname, item.href)) ??
     visibleItems[0] ??
     null;
+  const currentItemLabel = currentItem
+    ? t(currentItem.label as Parameters<typeof t>[0])
+    : brandName;
 
   const roleLabels: Record<Role, string> = {
     ADMIN: t("roles.ADMIN"),
@@ -246,10 +255,10 @@ export function AppShell({ user, children }: AppShellProps) {
 
   return (
     <TooltipProvider delayDuration={300}>
-      <div className="relative min-h-screen bg-background">
+      <div className="relative min-h-screen bg-navy-50 text-navy-900 dark:bg-background dark:text-foreground transition-colors duration-300">
         <a
           href="#main-content"
-          className="fixed left-4 top-4 z-50 -translate-y-16 rounded-xl bg-gold-400 px-4 py-2.5 text-sm font-semibold text-navy-950 shadow-float transition-transform focus:translate-y-0 focus:outline-none focus:ring-2 focus:ring-gold-400/40"
+          className="fixed left-4 top-4 z-50 -translate-y-16 rounded-xl bg-gold-500 px-4 py-2.5 text-sm font-semibold text-navy-950 shadow-float transition-transform focus:translate-y-0 focus:outline-none focus:ring-2 focus:ring-gold-400/40"
         >
           {t("nav.skipToContent")}
         </a>
@@ -258,31 +267,33 @@ export function AppShell({ user, children }: AppShellProps) {
 
         <aside
           aria-label={t("nav.sidebarNavigation")}
-          className="fixed inset-y-0 left-0 z-30 hidden w-72 border-r border-white/5 bg-navy-950/80 backdrop-blur-2xl lg:flex lg:flex-col rounded-r-[2.5rem] shadow-2xl"
+          className="fixed inset-y-0 left-0 z-30 hidden w-72 overflow-hidden rounded-r-[2.75rem] border-r border-white/20 bg-white/48 shadow-2xl backdrop-blur-2xl transition-colors duration-300 dark:border-navy-800 dark:bg-navy-950/70 lg:flex lg:flex-col"
         >
-          <div className="flex items-center justify-center border-b border-white/10 px-6 py-5">
+          <div className="absolute inset-x-0 top-0 h-28 bg-[radial-gradient(circle_at_top_left,rgba(216,173,52,0.18),transparent_42%),linear-gradient(180deg,rgba(20,48,76,0.12),transparent)] dark:bg-[radial-gradient(circle_at_top_left,rgba(216,173,52,0.16),transparent_40%),linear-gradient(180deg,rgba(20,48,76,0.24),transparent)]" />
+
+          <div className="relative flex items-center justify-center border-b border-navy-200/50 px-6 py-5 dark:border-white/10">
             <BrandLogo
               alt={brandName}
               className="h-[98px] w-[96px]"
-              imageClassName="brightness-0 invert drop-shadow-[0_2px_8px_rgba(255,255,255,0.12)]"
+              imageClassName="drop-shadow-sm dark:brightness-0 dark:invert dark:drop-shadow-[0_2px_8px_rgba(255,255,255,0.12)]"
               priority
               sizes="96px"
             />
           </div>
 
-          <ScrollArea className="flex-1 px-3 py-4">
+          <ScrollArea className="relative flex-1 px-3 py-4">
             <nav className="space-y-4">{sidebarNav()}</nav>
           </ScrollArea>
 
-          <div className="border-t border-white/10 p-3">
-            <div className="rounded-[18px] border border-white/10 bg-white/5 p-3 text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]">
+          <div className="relative border-t border-navy-200/50 p-3 dark:border-white/10">
+            <div className="rounded-[22px] border border-white/40 bg-white/60 p-3 text-navy-900 shadow-sm backdrop-blur-md dark:border-white/10 dark:bg-white/6 dark:text-white dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]">
               <div className="flex items-center gap-3">
-                <Avatar className="size-8 shadow-[0_10px_20px_rgba(217,166,28,0.25)]">
+                <Avatar className="size-8 shadow-sm dark:shadow-[0_10px_20px_rgba(217,166,28,0.25)]">
                   <AvatarFallback>{initials}</AvatarFallback>
                 </Avatar>
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-xs font-semibold">{displayName}</p>
-                  <p className="mt-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-gold-200/80">
+                  <p className="mt-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-gold-600 dark:text-gold-300">
                     {roleLabels[user.role]}
                   </p>
                 </div>
@@ -294,7 +305,7 @@ export function AppShell({ user, children }: AppShellProps) {
         <div className="relative flex min-h-screen flex-col lg:ml-72">
           <header
             aria-label={t("nav.topBar")}
-            className="sticky top-0 z-20 border-b border-border/70 bg-background/82 backdrop-blur-xl"
+            className="sticky top-0 z-20 border-b border-navy-200/50 bg-white/72 backdrop-blur-xl transition-colors duration-300 dark:border-navy-800 dark:bg-navy-950/68"
           >
             <div className="mx-auto flex w-full max-w-[1600px] items-center justify-between gap-3 px-4 py-2 sm:px-6 lg:px-8">
               <div className="flex min-w-0 items-center gap-3">
@@ -308,6 +319,15 @@ export function AppShell({ user, children }: AppShellProps) {
                 >
                   <Menu className="size-5" />
                 </Button>
+
+                <div className="min-w-0">
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-gold-600 dark:text-gold-300">
+                    {currentItem ? getSectionLabel(currentItem.section) : roleLabels[user.role]}
+                  </p>
+                  <p className="truncate text-sm font-semibold text-foreground sm:text-base">
+                    {currentItemLabel}
+                  </p>
+                </div>
               </div>
 
               <div className="flex items-center gap-2">
@@ -351,12 +371,12 @@ export function AppShell({ user, children }: AppShellProps) {
                 <NotificationCenter userRole={user.role} />
 
                 {isClient ? (
-                  <DropdownMenu>
+                  <DropdownMenu onOpenChange={(open) => !open && setAccessibilityOpen(false)}>
                     <DropdownMenuTrigger asChild>
                       <Button
                         type="button"
                         variant="ghost"
-                        className="hidden h-fit min-w-fit items-center gap-2 px-2.5 py-1.5 lg:flex"
+                        className="hidden h-fit min-w-fit items-center gap-2 rounded-full border border-transparent px-2.5 py-1.5 lg:flex hover:border-navy-200/70 hover:bg-white/70 dark:hover:border-white/10 dark:hover:bg-white/6"
                       >
                         <Avatar className="size-6">
                           <AvatarFallback className="text-[10px]">{initials}</AvatarFallback>
@@ -366,50 +386,114 @@ export function AppShell({ user, children }: AppShellProps) {
                         </span>
                       </Button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="w-56">
-                      <div className="px-3 py-2">
-                        <div className="flex flex-col space-y-1">
-                          <p className="text-sm font-medium text-foreground">{displayName}</p>
-                          <p className="text-xs text-muted-foreground">{user.email}</p>
-                          <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-muted-foreground/70">
-                            {roleLabels[user.role]}
-                          </p>
+                    <DropdownMenuContent
+                      align="end"
+                      sideOffset={10}
+                      className="w-72 rounded-[22px] border border-white/45 bg-white/84 p-1.5 shadow-[0_24px_60px_-28px_rgba(9,21,35,0.28)] backdrop-blur-2xl dark:border-white/10 dark:bg-navy-950/84"
+                    >
+                      <div className="rounded-[18px] bg-gradient-to-br from-navy-50 to-white px-3.5 py-3 dark:from-white/8 dark:to-white/4">
+                        <div className="flex items-start gap-3">
+                          <Avatar className="size-10 shadow-sm ring-1 ring-white/70 dark:ring-white/10">
+                            <AvatarFallback className="text-xs font-semibold">{initials}</AvatarFallback>
+                          </Avatar>
+                          <div className="min-w-0 flex-1">
+                            <p className="truncate text-[15px] font-semibold text-foreground">{displayName}</p>
+                            <p className="truncate pt-0.5 text-xs text-muted-foreground">{user.email}</p>
+                            <p className="pt-2 text-[10px] font-semibold uppercase tracking-[0.24em] text-gold-600 dark:text-gold-300">
+                              {roleLabels[user.role]}
+                            </p>
+                          </div>
                         </div>
                       </div>
                       <DropdownMenuSeparator />
-                      <DropdownMenuItem asChild>
+                      <DropdownMenuItem asChild className="rounded-2xl px-3 py-3">
                         <Link href="/perfil">
-                          <User className="mr-2 size-4" />
+                          <span className="flex size-8 items-center justify-center rounded-2xl bg-navy-100 text-navy-700 dark:bg-white/8 dark:text-navy-100">
+                            <User className="size-4" />
+                          </span>
                           {t("nav.perfil")}
                         </Link>
                       </DropdownMenuItem>
                       <DropdownMenuSeparator />
                       <DropdownMenuLabel>{t("nav.preferences")}</DropdownMenuLabel>
-                      <DropdownMenuItem onClick={toggleTheme}>
+                      <DropdownMenuItem onClick={toggleTheme} className="rounded-2xl px-3 py-3">
                         {theme === "light" ? (
                           <Moon className="size-4" />
                         ) : (
                           <Sun className="size-4" />
                         )}
                         {t("nav.changeTheme")}
+                        <DropdownMenuShortcut>
+                          {theme === "light" ? t("nav.darkMode") : t("nav.lightMode")}
+                        </DropdownMenuShortcut>
                       </DropdownMenuItem>
-                      <DropdownMenuItem onClick={toggleLocale}>
+                      <DropdownMenuItem onClick={toggleLocale} className="rounded-2xl px-3 py-3">
                         <Globe className="size-4" />
                         {t("nav.changeLanguage")}
-                        <span className="ml-auto text-xs font-medium text-muted-foreground">
+                        <DropdownMenuShortcut className="font-semibold text-navy-500 dark:text-navy-200">
                           {locale.toUpperCase()}
-                        </span>
-                      </DropdownMenuItem>                      <DropdownMenuLabel>Acessibilidade</DropdownMenuLabel>
-                      <DropdownMenuItem onClick={() => setFontScale("small")}>Texto menor</DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => setFontScale("default")}>Texto médio</DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => setFontScale("large")}>Texto maior</DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => setContrastMode("normal")}>Contraste normal</DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => setContrastMode("high")}>Contraste alto</DropdownMenuItem>                      <DropdownMenuSeparator />
+                        </DropdownMenuShortcut>
+                      </DropdownMenuItem>
                       <DropdownMenuItem
-                        className="text-danger-600 focus:text-danger-600"
+                        className="rounded-2xl px-3 py-3"
+                        onSelect={(event) => {
+                          event.preventDefault();
+                          setAccessibilityOpen((value) => !value);
+                        }}
+                      >
+                        <Settings2 className="size-4" />
+                        {t("nav.accessibility")}
+                        <DropdownMenuShortcut className="text-base leading-none text-navy-500 dark:text-navy-200">
+                          {accessibilityOpen ? "−" : "+"}
+                        </DropdownMenuShortcut>
+                      </DropdownMenuItem>
+                      {accessibilityOpen ? (
+                        <div className="space-y-3 rounded-[20px] border border-navy-200/70 bg-navy-50/75 px-2 py-2.5 dark:border-white/10 dark:bg-white/6">
+                          <div>
+                            <DropdownMenuLabel className="px-2 pb-1 pt-1">{t("nav.textSize")}</DropdownMenuLabel>
+                            <DropdownMenuRadioGroup
+                              value={fontScale}
+                              onValueChange={(value) => setFontScale(value as "small" | "default" | "large")}
+                            >
+                              <DropdownMenuRadioItem value="small" className="rounded-none border-0 bg-transparent px-7 py-2 text-[15px]">
+                                <Type className="size-4" />
+                                {t("nav.textSmall")}
+                              </DropdownMenuRadioItem>
+                              <DropdownMenuRadioItem value="default" className="rounded-none border-0 bg-transparent px-7 py-2 text-[15px]">
+                                <Type className="size-4" />
+                                {t("nav.textDefault")}
+                              </DropdownMenuRadioItem>
+                              <DropdownMenuRadioItem value="large" className="rounded-none border-0 bg-transparent px-7 py-2 text-[15px]">
+                                <Type className="size-4" />
+                                {t("nav.textLarge")}
+                              </DropdownMenuRadioItem>
+                            </DropdownMenuRadioGroup>
+                          </div>
+                          <DropdownMenuSeparator className="mx-0" />
+                          <div>
+                            <DropdownMenuLabel className="px-2 pb-1 pt-1">{t("nav.contrast")}</DropdownMenuLabel>
+                            <DropdownMenuRadioGroup
+                              value={contrast}
+                              onValueChange={(value) => setContrastMode(value as "normal" | "high")}
+                            >
+                              <DropdownMenuRadioItem value="normal" className="rounded-none border-0 bg-transparent px-7 py-2 text-[15px]">
+                                {t("nav.contrastNormal")}
+                              </DropdownMenuRadioItem>
+                              <DropdownMenuRadioItem value="high" className="rounded-none border-0 bg-transparent px-7 py-2 text-[15px]">
+                                {t("nav.contrastHigh")}
+                              </DropdownMenuRadioItem>
+                            </DropdownMenuRadioGroup>
+                          </div>
+                        </div>
+                      ) : null}
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem
+                        className="rounded-2xl px-3 py-3 text-danger-600 focus:text-danger-600"
                         onClick={() => signOut({ callbackUrl: "/login" })}
                       >
-                        <LogOut className="mr-2 size-4" />
+                        <span className="flex size-8 items-center justify-center rounded-2xl bg-danger-50 text-danger-600 dark:bg-danger-950/40">
+                          <LogOut className="size-4" />
+                        </span>
                         {t("nav.logout")}
                       </DropdownMenuItem>
                     </DropdownMenuContent>
@@ -437,28 +521,28 @@ export function AppShell({ user, children }: AppShellProps) {
           <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
             <SheetContent
               side="left"
-              className="w-72 border-r-0 bg-gradient-to-b from-navy-950 via-navy-900 to-navy-900 p-0"
+              className="w-72 border-r border-navy-200/50 bg-white/90 p-0 backdrop-blur-3xl dark:border-navy-800 dark:bg-navy-950/90 transition-colors duration-300"
             >
-              <div className="flex items-center justify-center border-b border-white/10 px-6 py-5">
+              <div className="flex items-center justify-center border-b border-navy-200/50 dark:border-white/10 px-6 py-5">
                 <BrandLogo
                   alt={brandName}
                   className="h-[98px] w-[96px]"
-                  imageClassName="brightness-0 invert drop-shadow-[0_2px_8px_rgba(255,255,255,0.12)]"
+                  imageClassName="drop-shadow-sm dark:brightness-0 dark:invert dark:drop-shadow-[0_2px_8px_rgba(255,255,255,0.12)]"
                   sizes="96px"
                 />
               </div>
               <ScrollArea className="h-[calc(100vh-224px)] px-3 py-4">
                 <nav className="space-y-4">{sidebarNav(() => setMobileOpen(false))}</nav>
               </ScrollArea>
-              <div className="border-t border-white/10 p-3">
-                <div className="rounded-[18px] border border-white/10 bg-white/5 p-3 text-white">
+              <div className="border-t border-navy-200/50 dark:border-white/10 p-3">
+                <div className="rounded-[18px] border border-white/40 bg-white/50 p-3 text-navy-900 shadow-sm backdrop-blur-md dark:border-white/10 dark:bg-white/5 dark:text-white dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]">
                   <div className="flex items-center gap-3">
-                    <Avatar className="size-8">
+                    <Avatar className="size-8 shadow-sm dark:shadow-[0_10px_20px_rgba(217,166,28,0.25)]">
                       <AvatarFallback className="text-[10px]">{initials}</AvatarFallback>
                     </Avatar>
                     <div className="min-w-0 flex-1">
                       <p className="truncate text-xs font-semibold">{displayName}</p>
-                      <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-gold-200/80">
+                      <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-gold-600 dark:text-gold-300">
                         {roleLabels[user.role]}
                       </p>
                     </div>
@@ -475,7 +559,7 @@ export function AppShell({ user, children }: AppShellProps) {
             {children}
           </main>
 
-          <nav className="fixed inset-x-0 bottom-0 z-20 border-t border-border/70 bg-background/92 px-3 py-2 backdrop-blur-xl lg:hidden">
+          <nav className="fixed inset-x-0 bottom-0 z-20 border-t border-navy-200/50 bg-white/80 px-3 py-2 backdrop-blur-2xl dark:border-white/10 dark:bg-navy-950/80 lg:hidden transition-colors duration-300">
             <div className="mx-auto grid max-w-xl grid-cols-5 gap-1.5">
               {mobileItems.map((item) => {
                 const Icon = item.icon;
@@ -488,16 +572,16 @@ export function AppShell({ user, children }: AppShellProps) {
                     className={cn(
                       "flex flex-col items-center gap-0.5 rounded-xl px-2 py-1 text-[10px] font-semibold transition-all duration-300",
                       active
-                        ? "bg-card text-foreground shadow-card"
-                        : "text-muted-foreground hover:bg-card/70 hover:text-foreground"
+                        ? "bg-navy-100 text-navy-900 shadow-sm dark:bg-[linear-gradient(135deg,rgba(255,255,255,0.14),rgba(255,255,255,0.06))] dark:text-white dark:shadow-[0_18px_36px_rgba(4,10,18,0.22)]"
+                        : "text-navy-500 hover:bg-navy-50 hover:text-navy-900 dark:text-navy-300 dark:hover:bg-white/5 dark:hover:text-white"
                     )}
                   >
                     <span
                       className={cn(
                         "flex size-7 items-center justify-center rounded-xl",
                         active
-                          ? "bg-gold-100 text-gold-700 dark:bg-gold-400/10 dark:text-gold-300"
-                          : "bg-muted/60"
+                          ? "bg-gold-400/20 text-gold-600 ring-1 ring-gold-400/30 dark:bg-gold-300/15 dark:text-gold-300 dark:ring-gold-300/20"
+                          : "bg-navy-100/50 dark:bg-white/5"
                       )}
                     >
                       <Icon className="size-4" />
@@ -513,16 +597,16 @@ export function AppShell({ user, children }: AppShellProps) {
                 className={cn(
                   "flex flex-col items-center gap-0.5 rounded-xl px-2 py-1 text-[10px] font-semibold transition-all duration-300",
                   mobileOpen || (currentItem && !mobileItems.some((item) => item.href === currentItem.href))
-                    ? "bg-card text-foreground shadow-card"
-                    : "text-muted-foreground hover:bg-card/70 hover:text-foreground"
+                    ? "bg-navy-100 text-navy-900 shadow-sm dark:bg-[linear-gradient(135deg,rgba(255,255,255,0.14),rgba(255,255,255,0.06))] dark:text-white dark:shadow-[0_18px_36px_rgba(4,10,18,0.22)]"
+                    : "text-navy-500 hover:bg-navy-50 hover:text-navy-900 dark:text-navy-300 dark:hover:bg-white/5 dark:hover:text-white"
                 )}
               >
                 <span
                   className={cn(
                     "flex size-7 items-center justify-center rounded-xl",
                     mobileOpen || (currentItem && !mobileItems.some((item) => item.href === currentItem.href))
-                      ? "bg-gold-100 text-gold-700 dark:bg-gold-400/10 dark:text-gold-300"
-                      : "bg-muted/60"
+                      ? "bg-gold-400/20 text-gold-600 ring-1 ring-gold-400/30 dark:bg-gold-300/15 dark:text-gold-300 dark:ring-gold-300/20"
+                      : "bg-navy-100/50 dark:bg-white/5"
                   )}
                 >
                   <Menu className="size-4" />

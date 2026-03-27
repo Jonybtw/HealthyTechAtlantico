@@ -3,17 +3,17 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
-import { 
-  RefreshCw, 
-  ShieldOff, 
-  UserCheck, 
-  UserPlus, 
-  Trash2, 
-  Phone, 
-  Mail, 
-  ChevronRight, 
+import {
+  RefreshCw,
+  ShieldOff,
+  UserCheck,
+  UserPlus,
+  Trash2,
+  Phone,
+  Mail,
+  ChevronRight,
   Users,
-  CheckCircle2
+  CheckCircle2,
 } from "lucide-react";
 import { PageScaffold } from "@/components/ui/page-scaffold";
 import { PageSection } from "@/components/ui/page-section";
@@ -28,7 +28,12 @@ import { useUser } from "@/components/user-context";
 import { readApiResponse } from "@/lib/api-client";
 import { MeshGlow } from "@/components/ui/mesh-glow";
 import { cn } from "@/lib/utils";
-import { FadeIn, StaggerList, StaggerItem, AnimatePresence } from "@/components/ui/motion";
+import {
+  FadeIn,
+  StaggerList,
+  StaggerItem,
+  AnimatePresence,
+} from "@/components/ui/motion";
 
 interface Student {
   id: string;
@@ -56,18 +61,27 @@ export default function GuardioesPage() {
 
   const [students, setStudents] = useState<Student[]>([]);
   const [loadingStudents, setLoadingStudents] = useState(true);
-  const [studentsLoadError, setStudentsLoadError] = useState<string | null>(null);
-  const [selectedStudentId, setSelectedStudentId] = useState<string | null>(null);
+  const [studentsLoadError, setStudentsLoadError] = useState<string | null>(
+    null,
+  );
+  const [selectedStudentId, setSelectedStudentId] = useState<string | null>(
+    null,
+  );
   const [guardians, setGuardians] = useState<Guardian[]>([]);
   const [loadingGuardians, setLoadingGuardians] = useState(false);
-  const [guardiansLoadError, setGuardiansLoadError] = useState<string | null>(null);
+  const [guardiansLoadError, setGuardiansLoadError] = useState<string | null>(
+    null,
+  );
 
   const [guardianEmail, setGuardianEmail] = useState("");
   const [relationship, setRelationship] = useState("EE");
   const [submitting, setSubmitting] = useState(false);
   const [showAddForm, setShowAddForm] = useState(false);
 
-  const [deleteTarget, setDeleteTarget] = useState<{ guardianUserId: string; studentId: string } | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<{
+    guardianUserId: string;
+    studentId: string;
+  } | null>(null);
 
   const loadStudents = useCallback(async () => {
     setLoadingStudents(true);
@@ -79,7 +93,8 @@ export default function GuardioesPage() {
       setStudents(data.students);
     } catch (error) {
       setStudents([]);
-      const message = error instanceof Error ? error.message : common("studentListLoadError");
+      const message =
+        error instanceof Error ? error.message : common("studentListLoadError");
       setStudentsLoadError(message);
       toast.error(common("studentListLoadError"));
     } finally {
@@ -91,21 +106,24 @@ export default function GuardioesPage() {
     void loadStudents();
   }, [loadStudents]);
 
-  const loadGuardians = useCallback(async (studentId: string) => {
-    setLoadingGuardians(true);
-    setGuardiansLoadError(null);
-    try {
-      const r = await fetch(`/api/students/${studentId}/guardians`);
-      setGuardians(await readApiResponse<Guardian[]>(r));
-    } catch (error) {
-      const message = error instanceof Error ? error.message : t("loadError");
-      setGuardians([]);
-      setGuardiansLoadError(message);
-      toast.error(message);
-    } finally {
-      setLoadingGuardians(false);
-    }
-  }, [t]);
+  const loadGuardians = useCallback(
+    async (studentId: string) => {
+      setLoadingGuardians(true);
+      setGuardiansLoadError(null);
+      try {
+        const r = await fetch(`/api/students/${studentId}/guardians`);
+        setGuardians(await readApiResponse<Guardian[]>(r));
+      } catch (error) {
+        const message = error instanceof Error ? error.message : t("loadError");
+        setGuardians([]);
+        setGuardiansLoadError(message);
+        toast.error(message);
+      } finally {
+        setLoadingGuardians(false);
+      }
+    },
+    [t],
+  );
 
   useEffect(() => {
     if (selectedStudentId) {
@@ -144,11 +162,14 @@ export default function GuardioesPage() {
   async function handleDelete() {
     if (!deleteTarget) return;
     try {
-      const res = await fetch(`/api/students/${deleteTarget.studentId}/guardians`, {
-        method: "DELETE",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ guardianUserId: deleteTarget.guardianUserId }),
-      });
+      const res = await fetch(
+        `/api/students/${deleteTarget.studentId}/guardians`,
+        {
+          method: "DELETE",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ guardianUserId: deleteTarget.guardianUserId }),
+        },
+      );
       await readApiResponse(res);
       toast.success(t("removeSuccess"));
       setDeleteTarget(null);
@@ -160,7 +181,13 @@ export default function GuardioesPage() {
 
   if (role !== "PROFESSOR" && role !== "ADMIN") {
     return (
-      <PageScaffold headerProps={{ title: t("title"), description: t("description"), eyebrow: "FAMÍLIA · ENCARREGADOS" }}>
+      <PageScaffold
+        headerProps={{
+          title: t("title"),
+          description: t("description"),
+          eyebrow: "FAMÍLIA · ENCARREGADOS",
+        }}
+      >
         <EmptyState
           icon={ShieldOff}
           title="Sem acesso à página"
@@ -170,25 +197,30 @@ export default function GuardioesPage() {
     );
   }
 
-  const selectedStudent = useMemo(() => students.find((s) => s.id === selectedStudentId), [students, selectedStudentId]);
+  const selectedStudent = useMemo(
+    () => students.find((s) => s.id === selectedStudentId),
+    [students, selectedStudentId],
+  );
 
   return (
-    <PageScaffold 
-      headerProps={{ 
-        title: t("title"), 
-        description: t("description"), 
-        eyebrow: "FAMÍLIA · ENCARREGADOS" 
+    <PageScaffold
+      headerProps={{
+        title: t("title"),
+        description: t("description"),
+        eyebrow: "FAMÍLIA · ENCARREGADOS",
       }}
-      headerActions={selectedStudentId ? (
-        <Button
-          variant="sanctuary"
-          size="sm"
-          icon={showAddForm ? undefined : <UserPlus className="size-4" />}
-          onClick={() => setShowAddForm(!showAddForm)}
-        >
-          {showAddForm ? t("cancelBtn") : t("addBtn")}
-        </Button>
-      ) : undefined}
+      headerActions={
+        selectedStudentId ? (
+          <Button
+            variant="sanctuary"
+            size="sm"
+            icon={showAddForm ? undefined : <UserPlus className="size-4" />}
+            onClick={() => setShowAddForm(!showAddForm)}
+          >
+            {showAddForm ? t("cancelBtn") : t("addBtn")}
+          </Button>
+        ) : undefined
+      }
     >
       <div className="relative">
         <MeshGlow className="top-0 right-0 opacity-20" />
@@ -214,7 +246,9 @@ export default function GuardioesPage() {
                   <div className="size-8 rounded-full bg-primary-500/10 flex items-center justify-center">
                     <UserPlus className="size-4 text-primary-400" />
                   </div>
-                  <h3 className="text-lg font-bold text-white uppercase tracking-wider">{t("addTitle")}</h3>
+                  <h3 className="text-lg font-bold text-white uppercase tracking-wider">
+                    {t("addTitle")}
+                  </h3>
                 </div>
 
                 <form onSubmit={handleAdd} className="flex flex-col gap-6">
@@ -232,9 +266,9 @@ export default function GuardioesPage() {
                       {t("relationship")}
                     </label>
                     <PillSelect
-                      options={RELATIONSHIP_OPTIONS.map((r) => ({ 
-                        value: r.value, 
-                        label: t(r.labelKey as any) 
+                      options={RELATIONSHIP_OPTIONS.map((r) => ({
+                        value: r.value,
+                        label: t(r.labelKey as any),
                       }))}
                       value={relationship}
                       onChange={setRelationship}
@@ -263,7 +297,12 @@ export default function GuardioesPage() {
               title="Erro na Ligação"
               description="Não foi possível carregar a lista de alunos."
               action={
-                <Button size="sm" variant="secondary" icon={<RefreshCw className="size-4" />} onClick={loadStudents}>
+                <Button
+                  size="sm"
+                  variant="secondary"
+                  icon={<RefreshCw className="size-4" />}
+                  onClick={loadStudents}
+                >
                   Tentar novamente
                 </Button>
               }
@@ -310,7 +349,9 @@ export default function GuardioesPage() {
             <EmptyState
               icon={UserPlus}
               title={t("noGuardiansTitle")}
-              description={t("noGuardiansFor", { name: selectedStudent?.name ?? "" })}
+              description={t("noGuardiansFor", {
+                name: selectedStudent?.name ?? "",
+              })}
               action={
                 <Button
                   size="sm"
@@ -325,14 +366,18 @@ export default function GuardioesPage() {
           ) : (
             <StaggerList className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {guardians.map((g) => {
-                const relLabel = RELATIONSHIP_OPTIONS.find((r) => r.value === g.relationship)?.labelKey;
+                const relLabel = RELATIONSHIP_OPTIONS.find(
+                  (r) => r.value === g.relationship,
+                )?.labelKey;
                 return (
                   <StaggerItem key={g.id}>
                     <div className="glass-card group p-6 flex flex-col h-full transition-all duration-500 hover:scale-[1.02] hover:border-gold-500/20">
                       <div className="flex items-start justify-between mb-6">
                         <div className="flex items-center gap-4">
                           <div className="size-12 rounded-full border border-gold-500/20 bg-gold-500/5 flex items-center justify-center text-gold-500 font-black text-lg shadow-[0_0_15px_rgba(216,173,52,0.1)] group-hover:scale-110 transition-transform duration-500">
-                            {(g.guardian.name?.[0] || g.guardian.email[0]).toUpperCase()}
+                            {(
+                              g.guardian.name?.[0] || g.guardian.email[0]
+                            ).toUpperCase()}
                           </div>
                           <div>
                             <h4 className="text-white font-bold text-base leading-tight group-hover:text-gold-400 transition-colors">
@@ -343,9 +388,14 @@ export default function GuardioesPage() {
                             </span>
                           </div>
                         </div>
-                        
+
                         <button
-                          onClick={() => setDeleteTarget({ guardianUserId: g.id, studentId: selectedStudentId! })}
+                          onClick={() =>
+                            setDeleteTarget({
+                              guardianUserId: g.id,
+                              studentId: selectedStudentId!,
+                            })
+                          }
                           className="size-8 rounded-full flex items-center justify-center text-slate-500 hover:text-red-400 hover:bg-red-500/10 transition-all border border-transparent hover:border-red-500/20"
                           title={t("removeBtn")}
                         >
@@ -360,10 +410,12 @@ export default function GuardioesPage() {
                         </div>
                         <div className="flex items-center gap-3 text-[13px] text-slate-400">
                           <CheckCircle2 className="size-3 text-green-500" />
-                          <span className="text-[11px] font-bold uppercase tracking-widest text-slate-500">Acesso Ativo</span>
+                          <span className="text-[11px] font-bold uppercase tracking-widest text-slate-500">
+                            Acesso Ativo
+                          </span>
                         </div>
                       </div>
-                      
+
                       <div className="mt-6 pt-6 border-t border-white/5 flex justify-end">
                         <button className="flex items-center gap-1.5 text-[11px] font-black uppercase tracking-[0.2em] text-slate-500 hover:text-white transition-colors">
                           Detalhes <ChevronRight className="size-3" />

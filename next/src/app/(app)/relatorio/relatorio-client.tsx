@@ -19,7 +19,11 @@ import {
   ShieldAlert,
 } from "lucide-react";
 import { PageScaffold } from "@/components/ui/page-scaffold";
-import { StudentPicker, getInitials, getStudentSwatch } from "@/components/ui/student-picker";
+import {
+  StudentPicker,
+  getInitials,
+  getStudentSwatch,
+} from "@/components/ui/student-picker";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
 import { readApiResponse } from "@/lib/api-client";
@@ -65,7 +69,9 @@ export default function RelatorioPage() {
     role === "PAIS";
   const canSendEmail = role === "ADMIN" || role === "PROFESSOR";
 
-  const [students, setStudents] = useState<{ id: string; name: string; className?: string | null }[]>([]);
+  const [students, setStudents] = useState<
+    { id: string; name: string; className?: string | null }[]
+  >([]);
   const [loadingStudents, setLoadingStudents] = useState(true);
   const [studentId, setStudentId] = useState<string | null>(null);
   const [guardians, setGuardians] = useState<GuardianOption[]>([]);
@@ -164,7 +170,7 @@ export default function RelatorioPage() {
         setGuardianUserId((current) =>
           current && data.some((guardian) => guardian.id === current)
             ? current
-            : data[0]?.id ?? ""
+            : (data[0]?.id ?? ""),
         );
       })
       .catch(() => {
@@ -190,36 +196,40 @@ export default function RelatorioPage() {
     try {
       const [bio, tests] = await Promise.all([
         fetch(`/api/students/${studentId}/biometrics`).then((response) =>
-          readApiResponse<BiometricEntry[]>(response)
+          readApiResponse<BiometricEntry[]>(response),
         ),
         fetch(`/api/students/${studentId}/tests?latest=true`).then((response) =>
-          readApiResponse<TestEntry[]>(response)
+          readApiResponse<TestEntry[]>(response),
         ),
       ]);
 
       const { jsPDF } = await import("jspdf");
-      const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
+      const doc = new jsPDF({
+        orientation: "portrait",
+        unit: "mm",
+        format: "a4",
+      });
 
-      const W = doc.internal.pageSize.getWidth();   // 210
-      const H = doc.internal.pageSize.getHeight();  // 297
+      const W = doc.internal.pageSize.getWidth(); // 210
+      const H = doc.internal.pageSize.getHeight(); // 297
 
       // â”€â”€ Colour palette (Matching Site Theme) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-      const fgFull  = [9, 21, 35] as [number, number, number];      // --foreground (navy-950)
-      const fgMuted = [95, 109, 123] as [number, number, number];  // --muted-foreground
-      const bgSite  = [244, 241, 234] as [number, number, number];  // --background
-      const bgCard  = [255, 255, 255] as [number, number, number];  // --card (white)
-      const bgMuted = [236, 230, 218] as [number, number, number];  // --muted
-      const brand   = [184, 140, 25] as [number, number, number];
+      const fgFull = [9, 21, 35] as [number, number, number]; // --foreground (navy-950)
+      const fgMuted = [95, 109, 123] as [number, number, number]; // --muted-foreground
+      const bgSite = [244, 241, 234] as [number, number, number]; // --background
+      const bgCard = [255, 255, 255] as [number, number, number]; // --card (white)
+      const bgMuted = [236, 230, 218] as [number, number, number]; // --muted
+      const brand = [184, 140, 25] as [number, number, number];
       const navy50 = [238, 242, 255] as [number, number, number];
-      const navy600 = [79, 70, 229] as [number, number, number];   // --accent (gold-500)
-      const success = [16, 185, 129] as [number, number, number];   // --color-success-500
-      const warning = [245, 158, 11] as [number, number, number];   // --color-warning-500
-      const danger  = [239, 68, 68] as [number, number, number];    // --color-danger-500
-      const border  = [225, 215, 203] as [number, number, number];  // warm gray border
+      const navy600 = [79, 70, 229] as [number, number, number]; // --accent (gold-500)
+      const success = [16, 185, 129] as [number, number, number]; // --color-success-500
+      const warning = [245, 158, 11] as [number, number, number]; // --color-warning-500
+      const danger = [239, 68, 68] as [number, number, number]; // --color-danger-500
+      const border = [225, 215, 203] as [number, number, number]; // warm gray border
 
-      const fill  = (c: [number,number,number]) => doc.setFillColor(...c);
-      const stroke= (c: [number,number,number]) => doc.setDrawColor(...c);
-      const text  = (c: [number,number,number]) => doc.setTextColor(...c);
+      const fill = (c: [number, number, number]) => doc.setFillColor(...c);
+      const stroke = (c: [number, number, number]) => doc.setDrawColor(...c);
+      const text = (c: [number, number, number]) => doc.setTextColor(...c);
 
       // Entire page background
       fill(bgSite);
@@ -235,12 +245,12 @@ export default function RelatorioPage() {
           reader.onloadend = () => resolve(reader.result as string);
           reader.readAsDataURL(logoBlob);
         });
-        
+
         // Let's get image properties to maintain aspect ratio
         const props = doc.getImageProperties(logoBase64);
         const desiredHeight = 12;
         const scaledWidth = (props.width * desiredHeight) / props.height;
-        
+
         doc.addImage(logoBase64, "PNG", 14, 13, scaledWidth, desiredHeight);
         headerTextX = 14 + scaledWidth + 4;
       } catch {
@@ -248,40 +258,64 @@ export default function RelatorioPage() {
       }
 
       text(fgMuted);
-      doc.setFontSize(8); doc.setFont("helvetica", "bold");
+      doc.setFontSize(8);
+      doc.setFont("helvetica", "bold");
       doc.text("HEALTHYTECH ATLÃ‚NTICO", headerTextX, 17);
 
       text(fgFull);
-      doc.setFontSize(16); doc.setFont("helvetica", "bold");
+      doc.setFontSize(16);
+      doc.setFont("helvetica", "bold");
       doc.text("RelatÃ³rio Individual", headerTextX, 24);
 
-      const today = new Date().toLocaleDateString("pt-PT", { day: "2-digit", month: "long", year: "numeric" });
+      const today = new Date().toLocaleDateString("pt-PT", {
+        day: "2-digit",
+        month: "long",
+        year: "numeric",
+      });
       text(fgMuted);
-      doc.setFontSize(8); doc.setFont("helvetica", "normal");
+      doc.setFontSize(8);
+      doc.setFont("helvetica", "normal");
       doc.text(`Emitido em ${today}`, W - 14, 25, { align: "right" });
 
-      stroke(border); doc.setLineWidth(0.3);
+      stroke(border);
+      doc.setLineWidth(0.3);
       doc.line(14, 32, W - 14, 32);
 
       // â”€â”€ Student banner â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
       let y = 42;
-      fill(bgCard); doc.circle(14 + 6, y + 2, 6, "F");
-      stroke(border); doc.setLineWidth(0.3); doc.circle(14 + 6, y + 2, 6, "S");
+      fill(bgCard);
+      doc.circle(14 + 6, y + 2, 6, "F");
+      stroke(border);
+      doc.setLineWidth(0.3);
+      doc.circle(14 + 6, y + 2, 6, "S");
       const initials = (selectedStudent?.name ?? "?")
-        .split(" ").map((p) => p[0]).filter(Boolean).slice(0,2).join("").toUpperCase();
+        .split(" ")
+        .map((p) => p[0])
+        .filter(Boolean)
+        .slice(0, 2)
+        .join("")
+        .toUpperCase();
       text(brand);
-      doc.setFontSize(7); doc.setFont("helvetica", "bold");
+      doc.setFontSize(7);
+      doc.setFont("helvetica", "bold");
       doc.text(initials, 14 + 6, y + 3.5, { align: "center" });
 
       text(fgFull);
-      doc.setFontSize(12); doc.setFont("helvetica", "bold");
+      doc.setFontSize(12);
+      doc.setFont("helvetica", "bold");
       doc.text(selectedStudent?.name ?? "â€”", 30, y + 2);
-      
+
       text(fgMuted);
-      doc.setFontSize(8); doc.setFont("helvetica", "normal");
-      const studentMeta = [
-        selectedStudent?.className ? `Turma ${selectedStudent.className}` : null,
-      ].filter(Boolean).join("  Â·  ") || "Aluno";
+      doc.setFontSize(8);
+      doc.setFont("helvetica", "normal");
+      const studentMeta =
+        [
+          selectedStudent?.className
+            ? `Turma ${selectedStudent.className}`
+            : null,
+        ]
+          .filter(Boolean)
+          .join("  Â·  ") || "Aluno";
       doc.text(studentMeta, 30, y + 6);
 
       y = 60;
@@ -289,13 +323,15 @@ export default function RelatorioPage() {
       // â”€â”€ Section helper â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
       const section = (title: string, subtitle?: string) => {
         text(fgFull);
-        doc.setFontSize(10); doc.setFont("helvetica", "bold");
+        doc.setFontSize(10);
+        doc.setFont("helvetica", "bold");
         doc.text(title, 14, y);
         if (subtitle) {
-            text(fgMuted);
-            doc.setFontSize(8); doc.setFont("helvetica", "normal");
-            doc.text(subtitle, 14, y + 4);
-            y += 5;
+          text(fgMuted);
+          doc.setFontSize(8);
+          doc.setFont("helvetica", "normal");
+          doc.text(subtitle, 14, y + 4);
+          y += 5;
         }
         y += 6;
       };
@@ -309,42 +345,82 @@ export default function RelatorioPage() {
         const imc = b.imc ?? 0;
         let imcZoneColor = success;
         let imcZoneLabel = "Normal";
-        if (imc < 18.5) { imcZoneColor = warning; imcZoneLabel = "Baixo peso"; }
-        else if (imc >= 25 && imc < 30) { imcZoneColor = warning; imcZoneLabel = "Excesso de peso"; }
-        else if (imc >= 30) { imcZoneColor = danger; imcZoneLabel = "Obesidade"; }
+        if (imc < 18.5) {
+          imcZoneColor = warning;
+          imcZoneLabel = "Baixo peso";
+        } else if (imc >= 25 && imc < 30) {
+          imcZoneColor = warning;
+          imcZoneLabel = "Excesso de peso";
+        } else if (imc >= 30) {
+          imcZoneColor = danger;
+          imcZoneLabel = "Obesidade";
+        }
 
         const metrics = [
-          { label: "Altura", value: b.heightM ? `${b.heightM} m` : "â€”", badge: null },
-          { label: "Peso",   value: b.weightKg ? `${b.weightKg} kg` : "â€”", badge: null },
-          { label: "IMC",    value: b.imc ? String(b.imc) : "â€”", badge: { label: imcZoneLabel, color: imcZoneColor } },
-          { label: "Cintura", value: b.waistCm ? `${b.waistCm} cm` : "â€”", badge: null },
+          {
+            label: "Altura",
+            value: b.heightM ? `${b.heightM} m` : "â€”",
+            badge: null,
+          },
+          {
+            label: "Peso",
+            value: b.weightKg ? `${b.weightKg} kg` : "â€”",
+            badge: null,
+          },
+          {
+            label: "IMC",
+            value: b.imc ? String(b.imc) : "â€”",
+            badge: { label: imcZoneLabel, color: imcZoneColor },
+          },
+          {
+            label: "Cintura",
+            value: b.waistCm ? `${b.waistCm} cm` : "â€”",
+            badge: null,
+          },
         ];
 
         const boxW = (W - 28 - 9) / 4;
         metrics.forEach((m, i) => {
           const bx = 14 + i * (boxW + 3);
-          fill(bgCard); doc.roundedRect(bx, y, boxW, 20, 3, 3, "F");
-          stroke(border); doc.setLineWidth(0.3); doc.roundedRect(bx, y, boxW, 20, 3, 3, "S");
+          fill(bgCard);
+          doc.roundedRect(bx, y, boxW, 20, 3, 3, "F");
+          stroke(border);
+          doc.setLineWidth(0.3);
+          doc.roundedRect(bx, y, boxW, 20, 3, 3, "S");
 
           text(fgMuted);
-          doc.setFontSize(6.5); doc.setFont("helvetica", "bold");
+          doc.setFontSize(6.5);
+          doc.setFont("helvetica", "bold");
           doc.text(m.label.toUpperCase(), bx + 4, y + 7);
 
           text(fgFull);
-          doc.setFontSize(11); doc.setFont("helvetica", "bold");
+          doc.setFontSize(11);
+          doc.setFont("helvetica", "bold");
           doc.text(m.value, bx + 4, y + 14);
 
           if (m.badge) {
-            text(m.badge.color); doc.setFontSize(6); doc.setFont("helvetica", "bold");
+            text(m.badge.color);
+            doc.setFontSize(6);
+            doc.setFont("helvetica", "bold");
             doc.text(m.badge.label, bx + 4, y + 17.5);
           }
         });
         y += 28;
       } else {
-        fill(navy50); doc.roundedRect(14, y, W - 28, 12, 3, 3, "F");
-        stroke(border); doc.setLineWidth(0.3); doc.roundedRect(14, y, W - 28, 12, 3, 3, "S");
-        text(navy600); doc.setFontSize(8); doc.setFont("helvetica", "normal");
-        doc.text("Sem dados de biometria registados.", 14 + (W - 28) / 2, y + 7, { align: "center" });
+        fill(navy50);
+        doc.roundedRect(14, y, W - 28, 12, 3, 3, "F");
+        stroke(border);
+        doc.setLineWidth(0.3);
+        doc.roundedRect(14, y, W - 28, 12, 3, 3, "S");
+        text(navy600);
+        doc.setFontSize(8);
+        doc.setFont("helvetica", "normal");
+        doc.text(
+          "Sem dados de biometria registados.",
+          14 + (W - 28) / 2,
+          y + 7,
+          { align: "center" },
+        );
         y += 20;
       }
 
@@ -353,35 +429,51 @@ export default function RelatorioPage() {
       section("AptidÃ£o FÃ­sica", "Resultados atualizados por categoria.");
 
       const TEST_LABELS: Record<string, string> = {
-        vai: "Vai e Vem", cooper: "Cooper", milha: "Milha 1609m",
-        velocidade: "Velocidade 40m", agilidade: "Agilidade 4Ã—10m",
-        abd: "Abdominais", abdominais: "Abdominais",
-        bracos: "ExtensÃµes de braÃ§os", extensoes: "ExtensÃµes de braÃ§os",
-        senta: "Senta e alcanÃ§a", senta_alcanca: "Senta e alcanÃ§a",
+        vai: "Vai e Vem",
+        cooper: "Cooper",
+        milha: "Milha 1609m",
+        velocidade: "Velocidade 40m",
+        agilidade: "Agilidade 4Ã—10m",
+        abd: "Abdominais",
+        abdominais: "Abdominais",
+        bracos: "ExtensÃµes de braÃ§os",
+        extensoes: "ExtensÃµes de braÃ§os",
+        senta: "Senta e alcanÃ§a",
+        senta_alcanca: "Senta e alcanÃ§a",
         vaivem: "Vai e Vem",
       };
 
       if (Array.isArray(tests) && tests.length) {
         const rowH = 9;
-        
-        fill(bgMuted); doc.rect(14, y, W - 28, rowH, "F");
-        stroke(border); doc.setLineWidth(0.3); 
+
+        fill(bgMuted);
+        doc.rect(14, y, W - 28, rowH, "F");
+        stroke(border);
+        doc.setLineWidth(0.3);
         doc.line(14, y, W - 14, y);
         doc.line(14, y + rowH, W - 14, y + rowH);
-        
+
         text(fgFull);
-        doc.setFontSize(7); doc.setFont("helvetica", "bold");
+        doc.setFontSize(7);
+        doc.setFont("helvetica", "bold");
         doc.text("TESTE", 18, y + 6);
         doc.text("CATEGORIA", W / 2 - 10, y + 6);
         doc.text("RESULTADO", W - 18, y + 6, { align: "right" });
         y += rowH;
 
         const CATEGORIES: Record<string, string> = {
-          vai: "Capacidade AerÃ³bia", cooper: "Capacidade AerÃ³bia", milha: "Capacidade AerÃ³bia",
+          vai: "Capacidade AerÃ³bia",
+          cooper: "Capacidade AerÃ³bia",
+          milha: "Capacidade AerÃ³bia",
           vaivem: "Capacidade AerÃ³bia",
-          velocidade: "Velocidade", agilidade: "Agilidade",
-          abd: "ForÃ§a", abdominais: "ForÃ§a", bracos: "ForÃ§a", extensoes: "ForÃ§a",
-          senta: "Flexibilidade", senta_alcanca: "Flexibilidade",
+          velocidade: "Velocidade",
+          agilidade: "Agilidade",
+          abd: "ForÃ§a",
+          abdominais: "ForÃ§a",
+          bracos: "ForÃ§a",
+          extensoes: "ForÃ§a",
+          senta: "Flexibilidade",
+          senta_alcanca: "Flexibilidade",
         };
 
         (tests as TestEntry[]).forEach((test, i) => {
@@ -390,23 +482,31 @@ export default function RelatorioPage() {
           doc.rect(14, y, W - 28, rowH, "F");
 
           const label = TEST_LABELS[test.testId] ?? test.testId;
-          const cat   = CATEGORIES[test.testId] ?? "â€”";
+          const cat = CATEGORIES[test.testId] ?? "â€”";
 
-          text(fgFull); doc.setFontSize(8); doc.setFont("helvetica", "normal");
+          text(fgFull);
+          doc.setFontSize(8);
+          doc.setFont("helvetica", "normal");
           doc.text(label, 18, y + 6);
-          
+
           text(fgMuted);
           doc.text(cat, W / 2 - 10, y + 6);
-          
-          text(fgFull); doc.setFont("helvetica", "bold");
+
+          text(fgFull);
+          doc.setFont("helvetica", "bold");
           const valText = test.valueText;
           const unitText = test.unit.trim();
-          doc.text(valText, W - 18 - doc.getTextWidth(" " + unitText), y + 6, { align: "right" });
-          
-          text(fgMuted); doc.setFont("helvetica", "normal"); doc.setFontSize(7);
+          doc.text(valText, W - 18 - doc.getTextWidth(" " + unitText), y + 6, {
+            align: "right",
+          });
+
+          text(fgMuted);
+          doc.setFont("helvetica", "normal");
+          doc.setFontSize(7);
           doc.text(" " + unitText, W - 18, y + 6, { align: "right" });
 
-          stroke(border); doc.setLineWidth(0.2);
+          stroke(border);
+          doc.setLineWidth(0.2);
           doc.line(14, y + rowH, W - 14, y + rowH);
 
           y += rowH;
@@ -414,19 +514,40 @@ export default function RelatorioPage() {
 
         y += 12;
       } else {
-        fill(bgCard); doc.roundedRect(14, y, W - 28, 10, 2, 2, "F");
-        text(fgMuted); doc.setFontSize(8); doc.setFont("helvetica", "normal");
-        doc.text("Sem dados de testes registados.", 14 + (W - 28) / 2, y + 6.5, { align: "center" });
+        fill(bgCard);
+        doc.roundedRect(14, y, W - 28, 10, 2, 2, "F");
+        text(fgMuted);
+        doc.setFontSize(8);
+        doc.setFont("helvetica", "normal");
+        doc.text(
+          "Sem dados de testes registados.",
+          14 + (W - 28) / 2,
+          y + 6.5,
+          { align: "center" },
+        );
         y += 16;
       }
 
       // â”€â”€ Footer â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-      fill(fgFull); doc.rect(0, H - 16, W, 16, "F");
-      fill(brand); doc.rect(0, H - 16, W, 1.5, "F");
-      text(bgMuted); doc.setFontSize(6.5); doc.setFont("helvetica", "normal");
-      doc.text("HealthyTech AtlÃ¢ntico  Â·  Documento gerado automaticamente", W / 2, H - 7.5, { align: "center" });
-      text(brand); doc.setFontSize(6); doc.setFont("helvetica", "bold");
-      doc.text("CONFIDENCIAL â€” USO INTERNO", W / 2, H - 3.5, { align: "center" });
+      fill(fgFull);
+      doc.rect(0, H - 16, W, 16, "F");
+      fill(brand);
+      doc.rect(0, H - 16, W, 1.5, "F");
+      text(bgMuted);
+      doc.setFontSize(6.5);
+      doc.setFont("helvetica", "normal");
+      doc.text(
+        "HealthyTech AtlÃ¢ntico  Â·  Documento gerado automaticamente",
+        W / 2,
+        H - 7.5,
+        { align: "center" },
+      );
+      text(brand);
+      doc.setFontSize(6);
+      doc.setFont("helvetica", "bold");
+      doc.text("CONFIDENCIAL â€” USO INTERNO", W / 2, H - 3.5, {
+        align: "center",
+      });
 
       // Em vez de baixar o ficheiro para o computador, abrir num separador novo para nÃ£o persistir dados sensÃ­veis
       const blob = doc.output("blob");
@@ -442,10 +563,10 @@ export default function RelatorioPage() {
         link.click();
         link.remove();
       }
-      
+
       // Cleanup para performance
       setTimeout(() => URL.revokeObjectURL(url), 60000);
-      
+
       toast.success(t("success"));
     } catch {
       toast.error(t("noData"));
@@ -474,7 +595,9 @@ export default function RelatorioPage() {
       await readApiResponse(res);
       toast.success(t("emailSuccess"));
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : t("connectionError"));
+      toast.error(
+        error instanceof Error ? error.message : t("connectionError"),
+      );
     } finally {
       setSendingEmail(false);
     }
@@ -494,7 +617,13 @@ export default function RelatorioPage() {
 
   if (!canViewReports) {
     return (
-      <PageScaffold headerProps={{ title: t("title"), description: t("description"), eyebrow: "ALUNOS · RELATÓRIOS" }}>
+      <PageScaffold
+        headerProps={{
+          title: t("title"),
+          description: t("description"),
+          eyebrow: "ALUNOS · RELATÓRIOS",
+        }}
+      >
         <EmptyState
           icon={ShieldAlert}
           title={common("noPermission")}
@@ -508,7 +637,11 @@ export default function RelatorioPage() {
     return (
       <PageScaffold
         className="max-w-4xl"
-        headerProps={{ title: t("title"), description: t("description"), eyebrow: "ALUNOS · RELATÓRIOS" }}
+        headerProps={{
+          title: t("title"),
+          description: t("description"),
+          eyebrow: "ALUNOS · RELATÓRIOS",
+        }}
       >
         <EmptyState
           icon={Link2}
@@ -522,13 +655,16 @@ export default function RelatorioPage() {
   return (
     <PageScaffold
       className="max-w-4xl"
-      headerProps={{ title: t("title"), description: t("description"), eyebrow: "ALUNOS · RELATÓRIOS" }}
+      headerProps={{
+        title: t("title"),
+        description: t("description"),
+        eyebrow: "ALUNOS · RELATÓRIOS",
+      }}
     >
-
       {/* Document preview card */}
-      <div className="surface-secondary rounded-[20px] border border-border/50 shadow-card overflow-hidden">
+      <div className="surface-secondary rounded-[20px] border border-white/20 dark:border-white/10 shadow-card overflow-hidden">
         {/* Student selector */}
-        <div className="px-6 py-4 border-b border-border bg-card/60">
+        <div className="px-6 py-4 border-b border-white/20 dark:border-white/10 bg-white/60 dark:bg-navy-950/40 backdrop-blur-md/60">
           {role !== "ALUNO" ? (
             <StudentPicker
               students={students}
@@ -542,7 +678,10 @@ export default function RelatorioPage() {
                 {selectedStudent ? (
                   <span
                     className="flex size-7 shrink-0 items-center justify-center rounded-full text-[11px] font-semibold shadow-[inset_0_1px_0_rgba(255,255,255,0.18)]"
-                    style={getStudentSwatch({ id: selectedStudent.id, name: selectedStudent.name })}
+                    style={getStudentSwatch({
+                      id: selectedStudent.id,
+                      name: selectedStudent.name,
+                    })}
                   >
                     {getInitials(selectedStudent.name)}
                   </span>
@@ -571,7 +710,9 @@ export default function RelatorioPage() {
             <div className="px-6 py-5">
               <div className="flex items-center gap-2 mb-4">
                 <Activity className="size-4 text-navy-600 dark:text-navy-300" />
-                <h3 className="text-sm font-semibold text-foreground">{t("biometricsSection")}</h3>
+                <h3 className="text-sm font-semibold text-foreground">
+                  {t("biometricsSection")}
+                </h3>
               </div>
               {loadingPreview ? (
                 <div className="flex gap-3">
@@ -597,7 +738,9 @@ export default function RelatorioPage() {
                       label: t("imcLabel"),
                       value: bio0.imc ? `${bio0.imc}` : "â€”",
                       extra: classification ? (
-                        <span className={`text-[10px] font-medium ${classification.color}`}>
+                        <span
+                          className={`text-[10px] font-medium ${classification.color}`}
+                        >
                           {classification.text}
                         </span>
                       ) : null,
@@ -643,7 +786,7 @@ export default function RelatorioPage() {
               {loadingPreview ? (
                 <Skeleton className="h-24 w-full" />
               ) : testData.length ? (
-                <div className="rounded-xl border border-border overflow-hidden">
+                <div className="rounded-xl border border-white/20 dark:border-white/10 overflow-hidden">
                   <table className="w-full text-sm">
                     <thead>
                       <tr className="bg-muted/60">
@@ -676,9 +819,7 @@ export default function RelatorioPage() {
                   </table>
                 </div>
               ) : (
-                <p className="text-sm text-muted-foreground">
-                  {t("noTests")}
-                </p>
+                <p className="text-sm text-muted-foreground">{t("noTests")}</p>
               )}
             </div>
           </div>
@@ -686,18 +827,18 @@ export default function RelatorioPage() {
           <div className="px-6 py-8 flex flex-col items-center gap-2 text-center">
             <FileText className="size-8 text-muted-foreground/40" />
             <p className="text-sm text-muted-foreground">
-              {role !== "ALUNO"
-                ? t("previewInstruction")
-                : t("loadingData")}
+              {role !== "ALUNO" ? t("previewInstruction") : t("loadingData")}
             </p>
           </div>
         )}
       </div>
 
       {/* Actions row */}
-      <div className={`grid gap-4 ${canSendEmail ? "sm:grid-cols-2" : "sm:grid-cols-1"}`}>
+      <div
+        className={`grid gap-4 ${canSendEmail ? "sm:grid-cols-2" : "sm:grid-cols-1"}`}
+      >
         {/* PDF download */}
-        <div className="surface-secondary rounded-[20px] border border-border/50 p-5 flex flex-col gap-4 shadow-card transition-all duration-300 hover:scale-[1.01] hover:-translate-y-0.5 hover:shadow-card">
+        <div className="surface-secondary rounded-[20px] border border-white/20 dark:border-white/10 p-5 flex flex-col gap-4 shadow-card transition-all duration-300 hover:scale-[1.01] hover:-translate-y-0.5 hover:shadow-card">
           <div className="flex items-center gap-3">
             <div className="h-10 w-10 rounded-xl bg-navy-50 dark:bg-navy-900 flex items-center justify-center">
               <Download className="size-5 text-navy-700 dark:text-navy-300" />
@@ -716,7 +857,11 @@ export default function RelatorioPage() {
             loading={generatingPdf}
             icon={<Download className="size-4" />}
             className="w-full justify-center rounded-full font-semibold shadow-lg transition-all hover:scale-[1.02]"
-            style={{ background: "linear-gradient(135deg, #1E3A8A, #10243a)", color: "#fff", border: "none" }}
+            style={{
+              background: "linear-gradient(135deg, #1E3A8A, #10243a)",
+              color: "#fff",
+              border: "none",
+            }}
           >
             {t("generate")}
           </Button>
@@ -724,7 +869,7 @@ export default function RelatorioPage() {
 
         {/* Email */}
         {canSendEmail && (
-          <div className="surface-secondary rounded-[20px] border border-border/50 p-5 flex flex-col gap-4 shadow-card transition-all duration-300 hover:scale-[1.01] hover:-translate-y-0.5 hover:shadow-card">
+          <div className="surface-secondary rounded-[20px] border border-white/20 dark:border-white/10 p-5 flex flex-col gap-4 shadow-card transition-all duration-300 hover:scale-[1.01] hover:-translate-y-0.5 hover:shadow-card">
             <div className="flex items-center gap-3">
               <div className="h-10 w-10 rounded-xl bg-navy-50 dark:bg-navy-900 flex items-center justify-center">
                 <Mail className="size-5 text-navy-700 dark:text-navy-300" />
@@ -742,7 +887,10 @@ export default function RelatorioPage() {
               {guardians.length > 0 ? (
                 <>
                   <FieldShell label={t("emailRecipientLabel")}>
-                    <Select value={guardianUserId} onValueChange={setGuardianUserId}>
+                    <Select
+                      value={guardianUserId}
+                      onValueChange={setGuardianUserId}
+                    >
                       <SelectTrigger
                         aria-label={t("emailRecipientLabel")}
                         className="h-14 rounded-full px-4 pt-[1.45rem] pb-[0.45rem] text-left shadow-[inset_0_1px_0_rgba(255,255,255,0.3)] focus:ring-4 focus:ring-gold-400/15"
@@ -752,7 +900,8 @@ export default function RelatorioPage() {
                       <SelectContent>
                         {guardians.map((guardian) => (
                           <SelectItem key={guardian.id} value={guardian.id}>
-                            {(guardian.guardian.name ?? guardian.guardian.email) +
+                            {(guardian.guardian.name ??
+                              guardian.guardian.email) +
                               " · " +
                               guardian.guardian.email}
                           </SelectItem>
@@ -782,4 +931,3 @@ export default function RelatorioPage() {
     </PageScaffold>
   );
 }
-

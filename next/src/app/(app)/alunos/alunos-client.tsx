@@ -44,7 +44,10 @@ export function AlunosClient({ initialStudents }: AlunosClientProps) {
     sex: "M",
     birthDate: "",
   });
-  const [state, formAction, isPending] = useActionState(createStudentAction, null);
+  const [state, formAction, isPending] = useActionState(
+    createStudentAction,
+    null,
+  );
   const lastHandledStateRef = useRef<typeof state>(null);
 
   useEffect(() => {
@@ -131,7 +134,9 @@ export function AlunosClient({ initialStudents }: AlunosClientProps) {
     },
   ];
 
-  const handleCsvImport = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleCsvImport = async (
+    event: React.ChangeEvent<HTMLInputElement>,
+  ) => {
     const file = event.target.files?.[0];
     if (!file) return;
     setIsImportingCsv(true);
@@ -142,22 +147,26 @@ export function AlunosClient({ initialStudents }: AlunosClientProps) {
         method: "POST",
         body: formData,
       });
-      const result = await readApiResponse<{ created: number; failed: number }>(response);
+      const result = await readApiResponse<{ created: number; failed: number }>(
+        response,
+      );
       toast.success(
         locale === "en"
           ? `Imported ${result.created} students`
-          : `Importados ${result.created} alunos`
+          : `Importados ${result.created} alunos`,
       );
       if (result.failed > 0) {
         toast.warning(
           locale === "en"
             ? `${result.failed} rows failed validation`
-            : `${result.failed} linhas falharam validacao`
+            : `${result.failed} linhas falharam validacao`,
         );
       }
       router.refresh();
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Erro na importacao CSV");
+      toast.error(
+        error instanceof Error ? error.message : "Erro na importacao CSV",
+      );
     } finally {
       event.target.value = "";
       setIsImportingCsv(false);
@@ -205,7 +214,8 @@ export function AlunosClient({ initialStudents }: AlunosClientProps) {
                 onClick={() => setShowCreate((v) => !v)}
                 className="flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-bold text-white shadow-md transition-all hover:-translate-y-0.5 hover:shadow-lg hover:shadow-blue-900/20 active:scale-95"
                 style={{
-                  background: "linear-gradient(135deg, #1e3a8a 0%, #00236f 100%)",
+                  background:
+                    "linear-gradient(135deg, #1e3a8a 0%, #00236f 100%)",
                 }}
               >
                 {showCreate ? (
@@ -227,9 +237,7 @@ export function AlunosClient({ initialStudents }: AlunosClientProps) {
           <AnimatePresence>
             {showCreate ? (
               <FadeIn key="create-form">
-                <div
-                  className="relative mb-8 overflow-hidden rounded-3xl border border-blue-50 bg-white p-6 shadow-sm"
-                >
+                <div className="relative mb-8 overflow-hidden rounded-3xl border border-blue-50 bg-white p-6 shadow-sm">
                   {/* Decorative orb */}
                   <div className="pointer-events-none absolute -right-16 -top-16 h-32 w-32 rounded-full bg-amber-400 opacity-[0.06] blur-2xl" />
                   <h3 className="mb-5 flex items-center gap-2 text-sm font-bold text-[#00236f]">
@@ -260,8 +268,16 @@ export function AlunosClient({ initialStudents }: AlunosClientProps) {
                         </label>
                         <PillSelect
                           options={[
-                            { value: "M", label: t("male"), icon: <Mars className="size-3.5" /> },
-                            { value: "F", label: t("female"), icon: <Venus className="size-3.5" /> },
+                            {
+                              value: "M",
+                              label: t("male"),
+                              icon: <Mars className="size-3.5" />,
+                            },
+                            {
+                              value: "F",
+                              label: t("female"),
+                              icon: <Venus className="size-3.5" />,
+                            },
                           ]}
                           value={form.sex}
                           onChange={(v) => setForm((c) => ({ ...c, sex: v }))}
@@ -276,7 +292,9 @@ export function AlunosClient({ initialStudents }: AlunosClientProps) {
                         <DateField
                           name="birthDate"
                           value={form.birthDate}
-                          onChange={(v) => setForm((c) => ({ ...c, birthDate: v }))}
+                          onChange={(v) =>
+                            setForm((c) => ({ ...c, birthDate: v }))
+                          }
                           required
                         />
                       </div>
