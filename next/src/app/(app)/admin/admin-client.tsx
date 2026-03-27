@@ -88,7 +88,7 @@ export default function AdminPage() {
 
   if (role !== "ADMIN") {
     return (
-      <PageScaffold headerProps={{ title: t("title"), description: t("description") }}>
+      <PageScaffold headerProps={{ title: t("title"), description: t("description"), eyebrow: "SISTEMA · ADMINISTRAÇÃO" }}>
         <EmptyState
           icon={ShieldOff}
           title={common("noPermission")}

@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
-import { Dumbbell, FileUp, Timer, Wind, Zap, Ruler, ShieldAlert } from "lucide-react";
+import { Dumbbell, FileUp, Timer, Wind, Zap, Ruler, ShieldAlert, Scale, ArrowUpDown } from "lucide-react";
 import { PageScaffold } from "@/components/ui/page-scaffold";
 import { PageSection } from "@/components/ui/page-section";
 import { StudentPicker } from "@/components/ui/student-picker";
@@ -61,12 +61,24 @@ export default function TestesPage() {
   const [students, setStudents] = useState<StudentOption[]>([]);
   const [loadingStudents, setLoadingStudents] = useState(true);
   const [studentId, setStudentId] = useState<string | null>(null);
-  const [selectedTest, setSelectedTest] = useState(TEST_OPTIONS[0].id);
-  const [value, setValue] = useState("");
   const [saving, setSaving] = useState(false);
   const [lastResult, setLastResult] = useState<{ zone: string } | null>(null);
   const [isImportingCsv, setIsImportingCsv] = useState(false);
   const importInputRef = useRef<HTMLInputElement | null>(null);
+
+  const [form, setForm] = useState<Record<string, string>>({
+    vai: "",
+    abd: "",
+    bracos: "",
+    senta: "",
+    weightKg: "",
+    heightM: "",
+  });
+
+  const updateField = (field: string) => (v: string) => {
+    setForm((prev) => ({ ...prev, [field]: v }));
+    setLastResult(null); // Clear last result on change to encourage re-eval
+  };
 
   const loadStudents = useCallback(async () => {
     setLoadingStudents(true);
@@ -107,11 +119,10 @@ export default function TestesPage() {
   }, [loadStudents]);
 
   const selectedStudent = students.find((s) => s.id === studentId);
-  const currentTest = TEST_OPTIONS.find((opt) => opt.id === selectedTest)!;
 
   if (!canManageTests) {
     return (
-      <PageScaffold headerProps={{ title: t("title"), description: t("description") }}>
+      <PageScaffold headerProps={{ title: t("title"), description: t("description"), eyebrow: "AVALIAÇÃO · TESTES" }}>
         <EmptyState
           icon={ShieldAlert}
           title={common("noPermission")}
@@ -127,51 +138,61 @@ export default function TestesPage() {
       toast.error(t("selectStudent"));
       return;
     }
-    if (!value.trim()) {
-      toast.error(t("fillValue"));
-      return;
+
+    const age = selectedStudent?.birthDate ? calcAgeFromBirthDate(selectedStudent.birthDate) : null;
+    const sex = selectedStudent?.sex ?? ("M" as Sex);
+
+    // Prepare tests to save
+    const testsToSave = Object.entries(form)
+      .filter(([id, val]) => val.trim() !== "" && !["weightKg", "heightM"].includes(id))
+      .map(([id, val]) => {
+        const testOpt = TEST_OPTIONS.find((o) => o.id === id)!;
+        const numValue = id === "milha" ? null : parseFloat(val);
+        const zone = age !== null ? (classifyTest(id, val, sex, age) ?? t("improvementZone")) : t("improvementZone");
+        
+        return {
+          testId: id,
+          valueNum: numValue,
+          valueText: val,
+          unit: testOpt.unit,
+          zone,
+        };
+      });
+
+    if (testsToSave.length === 0 && !form.weightKg && !form.heightM) {
+        toast.error(t("fillValue"));
+        return;
     }
+
     setSaving(true);
 
     try {
-      const numValue = selectedTest === "milha" ? null : parseFloat(value);
-      const age = selectedStudent?.birthDate
-        ? calcAgeFromBirthDate(selectedStudent.birthDate)
-        : null;
-      const sex = selectedStudent?.sex ?? ("M" as Sex);
-      const zone =
-        age !== null
-          ? (classifyTest(
-            selectedTest,
-            selectedTest === "milha" ? value : (numValue ?? value),
-            sex,
-            age
-          ) ?? t("improvementZone"))
-          : t("improvementZone");
-      const payload = {
-        tests: [
-          {
-            testId: selectedTest,
-            valueNum: numValue,
-            valueText: value,
-            unit: currentTest.unit,
-            zone,
-          },
-        ],
-      };
+      // 1. Save Tests
+      if (testsToSave.length > 0) {
+        const res = await fetch(`/api/students/${studentId}/tests`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ tests: testsToSave }),
+        });
+        const body = await readApiResponse<{ tests: { zone: string }[] }>(res);
+        setLastResult({ zone: body.tests[0]?.zone ?? "Zona Saudável" });
+      }
 
-      const res = await fetch(`/api/students/${studentId}/tests`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-      const body = await readApiResponse<{
-        count: number;
-        tests: { zone: string }[];
-      }>(res);
-      setLastResult({ zone: body.tests[0]?.zone ?? zone });
+      // 2. Save Biometria if provided
+      if (form.weightKg || form.heightM) {
+          await fetch(`/api/students/${studentId}/biometria`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                  weightKg: form.weightKg ? parseFloat(form.weightKg) : null,
+                  heightM: form.heightM ? parseFloat(form.heightM) : null,
+              }),
+          });
+      }
+
       toast.success(t("success"));
-      setValue("");
+      // Clear form
+      setForm({ vai: "", abd: "", bracos: "", senta: "", weightKg: "", heightM: "" });
     } catch (error) {
       toast.error(error instanceof Error ? error.message : t("connectionError"));
     } finally {
@@ -213,7 +234,11 @@ export default function TestesPage() {
 
   return (
     <PageScaffold
-      headerProps={{ title: t("title"), description: t("description") }}
+      headerProps={{ 
+        title: t("title"), 
+        description: t("description"), 
+        eyebrow: "AVALIAÇÃO · TESTES FÍSICOS" 
+      }}
       headerActions={
         canImportCsv ? (
           <>
@@ -239,98 +264,220 @@ export default function TestesPage() {
     >
 
       {loadingStudents ? (
-        <div className="grid grid-cols-1 lg:grid-cols-[1fr_340px] gap-5 items-start">
-          <PageSection tone="primary" layout="form" contentClassName="gap-4">
-            <Skeleton className="h-12 w-full rounded-xl" />
-            <Skeleton className="h-9 w-full rounded-xl" />
-            <Skeleton className="h-14 w-full rounded-xl" />
-            <Skeleton className="h-9 w-32 rounded-xl" />
-          </PageSection>
-          <PageSection tone="secondary" layout="list" contentClassName="gap-3">
-            <Skeleton className="h-64 w-full rounded-xl" />
-          </PageSection>
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_380px] gap-8 items-start">
+          <div className="space-y-6">
+            <PageSection tone="primary" layout="form" contentClassName="gap-4">
+                <Skeleton className="h-14 w-full rounded-2xl" />
+            </PageSection>
+            {[1, 2, 3, 4].map((item) => (
+                <Skeleton key={item} className="h-48 w-full rounded-3xl" />
+            ))}
+          </div>
+          <div className="flex flex-col gap-6">
+            <Skeleton className="h-64 w-full rounded-3xl" />
+            <Skeleton className="h-48 w-full rounded-3xl" />
+          </div>
         </div>
       ) : (
-        <div className="grid grid-cols-1 lg:grid-cols-[1fr_340px] gap-5 items-start">
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_380px] gap-8 items-start">
 
-          {/* LEFT — Form */}
-          <PageSection tone="primary" layout="form" className="animate-fade-in-up">
-            <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-              <StudentPicker
-                students={students}
-                value={studentId}
-                onChange={setStudentId}
-              />
+          {/* LEFT — Forms */}
+          <div className="space-y-8 animate-fade-in-up">
+            <PageSection tone="primary" layout="form" className="shadow-none !bg-transparent !border-none !p-0">
+               <div className="space-y-2">
+                <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60 ml-1">
+                  Seleção de Aluno
+                </label>
+                <StudentPicker
+                    students={students}
+                    value={studentId}
+                    onChange={setStudentId}
+                />
+               </div>
+            </PageSection>
 
-            {/* Test selector */}
-            <PillSelect
-              size="lg"
-              label={t("selectTest")}
-              options={TEST_OPTIONS.map((opt) => ({
-                value: opt.id,
-                label: opt.label,
-                icon: TEST_ICONS[opt.id],
-              }))}
-              value={selectedTest}
-              onChange={(v) => {
-                setSelectedTest(v);
-                setValue("");
-                setLastResult(null);
-              }}
-            />
-
-            <UnitInput
-              label={currentTest.label}
-              unit={currentTest.unit}
-              value={value}
-              onChange={(v) => setValue(v)}
-              placeholder={currentTest.unit === "mm:ss" ? "08:30" : "0"}
-              icon={INPUT_ICONS[selectedTest]}
-              required
-            />
-
-            <Button
-              type="submit"
-              loading={saving}
-              icon={<Timer className="size-4" />}
-              className="self-start"
-            >
-              {t("save")}
-            </Button>
-            </form>
-          </PageSection>
-
-          {/* RIGHT — Result Panel */}
-          <div className="lg:sticky lg:top-6">
+            {/* Capacidade Aeróbia */}
             <PageSection
-              tone="secondary"
-              layout="list"
+              tone="primary"
               title={
-                <span className="flex items-center gap-2">
-                  <Timer className="size-4 text-navy-600 dark:text-gold-400" />
-                  {t("resultPanel")}
-                </span>
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+                    <span className="material-symbols-outlined">fitness_center</span>
+                  </div>
+                  <h2 className="text-lg font-bold tracking-tight">Capacidade Aeróbia</h2>
+                </div>
+              }
+              className="group overflow-hidden relative"
+            >
+               <div className="mesh-glow -right-20 -top-20 opacity-20" />
+               <UnitInput
+                  label="Vai-e-Vem (20m)"
+                  unit="percursos"
+                  value={form.vai}
+                  onChange={updateField("vai")}
+                  placeholder="0"
+                  icon={<Wind className="size-4" />}
+                />
+            </PageSection>
+
+            {/* Composição Corporal */}
+            <PageSection
+              tone="primary"
+              title={
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-secondary/10 flex items-center justify-center text-secondary">
+                    <span className="material-symbols-outlined">monitor_weight</span>
+                  </div>
+                  <h2 className="text-lg font-bold tracking-tight">Composição Corporal</h2>
+                </div>
               }
             >
-
-              {!lastResult ? (
-                <div className="flex flex-col items-center gap-4 py-8 text-center">
-                  <div className="animate-pulse-ring rounded-full p-2">
-                    <div className="surface-utility flex size-10 items-center justify-center rounded-lg shadow-card">
-                      <Timer className="size-4 text-navy-700 dark:text-gold-300 animate-pulse" strokeWidth={1.8} />
-                    </div>
-                  </div>
-                  <p className="text-[13px] font-medium text-muted-foreground max-w-[200px] leading-relaxed">{t("fillFormHint")}</p>
-                </div>
-              ) : (
-                <div className="flex flex-col items-center gap-4 py-4 animate-scale-in">
-                  <ZoneBadge zone={lastResult.zone} />
-                  <p className="text-xs text-muted-foreground text-center font-medium">{currentTest.label}</p>
-                </div>
-              )}
+              <div className="grid grid-cols-2 gap-4">
+                <UnitInput
+                    label="Peso"
+                    unit="kg"
+                    value={form.weightKg}
+                    onChange={updateField("weightKg")}
+                    placeholder="0.0"
+                    icon={<Scale className="size-4" />}
+                />
+                <UnitInput
+                    label="Altura"
+                    unit="m"
+                    value={form.heightM}
+                    onChange={updateField("heightM")}
+                    placeholder="0.00"
+                    icon={<ArrowUpDown className="size-4" />}
+                />
+              </div>
             </PageSection>
+
+            {/* Aptidão Neuromuscular */}
+            <PageSection
+              tone="primary"
+              title={
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+                    <span className="material-symbols-outlined">bolt</span>
+                  </div>
+                  <h2 className="text-lg font-bold tracking-tight">Aptidão Neuromuscular</h2>
+                </div>
+              }
+            >
+               <div className="space-y-6">
+                <UnitInput
+                    label="Abdominais"
+                    unit="reps"
+                    value={form.abd}
+                    onChange={updateField("abd")}
+                    placeholder="0"
+                    icon={<Dumbbell className="size-4" />}
+                />
+                <UnitInput
+                    label="Flexões"
+                    unit="reps"
+                    value={form.bracos}
+                    onChange={updateField("bracos")}
+                    placeholder="0"
+                    icon={<Dumbbell className="size-4" />}
+                />
+               </div>
+            </PageSection>
+
+            {/* Flexibilidade */}
+            <PageSection
+              tone="primary"
+              title={
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-secondary/10 flex items-center justify-center text-secondary">
+                    <span className="material-symbols-outlined">straighten</span>
+                  </div>
+                  <h2 className="text-lg font-bold tracking-tight">Flexibilidade</h2>
+                </div>
+              }
+            >
+                <UnitInput
+                    label="Sentar e Alcançar"
+                    unit="cm"
+                    value={form.senta}
+                    onChange={updateField("senta")}
+                    placeholder="0.0"
+                    icon={<Ruler className="size-4" />}
+                />
+            </PageSection>
+
+            <Button
+                onClick={handleSubmit}
+                variant="sanctuary"
+                size="xl"
+                loading={saving}
+                icon={<span className="material-symbols-outlined mr-2">save</span>}
+                className="w-full text-lg shadow-glow mt-4"
+              >
+                Gravar todos os testes
+            </Button>
           </div>
 
+          {/* RIGHT — Info Panel */}
+          <aside className="flex flex-col gap-6 lg:sticky lg:top-24">
+            <PageSection
+                tone="secondary"
+                title={
+                    <span className="text-xs font-bold uppercase tracking-widest text-muted-foreground/70">
+                        Status da Avaliação
+                    </span>
+                }
+                layout="analytics"
+                className="relative overflow-hidden group"
+            >
+                {!lastResult ? (
+                    <div className="flex flex-col items-center gap-4 py-8 text-center">
+                        <div className="relative">
+                            <svg width="120" height="120" viewBox="0 0 120 120" className="text-muted-foreground/10">
+                                <circle cx="60" cy="60" r="48" fill="none" stroke="currentColor" strokeWidth="8" strokeDasharray="6 4" />
+                            </svg>
+                            <div className="absolute inset-0 flex items-center justify-center">
+                                <Timer className="size-8 text-muted-foreground/20" />
+                            </div>
+                        </div>
+                        <p className="text-sm font-medium text-muted-foreground/60 px-4">
+                            Preencha os resultados para ver a classificação
+                        </p>
+                    </div>
+                ) : (
+                    <div className="flex flex-col items-center gap-4 py-4">
+                        <ZoneBadge zone={lastResult.zone} />
+                        <p className="text-xs font-bold text-secondary uppercase tracking-widest">Registado com Sucesso</p>
+                    </div>
+                )}
+            </PageSection>
+
+            <PageSection
+              tone="secondary"
+              title={
+                <span className="text-xs font-bold uppercase tracking-widest text-muted-foreground/70">
+                  Referência ZAF
+                </span>
+              }
+              layout="list"
+              contentClassName="gap-3"
+            >
+              <div className="space-y-3">
+                <div className="flex items-center justify-between p-4 bg-white/5 rounded-full border border-transparent">
+                  <div className="flex items-center gap-4">
+                    <div className="w-3 h-3 rounded-full bg-emerald-500 shadow-[0_0_15px_rgba(16,185,129,0.5)]" />
+                    <span className="font-bold text-foreground text-sm">Saudável (ZSAF)</span>
+                  </div>
+                </div>
+                <div className="flex items-center justify-between p-4 bg-white/5 rounded-full border border-transparent">
+                  <div className="flex items-center gap-4">
+                    <div className="w-3 h-3 rounded-full bg-amber-500 shadow-[0_0_15px_rgba(245,158,11,0.5)]" />
+                    <span className="font-bold text-foreground text-sm">Melhoria (ZMF)</span>
+                  </div>
+                </div>
+              </div>
+            </PageSection>
+          </aside>
         </div>
       )}
     </PageScaffold>

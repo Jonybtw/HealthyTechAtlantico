@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="pt-BR"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@200;300;400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "on-tertiary-fixed": "#341100",
+              "surface-container-high": "#212b37",
+              "on-primary-fixed-variant": "#264191",
+              "primary-container": "#1e3a8a",
+              "outline": "#8f909d",
+              "inverse-on-surface": "#27313d",
+              "on-error": "#690005",
+              "on-tertiary-container": "#f39461",
+              "on-tertiary": "#552000",
+              "on-primary": "#05297a",
+              "secondary-container": "#b38b0c",
+              "on-surface": "#d9e3f3",
+              "surface-container-lowest": "#050f1a",
+              "error-container": "#93000a",
+              "surface-bright": "#303a46",
+              "primary-fixed-dim": "#b6c4ff",
+              "primary": "#b6c4ff",
+              "primary-fixed": "#dce1ff",
+              "tertiary-fixed-dim": "#ffb691",
+              "tertiary": "#ffb691",
+              "on-background": "#d9e3f3",
+              "error": "#ffb4ab",
+              "background": "#0a141f",
+              "on-secondary": "#3e2e00",
+              "inverse-surface": "#d9e3f3",
+              "secondary-fixed-dim": "#eec147",
+              "inverse-primary": "#4059aa",
+              "on-primary-container": "#90a8ff",
+              "surface-dim": "#0a141f",
+              "surface-container-highest": "#2c3642",
+              "secondary-fixed": "#ffdf94",
+              "tertiary-container": "#6e2c00",
+              "surface-variant": "#2c3642",
+              "outline-variant": "#444651",
+              "surface-container-low": "#121c28",
+              "tertiary-fixed": "#ffdbcb",
+              "surface": "#0a141f",
+              "surface-container": "#17202c",
+              "on-error-container": "#ffdad6",
+              "on-secondary-container": "#362800",
+              "secondary": "#eec147",
+              "on-tertiary-fixed-variant": "#773205",
+              "on-surface-variant": "#c5c5d3",
+              "on-secondary-fixed": "#251a00",
+              "on-primary-fixed": "#00164e",
+              "surface-tint": "#b6c4ff",
+              "on-secondary-fixed-variant": "#594400"
+            },
+            fontFamily: {
+              "headline": ["Manrope"],
+              "body": ["Manrope"],
+              "label": ["Manrope"]
+            },
+            borderRadius: {"DEFAULT": "1rem", "lg": "2rem", "xl": "3rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+<style>
+        body {
+            background-color: #07111c;
+            color: #d9e3f3;
+            font-family: 'Manrope', sans-serif;
+            -webkit-font-smoothing: antialiased;
+        }
+        .glass-card {
+            background: rgba(44, 54, 66, 0.4);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(143, 144, 157, 0.1);
+        }
+        .mesh-glow {
+            position: fixed;
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, rgba(30, 58, 138, 0.15) 0%, rgba(30, 58, 138, 0) 70%);
+            z-index: -1;
+            filter: blur(60px);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="min-h-screen pb-32">
+<!-- Mesh Glow Backgrounds -->
+<div class="mesh-glow top-[-10%] right-[-10%]"></div>
+<div class="mesh-glow bottom-[10%] left-[-10%]"></div>
+<!-- TopAppBar -->
+<nav class="fixed top-0 w-full z-50 bg-[#0a141f]/80 backdrop-blur-xl shadow-[0_20px_40px_rgba(0,0,0,0.4)] flex items-center justify-between px-6 py-4">
+<div class="flex items-center gap-4">
+<button class="flex items-center justify-center p-2 rounded-full hover:bg-[#2c3642]/40 transition-colors active:scale-95 duration-200">
+<span class="material-symbols-outlined text-[#b6c4ff]">arrow_back</span>
+</button>
+<div class="flex flex-col">
+<span class="text-xs font-bold uppercase tracking-[0.1em] text-[#eec147]">OPERAÇÕES · TURMA</span>
+<h1 class="text-lg font-extrabold tracking-tight text-[#d9e3f3]">Lista de Turma</h1>
+</div>
+</div>
+<button class="flex items-center justify-center p-2 rounded-full hover:bg-[#2c3642]/40 transition-colors active:scale-95 duration-200">
+<span class="material-symbols-outlined text-[#b6c4ff]">more_vert</span>
+</button>
+</nav>
+<main class="pt-24 px-6 space-y-8">
+<!-- Summary Section: Horizontal Scrollable Cards -->
+<section class="flex gap-4 overflow-x-auto pb-4 no-scrollbar">
+<!-- Total Alunos -->
+<div class="glass-card min-w-[160px] p-6 rounded-lg flex flex-col gap-3">
+<div class="flex items-center justify-between">
+<span class="material-symbols-outlined text-primary" data-weight="fill">groups</span>
+</div>
+<div>
+<p class="text-[10px] uppercase tracking-widest text-on-surface-variant font-bold">Total Alunos</p>
+<h2 class="text-3xl font-extrabold text-on-surface">24</h2>
+</div>
+</div>
+<!-- ZAF Saudável -->
+<div class="glass-card min-w-[200px] p-6 rounded-lg flex flex-col gap-3">
+<div class="flex items-center justify-between">
+<span class="material-symbols-outlined text-secondary" data-weight="fill">verified_user</span>
+<span class="text-secondary font-bold text-sm">88%</span>
+</div>
+<div class="space-y-2">
+<p class="text-[10px] uppercase tracking-widest text-on-surface-variant font-bold">ZAF Saudável %</p>
+<div class="w-full bg-surface-container-highest rounded-full h-1.5 overflow-hidden">
+<div class="h-full bg-gradient-to-r from-secondary-container to-secondary shadow-[0_0_10px_rgba(238,193,71,0.4)]" style="width: 88%"></div>
+</div>
+</div>
+</div>
+<!-- Pendente -->
+<div class="glass-card min-w-[160px] p-6 rounded-lg flex flex-col gap-3">
+<div class="flex items-center justify-between">
+<span class="material-symbols-outlined text-error" data-weight="fill">report_problem</span>
+</div>
+<div>
+<p class="text-[10px] uppercase tracking-widest text-on-surface-variant font-bold">Pendente</p>
+<h2 class="text-3xl font-extrabold text-error">03</h2>
+</div>
+</div>
+</section>
+<!-- Search Bar -->
+<section>
+<div class="relative group">
+<div class="absolute inset-y-0 left-4 flex items-center pointer-events-none">
+<span class="material-symbols-outlined text-outline-variant group-focus-within:text-secondary transition-colors">search</span>
+</div>
+<input class="w-full bg-surface-container-lowest border-none ring-1 ring-outline-variant/20 focus:ring-2 focus:ring-secondary/40 rounded-full py-4 pl-12 pr-6 text-on-surface placeholder:text-outline-variant font-medium transition-all outline-none" placeholder="Buscar por aluno ou status..." type="text"/>
+</div>
+</section>
+<!-- Student List -->
+<section class="space-y-4">
+<div class="flex justify-between items-center px-2">
+<h3 class="text-sm font-bold uppercase tracking-widest text-on-surface-variant">Lista de Alunos</h3>
+<span class="text-xs text-outline-variant">24 resultados</span>
+</div>
+<div class="space-y-3">
+<!-- Row 1 -->
+<div class="glass-card p-4 rounded-lg flex items-center justify-between transition-colors hover:bg-surface-container-highest/60">
+<div class="flex items-center gap-4">
+<div class="w-12 h-12 rounded-full overflow-hidden ring-2 ring-primary-container/30">
+<img class="w-full h-full object-cover" data-alt="Close-up portrait of a young male student in a dark clinic setting with cinematic professional lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDTIQd_d1C0_yKmgD1A44vW2-72fNpc-Qi9g5B6Q_S1eQS0rKyN2LikbKYqFT6Ym4A34uXKyPS0FR2_3V52uZ4r0L3iHpARKsQWVBSV-Wa38V5JGjLSvmIJE5XaoBWo1PYd1jm2sqxsFHIiDT-ibbb-99qG8bg4Xk5mCIhuXt3uvaBtwcpIwruJJobWpzNlokS3aJqWMghSjBf3q963z0-Vs1IoXM7CEWvy8paMb_uE9Jt2huUINQ3JA7jr9sqd-t1W4mHTTLna4MBe"/>
+</div>
+<div class="flex flex-col">
+<h4 class="font-bold text-on-surface tracking-tight">Arthur Machado Guedes</h4>
+<p class="text-xs text-outline-variant font-medium">Avaliado em 12 Out</p>
+</div>
+</div>
+<div class="flex flex-col items-end gap-1">
+<span class="px-3 py-1 bg-green-500/10 text-green-400 text-[10px] font-bold uppercase tracking-wider rounded-full ring-1 ring-green-500/20">Saudável</span>
+</div>
+</div>
+<!-- Row 2 -->
+<div class="glass-card p-4 rounded-lg flex items-center justify-between transition-colors hover:bg-surface-container-highest/60">
+<div class="flex items-center gap-4">
+<div class="w-12 h-12 rounded-full overflow-hidden ring-2 ring-primary-container/30">
+<img class="w-full h-full object-cover" data-alt="Close-up portrait of a professional young woman in a high-end medical diagnostic environment soft blue lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCRggdY8TsaaQG3bmv3_VBFHm7wd2sXGy0TVaXlYH2F5xW6eOCWQlK3Gxeti7NhH6QkjynJ8VCHnjgr58Ueu-NKjmhPclITrOE-b9sMHF4X_mPdoQ4l_hvo_Stq2xiidySVVaYoXoj2V4aWO2wH0-jVzjV3daJSmd0yDPtan5wup-wKm6fQ-mNQtUwy2ZpzE3Ty11TU3WFEoCpag7CR5eYFNqH5W0IJ-puWQMvIELWOKFh36JATz24OPEj_RK2bVM1IyBNfYK164P_Z"/>
+</div>
+<div class="flex flex-col">
+<h4 class="font-bold text-on-surface tracking-tight">Beatriz Cavalcanti</h4>
+<p class="text-xs text-outline-variant font-medium">Avaliado em 10 Out</p>
+</div>
+</div>
+<div class="flex flex-col items-end gap-1">
+<span class="px-3 py-1 bg-secondary/10 text-secondary text-[10px] font-bold uppercase tracking-wider rounded-full ring-1 ring-secondary/20">Em Risco</span>
+</div>
+</div>
+<!-- Row 3 -->
+<div class="glass-card p-4 rounded-lg flex items-center justify-between transition-colors hover:bg-surface-container-highest/60">
+<div class="flex items-center gap-4">
+<div class="w-12 h-12 rounded-full overflow-hidden ring-2 ring-primary-container/30">
+<img class="w-full h-full object-cover" data-alt="Portrait of a male student in a professional dark moody atmosphere with subtle primary color accents" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB-7SdyUvhFY46pjtSUswntCiO1a96nMmrV_Ay2J9IDrv9jBPs_fU_XV3y9pWhONi_oecnUO-iWXEFQfFSTDwXRJ5FRfqPuPmumnUGQjzyIgDaG54yBGS1SU-zNRBlhfZvCSIMRN75qbHYEpf0EPElDi_SPxPWLsyTRGEdhOLV5tKnllli5p1p_ugYoMnM2btxk864U_7oaPry72p_pKK8G4iX9SbvrT37ZV0L0SzwWaZeUbJ0J3UAxVU1-_UKFdnM9F0zSQZF9E2K-"/>
+</div>
+<div class="flex flex-col">
+<h4 class="font-bold text-on-surface tracking-tight">Carlos Eduardo Lima</h4>
+<p class="text-xs text-outline-variant font-medium">Pendente de Avaliação</p>
+</div>
+</div>
+<div class="flex flex-col items-end gap-1">
+<span class="px-3 py-1 bg-error/10 text-error text-[10px] font-bold uppercase tracking-wider rounded-full ring-1 ring-error/20">Pendente</span>
+</div>
+</div>
+<!-- Row 4 -->
+<div class="glass-card p-4 rounded-lg flex items-center justify-between transition-colors hover:bg-surface-container-highest/60">
+<div class="flex items-center gap-4">
+<div class="w-12 h-12 rounded-full overflow-hidden ring-2 ring-primary-container/30">
+<img class="w-full h-full object-cover" data-alt="Close-up face of a student girl in a premium dark studio with soft glowing mesh background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCkyZmtnShO-EGeLDwLokdGdxHPLArrkULypWPSbBGQMfpitGFHTWF_UqcRLiZ4fJZNZZkSSlHcF6XyCep4ZtM-lG3dkHyJ-ucn85SOGLgTfndNW_w6f5tDLGa9YqzvdEt7nmtzm-kMuVwsGzqDcIUy2EiI-Bcxq6xp7Y87SNXXa9tTYfR4pmOr8YbkmxG4uDfx7LiuTRI3U8Kr-mhZAeFTIUl3TvB5aBQoEoSy0zSrUEGLnSatHs94PjbEPT41wWAMvWFIAyKppqOk"/>
+</div>
+<div class="flex flex-col">
+<h4 class="font-bold text-on-surface tracking-tight">Daniela Ferreira</h4>
+<p class="text-xs text-outline-variant font-medium">Avaliado em 09 Out</p>
+</div>
+</div>
+<div class="flex flex-col items-end gap-1">
+<span class="px-3 py-1 bg-green-500/10 text-green-400 text-[10px] font-bold uppercase tracking-wider rounded-full ring-1 ring-green-500/20">Saudável</span>
+</div>
+</div>
+</div>
+</section>
+</main>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 left-0 w-full flex justify-around items-center px-4 pb-6 pt-3 bg-[#2c3642]/60 backdrop-blur-2xl rounded-t-[2rem] z-50 shadow-[0_-10px_30px_rgba(0,0,0,0.3)]">
+<button class="flex flex-col items-center justify-center text-[#d9e3f3]/50 px-5 py-2 hover:text-[#d9e3f3] transition-all active:scale-90 duration-300 ease-out">
+<span class="material-symbols-outlined mb-1">grid_view</span>
+<span class="font-['Manrope'] text-[11px] font-medium tracking-wide">Dashboard</span>
+</button>
+<button class="flex flex-col items-center justify-center bg-gradient-to-tr from-[#1e3a8a] to-[#b6c4ff] text-white rounded-full px-5 py-2 active:scale-90 duration-300 ease-out">
+<span class="material-symbols-outlined mb-1" data-weight="fill">groups</span>
+<span class="font-['Manrope'] text-[11px] font-medium tracking-wide">Turmas</span>
+</button>
+<button class="flex flex-col items-center justify-center text-[#d9e3f3]/50 px-5 py-2 hover:text-[#d9e3f3] transition-all active:scale-90 duration-300 ease-out">
+<span class="material-symbols-outlined mb-1">calendar_today</span>
+<span class="font-['Manrope'] text-[11px] font-medium tracking-wide">Agenda</span>
+</button>
+<button class="flex flex-col items-center justify-center text-[#d9e3f3]/50 px-5 py-2 hover:text-[#d9e3f3] transition-all active:scale-90 duration-300 ease-out">
+<span class="material-symbols-outlined mb-1">person</span>
+<span class="font-['Manrope'] text-[11px] font-medium tracking-wide">Perfil</span>
+</button>
+</nav>
+<!-- FAB (Suppressed on this view as per instructions for Lists/Details focus) -->
+</body></html>

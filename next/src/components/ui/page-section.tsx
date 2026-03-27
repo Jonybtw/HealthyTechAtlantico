@@ -13,16 +13,16 @@ interface PageSectionProps {
 }
 
 const toneClasses: Record<NonNullable<PageSectionProps["tone"]>, string> = {
-  primary: "surface-primary page-frame",
-  secondary: "surface-secondary page-frame",
-  utility: "surface-utility rounded-[20px] p-3 sm:p-4",
+  primary: "glass page-frame shadow-[0_20px_50px_rgba(0,0,0,0.3)] border-white/5",
+  secondary: "glass page-frame",
+  utility: "glass rounded-xl p-4",
 };
 
 const layoutClasses: Record<NonNullable<PageSectionProps["layout"]>, string> = {
-  default: "flex flex-col gap-3",
-  form: "flex flex-col gap-3.5",
-  list: "flex flex-col gap-2.5",
-  analytics: "flex flex-col gap-4",
+  default: "flex flex-col gap-4",
+  form: "flex flex-col gap-6",
+  list: "flex flex-col gap-3",
+  analytics: "flex flex-col gap-6",
 };
 
 export function PageSection({

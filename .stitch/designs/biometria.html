@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="pt"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>HealthyTech Atlantico - Biometria</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "surface-container-high": "#212b37",
+                        "on-error": "#690005",
+                        "background": "#0a141f",
+                        "on-tertiary": "#552000",
+                        "on-primary-fixed": "#00164e",
+                        "primary": "#b6c4ff",
+                        "surface-variant": "#2c3642",
+                        "on-secondary": "#3e2e00",
+                        "error-container": "#93000a",
+                        "secondary-container": "#b38b0c",
+                        "on-primary-container": "#90a8ff",
+                        "on-background": "#d9e3f3",
+                        "on-surface-variant": "#c5c5d3",
+                        "surface-container-highest": "#2c3642",
+                        "secondary-fixed": "#ffdf94",
+                        "inverse-on-surface": "#27313d",
+                        "surface-container": "#17202c",
+                        "tertiary-fixed-dim": "#ffb691",
+                        "on-secondary-container": "#362800",
+                        "surface": "#0a141f",
+                        "surface-container-lowest": "#050f1a",
+                        "secondary-fixed-dim": "#eec147",
+                        "outline": "#8f909d",
+                        "on-surface": "#d9e3f3",
+                        "tertiary": "#ffb691",
+                        "surface-bright": "#303a46",
+                        "tertiary-container": "#6e2c00",
+                        "on-primary": "#05297a",
+                        "on-secondary-fixed": "#251a00",
+                        "tertiary-fixed": "#ffdbcb",
+                        "on-tertiary-fixed-variant": "#773205",
+                        "inverse-surface": "#d9e3f3",
+                        "on-tertiary-fixed": "#341100",
+                        "on-secondary-fixed-variant": "#594400",
+                        "surface-container-low": "#121c28",
+                        "surface-dim": "#0a141f",
+                        "on-primary-fixed-variant": "#264191",
+                        "secondary": "#eec147",
+                        "primary-container": "#1e3a8a",
+                    },
+                    fontFamily: {
+                        "headline": ["Manrope"],
+                        "body": ["Manrope"],
+                        "label": ["Manrope"]
+                    },
+                    borderRadius: {"DEFAULT": "1rem", "lg": "2rem", "xl": "3rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            background-color: #07111c;
+            color: #d9e3f3;
+            font-family: 'Manrope', sans-serif;
+            overflow-x: hidden;
+        }
+        .mesh-glow {
+            position: absolute;
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, rgba(30, 58, 138, 0.15) 0%, rgba(30, 58, 138, 0) 70%);
+            border-radius: 50%;
+            filter: blur(80px);
+            z-index: -1;
+        }
+        .glass-card {
+            background: rgba(44, 54, 66, 0.4);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(143, 144, 157, 0.1);
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .pill-gradient {
+            background: linear-gradient(135deg, #1e3a8a 0%, #b6c4ff 100%);
+        }
+        input::-webkit-outer-spin-button,
+        input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="min-h-screen">
+<!-- TopAppBar -->
+<header class="fixed top-0 w-full z-50 bg-slate-950/60 backdrop-blur-xl flex justify-between items-center px-8 h-20 shadow-[0_20px_40px_rgba(0,0,0,0.4)]">
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-blue-600 dark:text-blue-400">menu</span>
+<span class="text-2xl font-black text-slate-100 italic font-manrope font-bold tracking-tight">HealthyTech Atlantico</span>
+</div>
+<div class="hidden md:flex gap-8">
+<a class="text-slate-400 hover:bg-slate-800/50 transition-all px-4 py-2 rounded-full" href="#">Health Records</a>
+<a class="text-amber-400 font-bold hover:bg-slate-800/50 transition-all px-4 py-2 rounded-full" href="#">Biometrics</a>
+<a class="text-slate-400 hover:bg-slate-800/50 transition-all px-4 py-2 rounded-full" href="#">Analytics</a>
+</div>
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-blue-600 dark:text-blue-400">notifications</span>
+<div class="w-10 h-10 rounded-full bg-surface-container-high border border-outline-variant/20 overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="close-up portrait of a professional student wearing a navy blue medical uniform in a high-tech studio environment" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAv8wEGwpfFrK1ZZh_B5GOXb9oAuGKDyC5OxIgFXfjXmfwX9T2-5SGoAqQjJThOnmBdoYu_Wl51FXPaSJChVzleDBdAZbZ0GKaa0xyBp800bb78lVtl7FZS7R-scjCboK9Fc2JXk2nFjwAg9rk3n2HLeB-ZC7SaasCEsUAgNefmss__jf4ua_YdgeHJF20-LnAMo9bHSUYLktQNE-Auih2KFMCBOM49r4KQd59C5pMT6B8z_vemCwjD_fsT5dDJfxwKYPvTc_oXZ4lS"/>
+</div>
+</div>
+</header>
+<!-- Sidebar / Drawer -->
+<aside class="hidden md:flex fixed left-0 top-0 h-full w-72 bg-slate-900/80 backdrop-blur-2xl flex-col py-8 z-40 rounded-r-3xl shadow-2xl">
+<div class="mt-20 px-8 mb-10">
+<div class="flex items-center gap-3 mb-2">
+<div class="w-12 h-12 rounded-2xl overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="professional male portrait for user profile in a clinical setting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBAt02u2EWATSQnaiEHFfgs_ITBhrSRkMRnpvDNKQOBPfGeB0Maizmi-w6-jxjbfsZH5YF9n-23jHp8oP63GESNGJjFpE4R_qA4QSywtF5EtsZA7VQj3Ks7wbXOXKb_bUCy0fs7FtW8N0AORb1_FEGZ_uY-WRAL1TBR_LYJG-FeU2LVZjTp1JkcY8Ro8I1eIUcQgHJjYBInDv4bMhi7w4cR6wTaZ8wKI5okIGCyj4lQyXLdt_Qd6eZY54IxLQ3b43LSotPNYL4upKqW"/>
+</div>
+<div>
+<p class="text-amber-500 font-bold font-manrope text-sm tracking-wide uppercase">Student Portal</p>
+<p class="text-slate-400 text-xs">HealthyTech Atlantico</p>
+</div>
+</div>
+<span class="text-[10px] bg-primary-container/30 text-primary px-2 py-0.5 rounded-full uppercase font-bold tracking-widest">Premium Tier</span>
+</div>
+<nav class="flex flex-col gap-2">
+<div class="text-slate-400 hover:text-slate-100 mx-4 py-3 px-6 transition-transform duration-300 ease-in-out hover:bg-white/5 rounded-full flex items-center gap-4 cursor-pointer">
+<span class="material-symbols-outlined">folder_shared</span>
+<span class="font-manrope text-sm font-medium tracking-wide uppercase">Health Records</span>
+</div>
+<div class="bg-gradient-to-br from-blue-900 to-blue-700 text-white rounded-full mx-4 py-3 px-6 transition-transform duration-300 ease-in-out flex items-center gap-4 cursor-pointer shadow-lg">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">fingerprint</span>
+<span class="font-manrope text-sm font-medium tracking-wide uppercase">Biometrics</span>
+</div>
+<div class="text-slate-400 hover:text-slate-100 mx-4 py-3 px-6 transition-transform duration-300 ease-in-out hover:bg-white/5 rounded-full flex items-center gap-4 cursor-pointer">
+<span class="material-symbols-outlined">insights</span>
+<span class="font-manrope text-sm font-medium tracking-wide uppercase">Analytics</span>
+</div>
+<div class="text-slate-400 hover:text-slate-100 mx-4 py-3 px-6 transition-transform duration-300 ease-in-out hover:bg-white/5 rounded-full flex items-center gap-4 cursor-pointer">
+<span class="material-symbols-outlined">settings</span>
+<span class="font-manrope text-sm font-medium tracking-wide uppercase">Settings</span>
+</div>
+</nav>
+</aside>
+<!-- Main Content Stage -->
+<main class="pt-32 pb-20 px-6 md:pl-80 md:pr-12 min-h-screen relative">
+<!-- Mesh Glows -->
+<div class="mesh-glow top-20 right-10"></div>
+<div class="mesh-glow bottom-20 left-40"></div>
+<!-- Header Section -->
+<div class="mb-12">
+<p class="text-secondary font-bold tracking-[0.2em] text-xs mb-3 font-label uppercase">SAÚDE · BIOMETRIA</p>
+<h1 class="text-5xl font-extrabold text-on-surface tracking-tight mb-2 font-headline">Biometria</h1>
+<p class="text-on-surface-variant text-lg font-medium opacity-80">Registar medições antropométricas e classificação ZAF</p>
+</div>
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-10">
+<!-- Input Card (Left) -->
+<section class="lg:col-span-7 glass-card rounded-xl p-8 shadow-2xl">
+<div class="flex items-center gap-3 mb-8">
+<span class="material-symbols-outlined text-primary text-3xl">analytics</span>
+<h2 class="text-xl font-bold text-on-surface">Nova Medição</h2>
+</div>
+<!-- Student Search -->
+<div class="mb-8 group">
+<label class="block text-[10px] text-on-surface-variant font-bold uppercase tracking-widest mb-2 ml-1">Seleção de Aluno</label>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-outline">search</span>
+<input class="w-full bg-surface-container-lowest border-none rounded-md py-4 pl-12 pr-4 text-on-surface placeholder:text-outline/50 focus:ring-2 focus:ring-secondary/40 transition-all outline-none" placeholder="Procurar nome ou ID do aluno..." type="text"/>
+</div>
+</div>
+<!-- Numeric Grid -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
+<div class="space-y-2">
+<label class="block text-[10px] text-on-surface-variant font-bold uppercase tracking-widest ml-1">Altura (m)</label>
+<input class="w-full bg-surface-container-lowest border-none rounded-md py-4 px-6 text-on-surface focus:ring-2 focus:ring-secondary/40 transition-all outline-none text-lg" placeholder="1.75" step="0.01" type="number"/>
+</div>
+<div class="space-y-2">
+<label class="block text-[10px] text-on-surface-variant font-bold uppercase tracking-widest ml-1">Peso (kg)</label>
+<input class="w-full bg-surface-container-lowest border-none rounded-md py-4 px-6 text-on-surface focus:ring-2 focus:ring-secondary/40 transition-all outline-none text-lg" placeholder="72.5" step="0.1" type="number"/>
+</div>
+<div class="space-y-2">
+<label class="block text-[10px] text-on-surface-variant font-bold uppercase tracking-widest ml-1">Perímetro da cintura (cm)</label>
+<input class="w-full bg-surface-container-lowest border-none rounded-md py-4 px-6 text-on-surface focus:ring-2 focus:ring-secondary/40 transition-all outline-none text-lg" placeholder="84.0" step="0.1" type="number"/>
+</div>
+<div class="space-y-2">
+<label class="block text-[10px] text-on-surface-variant font-bold uppercase tracking-widest ml-1">Massa gorda (%)</label>
+<input class="w-full bg-surface-container-lowest border-none rounded-md py-4 px-6 text-on-surface focus:ring-2 focus:ring-secondary/40 transition-all outline-none text-lg" placeholder="18.5" step="0.1" type="number"/>
+</div>
+</div>
+<button class="pill-gradient w-full py-5 rounded-full text-on-primary font-bold text-lg flex items-center justify-center gap-3 shadow-[0_10px_30px_rgba(30,58,138,0.4)] hover:scale-[1.02] active:scale-95 transition-all">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">save</span>
+                    Gravar biometria
+                </button>
+</section>
+<!-- Reference Card (Right) -->
+<section class="lg:col-span-5 flex flex-col gap-6">
+<!-- Classification Result -->
+<div class="glass-card rounded-xl p-8 relative overflow-hidden group">
+<div class="absolute -right-10 -top-10 w-40 h-40 bg-secondary/5 rounded-full blur-3xl group-hover:bg-secondary/10 transition-colors"></div>
+<h3 class="text-sm font-bold text-on-surface-variant uppercase tracking-widest mb-8 border-b border-outline-variant/10 pb-4">Classificação Automática</h3>
+<div class="grid grid-cols-2 gap-8 mb-4">
+<div class="text-center p-6 bg-surface-container-low rounded-lg border border-outline-variant/5">
+<p class="text-[10px] font-bold text-outline uppercase tracking-tighter mb-1">IMC ESTIMADO</p>
+<p class="text-3xl font-black text-on-surface italic">--.-</p>
+</div>
+<div class="text-center p-6 bg-surface-container-low rounded-lg border border-outline-variant/5">
+<p class="text-[10px] font-bold text-outline uppercase tracking-tighter mb-1">ZAF STATUS</p>
+<p class="text-3xl font-black text-secondary italic">N/A</p>
+</div>
+</div>
+</div>
+<!-- Reference Legend -->
+<div class="glass-card rounded-xl p-8">
+<h3 class="text-sm font-bold text-on-surface-variant uppercase tracking-widest mb-6">Referência ZAF</h3>
+<div class="space-y-4">
+<div class="flex items-center justify-between p-4 bg-white/5 rounded-full group hover:bg-white/10 transition-all cursor-default">
+<div class="flex items-center gap-4">
+<div class="w-3 h-3 rounded-full bg-emerald-500 shadow-[0_0_15px_rgba(16,185,129,0.5)]"></div>
+<span class="font-bold text-on-surface">Saudável</span>
+</div>
+<span class="text-[10px] font-bold bg-emerald-500/20 text-emerald-400 px-3 py-1 rounded-full uppercase">Ideal</span>
+</div>
+<div class="flex items-center justify-between p-4 bg-white/5 rounded-full group hover:bg-white/10 transition-all cursor-default">
+<div class="flex items-center gap-4">
+<div class="w-3 h-3 rounded-full bg-amber-500 shadow-[0_0_15px_rgba(245,158,11,0.5)]"></div>
+<span class="font-bold text-on-surface">Melhoria</span>
+</div>
+<span class="text-[10px] font-bold bg-amber-500/20 text-amber-400 px-3 py-1 rounded-full uppercase">Atenção</span>
+</div>
+<div class="flex items-center justify-between p-4 bg-white/5 rounded-full group hover:bg-white/10 transition-all cursor-default opacity-50">
+<div class="flex items-center gap-4">
+<div class="w-3 h-3 rounded-full bg-red-500/50"></div>
+<span class="font-bold text-on-surface">Risco</span>
+</div>
+<span class="text-[10px] font-bold bg-red-500/10 text-red-400 px-3 py-1 rounded-full uppercase">Crítico</span>
+</div>
+</div>
+<div class="mt-8 pt-6 border-t border-outline-variant/10">
+<div class="flex items-start gap-3">
+<span class="material-symbols-outlined text-secondary text-sm mt-0.5">info</span>
+<p class="text-xs text-on-surface-variant leading-relaxed">
+                                A Zona de Aptidão Física (ZAF) é calculada com base nos parâmetros da Direção-Geral da Saúde.
+                            </p>
+</div>
+</div>
+</div>
+<!-- Quick Insight Card -->
+<div class="rounded-xl p-1 bg-gradient-to-br from-primary-container/20 to-transparent">
+<div class="bg-surface-container-lowest rounded-lg p-6 flex items-center gap-6">
+<div class="w-16 h-16 rounded-full bg-primary-container/30 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-4xl">history</span>
+</div>
+<div>
+<p class="text-sm font-bold text-on-surface">Última Atualização</p>
+<p class="text-xs text-on-surface-variant">Há 14 dias · 12 de Outubro</p>
+<a class="inline-block mt-2 text-xs font-bold text-secondary hover:underline tracking-wide uppercase" href="#">Ver histórico completo</a>
+</div>
+</div>
+</div>
+</section>
+</div>
+</main>
+<!-- Contextual FAB (Suppressing as per mandate on Details/Form pages, but including as ghost for visual balance if needed elsewhere) -->
+<!-- Suppression logic applied: No FAB on Biometria input screen -->
+</body></html>

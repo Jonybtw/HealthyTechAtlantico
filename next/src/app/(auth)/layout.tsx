@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import Image from "next/image";
-import { usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { Activity, ClipboardList, FileText, Sun, Moon } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
@@ -36,11 +35,9 @@ const COLEGIO_IMAGES = [
 function LoginHeroCarousel({
   images,
   intervalMs = 5200,
-  variant = "card",
 }: {
   images: string[];
   intervalMs?: number;
-  variant?: "card" | "background";
 }) {
   const safeImages = images.length ? images : ["/logo.png"];
   const [index, setIndex] = useState(0);
@@ -55,98 +52,27 @@ function LoginHeroCarousel({
   }, [intervalMs, safeImages.length]);
 
   return (
-    <section
-      className={[
-        "w-full",
-        variant === "background" ? "fixed inset-0 h-screen w-screen" : "",
-      ].join(" ")}
-    >
-      <div
-        className={[
-          "relative w-full overflow-hidden",
-          variant === "background"
-            ? "h-full rounded-none border-0 bg-transparent shadow-none"
-            : "h-[240px] rounded-[20px] border border-white/15 bg-white/5 shadow-[0_28px_80px_-28px_rgba(0,0,0,0.60)]",
-        ].join(" ")}
-      >
-        <AnimatePresence mode="wait" initial={false}>
-          <motion.div
-            key={activeSrc}
-            initial={{ opacity: 0, scale: 1.02 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 1.01 }}
-            transition={{ duration: 0.55, ease: "easeOut" }}
-            className="absolute inset-0"
-          >
-            <Image
-              src={activeSrc}
-              alt="Ambiente do Colégio Atlântico"
-              fill
-              sizes={variant === "background" ? "100vw" : "(max-width: 640px) 92vw, 500px"}
-              className="object-cover"
-              priority
-            />
-          </motion.div>
-        </AnimatePresence>
-
-        {/* Readability overlays */}
-        <div
-          aria-hidden="true"
-          className={[
-            "pointer-events-none absolute inset-0",
-            variant === "background"
-              ? "bg-gradient-to-t from-[#091523]/85 via-[#091523]/30 to-[#091523]/15"
-              : "bg-gradient-to-t from-[#091523]/75 via-transparent to-transparent",
-          ].join(" ")}
-        />
-        <div
-          aria-hidden="true"
-          className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_60%_45%_at_50%_10%,rgba(217,166,28,0.18),transparent)]"
-        />
-
-        {/* Dots */}
-        <div className="absolute bottom-3 left-1/2 flex -translate-x-1/2 items-center gap-1.5 rounded-full border border-white/15 bg-white/10 px-2.5 py-1.5 backdrop-blur">
-          {safeImages.map((src, i) => (
-            <button
-              key={src}
-              type="button"
-              aria-label={`Ver foto ${i + 1} de ${safeImages.length}`}
-              onClick={() => setIndex(i)}
-              className="p-1"
-            >
-              <span
-                className={[
-                  "block h-1.5 rounded-full transition-all duration-300",
-                  i === (index % safeImages.length) ? "w-5 bg-gold-300" : "w-1.5 bg-white/40 hover:bg-white/60",
-                ].join(" ")}
-              />
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* Thumbnails */}
-      {variant === "background" ? null : safeImages.length > 1 ? (
-        <div className="mt-3 grid grid-cols-6 gap-2">
-          {safeImages.slice(0, 6).map((src, i) => (
-            <button
-              key={src}
-              type="button"
-              onClick={() => setIndex(i)}
-              className={[
-                "relative h-10 overflow-hidden rounded-xl border transition",
-                i === (index % safeImages.length)
-                  ? "border-gold-300/70 ring-2 ring-gold-300/30"
-                  : "border-white/10 hover:border-white/25",
-              ].join(" ")}
-              aria-label={`Selecionar foto ${i + 1}`}
-            >
-              <Image src={src} alt="" fill sizes="92px" className="object-cover" />
-            </button>
-          ))}
-        </div>
-      ) : null}
-    </section>
+    <div className="absolute inset-0 h-full w-full opacity-30 mix-blend-overlay">
+      <AnimatePresence mode="wait" initial={false}>
+        <motion.div
+          key={activeSrc}
+          initial={{ opacity: 0, scale: 1.05 }}
+          animate={{ opacity: 1, scale: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 1.2, ease: "easeInOut" }}
+          className="absolute inset-0"
+        >
+          <Image
+            src={activeSrc}
+            alt="Ambiente do Colégio Atlântico"
+            fill
+            sizes="50vw"
+            className="object-cover"
+            priority
+          />
+        </motion.div>
+      </AnimatePresence>
+    </div>
   );
 }
 
@@ -156,17 +82,16 @@ export default function AuthLayout({
   children: React.ReactNode;
 }) {
   const t = useTranslations("authLayout");
-  const pathname = usePathname();
   const { theme, locale, toggleTheme, toggleLocale } = usePreferences();
 
   return (
-    <main className="relative flex min-h-screen flex-col overflow-x-hidden bg-[linear-gradient(160deg,#091523_0%,#14304c_60%,#203f56_100%)]">
-      {/* Preferences Controls */}
-      <div className="absolute top-4 right-4 z-50 flex items-center gap-2">
+    <main className="flex-grow flex flex-col md:flex-row w-full h-screen overflow-hidden" style={{ background: "#f4faff" }} >
+      {/* Preferences Controls (Absolute top-right) */}
+      <div className="absolute top-6 right-6 z-50 flex items-center gap-3">
         <button
           type="button"
           onClick={toggleTheme}
-          className="flex h-10 w-10 items-center justify-center rounded-full bg-white/5 border border-white/10 text-white/80 backdrop-blur-md transition-all duration-300 hover:bg-white/15 hover:text-white"
+          className="flex h-10 w-10 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 transition-all hover:bg-slate-200 dark:hover:bg-slate-700 shadow-sm"
           aria-label="Toggle theme"
           title={theme === "light" ? "Mudar para modo escuro" : "Mudar para modo claro"}
         >
@@ -175,175 +100,77 @@ export default function AuthLayout({
         <button
           type="button"
           onClick={toggleLocale}
-          className="flex h-10 w-10 items-center justify-center rounded-full bg-white/5 border border-white/10 text-white/80 backdrop-blur-md transition-all duration-300 hover:bg-white/15 hover:text-white font-medium text-[11px] tracking-widest uppercase"
+          className="flex h-10 w-10 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 transition-all hover:bg-slate-200 dark:hover:bg-slate-700 shadow-sm font-semibold text-xs tracking-widest uppercase"
           aria-label="Toggle language"
-          title={locale === "pt" ? "Change to English" : "Mudar para Português"}
         >
           {locale}
         </button>
       </div>
 
-      {/* Ambient floating orbs */}
-      <div aria-hidden="true" className="animate-float-a pointer-events-none absolute -right-24 -top-24 size-[420px] rounded-full bg-gold-300/6 blur-3xl" />
-      <div aria-hidden="true" className="animate-float-b pointer-events-none absolute -bottom-40 -left-20 size-[500px] rounded-full bg-white/4 blur-3xl" />
-      {/* Gold glow decorative */}
-      <div
-        aria-hidden="true"
-        role="presentation"
-        className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_70%_40%_at_50%_0%,rgba(217,166,28,0.18),transparent)]"
-      />
-
-      {pathname === "/login" ? (
-        <div className="relative min-h-screen">
-          {/* Fullscreen background slideshow */}
-          <div aria-hidden="true" className="fixed inset-0">
-            <LoginHeroCarousel images={COLEGIO_IMAGES} variant="background" />
-          </div>
-
-          {/* Foreground content */}
-          <div className="relative mx-auto flex min-h-screen w-full max-w-6xl flex-col justify-center px-4 py-6 sm:py-8 lg:px-8 lg:py-8">
-            <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-2 lg:items-center lg:gap-8">
-              {/* Left: branding copy */}
-              <div className="order-2 hidden space-y-6 lg:order-1 lg:block">
-                <div className="flex items-center gap-4">
-                  <BrandLogo
-                    className="h-[116px] w-[114px]"
-                    imageClassName="brightness-0 invert"
-                    priority
-                    sizes="116px"
-                  />
-                </div>
-
-                <div className="space-y-3">
-                  <h1 className="font-display text-xl font-semibold leading-tight tracking-tight text-white sm:text-2xl lg:text-[26px]">
-                    {t("headline")}
-                  </h1>
-                  <p className="max-w-xl text-[13px] leading-relaxed text-navy-100/75 sm:text-sm lg:text-base">
-                    {t("subtitle")}
-                  </p>
-                </div>
-
-                <div className="flex flex-wrap gap-2">
-                  {HIGHLIGHTS.map(({ icon: Icon, titleKey }) => (
-                    <span
-                      key={titleKey}
-                      className="inline-flex items-center gap-1.5 rounded-full border border-white/15 bg-white/10 px-3 py-1 text-xs font-medium text-white/85 backdrop-blur"
-                    >
-                      <Icon className="size-3.5 text-gold-300" />
-                      {t(titleKey)}
-                    </span>
-                  ))}
-                </div>
-
-                <div className="space-y-1">
-                  <p className="text-xs font-medium uppercase tracking-[0.18em] text-navy-100/70">
-                    {t("department")}
-                  </p>
-                  <p className="text-xs text-navy-200/55">
-                    {t("copyright", { year: new Date().getFullYear() })}
-                  </p>
-                </div>
-              </div>
-
-              {/* Right: big login card */}
-              <div className="order-1 flex w-full justify-center lg:order-2 lg:justify-end">
-                <div className="w-full max-w-md">
-                  {/* Mobile compact header */}
-                  <div className="mb-4 flex items-center justify-between gap-3 lg:hidden">
-                    <div className="flex items-center gap-3">
-                      <BrandLogo
-                        className="h-[88px] w-[86px]"
-                        imageClassName="brightness-0 invert"
-                        priority
-                        sizes="88px"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="rounded-[20px] border border-white/15 bg-white/10 p-4 shadow-[0_32px_92px_-40px_rgba(0,0,0,0.75)] backdrop-blur-md sm:p-5">
-                    {children}
-                  </div>
-
-                  {/* Mobile compact footer */}
-                  <div className="mt-4 space-y-1 text-center lg:hidden">
-                    <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-navy-100/70">
-                      {t("department")}
-                    </p>
-                    <p className="text-xs text-navy-200/55">
-                      {t("copyright", { year: new Date().getFullYear() })}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      ) : (
-        <div className="relative mx-auto flex w-full max-w-md flex-col items-center gap-7 px-4 py-12 pb-16">
-          {/* Logo */}
+      {/* Left Side: Visual Anchor (Slideshow + Brand) */}
+      <section className="hidden md:flex md:w-1/2 bg-[linear-gradient(135deg,#1e3a8a_0%,#00236f_100%)] relative flex-col justify-between p-12 lg:p-20 overflow-hidden">
+        <LoginHeroCarousel images={COLEGIO_IMAGES} />
+        
+        {/* Brand Logo Top */}
+        <div className="relative z-10">
           <BrandLogo
-            className="h-[98px] w-[96px]"
+            className="h-[80px] w-[80px] lg:h-[100px] lg:w-[100px]"
             imageClassName="brightness-0 invert"
             priority
-            sizes="98px"
           />
+        </div>
 
-          {/* Headline */}
-          <div className="space-y-2 text-center">
-            <h1 className="font-display text-xl font-semibold leading-tight tracking-tight text-white">
-              {t("headline")}
-            </h1>
-            <p className="text-[13px] leading-relaxed text-navy-100/65">
-              {t("subtitle")}
-            </p>
-          </div>
-
-          {/* Feature pills */}
-          <div className="flex flex-wrap justify-center gap-2">
+        {/* Copy Bottom */}
+        <div className="relative z-10 max-w-lg text-white mt-auto">
+          <h1 className="font-display text-4xl lg:text-5xl font-extrabold tracking-tight mb-6 leading-tight">
+            Excelência no <br/>Cuidado Educacional.
+          </h1>
+          <p className="text-lg lg:text-xl font-light text-blue-100/90 leading-relaxed max-w-md">
+            A plataforma integrada de saúde do Atlântico, unindo tecnologia clínica e bem-estar estudantil num ambiente digital seguro.
+          </p>
+          
+          <div className="flex flex-wrap gap-2 mt-8">
             {HIGHLIGHTS.map(({ icon: Icon, titleKey }) => (
               <span
                 key={titleKey}
-                className="inline-flex items-center gap-1.5 rounded-full border border-white/15 bg-white/8 px-3 py-1 text-xs font-medium text-white/80"
+                className="inline-flex items-center gap-1.5 rounded-full border border-white/20 bg-white/10 px-4 py-1.5 text-xs font-medium text-white/90 backdrop-blur-md"
               >
-                <Icon className="size-3.5 text-gold-300" />
+                <Icon className="size-4 text-amber-400" />
                 {t(titleKey)}
               </span>
             ))}
           </div>
+        </div>
+      </section>
 
-          <div className="mt-4 grid w-full grid-cols-2 gap-3 sm:grid-cols-3">
-            {COLEGIO_IMAGES.map((src, idx) => (
-              <div
-                key={src}
-                className="group relative aspect-square w-full overflow-hidden rounded-[20px] border border-white/10 bg-white/5 shadow-sm transition-all duration-300 hover:scale-105 hover:border-white/25 hover:shadow-lg hover:shadow-white/5"
-              >
-                <Image
-                  src={src}
-                  alt={`Ambiente do Colégio Atlântico - ${idx + 1}`}
-                  fill
-                  sizes="(max-width: 640px) 50vw, 33vw"
-                  className="object-cover transition-transform duration-500 group-hover:scale-110"
-                />
-                <div className="absolute inset-0 bg-[linear-gradient(to_top,#091523_0%,transparent_50%)] opacity-0 transition-opacity duration-300 group-hover:opacity-80" />
-              </div>
-            ))}
+      {/* Right Side: Interaction Canvas */}
+      <section className="w-full md:w-1/2 flex flex-col items-center justify-center p-6 sm:p-8 md:p-12 lg:p-24 relative overflow-y-auto" style={{ background: "#f4faff" }}>
+        {/* Ambient orbs */}
+        <div className="pointer-events-none absolute top-1/4 right-1/4 w-96 h-96 rounded-full blur-[120px] -z-10" style={{ background: "rgba(30,58,138,0.07)" }} />
+        <div className="pointer-events-none absolute bottom-1/4 left-1/4 w-96 h-96 rounded-full blur-[120px] -z-10" style={{ background: "rgba(245,158,11,0.07)" }} />
+        <div className="pointer-events-none absolute top-2/3 right-1/3 w-64 h-64 rounded-full blur-[100px] -z-10" style={{ background: "rgba(220,225,255,0.35)" }} />
+
+        <div className="w-full max-w-md">
+          {/* Mobile visible logo */}
+          <div className="mb-8 flex justify-center md:hidden">
+            <BrandLogo className="h-[72px] w-[72px]" priority />
           </div>
 
-          {/* Form card */}
-          <div className="w-full">{children}</div>
+          <div className="w-full relative z-10">
+            {children}
+          </div>
 
           {/* Footer */}
-          <div className="space-y-1 text-center">
-            <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-navy-100/70">
-              {t("department")}
+          <div className="mt-12 text-center w-full max-w-md">
+            <p className="text-xs font-medium uppercase tracking-[0.15em] text-slate-400 dark:text-slate-500 mb-1">
+              Uso Exclusivo Escolar - Atlântico
             </p>
-            <p className="text-xs text-navy-200/45">
+            <p className="text-xs text-slate-400/80 dark:text-slate-600">
               {t("copyright", { year: new Date().getFullYear() })}
             </p>
           </div>
         </div>
-      )}
+      </section>
     </main>
   );
 }
-

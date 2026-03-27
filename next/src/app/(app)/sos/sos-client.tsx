@@ -242,7 +242,7 @@ export default function SosPage() {
   if (role === "ALUNO") {
     if (loadingStudent) {
       return (
-        <PageScaffold headerProps={{ title: t("title"), description: t("descriptionStudent") }}>
+        <PageScaffold headerProps={{ title: t("title"), description: t("descriptionStudent"), eyebrow: "SAÚDE · SOS" }}>
           <div className="grid gap-4 lg:grid-cols-2">
             <PageSection tone="primary" layout="form" title={t("contactTitle")} description={t("contactDescription")}>
               <div className="grid gap-4 md:grid-cols-2">
@@ -274,7 +274,7 @@ export default function SosPage() {
 
     if (studentLoadError && !linkedStudent) {
       return (
-        <PageScaffold headerProps={{ title: t("title"), description: t("descriptionStudent") }}>
+        <PageScaffold headerProps={{ title: t("title"), description: t("descriptionStudent"), eyebrow: "SAÚDE · SOS" }}>
           <div className="rounded-3xl border border-warning-200/70 bg-warning-50/80 p-5 shadow-card dark:border-warning-900/30 dark:bg-warning-950/20">
             <div className="flex items-start gap-3">
               <AlertTriangle className="mt-0.5 size-5 shrink-0 text-warning-600 dark:text-warning-400" />
@@ -301,7 +301,7 @@ export default function SosPage() {
 
     if (!linkedStudent) {
       return (
-        <PageScaffold headerProps={{ title: t("title"), description: t("descriptionStudent") }}>
+        <PageScaffold headerProps={{ title: t("title"), description: t("descriptionStudent"), eyebrow: "SAÚDE · SOS" }}>
           <EmptyState
             icon={Link2}
             title={t("studentNotLinkedTitle")}
@@ -313,7 +313,7 @@ export default function SosPage() {
 
     return (
       <PageScaffold
-        headerProps={{ title: t("title"), description: t("descriptionStudent") }}
+        headerProps={{ title: t("title"), description: t("descriptionStudent"), eyebrow: "SAÚDE · SOS" }}
         headerActions={
           <Button
             size="sm"
@@ -607,7 +607,7 @@ export default function SosPage() {
 
   return (
     <PageScaffold
-      headerProps={{ title: t("staffTitle"), description: t("staffDescription") }}
+      headerProps={{ title: t("staffTitle"), description: t("staffDescription"), eyebrow: "ADMINISTRAÇÃO · ALERTAS SOS" }}
       headerActions={
         <Button
           size="sm"
@@ -636,21 +636,30 @@ export default function SosPage() {
         <>
           <StaggerList className="grid gap-4 sm:grid-cols-3">
             {[
-              { label: t("totalAlerts"), value: alerts.length, tone: "border-border/50", icon: ListFilter },
-              { label: t("pendingAlerts"), value: pendingAlerts.length, tone: "border-danger-300/60 text-danger-600 dark:text-danger-400", icon: Clock3 },
-              { label: t("resolvedAlerts"), value: resolvedAlerts.length, tone: "border-success-300/60 text-success-600 dark:text-success-400", icon: CheckCircle2 },
+              { label: t("totalAlerts"), value: alerts.length, accentBg: "bg-[#dce1ff]", accentText: "text-[#00236f]", icon: ListFilter },
+              { label: t("pendingAlerts"), value: pendingAlerts.length, accentBg: "bg-red-50", accentText: "text-red-600", icon: Clock3 },
+              { label: t("resolvedAlerts"), value: resolvedAlerts.length, accentBg: "bg-emerald-50", accentText: "text-emerald-600", icon: CheckCircle2 },
             ].map((card) => (
-              <StaggerItem
-                key={card.label}
-                className={`surface-secondary relative overflow-hidden rounded-[20px] border ${card.tone.split(' ')[0]} p-5`}
-              >
-                <div className="flex items-center justify-between">
-                  <p className="text-sm font-medium text-muted-foreground">{card.label}</p>
-                  <card.icon className={`size-5 ${card.tone.includes('danger') ? 'text-danger-500' : card.tone.includes('success') ? 'text-success-500' : 'text-muted-foreground'}`} />
+              <StaggerItem key={card.label}>
+                <div
+                  className="relative overflow-hidden rounded-[20px] p-5"
+                  style={{
+                    background: "rgba(255,255,255,0.72)",
+                    backdropFilter: "blur(12px)",
+                    border: "1px solid rgba(255,255,255,0.5)",
+                    boxShadow: "0 2px 8px rgba(15,23,42,0.06)",
+                  }}
+                >
+                  <div className="flex items-center justify-between">
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">{card.label}</p>
+                    <span className={`rounded-full p-1.5 ${card.accentBg}`}>
+                      <card.icon className={`size-4 ${card.accentText}`} />
+                    </span>
+                  </div>
+                  <p className={`mt-3 text-4xl font-extrabold tracking-tight ${card.accentText}`}>
+                    {card.value}
+                  </p>
                 </div>
-                <p className={`mt-2 text-3xl font-extrabold tracking-tight ${card.tone.includes('danger') ? 'text-danger-600 dark:text-danger-400' : card.tone.includes('success') ? 'text-success-600 dark:text-success-400' : ''}`}>
-                  {card.value}
-                </p>
               </StaggerItem>
             ))}
           </StaggerList>

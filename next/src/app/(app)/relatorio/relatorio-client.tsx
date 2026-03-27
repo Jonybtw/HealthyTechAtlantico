@@ -494,7 +494,7 @@ export default function RelatorioPage() {
 
   if (!canViewReports) {
     return (
-      <PageScaffold headerProps={{ title: t("title"), description: t("description") }}>
+      <PageScaffold headerProps={{ title: t("title"), description: t("description"), eyebrow: "ALUNOS · RELATÓRIOS" }}>
         <EmptyState
           icon={ShieldAlert}
           title={common("noPermission")}
@@ -508,7 +508,7 @@ export default function RelatorioPage() {
     return (
       <PageScaffold
         className="max-w-4xl"
-        headerProps={{ title: t("title"), description: t("description") }}
+        headerProps={{ title: t("title"), description: t("description"), eyebrow: "ALUNOS · RELATÓRIOS" }}
       >
         <EmptyState
           icon={Link2}
@@ -522,7 +522,7 @@ export default function RelatorioPage() {
   return (
     <PageScaffold
       className="max-w-4xl"
-      headerProps={{ title: t("title"), description: t("description") }}
+      headerProps={{ title: t("title"), description: t("description"), eyebrow: "ALUNOS · RELATÓRIOS" }}
     >
 
       {/* Document preview card */}
@@ -715,7 +715,8 @@ export default function RelatorioPage() {
             onClick={handleGeneratePdf}
             loading={generatingPdf}
             icon={<Download className="size-4" />}
-            className="w-full justify-center"
+            className="w-full justify-center rounded-full font-semibold shadow-lg transition-all hover:scale-[1.02]"
+            style={{ background: "linear-gradient(135deg, #1E3A8A, #10243a)", color: "#fff", border: "none" }}
           >
             {t("generate")}
           </Button>

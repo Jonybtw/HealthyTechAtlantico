@@ -25,7 +25,7 @@ export function PillSelect<T extends string>({
       <div
         role="radiogroup"
         aria-label={label}
-        className={`surface-utility flex flex-wrap gap-1 p-1 ${size === "lg" ? "rounded-[18px] min-h-[46px] items-center" : "rounded-[18px]"}`}
+        className={`glass-dark flex flex-wrap gap-1 p-1 ${size === "lg" ? "rounded-full min-h-[48px] items-center" : "rounded-full"}`}
       >
         {options.map((option) => {
           const active = value === option.value;
@@ -37,14 +37,14 @@ export function PillSelect<T extends string>({
               role="radio"
               aria-checked={active}
               onClick={() => onChange(option.value)}
-              className={`inline-flex items-center justify-center gap-2 font-medium transition-all duration-300 whitespace-nowrap ${
+              className={`inline-flex items-center justify-center gap-2 font-medium transition-all duration-500 whitespace-nowrap ${
                 size === "lg"
-                  ? "min-h-[38px] rounded-[14px] px-4 py-1.5 text-sm flex-1"
-                  : "min-h-8 rounded-[12px] px-3 py-1 text-xs"
+                  ? "min-h-[40px] rounded-full px-5 py-1.5 text-[13px] flex-1"
+                  : "min-h-8 rounded-full px-4 py-1 text-[11px]"
               } ${
                 active
-                  ? "bg-navy-900 text-white shadow-card"
-                  : "text-muted-foreground hover:bg-muted/60 hover:text-foreground"
+                  ? "bg-primary-600/20 text-white shadow-[0_0_15px_rgba(30,58,138,0.3)] border border-white/10"
+                  : "text-slate-400 hover:bg-white/5 hover:text-slate-200"
               }`}
             >
               {option.icon}

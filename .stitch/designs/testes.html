@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="pt-PT"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@200;300;400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              colors: {
+                "error": "#ffb4ab",
+                "on-tertiary-fixed-variant": "#773205",
+                "on-secondary-fixed-variant": "#594400",
+                "on-primary-fixed": "#00164e",
+                "surface-variant": "#2c3642",
+                "secondary": "#eec147",
+                "on-secondary-container": "#362800",
+                "inverse-on-surface": "#27313d",
+                "primary-fixed": "#dce1ff",
+                "surface-container-lowest": "#050f1a",
+                "secondary-fixed": "#ffdf94",
+                "on-primary-fixed-variant": "#264191",
+                "on-secondary-fixed": "#251a00",
+                "tertiary": "#ffb691",
+                "primary-fixed-dim": "#b6c4ff",
+                "inverse-surface": "#d9e3f3",
+                "on-tertiary-container": "#f39461",
+                "inverse-primary": "#4059aa",
+                "on-tertiary-fixed": "#341100",
+                "error-container": "#93000a",
+                "surface-container-high": "#212b37",
+                "on-surface-variant": "#c5c5d3",
+                "secondary-container": "#b38b0c",
+                "surface": "#0a141f",
+                "on-primary-container": "#90a8ff",
+                "on-error": "#690005",
+                "surface-tint": "#b6c4ff",
+                "outline-variant": "#444651",
+                "surface-container": "#17202c",
+                "on-error-container": "#ffdad6",
+                "on-background": "#d9e3f3",
+                "on-secondary": "#3e2e00",
+                "tertiary-container": "#6e2c00",
+                "tertiary-fixed-dim": "#ffb691",
+                "primary": "#b6c4ff",
+                "on-primary": "#05297a",
+                "outline": "#8f909d",
+                "surface-container-highest": "#2c3642",
+                "surface-bright": "#303a46",
+                "on-tertiary": "#552000",
+                "on-surface": "#d9e3f3",
+                "primary-container": "#1e3a8a",
+                "secondary-fixed-dim": "#eec147",
+                "surface-dim": "#0a141f",
+                "tertiary-fixed": "#ffdbcb",
+                "surface-container-low": "#121c28",
+                "background": "#0a141f"
+              },
+              fontFamily: {
+                "headline": ["Manrope", "sans-serif"],
+                "body": ["Manrope", "sans-serif"],
+                "label": ["Manrope", "sans-serif"]
+              },
+              borderRadius: {"DEFAULT": "1rem", "lg": "2rem", "xl": "3rem", "full": "9999px"},
+            },
+          },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .glass-panel {
+            background: rgba(44, 54, 66, 0.4);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+        }
+        .mesh-glow {
+            position: absolute;
+            width: 300px;
+            height: 300px;
+            background: radial-gradient(circle, rgba(30, 58, 138, 0.15) 0%, rgba(10, 20, 31, 0) 70%);
+            z-index: -1;
+            filter: blur(40px);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-surface text-on-surface font-body selection:bg-primary-container selection:text-white min-h-screen pb-32">
+<!-- TopAppBar -->
+<header class="fixed top-0 w-full z-50 flex justify-between items-center px-6 h-16 bg-[#0a141f]/60 backdrop-blur-xl shadow-[0_20px_40px_rgba(0,0,0,0.4)]">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full overflow-hidden bg-surface-container-high flex items-center justify-center">
+<img alt="Clinician Profile" class="w-full h-full object-cover" data-alt="Close-up professional portrait of a male doctor in a dark navy medical scrub with soft studio lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAsNtLHNgA0mk3EDB6D9WR2T6WQkRhuFL9GQO1OUhy1NViLNPcZpexK9TV2bBHqtTuJlfFnAWP7myKSeHEEUiCja4ujlh1vY4-347Sm6ESO5xS7bVu3hGcT9d0q42uwkWL11kTemYL5u0-HwO7VrxoFEYZG9JV-1dk2WQO-ob2iS4-4T1tmHMLgCtwPEm7hSXL7SONOEN2Eq5bks9LiCBSgt7_B7lxt_LOys_lhScIKErduOwDBzePUQ7b0MsLpPr-YgIEGlwFa9UoN"/>
+</div>
+<span class="text-xl font-extrabold text-[#d9e3f3] font-manrope tracking-tight">HealthyTech Atlantico</span>
+</div>
+<button class="text-[#d9e3f3]/60 hover:bg-[#212b37] transition-colors p-2 rounded-full active:scale-95 duration-200">
+<span class="material-symbols-outlined">settings</span>
+</button>
+</header>
+<main class="pt-24 px-6 max-w-md mx-auto relative">
+<!-- Mesh Glow Decorations -->
+<div class="mesh-glow top-20 -left-20"></div>
+<div class="mesh-glow bottom-40 -right-20"></div>
+<!-- Header Section -->
+<section class="mb-10">
+<p class="text-[10px] font-extrabold tracking-[0.2em] text-secondary mb-1">SAÚDE · TESTES FÍSICOS</p>
+<h1 class="text-4xl font-extrabold tracking-tight text-on-surface mb-2">Testes Físicos</h1>
+<p class="text-on-surface-variant font-medium leading-relaxed">Registo e consulta de resultados de aptidão</p>
+</section>
+<!-- Student Selection Bar (Glassmorphic) -->
+<div class="glass-panel rounded-full px-6 py-4 mb-10 flex items-center gap-4 border border-outline-variant/20 shadow-lg">
+<span class="material-symbols-outlined text-primary">search</span>
+<input class="bg-transparent border-none focus:ring-0 text-on-surface placeholder:text-on-surface-variant/50 w-full font-medium" placeholder="Selecionar aluno..." type="text"/>
+<div class="w-8 h-8 rounded-full bg-primary-container/40 flex items-center justify-center">
+<span class="material-symbols-outlined text-primary text-sm">filter_list</span>
+</div>
+</div>
+<!-- Content Grid -->
+<div class="space-y-8">
+<!-- Capacidade Aeróbia -->
+<div class="bg-surface-container-highest/80 backdrop-blur-md rounded-lg p-8 border border-outline-variant/10 shadow-xl relative overflow-hidden group">
+<div class="flex items-center gap-3 mb-6">
+<div class="w-10 h-10 rounded-full bg-primary-container/20 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined">fitness_center</span>
+</div>
+<h2 class="text-lg font-bold text-on-surface tracking-tight">Capacidade Aeróbia</h2>
+</div>
+<div class="space-y-6">
+<div class="space-y-2">
+<label class="text-[11px] font-bold uppercase tracking-wider text-on-surface-variant/70 ml-1">Vai-e-Vem (20m)</label>
+<div class="relative">
+<input class="w-full h-14 rounded-md bg-surface-container-lowest border-none focus:ring-2 focus:ring-secondary/40 text-on-surface font-bold text-lg px-6 transition-all" placeholder="0" type="number"/>
+<span class="absolute right-6 top-1/2 -translate-y-1/2 text-on-surface-variant font-bold text-sm">percursos</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Composição Corporal -->
+<div class="bg-surface-container-highest/80 backdrop-blur-md rounded-lg p-8 border border-outline-variant/10 shadow-xl relative overflow-hidden">
+<div class="flex items-center gap-3 mb-6">
+<div class="w-10 h-10 rounded-full bg-secondary-container/20 flex items-center justify-center text-secondary">
+<span class="material-symbols-outlined">monitor_weight</span>
+</div>
+<h2 class="text-lg font-bold text-on-surface tracking-tight">Composição Corporal</h2>
+</div>
+<div class="grid grid-cols-2 gap-4">
+<div class="space-y-2">
+<label class="text-[11px] font-bold uppercase tracking-wider text-on-surface-variant/70 ml-1 text-xs">Peso</label>
+<div class="relative">
+<input class="w-full h-14 rounded-md bg-surface-container-lowest border-none focus:ring-2 focus:ring-secondary/40 text-on-surface font-bold text-lg px-4 transition-all" placeholder="0.0" type="number"/>
+<span class="absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant/60 font-bold text-[10px]">KG</span>
+</div>
+</div>
+<div class="space-y-2">
+<label class="text-[11px] font-bold uppercase tracking-wider text-on-surface-variant/70 ml-1 text-xs">Altura</label>
+<div class="relative">
+<input class="w-full h-14 rounded-md bg-surface-container-lowest border-none focus:ring-2 focus:ring-secondary/40 text-on-surface font-bold text-lg px-4 transition-all" placeholder="0.00" type="number"/>
+<span class="absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant/60 font-bold text-[10px]">M</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Aptidão Neuromuscular -->
+<div class="bg-surface-container-highest/80 backdrop-blur-md rounded-lg p-8 border border-outline-variant/10 shadow-xl relative overflow-hidden">
+<div class="flex items-center gap-3 mb-6">
+<div class="w-10 h-10 rounded-full bg-primary-container/20 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined">bolt</span>
+</div>
+<h2 class="text-lg font-bold text-on-surface tracking-tight">Aptidão Neuromuscular</h2>
+</div>
+<div class="space-y-6">
+<div class="space-y-2">
+<label class="text-[11px] font-bold uppercase tracking-wider text-on-surface-variant/70 ml-1">Abdominais</label>
+<div class="relative">
+<input class="w-full h-14 rounded-md bg-surface-container-lowest border-none focus:ring-2 focus:ring-secondary/40 text-on-surface font-bold text-lg px-6 transition-all" placeholder="0" type="number"/>
+<span class="absolute right-6 top-1/2 -translate-y-1/2 text-on-surface-variant font-bold text-sm">reps</span>
+</div>
+</div>
+<div class="space-y-2">
+<label class="text-[11px] font-bold uppercase tracking-wider text-on-surface-variant/70 ml-1">Flexões</label>
+<div class="relative">
+<input class="w-full h-14 rounded-md bg-surface-container-lowest border-none focus:ring-2 focus:ring-secondary/40 text-on-surface font-bold text-lg px-6 transition-all" placeholder="0" type="number"/>
+<span class="absolute right-6 top-1/2 -translate-y-1/2 text-on-surface-variant font-bold text-sm">reps</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Flexibilidade -->
+<div class="bg-surface-container-highest/80 backdrop-blur-md rounded-lg p-8 border border-outline-variant/10 shadow-xl relative overflow-hidden">
+<div class="flex items-center gap-3 mb-6">
+<div class="w-10 h-10 rounded-full bg-secondary-container/20 flex items-center justify-center text-secondary">
+<span class="material-symbols-outlined">straighten</span>
+</div>
+<h2 class="text-lg font-bold text-on-surface tracking-tight">Flexibilidade</h2>
+</div>
+<div class="space-y-2">
+<label class="text-[11px] font-bold uppercase tracking-wider text-on-surface-variant/70 ml-1">Sentar e Alcançar</label>
+<div class="relative">
+<input class="w-full h-14 rounded-md bg-surface-container-lowest border-none focus:ring-2 focus:ring-secondary/40 text-on-surface font-bold text-lg px-6 transition-all" placeholder="0.0" type="number"/>
+<span class="absolute right-6 top-1/2 -translate-y-1/2 text-on-surface-variant font-bold text-sm">cm</span>
+</div>
+</div>
+</div>
+<!-- Save Action Button -->
+<button class="w-full h-16 rounded-full bg-gradient-to-br from-[#1e3a8a] to-[#b6c4ff] text-white font-bold text-lg shadow-2xl shadow-primary-container/30 active:scale-95 transition-all duration-200 mt-12 flex items-center justify-center gap-2">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">save</span>
+                Gravar testes
+            </button>
+</div>
+</main>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 pb-6 pt-2 bg-[#0a141f]/80 backdrop-blur-2xl rounded-t-[2rem]">
+<a class="flex flex-col items-center justify-center text-[#d9e3f3]/50 hover:text-[#d9e3f3] hover:bg-[#2c3642]/40 rounded-full transition-all px-4 py-2" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="font-manrope text-[11px] font-medium tracking-wide uppercase mt-1">Dashboard</span>
+</a>
+<a class="flex flex-col items-center justify-center bg-gradient-to-br from-[#1e3a8a] to-[#b6c4ff] text-white rounded-full px-5 py-1.5 active:scale-90 duration-150" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">fitness_center</span>
+<span class="font-manrope text-[11px] font-medium tracking-wide uppercase mt-1">Assessments</span>
+</a>
+<a class="flex flex-col items-center justify-center text-[#d9e3f3]/50 hover:text-[#d9e3f3] hover:bg-[#2c3642]/40 rounded-full transition-all px-4 py-2" href="#">
+<span class="material-symbols-outlined">history</span>
+<span class="font-manrope text-[11px] font-medium tracking-wide uppercase mt-1">History</span>
+</a>
+<a class="flex flex-col items-center justify-center text-[#d9e3f3]/50 hover:text-[#d9e3f3] hover:bg-[#2c3642]/40 rounded-full transition-all px-4 py-2" href="#">
+<span class="material-symbols-outlined">medical_services</span>
+<span class="font-manrope text-[11px] font-medium tracking-wide uppercase mt-1">Portal</span>
+</a>
+</nav>
+</body></html>

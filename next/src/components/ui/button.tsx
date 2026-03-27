@@ -20,6 +20,8 @@ const buttonVariants = cva(
           "border border-gold-300/40 bg-[linear-gradient(135deg,rgba(244,211,94,0.98),rgba(234,179,8,0.94))] text-navy-950 shadow-[0_16px_34px_rgba(234,179,8,0.28)] hover:-translate-y-0.5 hover:shadow-[0_22px_42px_rgba(234,179,8,0.34)]",
         danger:
           "border border-danger-700/30 bg-gradient-to-b from-danger-500 to-danger-700 text-white shadow-card hover:shadow-card-hover",
+        sanctuary:
+          "border border-primary/20 bg-gradient-to-br from-[#1e3a8a] to-[#b6c4ff] text-[#05297a] shadow-[0_10px_30px_rgba(30,58,138,0.3)] hover:scale-[1.02] active:scale-95",
         ghost:
           "border border-border/70 bg-card/60 text-foreground shadow-none hover:border-navy-300/50 hover:bg-card",
         outline:

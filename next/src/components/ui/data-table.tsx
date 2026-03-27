@@ -7,6 +7,7 @@ import {
   ChevronRight,
   ChevronUp,
   Search,
+  SlidersHorizontal,
   type LucideIcon,
 } from "lucide-react";
 
@@ -109,55 +110,77 @@ export function DataTable<T extends object>({
   }
 
   return (
-<div className="animate-fade-in-up flex flex-col gap-4">
-      {searchable || toolbarTitle || toolbarSummary || toolbarActions ? (       
-        <div className="flex flex-col gap-3 px-1 sm:flex-row sm:items-end sm:justify-between">
-          <div className="space-y-1">
-            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
-              {toolbarTitle}
-            </p>
-            <p className="text-[13px] text-foreground sm:text-sm font-medium">
-              {toolbarSummary ?? (
-                <>
-                  {filtered.length} resultado{filtered.length === 1 ? "" : "s"} 
-                </>
-              )}
-            </p>
+    <div className="animate-fade-in-up flex flex-col gap-6">
+      {/* Glass Table Container */}
+      <div
+        className="overflow-hidden rounded-[24px] shadow-xl shadow-blue-900/5"
+        style={{
+          background: "rgba(255, 255, 255, 0.72)",
+          backdropFilter: "blur(12px)",
+          WebkitBackdropFilter: "blur(12px)",
+          border: "1px solid rgba(255, 255, 255, 0.5)",
+        }}
+      >
+        {/* Toolbar */}
+        {(searchable || toolbarTitle || toolbarSummary || toolbarActions) ? (
+          <div
+            className="flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:justify-between"
+            style={{ borderBottom: "1px solid rgba(255,255,255,0.3)" }}
+          >
+            {/* Left: title + summary */}
+            <div className="space-y-0.5">
+              <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400">
+                {toolbarTitle}
+              </p>
+              <p className="text-sm font-semibold text-[#00236f]">
+                {toolbarSummary ?? (
+                  <>
+                    {filtered.length} resultado{filtered.length === 1 ? "" : "s"}
+                  </>
+                )}
+              </p>
+            </div>
+            {/* Right: search + actions */}
+            <div className="flex w-full items-center gap-2 sm:max-w-sm">
+              {toolbarActions ? (
+                <div className="flex flex-wrap items-center gap-2">{toolbarActions}</div>
+              ) : null}
+              {searchable ? (
+                <div className="relative flex-1">
+                  <Search className="pointer-events-none absolute left-3 top-1/2 z-10 size-4 -translate-y-1/2 text-slate-400" />
+                  <input
+                    value={search}
+                    onChange={(event) => {
+                      setSearch(event.target.value);
+                      setPage(1);
+                    }}
+                    placeholder={searchPlaceholder}
+                    className="h-10 w-full rounded-2xl border border-blue-100/50 bg-white/80 py-2 pl-9 pr-4 text-sm text-[#141d21] placeholder:text-slate-400 outline-none transition-all focus:border-blue-300/60 focus:ring-2 focus:ring-blue-200/30 shadow-sm"
+                  />
+                </div>
+              ) : null}
+              <button
+                type="button"
+                className="flex size-10 shrink-0 items-center justify-center rounded-xl border border-blue-100/70 bg-white/80 text-slate-400 shadow-sm transition-all hover:text-[#00236f]"
+              >
+                <SlidersHorizontal className="size-4" />
+              </button>
+            </div>
           </div>
-          <div className="flex w-full items-center justify-end gap-2 sm:max-w-xs">
-            {toolbarActions ? <div className="flex flex-wrap items-center gap-2">{toolbarActions}</div> : null}
-            {searchable ? (
-              <div className="relative w-full">
-                <Search className="pointer-events-none absolute left-3 top-1/2 z-10 size-4 -translate-y-1/2 text-muted-foreground" />
-                <input
-                  value={search}
-                  onChange={(event) => {
-                    setSearch(event.target.value);
-                    setPage(1);
-                  }}
-                  placeholder={searchPlaceholder}
-                    className="h-[42px] w-full rounded-[14px] border border-border/80 bg-card py-2 pl-9 pr-4 text-sm text-foreground shadow-sm outline-none backdrop-blur-md transition-all focus:border-gold-500/50 focus:bg-card focus:ring-4 focus:ring-gold-400/10 placeholder:text-muted-foreground/60"
-                />
-              </div>
-            ) : null}
-          </div>
-        </div>
-      ) : null}
+        ) : null}
 
-      <div className="surface-secondary overflow-hidden rounded-[20px]">
+        {/* Table */}
         <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead className="border-b border-border/70 bg-muted/28">
-              <tr>
+          <table className="w-full text-left text-sm">
+            <thead>
+              <tr style={{ background: "rgba(236, 245, 251, 0.55)" }}>
                 {columns.map((column) => (
                   <th
                     key={column.key}
-                    onClick={
-                      column.sortable ? () => toggleSort(column.key) : undefined
-                    }
-                    className={`px-4 py-3 text-left text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground ${
+                    onClick={column.sortable ? () => toggleSort(column.key) : undefined}
+                    className={`px-6 py-4 text-[10px] font-bold uppercase tracking-[0.18em] text-slate-400 ${
                       column.sortable
-                        ? "cursor-pointer transition-colors hover:text-foreground"
+                        ? "cursor-pointer transition-colors hover:text-[#00236f]"
                         : ""
                     } ${column.className ?? ""}`}
                   >
@@ -179,23 +202,21 @@ export function DataTable<T extends object>({
                 ))}
               </tr>
             </thead>
-            <tbody className="divide-y divide-border/55">
+            <tbody style={{ borderTop: "1px solid rgba(255,255,255,0.3)" }}>
               {paged.length === 0 ? (
                 <tr>
-                  <td colSpan={columns.length} className="group">
-                    <div className="flex min-h-[400px] w-full items-center justify-center p-8">
-                      <div className="flex max-w-[420px] flex-col items-center justify-center space-y-4 text-center">
-                        <div className="surface-utility relative flex h-20 w-20 items-center justify-center rounded-3xl border border-border/70 shadow-inner">
-                          <div className="absolute inset-0 animate-pulse-ring rounded-3xl border-2 border-primary/20" />
-                          <div className="absolute h-10 w-10 animate-spin-slow rounded-full border-2 border-dashed border-primary/20 border-t-transparent" />
-                          <div className="absolute inset-0 bg-gradient-to-tr from-primary/10 via-transparent to-transparent opacity-50" />
-                          <EmptyIcon className="relative z-10 h-8 w-8 text-primary shadow-sm drop-shadow-md" />
+                  <td colSpan={columns.length}>
+                    <div className="flex min-h-[360px] w-full items-center justify-center p-8">
+                      <div className="flex max-w-[400px] flex-col items-center justify-center space-y-4 text-center">
+                        <div className="relative flex size-20 items-center justify-center rounded-3xl border border-blue-100 bg-[#ecf5fb] shadow-inner">
+                          <div className="absolute inset-0 animate-pulse-ring rounded-3xl border-2 border-[#1e3a8a]/20" />
+                          <EmptyIcon className="relative z-10 size-8 text-[#1e3a8a]" />
                         </div>
-                        <div className="space-y-2">
-                          <h3 className="text-xl font-semibold tracking-tight text-foreground">
+                        <div className="space-y-1">
+                          <h3 className="text-lg font-bold tracking-tight text-[#00236f]">
                             Sem Resultados
                           </h3>
-                          <p className="text-sm font-medium leading-relaxed text-muted-foreground">
+                          <p className="text-sm font-medium text-slate-400">
                             {emptyMessage}
                           </p>
                         </div>
@@ -204,18 +225,18 @@ export function DataTable<T extends object>({
                   </td>
                 </tr>
               ) : (
-                paged.map((row, index) => (
+                paged.map((row) => (
                   <tr
                     key={rowKey(row)}
                     onClick={onRowClick ? () => onRowClick(row) : undefined}
-                    className={`transition-colors ${
-                      onRowClick ? "cursor-pointer hover:bg-muted/28" : ""
-                    } ${index % 2 === 0 ? "bg-transparent" : "bg-card/35"}`}
+                    className={`group border-b border-blue-50/60 transition-colors last:border-0 ${
+                      onRowClick ? "cursor-pointer hover:bg-white/50" : ""
+                    }`}
                   >
                     {columns.map((column) => (
                       <td
                         key={column.key}
-                        className={`px-4 py-3 align-middle text-foreground ${column.className ?? ""}`}
+                        className={`px-6 py-4 align-middle text-[#141d21] ${column.className ?? ""}`}
                       >
                         {column.render
                           ? column.render(row)
@@ -228,36 +249,63 @@ export function DataTable<T extends object>({
             </tbody>
           </table>
         </div>
-      </div>
 
-      {totalPages > 1 ? (
-        <div className="surface-utility flex items-center justify-between rounded-[16px] px-3 py-2 text-sm text-muted-foreground">
-          <span className="text-[13px] sm:text-sm">
-            {sorted.length} resultado{sorted.length === 1 ? "" : "s"}
-          </span>
-          <div className="flex items-center gap-2">
-            <button
-              type="button"
-              disabled={safePage <= 1}
-              onClick={() => setPage((current) => current - 1)}
-              className="rounded-lg border border-border/70 bg-card/70 p-1.5 transition-colors hover:bg-card disabled:opacity-35"
-            >
-              <ChevronLeft className="size-4" />
-            </button>
-            <span className="min-w-14 text-center text-[10px] font-semibold uppercase tracking-[0.16em]">
-              {safePage} / {totalPages}
-            </span>
-            <button
-              type="button"
-              disabled={safePage >= totalPages}
-              onClick={() => setPage((current) => current + 1)}
-              className="rounded-lg border border-border/70 bg-card/70 p-1.5 transition-colors hover:bg-card disabled:opacity-35"
-            >
-              <ChevronRight className="size-4" />
-            </button>
+        {/* Pagination Footer */}
+        {totalPages > 1 ? (
+          <div
+            className="flex items-center justify-between px-6 py-4"
+            style={{
+              borderTop: "1px solid rgba(255,255,255,0.4)",
+              background: "rgba(255, 255, 255, 0.5)",
+            }}
+          >
+            <p className="text-xs font-medium text-slate-500">
+              Exibindo{" "}
+              <span className="font-bold text-[#00236f]">
+                {Math.min(sorted.length, safePage * pageSize)}
+              </span>{" "}
+              de{" "}
+              <span className="font-bold text-[#00236f]">{sorted.length}</span>{" "}
+              resultados
+            </p>
+            <div className="flex items-center gap-1.5">
+              <button
+                type="button"
+                disabled={safePage <= 1}
+                onClick={() => setPage((current) => current - 1)}
+                className="flex size-8 items-center justify-center rounded-lg border border-blue-100 bg-white/80 text-slate-400 transition-colors hover:bg-white disabled:opacity-40"
+              >
+                <ChevronLeft className="size-4" />
+              </button>
+              {Array.from({ length: Math.min(totalPages, 5) }).map((_, i) => {
+                const p = i + 1;
+                return (
+                  <button
+                    key={p}
+                    type="button"
+                    onClick={() => setPage(p)}
+                    className={`flex size-8 items-center justify-center rounded-lg text-xs font-bold transition-colors ${
+                      safePage === p
+                        ? "bg-[#00236f] text-white shadow-md"
+                        : "border border-blue-100 bg-white/80 text-[#00236f] hover:bg-white"
+                    }`}
+                  >
+                    {p}
+                  </button>
+                );
+              })}
+              <button
+                type="button"
+                disabled={safePage >= totalPages}
+                onClick={() => setPage((current) => current + 1)}
+                className="flex size-8 items-center justify-center rounded-lg border border-blue-100 bg-white/80 text-slate-400 transition-colors hover:bg-white disabled:opacity-40"
+              >
+                <ChevronRight className="size-4" />
+              </button>
+            </div>
           </div>
-        </div>
-      ) : null}
+        ) : null}
+      </div>
     </div>
   );
 }

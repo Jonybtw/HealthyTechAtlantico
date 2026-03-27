@@ -1,0 +1,89 @@
+{
+  "name": "projects/11570662375211109682",
+  "projectId": "11570662375211109682",
+  "title": "HealthyTech Atlantico",
+  "visibility": "PRIVATE",
+  "createTime": "2026-03-26T23:36:33.401321Z",
+  "updateTime": "2026-03-26T23:36:33.401321Z",
+  "projectType": "PROJECT_DESIGN",
+  "origin": "STITCH",
+  "deviceType": "DESKTOP",
+  "designTheme": {},
+  "screens": {
+    "index": {
+      "id": "2bb65adf0c304fbc87cea4b409196b2a",
+      "sourceScreen": "projects/11570662375211109682/screens/2bb65adf0c304fbc87cea4b409196b2a",
+      "width": 2560,
+      "height": 2288
+    },
+    "dashboard": {
+      "id": "7a42fbfb33774796aad71f5416927aa9",
+      "sourceScreen": "projects/11570662375211109682/screens/7a42fbfb33774796aad71f5416927aa9",
+      "width": 2560,
+      "height": 2602
+    },
+    "biometria": {
+      "id": "dc77f34c991c4723b711ae73bbbd6f95",
+      "sourceScreen": "projects/11570662375211109682/screens/dc77f34c991c4723b711ae73bbbd6f95",
+      "width": 780,
+      "height": 4086
+    },
+    "testes": {
+      "id": "34fb5fd5644e4edbbf13cfdfde5a6f1c",
+      "sourceScreen": "projects/11570662375211109682/screens/34fb5fd5644e4edbbf13cfdfde5a6f1c",
+      "width": 784,
+      "height": 3294
+    },
+    "turma": {
+      "id": "5c10cd8a5f7e40acb3678da83d25ab98",
+      "sourceScreen": "projects/11570662375211109682/screens/5c10cd8a5f7e40acb3678da83d25ab98",
+      "width": 780,
+      "height": 1826
+    },
+    "analise": {
+      "id": "a0f4635dfdf24f83b2d0a0f00fef2cc3",
+      "sourceScreen": "projects/11570662375211109682/screens/a0f4635dfdf24f83b2d0a0f00fef2cc3",
+      "width": 874,
+      "height": 4968
+    },
+    "dispensas": {
+      "id": "7734a0b2008c4c99b770527bf63e1a4a",
+      "sourceScreen": "projects/11570662375211109682/screens/7734a0b2008c4c99b770527bf63e1a4a",
+      "width": 1200,
+      "height": 3208
+    },
+    "guardioes": {
+      "id": "5441012858c9462ba997db525bf38175",
+      "sourceScreen": "projects/11570662375211109682/screens/5441012858c9462ba997db525bf38175",
+      "width": 854,
+      "height": 3502
+    },
+    "relatorio": {
+      "id": "a2536491a585461082c6100f88558ffb",
+      "sourceScreen": "projects/11570662375211109682/screens/a2536491a585461082c6100f88558ffb",
+      "width": 780,
+      "height": 2870
+    },
+    "perfil": {
+      "id": "c6e30dbefecd46aab6d47815674dfb4b",
+      "sourceScreen": "projects/11570662375211109682/screens/c6e30dbefecd46aab6d47815674dfb4b",
+      "width": 780,
+      "height": 3560
+    },
+    "sos": {
+      "id": "b624d6e5f7794abe8817f15ce891a896",
+      "sourceScreen": "projects/11570662375211109682/screens/b624d6e5f7794abe8817f15ce891a896",
+      "width": 780,
+      "height": 6522
+    },
+    "admin": {
+      "id": "9cc10471c6764f69931753bb4d81245b",
+      "sourceScreen": "projects/11570662375211109682/screens/9cc10471c6764f69931753bb4d81245b",
+      "width": 854,
+      "height": 3004
+    }
+  },
+  "metadata": {
+    "userRole": "OWNER"
+  }
+}

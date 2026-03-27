@@ -4,10 +4,9 @@ import { useActionState, useEffect, useRef, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { FileUp, Mars, UserPlus, Venus } from "lucide-react";
+import { FileUp, Mars, UserPlus, Venus, X } from "lucide-react";
 import { FadeIn, AnimatePresence } from "@/components/ui/motion";
 import { PageScaffold } from "@/components/ui/page-scaffold";
-import { PageSection } from "@/components/ui/page-section";
 import { DataTable, type Column } from "@/components/ui/data-table";
 import { Button } from "@/components/ui/button";
 import { DateField } from "@/components/ui/date-field";
@@ -52,14 +51,11 @@ export function AlunosClient({ initialStudents }: AlunosClientProps) {
     if (!state || lastHandledStateRef.current === state) {
       return;
     }
-
     lastHandledStateRef.current = state;
-
     if (state?.error) {
       toast.error(state.error);
       return;
     }
-
     if (state?.success) {
       toast.success(t("createSuccess"));
       const frame = requestAnimationFrame(() => {
@@ -78,63 +74,85 @@ export function AlunosClient({ initialStudents }: AlunosClientProps) {
       sortable: true,
       render: (row) => (
         <div className="flex items-center gap-3">
-          <Avatar className="size-8">
-            <AvatarFallback 
-              className="text-[10px] shadow-[inset_0_1px_0_rgba(255,255,255,0.18)]"
+          <Avatar className="size-9 shrink-0">
+            <AvatarFallback
+              className="text-[10px] font-bold border-2 border-white shadow-sm"
               style={getStudentSwatch(row)}
             >
               {getInitials(row.name)}
             </AvatarFallback>
           </Avatar>
-          <span className="font-medium">{row.name}</span>
+          <div>
+            <p className="font-bold text-sm text-[#00236f] group-hover:text-amber-600 transition-colors leading-tight">
+              {row.name}
+            </p>
+          </div>
         </div>
       ),
     },
-    { key: "sex", header: t("colSex"), sortable: true, className: "w-16 text-center" },
+    {
+      key: "sex",
+      header: t("colSex"),
+      sortable: true,
+      className: "w-24",
+      render: (row) =>
+        row.sex === "M" ? (
+          <span className="inline-flex items-center gap-1 rounded-full bg-blue-50 px-3 py-1 text-[10px] font-bold uppercase tracking-wide text-blue-700">
+            <Mars className="size-3" />
+            Masc
+          </span>
+        ) : (
+          <span className="inline-flex items-center gap-1 rounded-full bg-rose-50 px-3 py-1 text-[10px] font-bold uppercase tracking-wide text-rose-700">
+            <Venus className="size-3" />
+            Fem
+          </span>
+        ),
+    },
     {
       key: "birthDate",
       header: t("colBirth"),
       sortable: true,
       render: (row) =>
-        row.birthDate ? new Date(row.birthDate).toLocaleDateString(locale) : "-",
+        row.birthDate
+          ? new Date(row.birthDate).toLocaleDateString(locale)
+          : "-",
     },
     {
       key: "className",
       header: t("colClass"),
-      render: (row) => row.className ?? "-",
+      render: (row) =>
+        row.className ? (
+          <span className="text-sm font-semibold text-[#1e3a8a]">
+            {row.className}
+          </span>
+        ) : (
+          <span className="text-slate-400">-</span>
+        ),
     },
   ];
 
   const handleCsvImport = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
-    if (!file) {
-      return;
-    }
-
+    if (!file) return;
     setIsImportingCsv(true);
     try {
       const formData = new FormData();
       formData.append("file", file);
-
       const response = await fetch("/api/students/import", {
         method: "POST",
         body: formData,
       });
-      const result = await readApiResponse<{
-        created: number;
-        failed: number;
-      }>(response);
-
+      const result = await readApiResponse<{ created: number; failed: number }>(response);
       toast.success(
         locale === "en"
           ? `Imported ${result.created} students`
-          : `Importados ${result.created} alunos`,
+          : `Importados ${result.created} alunos`
       );
       if (result.failed > 0) {
         toast.warning(
           locale === "en"
             ? `${result.failed} rows failed validation`
-            : `${result.failed} linhas falharam validacao`,
+            : `${result.failed} linhas falharam validacao`
         );
       }
       router.refresh();
@@ -147,103 +165,158 @@ export function AlunosClient({ initialStudents }: AlunosClientProps) {
   };
 
   return (
-    <PageScaffold
-      headerProps={{ title: t("title"), description: t("description") }}
-      headerActions={
-        <div className="flex items-center gap-2">
-          <input
-            ref={importInputRef}
-            type="file"
-            accept=".csv,text/csv"
-            className="hidden"
-            onChange={handleCsvImport}
-          />
-          <Button
-            size="sm"
-            variant="ghost"
-            icon={<FileUp className="size-4" />}
-            loading={isImportingCsv}
-            onClick={() => importInputRef.current?.click()}
-          >
-            {common("importCsv")}
-          </Button>
-          <Button
-            size="sm"
-            icon={<UserPlus className="size-4" />}
-            onClick={() => setShowCreate((value) => !value)}
-          >
-            {showCreate ? t("cancel") : t("new")}
-          </Button>
-        </div>
-      }
-    >
+    <div className="relative min-h-screen">
+      {/* Ambient background orbs */}
+      <div className="pointer-events-none fixed inset-0 z-0 overflow-hidden">
+        <div className="absolute -left-[10%] -top-[10%] h-[50%] w-[50%] rounded-full bg-amber-400 opacity-[0.07] blur-[120px]" />
+        <div className="absolute -bottom-[10%] -right-[10%] h-[50%] w-[50%] rounded-full bg-[#1e3a8a] opacity-[0.08] blur-[120px]" />
+      </div>
 
-      <AnimatePresence>
-        {showCreate ? (
-          <FadeIn key="create-form" className="max-w-xl">
-        <PageSection
-          title={t("create")}
-          description={t("description")}
-          tone="primary"
-          layout="form"
+      <div className="relative z-10">
+        <PageScaffold
+          headerProps={{
+            title: t("title"),
+            description: t("description"),
+            eyebrow: "ADMINISTRAÇÃO · DIRETÓRIO",
+          }}
+          headerActions={
+            <div className="flex items-center gap-3">
+              <input
+                ref={importInputRef}
+                type="file"
+                accept=".csv,text/csv"
+                className="hidden"
+                onChange={handleCsvImport}
+              />
+              {/* Ghost import button */}
+              <button
+                type="button"
+                disabled={isImportingCsv}
+                onClick={() => importInputRef.current?.click()}
+                className="flex items-center gap-2 rounded-xl border border-white/60 bg-white/50 px-5 py-2.5 text-sm font-bold text-[#00236f] shadow-sm backdrop-blur-md transition-all hover:-translate-y-0.5 hover:bg-white/70 active:scale-95 disabled:opacity-60"
+              >
+                <FileUp className="size-4" />
+                {common("importCsv")}
+              </button>
+
+              {/* Primary gradient button */}
+              <button
+                type="button"
+                onClick={() => setShowCreate((v) => !v)}
+                className="flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-bold text-white shadow-md transition-all hover:-translate-y-0.5 hover:shadow-lg hover:shadow-blue-900/20 active:scale-95"
+                style={{
+                  background: "linear-gradient(135deg, #1e3a8a 0%, #00236f 100%)",
+                }}
+              >
+                {showCreate ? (
+                  <>
+                    <X className="size-4" />
+                    {t("cancel")}
+                  </>
+                ) : (
+                  <>
+                    <UserPlus className="size-4" />
+                    {t("new")}
+                  </>
+                )}
+              </button>
+            </div>
+          }
         >
-              <form action={formAction} className="flex flex-col gap-4">
-                <Input
-                  name="name"
-                  label={t("colName")}
-                  value={form.name}
-                  onChange={(event) =>
-                    setForm((current) => ({ ...current, name: event.target.value }))
-                  }
-                  required
-                  autoFocus
-                />
-                <PillSelect
-                  label={t("colSex")}
-                  options={[
-                    { value: "M", label: t("male"), icon: <Mars className="size-3.5" /> },
-                    { value: "F", label: t("female"), icon: <Venus className="size-3.5" /> },
-                  ]}
-                  value={form.sex}
-                  onChange={(value) => setForm((current) => ({ ...current, sex: value }))}
-                />
-                <input type="hidden" name="sex" value={form.sex} />
-                <DateField
-                  name="birthDate"
-                  label={t("birthDateLabel")}
-                  value={form.birthDate}
-                  onChange={(nextValue) =>
-                    setForm((current) => ({ ...current, birthDate: nextValue }))
-                  }
-                  required
-                />
-                <Button
-                  type="submit"
-                  loading={isPending}
-                  icon={<UserPlus className="size-4" />}
-                  className="self-start"
+          {/* Inline create form */}
+          <AnimatePresence>
+            {showCreate ? (
+              <FadeIn key="create-form">
+                <div
+                  className="relative mb-8 overflow-hidden rounded-3xl border border-blue-50 bg-white p-6 shadow-sm"
                 >
-                  {t("create")}
-                </Button>
-              </form>
-            </PageSection>
-          </FadeIn>
-        ) : null}
-      </AnimatePresence>
+                  {/* Decorative orb */}
+                  <div className="pointer-events-none absolute -right-16 -top-16 h-32 w-32 rounded-full bg-amber-400 opacity-[0.06] blur-2xl" />
+                  <h3 className="mb-5 flex items-center gap-2 text-sm font-bold text-[#00236f]">
+                    <span className="inline-block h-2 w-2 rounded-full bg-amber-500" />
+                    Cadastro Rápido
+                  </h3>
+                  <form action={formAction}>
+                    <div className="grid grid-cols-1 gap-5 md:grid-cols-4">
+                      <div className="space-y-1.5">
+                        <label className="ml-1 text-[10px] font-bold uppercase tracking-widest text-slate-400">
+                          {t("colName")}
+                        </label>
+                        <Input
+                          name="name"
+                          value={form.name}
+                          onChange={(e) =>
+                            setForm((c) => ({ ...c, name: e.target.value }))
+                          }
+                          required
+                          autoFocus
+                          placeholder="Ex: Ana Beatriz Rocha"
+                        />
+                      </div>
 
-      <DataTable
-        columns={columns}
-        data={initialStudents}
-        rowKey={(row) => row.id}
-        onRowClick={(row) => router.push(`/alunos/${row.id}`)}
-        emptyMessage={t("emptyMessage")}
-        toolbarTitle={t("title")}
-        toolbarSummary={
-          locale === "en"
-            ? `${initialStudents.length} result${initialStudents.length === 1 ? "" : "s"}`
-            : `${initialStudents.length} resultado${initialStudents.length === 1 ? "" : "s"}`
-        }
-      />
-    </PageScaffold>
+                      <div className="space-y-1.5">
+                        <label className="ml-1 text-[10px] font-bold uppercase tracking-widest text-slate-400">
+                          {t("colSex")}
+                        </label>
+                        <PillSelect
+                          options={[
+                            { value: "M", label: t("male"), icon: <Mars className="size-3.5" /> },
+                            { value: "F", label: t("female"), icon: <Venus className="size-3.5" /> },
+                          ]}
+                          value={form.sex}
+                          onChange={(v) => setForm((c) => ({ ...c, sex: v }))}
+                        />
+                        <input type="hidden" name="sex" value={form.sex} />
+                      </div>
+
+                      <div className="space-y-1.5">
+                        <label className="ml-1 text-[10px] font-bold uppercase tracking-widest text-slate-400">
+                          {t("birthDateLabel")}
+                        </label>
+                        <DateField
+                          name="birthDate"
+                          value={form.birthDate}
+                          onChange={(v) => setForm((c) => ({ ...c, birthDate: v }))}
+                          required
+                        />
+                      </div>
+
+                      <div className="flex items-end">
+                        <Button
+                          type="submit"
+                          loading={isPending}
+                          icon={<UserPlus className="size-4" />}
+                          className="w-full"
+                        >
+                          {t("create")}
+                        </Button>
+                      </div>
+                    </div>
+                  </form>
+                </div>
+              </FadeIn>
+            ) : null}
+          </AnimatePresence>
+
+          {/* Data Table */}
+          <DataTable
+            columns={columns}
+            data={initialStudents}
+            rowKey={(row) => row.id}
+            onRowClick={(row) => router.push(`/alunos/${row.id}`)}
+            emptyMessage={t("emptyMessage")}
+            toolbarTitle={t("title")}
+            toolbarSummary={
+              <>
+                <span className="text-[#00236f]">{initialStudents.length}</span>{" "}
+                {locale === "en"
+                  ? `result${initialStudents.length === 1 ? "" : "s"}`
+                  : `resultado${initialStudents.length === 1 ? "" : "s"}`}
+              </>
+            }
+          />
+        </PageScaffold>
+      </div>
+    </div>
   );
 }

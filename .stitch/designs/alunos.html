@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+
+<html class="light" lang="pt-br"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@200;300;400;500;600;700;800&amp;family=Public_Sans:ital,wght@0,100..900;1,100..900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "inverse-surface": "#293236",
+              "surface-tint": "#4059aa",
+              "on-background": "#141d21",
+              "surface": "#f4faff",
+              "surface-container-lowest": "#ffffff",
+              "on-tertiary-fixed-variant": "#004395",
+              "tertiary-fixed-dim": "#adc6ff",
+              "surface-container-highest": "#dbe4ea",
+              "tertiary": "#00285e",
+              "secondary-fixed": "#ffddb8",
+              "primary-container": "#1e3a8a",
+              "on-secondary-container": "#684000",
+              "surface-container": "#e6eff5",
+              "secondary-container": "#fea619",
+              "on-tertiary": "#ffffff",
+              "on-error": "#ffffff",
+              "on-secondary-fixed": "#2a1700",
+              "on-primary-fixed-variant": "#264191",
+              "on-surface-variant": "#444651",
+              "tertiary-fixed": "#d8e2ff",
+              "secondary": "#855300",
+              "primary-fixed": "#dce1ff",
+              "outline-variant": "#c5c5d3",
+              "secondary-fixed-dim": "#ffb95f",
+              "surface-variant": "#dbe4ea",
+              "surface-dim": "#d2dbe1",
+              "on-surface": "#141d21",
+              "on-primary-fixed": "#00164e",
+              "surface-container-high": "#e0e9ef",
+              "on-primary": "#ffffff",
+              "inverse-on-surface": "#e9f2f8",
+              "on-secondary": "#ffffff",
+              "tertiary-container": "#003d88",
+              "surface-container-low": "#ecf5fb",
+              "outline": "#757682",
+              "on-secondary-fixed-variant": "#653e00",
+              "inverse-primary": "#b6c4ff",
+              "background": "#f4faff",
+              "error": "#ba1a1a",
+              "error-container": "#ffdad6",
+              "on-error-container": "#93000a",
+              "primary-fixed-dim": "#b6c4ff",
+              "surface-bright": "#f4faff",
+              "primary": "#00236f",
+              "on-tertiary-fixed": "#001a42",
+              "on-tertiary-container": "#82abff",
+              "on-primary-container": "#90a8ff"
+            },
+            fontFamily: {
+              "headline": ["Manrope"],
+              "body": ["Public Sans"],
+              "label": ["Public Sans"]
+            },
+            borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "2xl": "1rem", "3xl": "1.5rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+<style>
+        body { font-family: 'Public Sans', sans-serif; }
+        h1, h2, h3, .font-headline { font-family: 'Manrope', sans-serif; }
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+        .glass-card { background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.4); }
+    </style>
+</head>
+<body class="bg-surface min-h-screen text-on-surface selection:bg-secondary-fixed selection:text-on-secondary-fixed">
+<!-- Background Elements -->
+<div class="fixed inset-0 overflow-hidden pointer-events-none z-0">
+<div class="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] rounded-full bg-[#F59E0B] opacity-[0.07] blur-[120px]"></div>
+<div class="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] rounded-full bg-[#1E3A8A] opacity-[0.08] blur-[120px]"></div>
+</div>
+<!-- Sidebar Navigation Shell -->
+<aside class="bg-blue-950 dark:bg-slate-950 h-screen w-64 fixed left-0 top-0 border-r border-white/10 shadow-2xl z-50 flex flex-col h-full py-8 font-['Manrope'] antialiased tracking-tight">
+<div class="px-6 mb-10 flex items-center gap-3">
+<div class="w-10 h-10 bg-secondary-container rounded-xl flex items-center justify-center shadow-lg">
+<span class="material-symbols-outlined text-primary text-2xl" data-icon="health_and_safety">health_and_safety</span>
+</div>
+<div>
+<h1 class="text-xl font-bold tracking-tighter text-white leading-none">HealthyTech</h1>
+<p class="text-[10px] text-slate-400 tracking-widest uppercase mt-1">Atlantico</p>
+</div>
+</div>
+<nav class="flex-1 space-y-1">
+<a class="flex items-center gap-3 px-6 py-3 text-slate-400 hover:text-white transition-colors hover:bg-white/10 transition-all duration-300" href="#">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+<span>Dashboard</span>
+</a>
+<a class="flex items-center gap-3 px-6 py-3 text-amber-500 bg-white/5 border-r-4 border-amber-600 font-semibold" href="#">
+<span class="material-symbols-outlined" data-icon="folder_shared">folder_shared</span>
+<span>Alunos</span>
+</a>
+<a class="flex items-center gap-3 px-6 py-3 text-slate-400 hover:text-white transition-colors hover:bg-white/10 transition-all duration-300" href="#">
+<span class="material-symbols-outlined" data-icon="calendar_month">calendar_month</span>
+<span>Appointments</span>
+</a>
+<a class="flex items-center gap-3 px-6 py-3 text-slate-400 hover:text-white transition-colors hover:bg-white/10 transition-all duration-300" href="#">
+<span class="material-symbols-outlined" data-icon="description">description</span>
+<span>Medical Reports</span>
+</a>
+<a class="flex items-center gap-3 px-6 py-3 text-slate-400 hover:text-white transition-colors hover:bg-white/10 transition-all duration-300" href="#">
+<span class="material-symbols-outlined" data-icon="monitoring">monitoring</span>
+<span>Health Analytics</span>
+</a>
+<a class="flex items-center gap-3 px-6 py-3 text-slate-400 hover:text-white transition-colors hover:bg-white/10 transition-all duration-300" href="#">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+<span>Settings</span>
+</a>
+</nav>
+<div class="px-4 mt-auto">
+<button class="w-full flex items-center justify-center gap-2 bg-white/5 hover:bg-white/10 text-white py-3 rounded-xl border border-white/10 transition-all active:scale-95 duration-150">
+<span class="material-symbols-outlined text-amber-500" data-icon="add">add</span>
+<span class="text-sm font-medium">New Consultation</span>
+</button>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="ml-64 relative z-10">
+<!-- Top Navigation Bar -->
+<header class="fixed top-0 right-0 w-[calc(100%-16rem)] h-16 z-40 bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl border-b border-blue-100/20 dark:border-slate-800/50 flex justify-between items-center px-8 font-['Public_Sans'] font-medium text-sm">
+<div class="flex items-center gap-8">
+<div class="relative group">
+<span class="absolute left-3 top-1/2 -translate-y-1/2 material-symbols-outlined text-slate-400 text-lg" data-icon="search">search</span>
+<input class="bg-surface-container-low border-none rounded-full pl-10 pr-4 py-1.5 w-64 text-xs focus:ring-2 focus:ring-secondary-container transition-all" placeholder="Global search..." type="text"/>
+</div>
+<div class="flex gap-6">
+<a class="text-slate-500 dark:text-slate-400 hover:bg-blue-50/50 dark:hover:bg-slate-800/50 px-3 py-1 rounded-full transition-all" href="#">Portal</a>
+<a class="text-blue-900 dark:text-white font-bold hover:bg-blue-50/50 dark:hover:bg-slate-800/50 px-3 py-1 rounded-full transition-all" href="#">Alunos</a>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<button class="p-2 text-slate-500 hover:bg-blue-50/50 rounded-full transition-all">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+</button>
+<button class="p-2 text-slate-500 hover:bg-blue-50/50 rounded-full transition-all">
+<span class="material-symbols-outlined" data-icon="help_outline">help_outline</span>
+</button>
+<div class="h-8 w-px bg-blue-100 mx-2"></div>
+<div class="flex items-center gap-3">
+<div class="text-right hidden sm:block">
+<p class="text-xs font-bold text-primary leading-none">Dr. Ricardo Silva</p>
+<p class="text-[10px] text-slate-500">Coordenador Clínico</p>
+</div>
+<img alt="Staff Profile Avatar" class="w-9 h-9 rounded-full border-2 border-white shadow-sm" data-alt="professional portrait of a male doctor in clinical attire with soft studio lighting and blue background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB_sYWqtrBEwWFjXqUf01lH0Bnc7hyiAKfDg2us4vnlqgE1CLOiCuPIi3PkT_K56SumIVW2WUBjn-00vUfo1t1vW6NcDFdboDMmURo2afGdTg3iycCTnNhTVGzxNJzyiQUX6yuue9FdfgppizdnoFJqumklwMphYDwoMi-ryaGVwDynuSr8QiolsjxzVYZUNZAgsRf8iv9ENySDKBjshrSxUmFrdQOmna7RicKh-16nMn7mdzAdyzFSErDzcOkr78kcDL5VIoI9nvz3"/>
+</div>
+</div>
+</header>
+<!-- Page Content -->
+<div class="pt-24 pb-12 px-12 max-w-7xl mx-auto">
+<!-- Hero Header -->
+<div class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
+<div>
+<nav class="flex items-center gap-2 text-xs text-slate-400 mb-2 font-medium tracking-wide">
+<span>ADMINISTRAÇÃO</span>
+<span class="material-symbols-outlined text-[10px]" data-icon="chevron_right">chevron_right</span>
+<span class="text-secondary font-bold">DIRETÓRIO</span>
+</nav>
+<h2 class="text-5xl font-extrabold text-[#040a12] tracking-tighter leading-none mb-2">Diretório de Alunos</h2>
+<p class="text-on-surface-variant max-w-md body-md">Gerencie os registros médicos e acadêmicos dos alunos integrados ao ecossistema Atlantico.</p>
+</div>
+<div class="flex gap-3">
+<button class="px-6 py-3 bg-white/50 backdrop-blur-md border border-white/60 text-primary font-bold rounded-xl hover:-translate-y-0.5 transition-all flex items-center gap-2 text-sm shadow-sm">
+<span class="material-symbols-outlined text-lg" data-icon="upload_file">upload_file</span>
+                        Importar CSV
+                    </button>
+<button class="px-6 py-3 bg-gradient-to-br from-primary-container to-primary text-white font-bold rounded-xl hover:-translate-y-0.5 hover:shadow-xl hover:shadow-primary/20 transition-all flex items-center gap-2 text-sm">
+<span class="material-symbols-outlined text-lg" data-icon="person_add">person_add</span>
+                        Novo aluno
+                    </button>
+</div>
+</div>
+<!-- Fast Creation Inline Form -->
+<section class="mb-12">
+<div class="bg-white p-6 rounded-3xl border border-blue-50 shadow-sm relative overflow-hidden group">
+<div class="absolute top-0 right-0 w-32 h-32 bg-secondary/5 rounded-full -mr-16 -mt-16 group-hover:scale-110 transition-transform duration-700"></div>
+<h3 class="text-sm font-bold text-primary mb-6 flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-secondary"></span>
+                        Cadastro Rápido
+                    </h3>
+<div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+<div class="space-y-1.5">
+<label class="text-[10px] uppercase tracking-widest font-bold text-slate-400 ml-1">Nome Completo</label>
+<input class="w-full bg-surface-container-low border-none rounded-lg px-4 py-2.5 text-sm focus:ring-2 focus:ring-secondary-container/50" placeholder="Ex: Ana Beatriz Rocha" type="text"/>
+</div>
+<div class="space-y-1.5">
+<label class="text-[10px] uppercase tracking-widest font-bold text-slate-400 ml-1">Sexo</label>
+<div class="flex p-1 bg-surface-container-low rounded-lg h-[42px]">
+<button class="flex-1 text-xs font-bold rounded-md bg-white shadow-sm text-primary">Masculino</button>
+<button class="flex-1 text-xs font-bold text-slate-400 hover:text-primary transition-colors">Feminino</button>
+</div>
+</div>
+<div class="space-y-1.5">
+<label class="text-[10px] uppercase tracking-widest font-bold text-slate-400 ml-1">Data de Nascimento</label>
+<input class="w-full bg-surface-container-low border-none rounded-lg px-4 py-2.5 text-sm focus:ring-2 focus:ring-secondary-container/50 text-slate-600" type="date"/>
+</div>
+<div class="flex items-end">
+<button class="w-full bg-surface-container-highest hover:bg-secondary-container hover:text-on-secondary-container transition-all text-primary font-bold py-2.5 rounded-lg text-sm active:scale-95">
+                                Adicionar à Lista
+                            </button>
+</div>
+</div>
+</div>
+</section>
+<!-- Main Data Table Container -->
+<section class="glass-card rounded-[24px] overflow-hidden shadow-2xl shadow-blue-900/5">
+<!-- Table Header/Search -->
+<div class="p-6 border-b border-white/20 flex flex-col sm:flex-row justify-between items-center gap-4 bg-white/30">
+<div class="relative w-full max-w-md">
+<span class="absolute left-4 top-1/2 -translate-y-1/2 material-symbols-outlined text-slate-400" data-icon="search">search</span>
+<input class="w-full bg-white/80 border-none rounded-2xl pl-12 pr-4 py-3 text-sm focus:ring-2 focus:ring-primary/20 placeholder:text-slate-400 shadow-sm" placeholder="Filtrar por nome, turma ou prontuário..." type="text"/>
+</div>
+<div class="flex items-center gap-3">
+<button class="p-3 bg-white/80 rounded-xl text-slate-500 hover:text-primary transition-all border border-white">
+<span class="material-symbols-outlined text-lg" data-icon="filter_list">filter_list</span>
+</button>
+<button class="p-3 bg-white/80 rounded-xl text-slate-500 hover:text-primary transition-all border border-white">
+<span class="material-symbols-outlined text-lg" data-icon="sort">sort</span>
+</button>
+</div>
+</div>
+<!-- Table Content -->
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-surface-container-low/50">
+<th class="px-8 py-4 text-[10px] uppercase tracking-widest font-bold text-slate-500">Aluno</th>
+<th class="px-6 py-4 text-[10px] uppercase tracking-widest font-bold text-slate-500">Sexo</th>
+<th class="px-6 py-4 text-[10px] uppercase tracking-widest font-bold text-slate-500">Nascimento</th>
+<th class="px-6 py-4 text-[10px] uppercase tracking-widest font-bold text-slate-500">Turma</th>
+<th class="px-6 py-4 text-[10px] uppercase tracking-widest font-bold text-slate-500 text-right">Ações</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-blue-50/50">
+<!-- Row 1 -->
+<tr class="hover:bg-white/40 transition-colors group">
+<td class="px-8 py-5">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-700 font-bold text-sm border-2 border-white shadow-sm">AM</div>
+<div>
+<p class="font-bold text-sm text-primary group-hover:text-secondary transition-colors">Arthur Machado Guedes</p>
+<p class="text-[11px] text-slate-400 font-medium">ID: #HT-9921</p>
+</div>
+</div>
+</td>
+<td class="px-6 py-5">
+<span class="px-3 py-1 bg-blue-50 text-blue-700 text-[10px] font-bold rounded-full uppercase">Masc</span>
+</td>
+<td class="px-6 py-5">
+<p class="text-sm text-slate-600">12 Out, 2012</p>
+<p class="text-[10px] text-slate-400">11 anos</p>
+</td>
+<td class="px-6 py-5">
+<p class="text-sm font-semibold text-primary-container">6º Ano B</p>
+</td>
+<td class="px-6 py-5 text-right">
+<button class="p-2 text-slate-300 hover:text-primary transition-all">
+<span class="material-symbols-outlined" data-icon="more_vert">more_vert</span>
+</button>
+</td>
+</tr>
+<!-- Row 2 -->
+<tr class="hover:bg-white/40 transition-colors group">
+<td class="px-8 py-5">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center text-amber-700 font-bold text-sm border-2 border-white shadow-sm">BS</div>
+<div>
+<p class="font-bold text-sm text-primary group-hover:text-secondary transition-colors">Beatriz Soares de Lima</p>
+<p class="text-[11px] text-slate-400 font-medium">ID: #HT-8843</p>
+</div>
+</div>
+</td>
+<td class="px-6 py-5">
+<span class="px-3 py-1 bg-rose-50 text-rose-700 text-[10px] font-bold rounded-full uppercase">Fem</span>
+</td>
+<td class="px-6 py-5">
+<p class="text-sm text-slate-600">05 Jan, 2011</p>
+<p class="text-[10px] text-slate-400">13 anos</p>
+</td>
+<td class="px-6 py-5">
+<p class="text-sm font-semibold text-primary-container">8º Ano A</p>
+</td>
+<td class="px-6 py-5 text-right">
+<button class="p-2 text-slate-300 hover:text-primary transition-all">
+<span class="material-symbols-outlined" data-icon="more_vert">more_vert</span>
+</button>
+</td>
+</tr>
+<!-- Row 3 -->
+<tr class="hover:bg-white/40 transition-colors group">
+<td class="px-8 py-5">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-700 font-bold text-sm border-2 border-white shadow-sm">CC</div>
+<div>
+<p class="font-bold text-sm text-primary group-hover:text-secondary transition-colors">Caio Castro Silveira</p>
+<p class="text-[11px] text-slate-400 font-medium">ID: #HT-1022</p>
+</div>
+</div>
+</td>
+<td class="px-6 py-5">
+<span class="px-3 py-1 bg-blue-50 text-blue-700 text-[10px] font-bold rounded-full uppercase">Masc</span>
+</td>
+<td class="px-6 py-5">
+<p class="text-sm text-slate-600">22 Jun, 2010</p>
+<p class="text-[10px] text-slate-400">14 anos</p>
+</td>
+<td class="px-6 py-5">
+<p class="text-sm font-semibold text-primary-container">9º Ano C</p>
+</td>
+<td class="px-6 py-5 text-right">
+<button class="p-2 text-slate-300 hover:text-primary transition-all">
+<span class="material-symbols-outlined" data-icon="more_vert">more_vert</span>
+</button>
+</td>
+</tr>
+<!-- Row 4 -->
+<tr class="hover:bg-white/40 transition-colors group">
+<td class="px-8 py-5">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-700 font-bold text-sm border-2 border-white shadow-sm">DV</div>
+<div>
+<p class="font-bold text-sm text-primary group-hover:text-secondary transition-colors">Davi Viana de Souza</p>
+<p class="text-[11px] text-slate-400 font-medium">ID: #HT-4451</p>
+</div>
+</div>
+</td>
+<td class="px-6 py-5">
+<span class="px-3 py-1 bg-blue-50 text-blue-700 text-[10px] font-bold rounded-full uppercase">Masc</span>
+</td>
+<td class="px-6 py-5">
+<p class="text-sm text-slate-600">30 Set, 2013</p>
+<p class="text-[10px] text-slate-400">10 anos</p>
+</td>
+<td class="px-6 py-5">
+<p class="text-sm font-semibold text-primary-container">5º Ano D</p>
+</td>
+<td class="px-6 py-5 text-right">
+<button class="p-2 text-slate-300 hover:text-primary transition-all">
+<span class="material-symbols-outlined" data-icon="more_vert">more_vert</span>
+</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Pagination Footer -->
+<div class="p-6 bg-white/50 border-t border-white/40 flex items-center justify-between">
+<p class="text-xs font-medium text-slate-500">Exibindo <span class="text-primary font-bold">4</span> de <span class="text-primary font-bold">75</span> resultados</p>
+<div class="flex gap-2">
+<button class="w-8 h-8 rounded-lg border border-blue-100 flex items-center justify-center text-slate-400 hover:bg-white transition-colors cursor-not-allowed">
+<span class="material-symbols-outlined text-sm" data-icon="chevron_left">chevron_left</span>
+</button>
+<button class="w-8 h-8 rounded-lg bg-primary text-white flex items-center justify-center text-xs font-bold shadow-md shadow-primary/20">1</button>
+<button class="w-8 h-8 rounded-lg border border-blue-100 flex items-center justify-center text-xs font-bold text-slate-600 hover:bg-white transition-colors">2</button>
+<button class="w-8 h-8 rounded-lg border border-blue-100 flex items-center justify-center text-xs font-bold text-slate-600 hover:bg-white transition-colors">3</button>
+<button class="w-8 h-8 rounded-lg border border-blue-100 flex items-center justify-center text-slate-400 hover:bg-white transition-colors">
+<span class="material-symbols-outlined text-sm" data-icon="chevron_right">chevron_right</span>
+</button>
+</div>
+</div>
+</section>
+<!-- Metrics / Floating Context Cards (Asymmetric Bento) -->
+<section class="mt-16 grid grid-cols-1 md:grid-cols-3 gap-8">
+<div class="md:col-span-2 bg-gradient-to-br from-primary to-[#001a42] rounded-[32px] p-8 text-white relative overflow-hidden shadow-2xl">
+<div class="relative z-10 flex flex-col h-full justify-between">
+<div>
+<h4 class="text-2xl font-bold tracking-tight mb-2">Resumo da Rede de Alunos</h4>
+<p class="text-blue-100/60 text-sm max-w-sm">Crescimento de 12% em matrículas ativas este semestre com acompanhamento clínico preventivo.</p>
+</div>
+<div class="flex gap-12 mt-12">
+<div>
+<p class="text-4xl font-extrabold text-secondary-container tracking-tighter">1.284</p>
+<p class="text-[10px] uppercase tracking-widest font-bold text-blue-100/40 mt-1">Total Alunos</p>
+</div>
+<div>
+<p class="text-4xl font-extrabold text-blue-100 tracking-tighter">98%</p>
+<p class="text-[10px] uppercase tracking-widest font-bold text-blue-100/40 mt-1">Saúde OK</p>
+</div>
+<div>
+<p class="text-4xl font-extrabold text-blue-100 tracking-tighter">24</p>
+<p class="text-[10px] uppercase tracking-widest font-bold text-blue-100/40 mt-1">Turmas</p>
+</div>
+</div>
+</div>
+<!-- Decorative Graphic -->
+<div class="absolute right-0 bottom-0 opacity-20 w-64 h-64 -mr-16 -mb-16">
+<span class="material-symbols-outlined text-[200px]" data-icon="family_history">family_history</span>
+</div>
+</div>
+<div class="bg-secondary-fixed rounded-[32px] p-8 text-on-secondary-fixed flex flex-col justify-between border border-white/20 shadow-xl">
+<div>
+<div class="w-12 h-12 bg-white rounded-2xl flex items-center justify-center shadow-sm mb-6">
+<span class="material-symbols-outlined text-secondary" data-icon="clinical_notes">clinical_notes</span>
+</div>
+<h4 class="text-xl font-extrabold tracking-tight mb-2 leading-tight">Pendências de Documentação</h4>
+<p class="text-on-secondary-fixed-variant/70 text-xs">Existem 12 alunos com exames médicos vencidos que precisam de renovação imediata.</p>
+</div>
+<button class="mt-8 group flex items-center justify-between bg-white/40 hover:bg-white transition-all p-4 rounded-2xl">
+<span class="text-sm font-bold">Verificar Lista</span>
+<span class="material-symbols-outlined group-hover:translate-x-1 transition-transform" data-icon="arrow_forward">arrow_forward</span>
+</button>
+</div>
+</section>
+</div>
+</main>
+<!-- Contextual FAB - suppressed according to instructions for Directory page -->
+<!-- Navigation shell is handled via sidebar and topbar -->
+</body></html>

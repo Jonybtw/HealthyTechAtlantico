@@ -1,0 +1,21 @@
+import { cn } from "@/lib/utils";
+
+interface MeshGlowProps {
+  className?: string;
+}
+
+export function MeshGlow({ className }: MeshGlowProps) {
+  return (
+    <div className={cn("mesh-glow", className)} />
+  );
+}
+
+export function MeshBackground() {
+  return (
+    <div className="fixed inset-0 pointer-events-none z-[-1] overflow-hidden">
+      <MeshGlow className="top-20 right-10" />
+      <MeshGlow className="bottom-20 left-40" />
+      <MeshGlow className="top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 opacity-50" />
+    </div>
+  );
+}

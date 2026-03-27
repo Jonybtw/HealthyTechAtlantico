@@ -158,7 +158,7 @@ export default function AuditoriaPage() {
 
   if (role !== "ADMIN") {
     return (
-      <PageScaffold headerProps={{ title: t("title"), description: t("description") }}>
+      <PageScaffold headerProps={{ title: t("title"), description: t("description"), eyebrow: "SISTEMA · AUDITORIA" }}>
         <EmptyState
           icon={ShieldOff}
           title={t("blockedTitle")}
@@ -173,6 +173,7 @@ export default function AuditoriaPage() {
       headerProps={{
         title: t("title"),
         description: t("description"),
+        eyebrow: "SISTEMA · AUDITORIA",
         meta: t("totalLogs", { count: total }),
       }}
       headerActions={

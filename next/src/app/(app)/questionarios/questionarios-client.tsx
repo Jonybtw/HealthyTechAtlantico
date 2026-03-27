@@ -334,7 +334,7 @@ export default function QuestionariosPage() {
 
   if (role && role !== "ALUNO") {
     return (
-      <PageScaffold headerProps={{ title: t("title"), description: t("description") }}>
+      <PageScaffold headerProps={{ title: t("title"), description: t("description"), eyebrow: "ALUNOS · QUESTIONÁRIOS" }}>
         <EmptyState
           icon={ShieldAlert}
           title={t("studentOnlyTitle")}
@@ -351,7 +351,7 @@ export default function QuestionariosPage() {
 
   if (role === "ALUNO" && loadingStudents) {
     return (
-      <PageScaffold headerProps={{ title: t("title"), description: t("description") }}>
+      <PageScaffold headerProps={{ title: t("title"), description: t("description"), eyebrow: "ALUNOS · QUESTIONÁRIOS" }}>
         <div className="mx-auto grid w-full max-w-4xl gap-5">
           <Skeleton className="h-[220px] rounded-3xl" />
           <Skeleton className="h-[420px] rounded-3xl" />
@@ -363,7 +363,7 @@ export default function QuestionariosPage() {
 
   if (role === "ALUNO" && !loadingStudents && students.length === 0) {
     return (
-      <PageScaffold headerProps={{ title: t("title"), description: t("description") }}>
+      <PageScaffold headerProps={{ title: t("title"), description: t("description"), eyebrow: "ALUNOS · QUESTIONÁRIOS" }}>
         <EmptyState icon={Link2} title={t("unlinkedTitle")} description={t("unlinkedDescription")} />
       </PageScaffold>
     );
@@ -513,7 +513,7 @@ export default function QuestionariosPage() {
           ];
 
   return (
-    <PageScaffold headerProps={{ title: t("title"), description: t("description") }}>
+    <PageScaffold headerProps={{ title: t("title"), description: t("description"), eyebrow: "ALUNOS · QUESTIONÁRIOS" }}>
       <div className="mx-auto flex w-full max-w-4xl flex-col gap-5 pb-28">
         <PageSection tone="primary" layout="form" className="overflow-hidden">
           <div className="grid gap-6">

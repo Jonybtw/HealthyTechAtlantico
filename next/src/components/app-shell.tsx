@@ -41,6 +41,7 @@ import { BrandLogo } from "@/components/brand-logo";
 import { useHotkeys } from "@/hooks/use-hotkeys";
 import { useIsClient } from "@/hooks/use-is-client";
 import { usePreferences } from "@/hooks/use-preferences";
+import { MeshBackground } from "@/components/ui/mesh-glow";
 
 interface AppShellProps {
   user: {
@@ -252,12 +253,12 @@ export function AppShell({ user, children }: AppShellProps) {
         >
           {t("nav.skipToContent")}
         </a>
-        <div className="bg-mesh" aria-hidden="true" />
+        <MeshBackground />
         <div className="bg-noise" aria-hidden="true" />
 
         <aside
           aria-label={t("nav.sidebarNavigation")}
-          className="fixed inset-y-0 left-0 z-30 hidden w-72 border-r border-white/10 bg-gradient-to-b from-navy-950 via-navy-900 to-navy-900 lg:flex lg:flex-col"
+          className="fixed inset-y-0 left-0 z-30 hidden w-72 border-r border-white/5 bg-navy-950/80 backdrop-blur-2xl lg:flex lg:flex-col rounded-r-[2.5rem] shadow-2xl"
         >
           <div className="flex items-center justify-center border-b border-white/10 px-6 py-5">
             <BrandLogo

@@ -183,11 +183,11 @@ export default function LoginClient() {
   });
 
   return (
-    <div className="animate-fade-in-up overflow-hidden rounded-3xl border border-border/40 bg-card/95 shadow-[0_40px_100px_-12px_rgba(9,21,35,0.30),0_2px_16px_rgba(9,21,35,0.12)] backdrop-blur-sm">
+    <div className="animate-fade-in-up w-full max-w-md overflow-hidden rounded-[24px] mx-auto" style={{ background: "rgba(255,255,255,0.82)", backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)", border: "1px solid rgba(255,255,255,0.6)", boxShadow: "0 8px 32px rgba(0,35,111,0.10), 0 2px 8px rgba(0,35,111,0.06)" }}>
       {/* Gold accent line */}
       <div className="h-px bg-gradient-to-r from-transparent via-gold-400/60 to-transparent" />
       {/* Header */}
-      <div className="flex items-center gap-3 border-b border-border/60 px-6 py-5">
+      <div className="flex items-center gap-3 border-b border-slate-200/50 dark:border-slate-800/50 px-6 py-5">
         <div className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-navy-900 text-gold-300">
           <AnimatePresence mode="wait" initial={false}>
             {mode === "login" ? (

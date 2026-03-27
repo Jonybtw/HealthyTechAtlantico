@@ -91,7 +91,7 @@ export default function PerfilPage() {
   };
 
   return (
-    <PageScaffold headerProps={{ title: t("title"), description: t("description") }}>
+    <PageScaffold headerProps={{ title: t("title"), description: t("description"), eyebrow: "CONTA · PERFIL" }}>
       <div className="grid gap-4 xl:grid-cols-2">
         <PageSection
           tone="secondary"
@@ -282,7 +282,13 @@ export default function PerfilPage() {
               </div>
 
               <div className="pt-1">
-                <Button type="submit" loading={pwForm.formState.isSubmitting} icon={<Save className="size-4" />}>
+                <Button
+                  type="submit"
+                  loading={pwForm.formState.isSubmitting}
+                  icon={<Save className="size-4" />}
+                  className="rounded-full px-6 font-semibold shadow-lg transition-all hover:scale-[1.03]"
+                  style={{ background: "linear-gradient(135deg, #1E3A8A, #10243a)", color: "#fff", border: "none" }}
+                >
                   {t("savePassword")}
                 </Button>
               </div>

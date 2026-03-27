@@ -105,9 +105,9 @@
   --shadow-glow: 0 0 30px rgb(184 140 25 / 0.28);
 
   --radius-sm: 0.5rem;
-  --radius-md: 0.875rem;
-  --radius-lg: 1.25rem;
-  --radius-xl: 1.5rem;
+  --radius-md: 1.5rem;
+  --radius-lg: 2rem;
+  --radius-xl: 3rem;
   --radius-full: 9999px;
 
   /* Radix animation variables */
@@ -137,20 +137,20 @@
 
 html[data-theme="dark"] {
   --background: #07111c;
-  --foreground: #edf3f8;
+  --foreground: #d9e3f3;
   --muted: rgb(20 48 76 / 0.74);
   --muted-foreground: #9eb0c1;
   --border: rgb(196 211 226 / 0.16);
-  --input: rgb(196 211 226 / 0.2);
-  --ring: rgb(232 199 102 / 0.36);
-  --primary: #f4efe2;
-  --primary-foreground: #091523;
-  --secondary: rgb(16 36 58 / 0.84);
-  --secondary-foreground: #edf3f8;
-  --accent: var(--color-gold-300);
-  --accent-foreground: #091523;
-  --card: rgb(9 21 35 / 0.84);
-  --card-foreground: #edf3f8;
+  --input: #050f1a;
+  --ring: rgb(216 173 52 / 0.4);
+  --primary: #b6c4ff;
+  --primary-foreground: #05297a;
+  --secondary: #eec147;
+  --secondary-foreground: #3e2e00;
+  --accent: #d8ad34;
+  --accent-foreground: #3e2e00;
+  --card: rgba(23, 32, 44, 0.8);
+  --card-foreground: #d9e3f3;
   --zone-ok-bg: rgb(6 78 59 / 0.4);
   --zone-needs-bg: rgb(127 29 29 / 0.36);
 }
@@ -180,10 +180,7 @@ html {
 }
 
 body {
-  background:
-    radial-gradient(circle at top, rgb(232 199 102 / 0.14), transparent 30%),
-    radial-gradient(circle at bottom left, rgb(53 85 109 / 0.08), transparent 28%),
-    var(--background);
+  background: var(--background);
   color: var(--foreground);
   font-family: var(--font-sans), sans-serif;
   font-variant-numeric: tabular-nums;
@@ -371,14 +368,30 @@ html[data-theme="dark"] .bg-noise::after {
 }
 
 .glass {
-  background: color-mix(in srgb, var(--card) 90%, white 10%);
-  border: 1px solid color-mix(in srgb, var(--border) 82%, white 18%);
-  backdrop-filter: blur(10px);
+  background: rgba(44, 54, 66, 0.4);
+  border: 1px solid rgba(143, 144, 157, 0.1);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
 }
 
 html[data-theme="dark"] .glass {
-  background: color-mix(in srgb, var(--card) 92%, black 8%);
-  border: 1px solid color-mix(in srgb, var(--border) 90%, white 10%);
+  background: rgba(23, 32, 44, 0.6);
+  border: 1px solid rgba(143, 144, 157, 0.15);
+}
+
+.pill-gradient {
+  background: linear-gradient(135deg, #1e3a8a 0%, #b6c4ff 100%);
+}
+
+.mesh-glow {
+  position: absolute;
+  width: 600px;
+  height: 600px;
+  background: radial-gradient(circle, rgba(30, 58, 138, 0.15) 0%, rgba(30, 58, 138, 0) 70%);
+  border-radius: 50%;
+  filter: blur(80px);
+  z-index: -1;
+  pointer-events: none;
 }
 
 .surface-primary {

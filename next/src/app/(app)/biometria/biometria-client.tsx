@@ -132,7 +132,7 @@ export default function BiometriaPage() {
 
   if (!canManageBiometrics) {
     return (
-      <PageScaffold headerProps={{ title: t("title"), description: t("description") }}>
+      <PageScaffold headerProps={{ title: t("title"), description: t("description"), eyebrow: "SAÚDE · BIOMETRIA" }}>
         <EmptyState
           icon={ShieldAlert}
           title={common("noPermission")}
@@ -199,44 +199,56 @@ export default function BiometriaPage() {
       headerProps={{
         title: t("title"),
         description: t("description"),
+        eyebrow: "SAÚDE · BIOMETRIA",
       }}
     >
-
       {loadingStudents ? (
-        <div className="grid grid-cols-1 items-start gap-5 lg:grid-cols-[1fr_340px]">
-          <PageSection tone="primary" layout="form" contentClassName="gap-4">
-            <Skeleton className="h-12 w-full rounded-xl" />
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+        <div className="grid grid-cols-1 items-start gap-8 lg:grid-cols-[1fr_380px]">
+          <PageSection tone="primary" layout="form" contentClassName="gap-6">
+            <Skeleton className="h-14 w-full rounded-2xl" />
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               {[1, 2, 3, 4].map((item) => (
-                <Skeleton key={item} className="h-14 w-full rounded-xl" />
+                <Skeleton key={item} className="h-16 w-full rounded-2xl" />
               ))}
             </div>
-            <Skeleton className="h-9 w-32 rounded-xl" />
+            <Skeleton className="h-12 w-full rounded-full" />
           </PageSection>
-          <PageSection tone="secondary" layout="list" contentClassName="gap-3">
-            <Skeleton className="h-72 w-full rounded-xl" />
-          </PageSection>
+          <div className="flex flex-col gap-6">
+            <Skeleton className="h-64 w-full rounded-3xl" />
+            <Skeleton className="h-48 w-full rounded-3xl" />
+          </div>
         </div>
       ) : (
-        <div className="grid grid-cols-1 items-start gap-5 lg:grid-cols-[1fr_340px]">
+        <div className="grid grid-cols-1 items-start gap-8 lg:grid-cols-[1fr_380px]">
           <PageSection
             tone="primary"
             layout="form"
+            title={
+              <div className="flex items-center gap-3">
+                <span className="material-symbols-outlined text-primary text-3xl">analytics</span>
+                <span>{t("title")}</span>
+              </div>
+            }
           >
-            <form onSubmit={handleSubmit} className="flex flex-col gap-5">
-              <StudentPicker
-                students={pickerStudents}
-                value={studentId}
-                onChange={setStudentId}
-              />
+            <form onSubmit={handleSubmit} className="flex flex-col gap-8">
+              <div className="space-y-2">
+                <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60 ml-1">
+                  Seleção de Aluno
+                </label>
+                <StudentPicker
+                  students={pickerStudents}
+                  value={studentId}
+                  onChange={setStudentId}
+                />
+              </div>
 
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
                 <UnitInput
                   label={t("height")}
                   unit="m"
                   value={form.heightM}
                   onChange={updateField("heightM")}
-                  placeholder="1.65"
+                  placeholder="1.75"
                   step="0.01"
                   min="0.5"
                   max="2.5"
@@ -248,7 +260,7 @@ export default function BiometriaPage() {
                   unit="kg"
                   value={form.weightKg}
                   onChange={updateField("weightKg")}
-                  placeholder="60.0"
+                  placeholder="72.5"
                   step="0.1"
                   min="10"
                   max="300"
@@ -260,7 +272,7 @@ export default function BiometriaPage() {
                   unit="cm"
                   value={form.waistCm}
                   onChange={updateField("waistCm")}
-                  placeholder="70"
+                  placeholder="84.0"
                   step="0.1"
                   icon={<Ruler className="size-4" />}
                 />
@@ -269,7 +281,7 @@ export default function BiometriaPage() {
                   unit="%"
                   value={form.fatPct}
                   onChange={updateField("fatPct")}
-                  placeholder="18.0"
+                  placeholder="18.5"
                   step="0.1"
                   icon={<Percent className="size-4" />}
                 />
@@ -277,112 +289,119 @@ export default function BiometriaPage() {
 
               <Button
                 type="submit"
+                variant="sanctuary"
+                size="xl"
                 loading={saving}
-                icon={<Ruler className="size-4" />}
-                className="self-start"
+                icon={<span className="material-symbols-outlined mr-2">save</span>}
+                className="w-full text-lg shadow-glow"
               >
                 {t("save")}
               </Button>
             </form>
           </PageSection>
 
-          <div className="flex flex-col gap-4 lg:sticky lg:top-6">
+          <aside className="flex flex-col gap-6 lg:sticky lg:top-24">
             <PageSection
-              title={t("classificationTitle")}
-              description={t("enterValuesHint")}
               tone="secondary"
+              title={
+                <span className="text-xs font-bold uppercase tracking-widest text-muted-foreground/70">
+                  Classificação Automática
+                </span>
+              }
               layout="analytics"
+              className="relative overflow-hidden group"
             >
+              <div className="absolute -right-10 -top-10 w-40 h-40 bg-secondary/5 rounded-full blur-3xl group-hover:bg-secondary/10 transition-colors" />
+              
               {!classification ? (
-                <div className="flex flex-col items-center gap-3 py-6 text-center">
+                <div className="flex flex-col items-center gap-4 py-8 text-center">
                   <div className="relative">
-                    <svg width="120" height="120" viewBox="0 0 120 120" className="text-muted-foreground/20">
+                    <svg width="120" height="120" viewBox="0 0 120 120" className="text-muted-foreground/10">
                       <circle cx="60" cy="60" r="48" fill="none" stroke="currentColor" strokeWidth="8" strokeDasharray="6 4" />
                     </svg>
                     <div className="absolute inset-0 flex flex-col items-center justify-center">
-                      <span className="text-2xl font-bold text-muted-foreground/30">-</span>
-                      <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/40">IMC</span>
+                      <span className="text-3xl font-black text-muted-foreground/20 italic">--.-</span>
                     </div>
                   </div>
-                  <p className="max-w-[200px] text-sm leading-relaxed text-muted-foreground">
+                  <p className="text-sm font-medium text-muted-foreground/60 px-4">
                     {t("enterValuesHint")}
                   </p>
                 </div>
-              ) : (() => {
-                const radius = 48;
-                const circumference = 2 * Math.PI * radius;
-                const bmiMin = 12;
-                const bmiMax = 38;
-                const pct = Math.min(Math.max((classification.imc - bmiMin) / (bmiMax - bmiMin), 0), 1);
-                const dashOffset = circumference * (1 - pct);
-                const isHealthy = classification.imcZone.includes("Saud") || classification.imcZone === "ZSAF";
-                const trackColor = isHealthy ? "var(--color-success-500)" : "var(--color-warning-500)";
-
-                return (
-                  <>
-                    <div className="flex flex-col items-center gap-2">
-                      <div className="relative">
-                        <svg width="148" height="148" viewBox="0 0 148 148" className="-rotate-90">
-                          <circle cx="74" cy="74" r={radius} fill="none" stroke="currentColor" strokeWidth="10" className="text-muted/25" />
-                          <circle
-                            cx="74"
-                            cy="74"
-                            r={radius}
-                            fill="none"
-                            stroke={trackColor}
-                            strokeWidth="10"
-                            strokeDasharray={circumference}
-                            strokeDashoffset={dashOffset}
-                            strokeLinecap="round"
-                            style={{ transition: "stroke-dashoffset 0.8s cubic-bezier(0.34,1.56,0.64,1), stroke 0.4s ease" }}
-                          />
-                        </svg>
-                        <div className="absolute inset-0 flex flex-col items-center justify-center">
-                          <span className="text-2xl font-bold tracking-tighter text-foreground tabular-nums">
-                            {classification.imc}
-                          </span>
-                          <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">IMC</span>
-                        </div>
-                      </div>
-                      <ZoneBadge zone={classification.imcZone} />
-                    </div>
-
-                    <div className="flex flex-col gap-2.5 border-t border-border/50 pt-3">
-                      <div className="flex items-center justify-between text-sm">
-                        <span className="font-medium text-muted-foreground">{t("bmi")}</span>
-                        <ZoneBadge zone={classification.imcZone} />
-                      </div>
-                      {classification.waistZone ? (
-                        <div className="flex items-center justify-between text-sm">
-                          <span className="font-medium text-muted-foreground">{t("waist")}</span>
-                          <ZoneBadge zone={classification.waistZone} />
-                        </div>
-                      ) : null}
-                    </div>
-                  </>
-                );
-              })()}
+              ) : (
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="text-center p-6 bg-navy-950/40 rounded-2xl border border-white/5 shadow-inner">
+                    <p className="text-[10px] font-bold text-muted-foreground/50 uppercase tracking-tighter mb-2">IMC ESTIMADO</p>
+                    <p className="text-3xl font-black text-foreground italic">{classification.imc}</p>
+                  </div>
+                  <div className="text-center p-6 bg-navy-950/40 rounded-2xl border border-white/5 shadow-inner">
+                    <p className="text-[10px] font-bold text-muted-foreground/50 uppercase tracking-tighter mb-2">ZAF STATUS</p>
+                    <p className="text-2xl font-black text-secondary italic uppercase tracking-tight">
+                      {classification.imcZone.includes("Saud") || classification.imcZone === "ZSAF" ? "SAUDÁVEL" : "ATENÇÃO"}
+                    </p>
+                  </div>
+                </div>
+              )}
             </PageSection>
 
             <PageSection
               tone="secondary"
-              title="Referencia ZAF"
-              className="gap-0"
-              contentClassName="gap-2"
+              title={
+                <span className="text-xs font-bold uppercase tracking-widest text-muted-foreground/70">
+                  Referência ZAF
+                </span>
+              }
               layout="list"
+              contentClassName="gap-3"
             >
-              <div className="flex flex-col gap-1.5">
-                <div className="flex items-center gap-2">
-                  <span className="h-2.5 w-2.5 rounded-full bg-success-500" />
-                  <span className="text-xs text-muted-foreground">ZSAF - {t("healthyZone")}</span>
+              <div className="space-y-3">
+                <div className="flex items-center justify-between p-4 bg-white/5 rounded-full transition-all border border-transparent hover:border-white/5">
+                  <div className="flex items-center gap-4">
+                    <div className="w-3 h-3 rounded-full bg-emerald-500 shadow-[0_0_15px_rgba(16,185,129,0.5)]" />
+                    <span className="font-bold text-foreground text-sm">Saudável</span>
+                  </div>
+                  <span className="text-[9px] font-bold bg-emerald-500/20 text-emerald-400 px-3 py-1 rounded-full uppercase tracking-wider">Ideal</span>
                 </div>
-                <div className="flex items-center gap-2">
-                  <span className="h-2.5 w-2.5 rounded-full bg-warning-500" />
-                  <span className="text-xs text-muted-foreground">ZMF - {t("improvementZone")}</span>
+                <div className="flex items-center justify-between p-4 bg-white/5 rounded-full transition-all border border-transparent hover:border-white/5">
+                  <div className="flex items-center gap-4">
+                    <div className="w-3 h-3 rounded-full bg-amber-500 shadow-[0_0_15px_rgba(245,158,11,0.5)]" />
+                    <span className="font-bold text-foreground text-sm">Melhoria</span>
+                  </div>
+                  <span className="text-[9px] font-bold bg-amber-500/20 text-amber-400 px-3 py-1 rounded-full uppercase tracking-wider">Atenção</span>
+                </div>
+                <div className="flex items-center justify-between p-4 bg-white/5 rounded-full opacity-50 transition-all border border-transparent">
+                  <div className="flex items-center gap-4">
+                    <div className="w-3 h-3 rounded-full bg-red-500/50" />
+                    <span className="font-bold text-foreground text-sm">Risco</span>
+                  </div>
+                  <span className="text-[9px] font-bold bg-red-500/10 text-red-400 px-3 py-1 rounded-full uppercase tracking-wider">Crítico</span>
+                </div>
+              </div>
+              
+              <div className="mt-4 pt-4 border-t border-white/5">
+                <div className="flex items-start gap-3">
+                  <span className="material-symbols-outlined text-secondary text-sm">info</span>
+                  <p className="text-[11px] text-muted-foreground/70 leading-relaxed font-medium">
+                    A Zona de Aptidão Física (ZAF) é calculada com base nos parâmetros da Direção-Geral da Saúde.
+                  </p>
                 </div>
               </div>
             </PageSection>
-          </div>
+
+            <div className="rounded-2xl p-[1px] bg-gradient-to-br from-primary/20 to-transparent">
+              <div className="bg-navy-950/60 backdrop-blur-xl rounded-2xl p-6 flex items-center gap-5">
+                <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center text-primary-foreground shadow-inner">
+                  <span className="material-symbols-outlined text-3xl">history</span>
+                </div>
+                <div>
+                  <p className="text-xs font-bold text-foreground mb-0.5">Última Atualização</p>
+                  <p className="text-[10px] text-muted-foreground font-medium">Há 14 dias · 12 de Outubro</p>
+                  <a href="#" className="inline-block mt-2 text-[10px] font-bold text-secondary hover:underline tracking-tight uppercase">
+                    Ver histórico completo
+                  </a>
+                </div>
+              </div>
+            </div>
+          </aside>
         </div>
       )}
     </PageScaffold>

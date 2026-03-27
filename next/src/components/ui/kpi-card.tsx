@@ -43,20 +43,20 @@ interface KpiCardProps {
 
 const accents = {
   gold: {
-    chip: "bg-gold-100/80 text-gold-700 ring-gold-500/20 dark:bg-gold-400/10 dark:text-gold-300",
-    bar: "from-gold-300 via-gold-400 to-gold-600",
+    iconBg: "bg-gold-400 text-navy-950 shadow-lg shadow-gold-400/30",
+    barFill: "bg-gold-400",
   },
   green: {
-    chip: "bg-success-100/80 text-success-700 ring-success-500/20 dark:bg-success-500/10 dark:text-success-300",
-    bar: "from-emerald-300 via-emerald-500 to-emerald-700",
+    iconBg: "bg-success-600 text-white shadow-lg shadow-success-600/30",
+    barFill: "bg-success-600",
   },
   red: {
-    chip: "bg-danger-100/80 text-danger-700 ring-danger-500/20 dark:bg-danger-500/10 dark:text-danger-300",
-    bar: "from-rose-300 via-rose-500 to-rose-700",
+    iconBg: "bg-danger-600 text-white shadow-lg shadow-danger-600/30",
+    barFill: "bg-danger-600",
   },
   blue: {
-    chip: "bg-navy-100/80 text-navy-700 ring-navy-500/20 dark:bg-navy-400/10 dark:text-navy-200",
-    bar: "from-sky-300 via-sky-500 to-navy-700",
+    iconBg: "bg-navy-900 text-white shadow-lg shadow-navy-900/30 dark:bg-navy-800",
+    barFill: "bg-navy-900 dark:bg-gold-300",
   },
 };
 
@@ -75,43 +75,23 @@ export function KpiCard({
 
   return (
     <div
-      className={`group relative overflow-hidden rounded-[20px] transition-all duration-300 hover:-translate-y-0.5 ${
-        emphasis === "hero"
-          ? "surface-primary p-4 sm:p-5"
-          : "surface-secondary p-3 sm:p-4"
-      }`}
+      className={`bg-white dark:bg-navy-950/80 p-6 sm:p-8 rounded-[24px] shadow-[0_10px_40px_-15px_rgba(0,35,111,0.08)] dark:shadow-[0_10px_40px_-15px_rgba(0,0,0,0.5)] border border-border/50 group hover:-translate-y-2 transition-all duration-300`}
     >
-      <div className={`absolute inset-x-0 top-0 h-1 bg-gradient-to-r ${styles.bar}`} />
-      <div className="flex items-start justify-between gap-4">
-        <div className="space-y-2.5">
-          <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
-            {title}
-          </p>
-          <p
-            className={`font-semibold tracking-tight text-foreground tabular-nums ${
-              emphasis === "hero" ? "text-xl sm:text-2xl" : "text-lg sm:text-xl"
-            }`}
-          >
-            {isNumeric ? animatedValue : value}
-          </p>
-          {description ? (
-            <p
-              className={`max-w-xs text-muted-foreground ${
-                emphasis === "hero" ? "text-[13px] leading-relaxed sm:text-sm" : "text-[13px]"
-              }`}
-            >
-              {description}
-            </p>
-          ) : null}
-        </div>
-        <div
-          className={`flex items-center justify-center ring-1 ${styles.chip} ${
-            emphasis === "hero" ? "size-10 rounded-lg" : "size-8 rounded-lg"
-          }`}
-        >
-          <Icon className={emphasis === "hero" ? "size-4" : "size-4"} />
+      <div className="flex justify-between items-start mb-6">
+        <div className={`p-3 rounded-2xl ${styles.iconBg} transition-transform group-hover:scale-110 duration-300`}>
+          <Icon className="size-6" />
         </div>
       </div>
+      <h3 className="text-muted-foreground text-sm font-semibold mb-1 tracking-wide">{title}</h3>
+      <p className="text-3xl font-extrabold text-foreground mb-4 tabular-nums tracking-tight">
+        {isNumeric ? animatedValue : value}
+        {description ? <span className="text-sm font-medium text-muted-foreground ml-2 block sm:inline mt-1 sm:mt-0">{description}</span> : null}
+      </p>
+      {emphasis === "default" && (
+        <div className="h-1.5 w-full bg-muted/60 dark:bg-navy-900 rounded-full overflow-hidden mt-2">
+           <div className={`h-full ${styles.barFill} rounded-full opacity-60 transition-all duration-1000 group-hover:opacity-100`} style={{ width: "100%" }}></div>
+        </div>
+      )}
       {footer ? <div className="mt-4 border-t border-border/50 pt-3">{footer}</div> : null}
     </div>
   );
