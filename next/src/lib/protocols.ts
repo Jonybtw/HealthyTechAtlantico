@@ -8,7 +8,14 @@ interface ProtocolTestDefinition {
   testKey: string;
   unitKey: string;
   descKey: string;
-  iconKey: "wind" | "heart" | "timer" | "zap" | "activity" | "dumbbell" | "ruler";
+  iconKey:
+    | "wind"
+    | "heart"
+    | "timer"
+    | "zap"
+    | "activity"
+    | "dumbbell"
+    | "ruler";
 }
 
 export const BMI_TABLE: ProtocolReferenceRow[] = [
@@ -38,12 +45,52 @@ export const WAIST_TABLE: ProtocolReferenceRow[] = [
 ];
 
 export const TEST_ZONE_KEYS: ProtocolTestDefinition[] = [
-  { testKey: "testVaiVem", unitKey: "testVaiVemUnit", descKey: "testVaiVemDesc", iconKey: "wind" },
-  { testKey: "testCooper", unitKey: "testCooperUnit", descKey: "testCooperDesc", iconKey: "heart" },
-  { testKey: "testMilha", unitKey: "testMilhaUnit", descKey: "testMilhaDesc", iconKey: "timer" },
-  { testKey: "testVelocidade", unitKey: "testVelocidadeUnit", descKey: "testVelocidadeDesc", iconKey: "zap" },
-  { testKey: "testAgilidade", unitKey: "testAgilidadeUnit", descKey: "testAgilidadeDesc", iconKey: "activity" },
-  { testKey: "testAbdominais", unitKey: "testAbdominaisUnit", descKey: "testAbdominaisDesc", iconKey: "dumbbell" },
-  { testKey: "testExtensoes", unitKey: "testExtensoesUnit", descKey: "testExtensoesDesc", iconKey: "dumbbell" },
-  { testKey: "testSentaAlcanca", unitKey: "testSentaAlcancaUnit", descKey: "testSentaAlcancaDesc", iconKey: "ruler" },
+  {
+    testKey: "testVaiVem",
+    unitKey: "testVaiVemUnit",
+    descKey: "testVaiVemDesc",
+    iconKey: "wind",
+  },
+  {
+    testKey: "testCooper",
+    unitKey: "testCooperUnit",
+    descKey: "testCooperDesc",
+    iconKey: "heart",
+  },
+  {
+    testKey: "testMilha",
+    unitKey: "testMilhaUnit",
+    descKey: "testMilhaDesc",
+    iconKey: "timer",
+  },
+  {
+    testKey: "testVelocidade",
+    unitKey: "testVelocidadeUnit",
+    descKey: "testVelocidadeDesc",
+    iconKey: "zap",
+  },
+  {
+    testKey: "testAgilidade",
+    unitKey: "testAgilidadeUnit",
+    descKey: "testAgilidadeDesc",
+    iconKey: "activity",
+  },
+  {
+    testKey: "testAbdominais",
+    unitKey: "testAbdominaisUnit",
+    descKey: "testAbdominaisDesc",
+    iconKey: "dumbbell",
+  },
+  {
+    testKey: "testExtensoes",
+    unitKey: "testExtensoesUnit",
+    descKey: "testExtensoesDesc",
+    iconKey: "dumbbell",
+  },
+  {
+    testKey: "testSentaAlcanca",
+    unitKey: "testSentaAlcancaUnit",
+    descKey: "testSentaAlcancaDesc",
+    iconKey: "ruler",
+  },
 ];

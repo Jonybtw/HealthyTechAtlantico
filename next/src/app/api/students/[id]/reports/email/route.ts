@@ -33,7 +33,12 @@ function buildReportHtml(params: {
     imc: number;
     imcZone: string;
   } | null;
-  latestTests: { testId: string; valueText: string; unit: string; zone: string }[];
+  latestTests: {
+    testId: string;
+    valueText: string;
+    unit: string;
+    zone: string;
+  }[];
 }) {
   const biometricBlock = params.latestBiometric
     ? `

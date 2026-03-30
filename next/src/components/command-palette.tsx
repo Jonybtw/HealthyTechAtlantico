@@ -4,12 +4,7 @@ import { useState, useCallback, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { Command } from "cmdk";
-import {
-  LogOut,
-  Moon,
-  Search,
-  Sun,
-} from "lucide-react";
+import { LogOut, Moon, Search, Sun } from "lucide-react";
 import { signOut } from "next-auth/react";
 import * as VisuallyHidden from "@radix-ui/react-visually-hidden";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
@@ -22,7 +17,11 @@ interface CommandPaletteProps {
   userRole: string;
 }
 
-export function CommandPalette({ open, onOpenChange, userRole }: CommandPaletteProps) {
+export function CommandPalette({
+  open,
+  onOpenChange,
+  userRole,
+}: CommandPaletteProps) {
   const t = useTranslations();
   const router = useRouter();
   const { theme, toggleTheme } = usePreferences();
@@ -66,7 +65,7 @@ export function CommandPalette({ open, onOpenChange, userRole }: CommandPaletteP
               placeholder={t("commandPalette.placeholder")}
               className="flex h-10 w-full bg-transparent text-sm outline-none placeholder:text-muted-foreground"
             />
-            <kbd className="hidden sm:inline-flex h-4 items-center gap-1 rounded border border-border bg-muted px-1 text-[9px] font-medium text-muted-foreground">
+            <kbd className="hidden sm:inline-flex h-4 items-center gap-1 rounded border border-border bg-muted px-1 text-micro font-medium text-muted-foreground">
               ESC
             </kbd>
           </div>
@@ -79,7 +78,7 @@ export function CommandPalette({ open, onOpenChange, userRole }: CommandPaletteP
             {/* ── Navigation ──────────────────────────────── */}
             <Command.Group
               heading={t("commandPalette.navigate")}
-              className="text-[10px] font-semibold text-muted-foreground uppercase tracking-[0.2em] px-2 py-1.5"
+              className="text-micro font-semibold text-muted-foreground uppercase tracking-[0.2em] px-2 py-1.5"
             >
               {visibleNav.map((item) => {
                 const Icon = item.icon;
@@ -101,7 +100,7 @@ export function CommandPalette({ open, onOpenChange, userRole }: CommandPaletteP
             {/* ── Actions ─────────────────────────────────── */}
             <Command.Group
               heading={t("commandPalette.actions")}
-              className="text-[10px] font-semibold text-muted-foreground uppercase tracking-[0.2em] px-2 py-1.5 mt-1"
+              className="text-micro font-semibold text-muted-foreground uppercase tracking-[0.2em] px-2 py-1.5 mt-1"
             >
               <Command.Item
                 value={t("commandPalette.toggleTheme")}
@@ -118,7 +117,9 @@ export function CommandPalette({ open, onOpenChange, userRole }: CommandPaletteP
 
               <Command.Item
                 value={t("commandPalette.signOut")}
-                onSelect={() => runAction(() => signOut({ callbackUrl: "/login" }))}
+                onSelect={() =>
+                  runAction(() => signOut({ callbackUrl: "/login" }))
+                }
                 className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm cursor-pointer select-none data-[selected=true]:bg-muted/80 data-[selected=true]:text-foreground transition-colors"
               >
                 <LogOut className="size-4 text-muted-foreground" />

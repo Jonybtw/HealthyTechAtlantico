@@ -96,7 +96,9 @@ export async function POST(req: Request) {
       return validationError(issues, "Nenhuma linha valida para importar");
     }
 
-    const uniqueYears = Array.from(new Set(validRows.map((row) => row.academicYear)));
+    const uniqueYears = Array.from(
+      new Set(validRows.map((row) => row.academicYear)),
+    );
 
     const createdYears = await prisma.academicYear.createMany({
       data: uniqueYears.map((label) => ({ label })),

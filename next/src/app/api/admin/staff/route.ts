@@ -32,7 +32,13 @@ export async function GET() {
 
     const staff = await prisma.user.findMany({
       where: { role: { in: ["PROFESSOR", "PSICOLOGO"] } },
-      select: { id: true, name: true, email: true, role: true, createdAt: true },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        role: true,
+        createdAt: true,
+      },
       orderBy: { createdAt: "desc" },
     });
 
@@ -58,7 +64,9 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const data = createStaffSchema.parse(body);
 
-    const existing = await prisma.user.findUnique({ where: { email: data.email } });
+    const existing = await prisma.user.findUnique({
+      where: { email: data.email },
+    });
     if (existing) {
       return conflict("Email já registado");
     }
@@ -73,7 +81,13 @@ export async function POST(req: NextRequest) {
         consentRgpd: true,
         consentShare: true,
       },
-      select: { id: true, email: true, role: true, name: true, createdAt: true },
+      select: {
+        id: true,
+        email: true,
+        role: true,
+        name: true,
+        createdAt: true,
+      },
     });
 
     return created(user);

@@ -6,6 +6,7 @@ import { useTranslations } from "next-intl";
 import { Activity, ClipboardList, FileText, Sun, Moon } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { BrandLogo } from "@/components/brand-logo";
+import { Button } from "@/components/ui/button";
 import { usePreferences } from "@/hooks/use-preferences";
 
 const HIGHLIGHTS = [
@@ -34,7 +35,7 @@ const COLEGIO_IMAGES = [
 
 function LoginHeroCarousel({
   images,
-  intervalMs = 5200,
+  intervalMs = Math.max(5200, 10000),
 }: {
   images: string[];
   intervalMs?: number;
@@ -52,11 +53,11 @@ function LoginHeroCarousel({
   }, [intervalMs, safeImages.length]);
 
   return (
-    <div className="absolute inset-0 h-full w-full opacity-30 mix-blend-overlay">
+    <div className="absolute inset-0 h-full w-full">
       <AnimatePresence mode="wait" initial={false}>
         <motion.div
           key={activeSrc}
-          initial={{ opacity: 0, scale: 1.05 }}
+          initial={{ opacity: 0, scale: 1 }}
           animate={{ opacity: 1, scale: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 1.2, ease: "easeInOut" }}
@@ -66,7 +67,7 @@ function LoginHeroCarousel({
             src={activeSrc}
             alt="Ambiente do Colégio Atlântico"
             fill
-            sizes="50vw"
+            sizes="100vw"
             className="object-cover"
             priority
           />
@@ -85,13 +86,20 @@ export default function AuthLayout({
   const { theme, locale, toggleTheme, toggleLocale } = usePreferences();
 
   return (
-    <main className="flex min-h-screen w-full flex-col bg-navy-50 dark:bg-navy-950/40 md:h-screen md:flex-row md:overflow-hidden">
+    <main className="relative flex min-h-screen w-full flex-col justify-center items-center bg-navy-950 overflow-hidden">
+      {/* Fullscreen Background Slideshow */}
+      <LoginHeroCarousel images={COLEGIO_IMAGES} />
+
+      {/* Overlay to ensure form readability over varied images */}
+      <div className="absolute inset-0 bg-navy-900/60 dark:bg-navy-950/70  z-0" />
+
       {/* Preferences Controls (Absolute top-right) */}
       <div className="absolute top-6 right-6 z-50 flex items-center gap-3">
-        <button
-          type="button"
+        <Button
           onClick={toggleTheme}
-          className="flex h-10 w-10 items-center justify-center rounded-full bg-white/80 dark:bg-navy-900/60 text-navy-900 dark:text-white transition-all hover:bg-white dark:hover:bg-navy-800 backdrop-blur-md border border-white/20 dark:border-white/10 shadow-sm"
+          variant="secondary"
+          size="icon"
+          className="h-10 w-10 rounded-full border-white/25 bg-white/18 text-white shadow-card hover:bg-white/24 dark:border-white/12 dark:bg-navy-900/60 dark:text-white dark:hover:bg-navy-800"
           aria-label="Toggle theme"
           title={
             theme === "light"
@@ -104,46 +112,49 @@ export default function AuthLayout({
           ) : (
             <Sun className="size-4" />
           )}
-        </button>
-        <button
-          type="button"
+        </Button>
+        <Button
           onClick={toggleLocale}
-          className="flex h-10 w-10 items-center justify-center rounded-full bg-white/80 dark:bg-navy-900/60 text-navy-950 dark:text-white transition-all hover:bg-white dark:hover:bg-navy-800 backdrop-blur-md border border-white/20 dark:border-white/10 shadow-sm font-semibold text-xs tracking-widest uppercase"
+          variant="secondary"
+          size="icon"
+          className="h-10 w-10 rounded-full border-white/25 bg-white/18 text-xs font-semibold tracking-widest text-white uppercase shadow-card hover:bg-white/24 dark:border-white/12 dark:bg-navy-900/60 dark:text-white dark:hover:bg-navy-800"
           aria-label="Toggle language"
         >
           {locale}
-        </button>
+        </Button>
       </div>
 
-      {/* Left Side: Visual Anchor (Slideshow + Brand) */}
-      <section className="hidden md:flex md:w-1/2 bg-gradient-to-br from-navy-800 via-navy-700 to-navy-900 relative flex-col justify-between p-12 lg:p-20 overflow-hidden">
-        <LoginHeroCarousel images={COLEGIO_IMAGES} />
+      {/* Main Foreground Layout */}
+      <div className="relative z-10 flex w-full max-w-6xl flex-col md:flex-row items-center justify-center gap-12 lg:gap-24 px-6 py-12">
+        {/* Left Side: Logo, Text and Highlights */}
+        <div className="flex flex-col items-center md:items-start text-center md:text-left text-white max-w-lg">
+          <div className="mb-8">
+            <BrandLogo
+              className="h-[140px] w-[140px] md:h-[180px] md:w-[180px]"
+              imageClassName="brightness-0 invert drop-shadow-md"
+              priority
+            />
+          </div>
 
-        {/* Brand Logo Top */}
-        <div className="relative z-10">
-          <BrandLogo
-            className="h-[80px] w-[80px] lg:h-[100px] lg:w-[100px]"
-            imageClassName="brightness-0 invert"
-            priority
-          />
-        </div>
-
-        {/* Copy Bottom */}
-        <div className="relative z-10 max-w-lg text-white mt-auto">
-          <h1 className="font-display text-4xl lg:text-5xl font-extrabold tracking-tight mb-6 leading-tight">
-            Excelência no <br />
+          <h1 className="font-display text-3xl md:text-3xl font-extrabold tracking-tight mb-4 drop-shadow-md leading-tight">
+            Excelência no <br className="hidden md:block" />
             Cuidado Educacional.
           </h1>
-          <p className="text-lg lg:text-xl font-light text-navy-100 leading-relaxed max-w-md">
+          <p className="text-sm md:text-lg font-light text-white/90 leading-relaxed drop-shadow-md mb-8">
             A plataforma integrada de saúde do Atlântico, unindo tecnologia
             clínica e bem-estar estudantil num ambiente digital seguro.
           </p>
 
-          <div className="flex flex-wrap gap-2 mt-8">
+          <div className="mb-8 inline-flex items-center rounded-full border border-white/18 bg-white/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-gold-200 shadow-sm backdrop-blur-md md:text-sm">
+            Departamento de Educação Física
+          </div>
+
+          {/* Highlights/Tags */}
+          <div className="flex flex-wrap justify-center md:justify-start gap-2 mb-8 md:mb-0">
             {HIGHLIGHTS.map(({ icon: Icon, titleKey }) => (
               <span
                 key={titleKey}
-                className="inline-flex items-center gap-1.5 rounded-full border border-white/20 bg-white/10 px-4 py-1.5 text-xs font-medium text-white/90 backdrop-blur-md"
+                className="inline-flex items-center gap-1.5 rounded-full border border-white/20 bg-black/20 px-4 py-2 text-xs md:text-sm font-medium text-white/90  shadow-sm"
               >
                 <Icon className="size-4 text-gold-300" />
                 {t(titleKey)}
@@ -151,41 +162,22 @@ export default function AuthLayout({
             ))}
           </div>
         </div>
-      </section>
 
-      {/* Right Side: Interaction Canvas */}
-      <section className="relative flex w-full flex-col items-center justify-start overflow-y-auto bg-navy-50/50 px-6 pb-10 pt-24 dark:bg-navy-950/20 sm:px-8 sm:pb-12 sm:pt-28 md:w-1/2 md:px-12 md:pb-12 md:pt-12 lg:px-24 lg:pb-16 lg:pt-16">
-        {/* Ambient orbs */}
-        <div
-          className="pointer-events-none absolute top-1/4 right-1/4 w-96 h-96 rounded-full blur-[120px] -z-10"
-          style={{ background: "rgba(5,41,122,0.1)" }}
-        />
-        <div
-          className="pointer-events-none absolute bottom-1/4 left-1/4 w-96 h-96 rounded-full blur-[120px] -z-10"
-          style={{ background: "rgba(216,173,52,0.1)" }}
-        />
-        <div
-          className="pointer-events-none absolute top-2/3 right-1/3 w-64 h-64 rounded-full blur-[100px] -z-10"
-          style={{ background: "rgba(255,255,255,0.05)" }}
-        />
-        <div className="mb-8 flex justify-center md:hidden">
-          <BrandLogo className="h-[72px] w-[72px]" priority />
-        </div>
+        {/* Right Side: Form Container */}
+        <div className="w-full max-w-md flex flex-col items-center">
+          <div className="w-full relative z-10">{children}</div>
 
-        <div className="relative z-10 flex w-full flex-col items-center">
-          {children}
+          {/* Footer */}
+          <div className="mt-8 text-center md:text-left w-full pl-2">
+            <p className="text-micro md:text-xs font-medium uppercase tracking-[0.15em] text-white/60 mb-1 drop-shadow-md">
+              Uso Exclusivo Escolar - Atlântico
+            </p>
+            <p className="text-micro md:text-xs text-white/40 drop-shadow-md">
+              {t("copyright", { year: new Date().getFullYear() })}
+            </p>
+          </div>
         </div>
-
-        {/* Footer */}
-        <div className="mt-8 w-full max-w-md text-center md:mt-10">
-          <p className="text-xs font-medium uppercase tracking-[0.15em] text-navy-400 dark:text-navy-600 mb-1">
-            Uso Exclusivo Escolar - Atlântico
-          </p>
-          <p className="text-xs text-navy-400/80 dark:text-navy-600/80">
-            {t("copyright", { year: new Date().getFullYear() })}
-          </p>
-        </div>
-      </section>
+      </div>
     </main>
   );
 }

@@ -21,12 +21,30 @@ interface StudentPickerProps {
 }
 
 const STUDENT_SWATCHES = [
-  { background: "linear-gradient(135deg, #d8ad34 0%, #b88c19 100%)", color: "#091523" },
-  { background: "linear-gradient(135deg, #2563eb 0%, #1e3a8a 100%)", color: "#eff6ff" },
-  { background: "linear-gradient(135deg, #059669 0%, #065f46 100%)", color: "#ecfdf5" },
-  { background: "linear-gradient(135deg, #ea580c 0%, #9a3412 100%)", color: "#fff7ed" },
-  { background: "linear-gradient(135deg, #7c3aed 0%, #4c1d95 100%)", color: "#f5f3ff" },
-  { background: "linear-gradient(135deg, #e11d48 0%, #881337 100%)", color: "#fff1f2" },
+  {
+    background: "linear-gradient(135deg, #d8ad34 0%, #b88c19 100%)",
+    color: "#091523",
+  },
+  {
+    background: "linear-gradient(135deg, #2563eb 0%, #1e3a8a 100%)",
+    color: "#eff6ff",
+  },
+  {
+    background: "linear-gradient(135deg, #059669 0%, #065f46 100%)",
+    color: "#ecfdf5",
+  },
+  {
+    background: "linear-gradient(135deg, #ea580c 0%, #9a3412 100%)",
+    color: "#fff7ed",
+  },
+  {
+    background: "linear-gradient(135deg, #7c3aed 0%, #4c1d95 100%)",
+    color: "#f5f3ff",
+  },
+  {
+    background: "linear-gradient(135deg, #e11d48 0%, #881337 100%)",
+    color: "#fff1f2",
+  },
 ];
 
 export function getInitials(name: string) {
@@ -43,7 +61,7 @@ export function getStudentSwatch(student: { id: string; name: string }) {
   const source = `${student.id}:${student.name}`;
   const hash = [...source].reduce(
     (acc, char) => (acc * 31 + char.charCodeAt(0)) >>> 0,
-    0
+    0,
   );
 
   return STUDENT_SWATCHES[hash % STUDENT_SWATCHES.length];
@@ -75,7 +93,10 @@ export function StudentPicker({
     }
 
     const rect = triggerRef.current.getBoundingClientRect();
-    const safeWidth = Math.min(Math.max(rect.width, 280), window.innerWidth - 24);
+    const safeWidth = Math.min(
+      Math.max(rect.width, 280),
+      window.innerWidth - 24,
+    );
     const safeLeft = Math.min(rect.left, window.innerWidth - safeWidth - 12);
 
     setMenuStyle({
@@ -137,13 +158,13 @@ export function StudentPicker({
   }, [open]);
 
   const filtered = students.filter((student) =>
-    student.name.toLowerCase().includes(search.toLowerCase())
+    student.name.toLowerCase().includes(search.toLowerCase()),
   );
 
   if (loading) {
     return (
       <div
-        className="flex h-[46px] w-full items-center justify-between rounded-[18px] border border-input bg-card px-4 shadow-sm"
+        className="flex h-[46px] w-full items-center justify-between rounded-2xl border border-input bg-card px-4 shadow-sm"
         aria-busy="true"
         aria-live="polite"
       >
@@ -163,7 +184,7 @@ export function StudentPicker({
       ? createPortal(
           <div
             ref={menuRef}
-            className="animate-scale-in fixed z-[140] overflow-hidden rounded-[18px] border border-border/70 bg-card/98 shadow-float backdrop-blur-xl"
+            className="animate-scale-in fixed z-[140] overflow-hidden rounded-2xl border border-border/70 bg-card/98 shadow-float backdrop-blur-xl"
             style={menuStyle}
           >
             <div className="max-h-72 overflow-y-auto p-2">
@@ -197,7 +218,9 @@ export function StudentPicker({
                           {student.name}
                         </span>
                         <span className="block truncate text-xs text-muted-foreground">
-                          {student.className ?? student.schoolYear ?? "Sem turma atribuida"}
+                          {student.className ??
+                            student.schoolYear ??
+                            "Sem turma atribuida"}
                         </span>
                       </span>
                       {student.id === value ? (
@@ -209,7 +232,7 @@ export function StudentPicker({
               )}
             </div>
           </div>,
-          document.body
+          document.body,
         )
       : null;
 
@@ -226,7 +249,7 @@ export function StudentPicker({
             setOpen(true);
           }
         }}
-        className={`flex h-[46px] w-full cursor-pointer items-center justify-between rounded-[18px] border px-4 text-left transition-all duration-300 ${
+        className={`flex h-[46px] w-full cursor-pointer items-center justify-between rounded-2xl border px-4 text-left transition-all duration-300 ${
           open
             ? "border-gold-500/50 bg-card shadow-card"
             : "border-input bg-card shadow-sm hover:border-navy-300/40 hover:bg-muted/50 hover:text-foreground"
@@ -235,17 +258,19 @@ export function StudentPicker({
         {selected && !open ? (
           <div className="flex w-full items-center gap-2.5">
             <span
-              className="flex size-7 shrink-0 items-center justify-center rounded-full text-[11px] font-semibold shadow-[inset_0_1px_0_rgba(255,255,255,0.18)]"
+              className="flex size-7 shrink-0 items-center justify-center rounded-full text-tiny font-semibold shadow-[inset_0_1px_0_rgba(255,255,255,0.18)]"
               style={getStudentSwatch(selected)}
             >
               {getInitials(selected.name)}
             </span>
             <span className="min-w-0 flex-1 flex flex-col justify-center">
-              <span className="truncate text-[13px] font-semibold leading-tight text-foreground">
+              <span className="truncate text-sm font-semibold leading-tight text-foreground">
                 {selected.name}
               </span>
-              <span className="truncate text-[10px] leading-none text-muted-foreground mt-0.5">
-                {selected.className ?? selected.schoolYear ?? "Sem turma atribuída"}
+              <span className="truncate text-micro leading-none text-muted-foreground mt-0.5">
+                {selected.className ??
+                  selected.schoolYear ??
+                  "Sem turma atribuída"}
               </span>
             </span>
             <div className="flex items-center gap-0.5">

@@ -9,15 +9,15 @@ import {
   UserCheck,
   UserPlus,
   Trash2,
-  Phone,
   Mail,
-  ChevronRight,
   Users,
   CheckCircle2,
 } from "lucide-react";
 import { PageScaffold } from "@/components/ui/page-scaffold";
 import { PageSection } from "@/components/ui/page-section";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { PillSelect } from "@/components/ui/pill-select";
 import { StudentPicker } from "@/components/ui/student-picker";
@@ -241,7 +241,7 @@ export default function GuardioesPage() {
         <AnimatePresence>
           {showAddForm && selectedStudentId && (
             <FadeIn key="add-guardian-form" className="mb-8">
-              <PageSection className="glass-card max-w-2xl border-primary-500/20">
+              <PageSection className="max-w-2xl border-primary-500/20">
                 <div className="flex items-center gap-3 mb-6">
                   <div className="size-8 rounded-full bg-primary-500/10 flex items-center justify-center">
                     <UserPlus className="size-4 text-primary-400" />
@@ -259,10 +259,9 @@ export default function GuardioesPage() {
                     onChange={(e) => setGuardianEmail(e.target.value)}
                     placeholder="encarregado@exemplo.pt"
                     required
-                    className="glass-input"
                   />
                   <div>
-                    <label className="block text-[11px] font-bold uppercase tracking-widest text-slate-400 mb-3">
+                    <label className="block text-tiny font-bold uppercase tracking-widest text-slate-400 mb-3">
                       {t("relationship")}
                     </label>
                     <PillSelect
@@ -338,11 +337,11 @@ export default function GuardioesPage() {
           ) : loadingGuardians ? (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {[1, 2].map((i) => (
-                <div key={i} className="glass-card p-6 h-40 opacity-50">
+                <Card key={i} className="h-40 p-6 opacity-50">
                   <Skeleton className="h-6 w-32 mb-4 bg-white/5" />
                   <Skeleton className="h-4 w-48 mb-2 bg-white/5" />
                   <Skeleton className="h-4 w-40 bg-white/5" />
-                </div>
+                </Card>
               ))}
             </div>
           ) : guardians.length === 0 ? (
@@ -371,7 +370,7 @@ export default function GuardioesPage() {
                 )?.labelKey;
                 return (
                   <StaggerItem key={g.id}>
-                    <div className="glass-card group p-6 flex flex-col h-full transition-all duration-500 hover:scale-[1.02] hover:border-gold-500/20">
+                    <Card className="group flex h-full flex-col p-6 transition-all duration-300 hover:-translate-y-0.5 hover:border-gold-500/20">
                       <div className="flex items-start justify-between mb-6">
                         <div className="flex items-center gap-4">
                           <div className="size-12 rounded-full border border-gold-500/20 bg-gold-500/5 flex items-center justify-center text-gold-500 font-black text-lg shadow-[0_0_15px_rgba(216,173,52,0.1)] group-hover:scale-110 transition-transform duration-500">
@@ -383,45 +382,52 @@ export default function GuardioesPage() {
                             <h4 className="text-white font-bold text-base leading-tight group-hover:text-gold-400 transition-colors">
                               {g.guardian.name || "Pendente"}
                             </h4>
-                            <span className="text-[10px] font-black uppercase tracking-[0.1em] text-gold-500 opacity-80">
+                            <Badge
+                              variant="gold"
+                              size="sm"
+                              className="mt-1 uppercase tracking-[0.16em]"
+                            >
                               {relLabel ? t(relLabel as any) : g.relationship}
-                            </span>
+                            </Badge>
                           </div>
                         </div>
 
-                        <button
+                        <Button
+                          type="button"
+                          size="icon"
+                          variant="ghost"
                           onClick={() =>
                             setDeleteTarget({
                               guardianUserId: g.id,
                               studentId: selectedStudentId!,
                             })
                           }
-                          className="size-8 rounded-full flex items-center justify-center text-slate-500 hover:text-red-400 hover:bg-red-500/10 transition-all border border-transparent hover:border-red-500/20"
+                          className="size-8 text-slate-500 hover:border-danger-500/20 hover:bg-danger-500/10 hover:text-danger-500"
                           title={t("removeBtn")}
                         >
                           <Trash2 size={14} />
-                        </button>
+                        </Button>
                       </div>
 
                       <div className="mt-auto space-y-3">
-                        <div className="flex items-center gap-3 text-[13px] text-slate-400">
+                        <div className="flex items-center gap-3 text-sm text-slate-400">
                           <Mail className="size-3 text-primary-400" />
                           <span className="truncate">{g.guardian.email}</span>
                         </div>
-                        <div className="flex items-center gap-3 text-[13px] text-slate-400">
+                        <div className="flex items-center gap-3 text-sm text-slate-400">
                           <CheckCircle2 className="size-3 text-green-500" />
-                          <span className="text-[11px] font-bold uppercase tracking-widest text-slate-500">
+                          <span className="text-tiny font-bold uppercase tracking-[0.18em] text-slate-500">
                             Acesso Ativo
                           </span>
                         </div>
                       </div>
 
-                      <div className="mt-6 pt-6 border-t border-white/5 flex justify-end">
-                        <button className="flex items-center gap-1.5 text-[11px] font-black uppercase tracking-[0.2em] text-slate-500 hover:text-white transition-colors">
-                          Detalhes <ChevronRight className="size-3" />
-                        </button>
+                      <div className="mt-6 border-t border-white/10 pt-6">
+                        <p className="text-tiny font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+                          {selectedStudent?.name ?? t("title")}
+                        </p>
                       </div>
-                    </div>
+                    </Card>
                   </StaggerItem>
                 );
               })}

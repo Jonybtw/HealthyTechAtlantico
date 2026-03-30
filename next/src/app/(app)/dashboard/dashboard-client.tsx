@@ -101,39 +101,12 @@ export function DashboardClient({ username, summary }: Props) {
       : hour < 19
         ? t("greetingAfternoon")
         : t("greetingEvening");
-  const todayLabel = new Intl.DateTimeFormat(locale === "en" ? "en-GB" : "pt-PT", {
-    dateStyle: "full",
-  }).format(new Date());
-  const staffActions = [
+  const todayLabel = new Intl.DateTimeFormat(
+    locale === "en" ? "en-GB" : "pt-PT",
     {
-      href: "/biometria",
-      label: t("registerBiometric"),
-      description: t("quickBiometricHint"),
-      icon: Ruler,
-      accent: "blue" as const,
+      dateStyle: "full",
     },
-    {
-      href: "/testes",
-      label: t("registerTests"),
-      description: t("quickTestsHint"),
-      icon: ClipboardList,
-      accent: "gold" as const,
-    },
-    {
-      href: "/turma",
-      label: t("viewClass"),
-      description: t("quickClassHint"),
-      icon: School,
-      accent: "green" as const,
-    },
-    {
-      href: "/analise",
-      label: t("analyzeZaf"),
-      description: t("quickAnalysisHint"),
-      icon: BarChart3,
-      accent: "blue" as const,
-    },
-  ];
+  ).format(new Date());
 
   if (summary.variant === "student") {
     if (!summary.studentSummary) {
@@ -147,21 +120,25 @@ export function DashboardClient({ username, summary }: Props) {
             meta: todayLabel,
           }}
         >
-            <EmptyState
-              icon={Link2}
-              title={t("unlinkedTitle")}
-              description={t("unlinkedDescription")}
-              action={
-                <Link href="/perfil" className={buttonVariants({ size: "sm", variant: "ghost" })}>
-                  {nav("perfil")}
-                </Link>
-              }
-            />
+          <EmptyState
+            icon={Link2}
+            title={t("unlinkedTitle")}
+            description={t("unlinkedDescription")}
+            action={
+              <Link
+                href="/perfil"
+                className={buttonVariants({ size: "sm", variant: "ghost" })}
+              >
+                {nav("perfil")}
+              </Link>
+            }
+          />
         </PageScaffold>
       );
     }
 
-    const firstName = summary.studentSummary.name.split(" ")[0] ?? summary.studentSummary.name;
+    const firstName =
+      summary.studentSummary.name.split(" ")[0] ?? summary.studentSummary.name;
 
     return (
       <PageScaffold
@@ -173,18 +150,22 @@ export function DashboardClient({ username, summary }: Props) {
           meta: todayLabel,
         }}
       >
-
         <div className="grid gap-4 xl:grid-cols-[1.3fr_0.9fr]">
           <KpiCard
             icon={Activity}
             title={t("lastBiometric")}
-            value={formatDisplayDate(summary.studentSummary.lastBiometric, locale)}
+            value={formatDisplayDate(
+              summary.studentSummary.lastBiometric,
+              locale,
+            )}
             description={t("lastMeasurement")}
             accent="blue"
             emphasis="hero"
             footer={
               <p className="text-sm text-muted-foreground">
-                {summary.studentSummary.lastBiometric ? t("activitySummary") : t("unlinkedDescription")}
+                {summary.studentSummary.lastBiometric
+                  ? t("activitySummary")
+                  : t("unlinkedDescription")}
               </p>
             }
           />
@@ -196,31 +177,6 @@ export function DashboardClient({ username, summary }: Props) {
             accent="gold"
           />
         </div>
-
-        <PageSection title={t("quickActions")} description={t("quickActionsSummary")} tone="secondary" layout="list">
-          <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-            {[
-              { href: "/questionarios", label: nav("questionarios"), icon: BookOpen },
-              { href: "/sos", label: nav("sos"), icon: AlertTriangle },
-              { href: "/relatorio", label: t("reportsAvailable"), icon: FileText },
-              { href: "/protocolos", label: nav("protocolos"), icon: Heart },
-            ].map(({ href, label, icon: Icon }) => (
-              <Link
-                key={href}
-                href={href}
-                className="group flex items-center justify-between rounded-[22px] border border-white/30 bg-white/72 px-4 py-4 shadow-card backdrop-blur-md transition-all duration-300 hover:-translate-y-1 hover:shadow-card-hover dark:border-white/10 dark:bg-navy-950/62"
-              >
-                <div className="flex items-center gap-3">
-                  <span className="flex size-10 items-center justify-center rounded-2xl bg-gradient-to-br from-navy-800 via-navy-700 to-navy-600 text-white shadow-card dark:bg-gold-300 dark:text-navy-950">
-                    <Icon className="size-4" />
-                  </span>
-                  <span className="text-sm font-semibold text-foreground">{label}</span>
-                </div>
-                <ArrowRight className="size-4 text-muted-foreground transition-transform duration-300 group-hover:translate-x-1" />
-              </Link>
-            ))}
-          </div>
-        </PageSection>
       </PageScaffold>
     );
   }
@@ -270,22 +226,26 @@ export function DashboardClient({ username, summary }: Props) {
                   <Link
                     key={alert.id}
                     href={`/acompanhamento/${alert.studentId}`}
-                    className="group rounded-[20px] border border-border/60 bg-background/35 p-4 transition-all duration-300 hover:-translate-y-0.5 hover:border-danger-300/40 hover:shadow-card-hover"
+                    className="group rounded-2xl border border-border/60 bg-background/35 p-4 transition-all duration-300 hover:-translate-y-0.5 hover:border-danger-300/40 hover:shadow-card-hover"
                   >
                     <div className="flex items-start justify-between gap-3">
                       <div className="space-y-1">
-                        <p className="text-sm font-semibold text-foreground">{alert.studentName}</p>
+                        <p className="text-sm font-semibold text-foreground">
+                          {alert.studentName}
+                        </p>
                         <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
                           {alert.className ?? t("classPending")}
                         </p>
                       </div>
-                      <span className="rounded-full bg-danger-50 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-danger-700 dark:bg-danger-950/30 dark:text-danger-300">
+                      <span className="rounded-full bg-danger-50 px-2.5 py-1 text-tiny font-semibold uppercase tracking-[0.18em] text-danger-700 dark:bg-danger-950/30 dark:text-danger-300">
                         {t("pendingSos")}
                       </span>
                     </div>
                     <div className="mt-4 flex items-center justify-between gap-3">
                       <span className="text-sm text-muted-foreground">
-                        {t("alertOpenedOn", { date: formatDisplayDate(alert.createdAt, locale) })}
+                        {t("alertOpenedOn", {
+                          date: formatDisplayDate(alert.createdAt, locale),
+                        })}
                       </span>
                       <span className="inline-flex items-center gap-2 text-sm font-semibold text-foreground">
                         {t("openStudentFollowUp")}
@@ -316,7 +276,7 @@ export function DashboardClient({ username, summary }: Props) {
                   {summary.recentQuestionnaires.map((questionnaire) => (
                     <div
                       key={questionnaire.id}
-                      className="rounded-[18px] border border-border/60 bg-background/45 p-4"
+                      className="rounded-2xl border border-border/60 bg-background/45 p-4"
                     >
                       <div className="flex items-start justify-between gap-3">
                         <div>
@@ -326,12 +286,15 @@ export function DashboardClient({ username, summary }: Props) {
                           <p className="mt-1 text-sm text-muted-foreground">
                             {questionnaires(
                               getQuestionnaireTypeLabelKey(
-                                questionnaire.type as "AUTOCONCEITO" | "AUTOESTIMA" | "KIDMED",
+                                questionnaire.type as
+                                  | "AUTOCONCEITO"
+                                  | "AUTOESTIMA"
+                                  | "KIDMED",
                               ),
                             )}
                           </p>
                         </div>
-                        <span className="rounded-full border border-border/60 bg-background/70 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+                        <span className="rounded-full border border-border/60 bg-background/70 px-2.5 py-1 text-tiny font-semibold uppercase tracking-[0.18em] text-muted-foreground">
                           {formatCompactDate(questionnaire.submittedAt, locale)}
                         </span>
                       </div>
@@ -345,28 +308,6 @@ export function DashboardClient({ username, summary }: Props) {
                   description={t("noRecentQuestionnairesDescription")}
                 />
               )}
-            </PageSection>
-
-            <PageSection
-              tone="utility"
-              layout="list"
-              title={t("quickActions")}
-              description={t("quickActionsSummary")}
-            >
-              <DashboardQuickLink
-                href="/sos"
-                icon={AlertTriangle}
-                title={t("reviewSosInbox")}
-                description={t("reviewSosInboxHint")}
-                accent="danger"
-              />
-              <DashboardQuickLink
-                href="/perfil"
-                icon={FileText}
-                title={nav("perfil")}
-                description={t("updateProfileHint")}
-                accent="blue"
-              />
             </PageSection>
           </div>
         </div>
@@ -411,16 +352,20 @@ export function DashboardClient({ username, summary }: Props) {
                 {summary.linkedStudents.map((student) => (
                   <div
                     key={student.id}
-                    className="rounded-[20px] border border-border/60 bg-background/35 p-4"
+                    className="rounded-2xl border border-border/60 bg-background/35 p-4"
                   >
                     <div className="flex items-start justify-between gap-3">
                       <div className="space-y-1">
-                        <p className="text-sm font-semibold text-foreground">{student.name}</p>
+                        <p className="text-sm font-semibold text-foreground">
+                          {student.name}
+                        </p>
                         <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
-                          {[student.className, student.schoolYear].filter(Boolean).join(" - ") || t("studentRecord")}
+                          {[student.className, student.schoolYear]
+                            .filter(Boolean)
+                            .join(" - ") || t("studentRecord")}
                         </p>
                       </div>
-                      <span className="rounded-full bg-navy-50 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-navy-700 dark:bg-navy-950/30 dark:text-navy-200">
+                      <span className="rounded-full bg-navy-50 px-2.5 py-1 text-tiny font-semibold uppercase tracking-[0.18em] text-navy-700 dark:bg-navy-950/30 dark:text-navy-200">
                         {t("linkedStudents")}
                       </span>
                     </div>
@@ -431,7 +376,10 @@ export function DashboardClient({ username, summary }: Props) {
                       />
                       <DashboardMetaPill
                         label={t("lastQuestionnaire")}
-                        value={formatDisplayDate(student.lastQuestionnaireAt, locale)}
+                        value={formatDisplayDate(
+                          student.lastQuestionnaireAt,
+                          locale,
+                        )}
                       />
                     </div>
                   </div>
@@ -458,12 +406,18 @@ export function DashboardClient({ username, summary }: Props) {
                   {summary.recentReports.map((report) => (
                     <div
                       key={report.id}
-                      className="rounded-[18px] border border-border/60 bg-background/45 p-4"
+                      className="rounded-2xl border border-border/60 bg-background/45 p-4"
                     >
-                      <p className="text-sm font-semibold text-foreground">{report.title}</p>
-                      <p className="mt-1 text-sm text-muted-foreground">{report.studentName}</p>
+                      <p className="text-sm font-semibold text-foreground">
+                        {report.title}
+                      </p>
+                      <p className="mt-1 text-sm text-muted-foreground">
+                        {report.studentName}
+                      </p>
                       <p className="mt-3 text-xs uppercase tracking-[0.18em] text-muted-foreground">
-                        {t("historyGeneratedOn", { date: formatDisplayDate(report.createdAt, locale) })}
+                        {t("historyGeneratedOn", {
+                          date: formatDisplayDate(report.createdAt, locale),
+                        })}
                       </p>
                     </div>
                   ))}
@@ -475,35 +429,6 @@ export function DashboardClient({ username, summary }: Props) {
                   description={t("noReportsDashboardDescription")}
                 />
               )}
-            </PageSection>
-
-            <PageSection
-              tone="utility"
-              layout="list"
-              title={t("quickActions")}
-              description={t("quickActionsSummary")}
-            >
-              <DashboardQuickLink
-                href="/relatorio"
-                icon={FileText}
-                title={nav("relatorio")}
-                description={t("openReportsHint")}
-                accent="green"
-              />
-              <DashboardQuickLink
-                href="/protocolos"
-                icon={Heart}
-                title={nav("protocolos")}
-                description={t("viewProtocolsHint")}
-                accent="gold"
-              />
-              <DashboardQuickLink
-                href="/perfil"
-                icon={Users}
-                title={nav("perfil")}
-                description={t("updateProfileHint")}
-                accent="blue"
-              />
             </PageSection>
           </div>
         </div>
@@ -521,7 +446,6 @@ export function DashboardClient({ username, summary }: Props) {
             meta={todayLabel}
             title={`${greeting}, ${username}!`}
             description={description}
-            actions={staffActions.slice(0, 2)}
           />
         ) : undefined
       }
@@ -555,13 +479,30 @@ export function DashboardClient({ username, summary }: Props) {
       {summary.variant === "staff" && summary.zafByYear.length > 0 ? (
         <FadeIn delay={0.2}>
           {(() => {
-            const totalZsaf = summary.zafByYear.reduce((sum, year) => sum + year.zsaf, 0);
-            const totalZmf = summary.zafByYear.reduce((sum, year) => sum + year.zmf, 0);
+            const totalZsaf = summary.zafByYear.reduce(
+              (sum, year) => sum + year.zsaf,
+              0,
+            );
+            const totalZmf = summary.zafByYear.reduce(
+              (sum, year) => sum + year.zmf,
+              0,
+            );
             const totalWithBio = totalZsaf + totalZmf;
-            const overallPct = totalWithBio > 0 ? Math.round((totalZsaf / totalWithBio) * 100) : 0;
+            const overallPct =
+              totalWithBio > 0
+                ? Math.round((totalZsaf / totalWithBio) * 100)
+                : 0;
             const donutData = [
-              { name: t("zsaf"), value: totalZsaf, color: "var(--color-success-500)" },
-              { name: t("zmf"), value: totalZmf, color: "var(--color-warning-500)" },
+              {
+                name: t("zsaf"),
+                value: totalZsaf,
+                color: "var(--color-success-500)",
+              },
+              {
+                name: t("zmf"),
+                value: totalZmf,
+                color: "var(--color-warning-500)",
+              },
             ];
 
             return (
@@ -577,8 +518,20 @@ export function DashboardClient({ username, summary }: Props) {
                       {chartsReady ? (
                         <PieChart width={192} height={192}>
                           <defs>
-                            <filter id="dropShadow" x="-20%" y="-20%" width="140%" height="140%">
-                              <feDropShadow dx="0" dy="4" stdDeviation="6" floodColor="#000000" floodOpacity="0.15" />
+                            <filter
+                              id="dropShadow"
+                              x="-20%"
+                              y="-20%"
+                              width="140%"
+                              height="140%"
+                            >
+                              <feDropShadow
+                                dx="0"
+                                dy="4"
+                                stdDeviation="6"
+                                floodColor="#000000"
+                                floodOpacity="0.15"
+                              />
                             </filter>
                           </defs>
                           <Pie
@@ -592,8 +545,18 @@ export function DashboardClient({ username, summary }: Props) {
                             strokeWidth={0}
                             cornerRadius={8}
                           >
-                            <Cell key="zsaf" fill="var(--color-navy-900)" className="dark:fill-gold-400" filter="url(#dropShadow)" />
-                            <Cell key="zmf" fill="var(--color-gold-400)" className="dark:fill-danger-500" filter="url(#dropShadow)" />
+                            <Cell
+                              key="zsaf"
+                              fill="var(--color-navy-900)"
+                              className="dark:fill-gold-400"
+                              filter="url(#dropShadow)"
+                            />
+                            <Cell
+                              key="zmf"
+                              fill="var(--color-gold-400)"
+                              className="dark:fill-danger-500"
+                              filter="url(#dropShadow)"
+                            />
                           </Pie>
                           <Tooltip
                             contentStyle={{
@@ -608,25 +571,41 @@ export function DashboardClient({ username, summary }: Props) {
                         <div className="w-full h-full rounded-full border-[16px] border-muted animate-pulse" />
                       )}
                       <div className="absolute inset-0 flex flex-col items-center justify-center">
-                        <span className="text-3xl font-black text-foreground leading-none">{chartsReady ? `${overallPct}%` : "-"}</span>
-                        <span className="text-[9px] uppercase font-bold text-muted-foreground mt-1">Ótimo ZAF</span>
+                        <span className="text-3xl font-black text-foreground leading-none">
+                          {chartsReady ? `${overallPct}%` : "-"}
+                        </span>
+                        <span className="text-micro uppercase font-bold text-muted-foreground mt-1">
+                          Ótimo ZAF
+                        </span>
                       </div>
                     </div>
                     <div className="flex-1 w-full">
                       <div className="mb-6">
-                        <h4 className="text-xl font-bold text-foreground mb-1">Distribuição ZAF</h4>
-                        <p className="text-sm text-muted-foreground">Comportamento de saúde acumulado no mês.</p>
+                        <h4 className="text-xl font-bold text-foreground mb-1">
+                          Distribuição ZAF
+                        </h4>
+                        <p className="text-sm text-muted-foreground">
+                          Comportamento de saúde acumulado no mês.
+                        </p>
                       </div>
                       <div className="space-y-4">
                         <div className="flex items-center gap-4">
                           <span className="w-3 h-3 rounded-full bg-navy-900 dark:bg-gold-400"></span>
-                          <span className="text-xs font-semibold text-muted-foreground flex-1">{t("zsaf")}</span>
-                          <span className="text-xs font-bold text-foreground">{totalZsaf}</span>
+                          <span className="text-xs font-semibold text-muted-foreground flex-1">
+                            {t("zsaf")}
+                          </span>
+                          <span className="text-xs font-bold text-foreground">
+                            {totalZsaf}
+                          </span>
                         </div>
                         <div className="flex items-center gap-4">
                           <span className="w-3 h-3 rounded-full bg-gold-400 dark:bg-danger-500"></span>
-                          <span className="text-xs font-semibold text-muted-foreground flex-1">{t("zmf")}</span>
-                          <span className="text-xs font-bold text-foreground">{totalZmf}</span>
+                          <span className="text-xs font-semibold text-muted-foreground flex-1">
+                            {t("zmf")}
+                          </span>
+                          <span className="text-xs font-bold text-foreground">
+                            {totalZmf}
+                          </span>
                         </div>
                       </div>
                     </div>
@@ -639,20 +618,37 @@ export function DashboardClient({ username, summary }: Props) {
                     </div>
                     <div className="relative z-10 flex flex-col h-full">
                       <div className="flex justify-between items-center mb-8">
-                        <h4 className="text-xl font-bold text-white">Progresso Acadêmico</h4>
-                        <span className="text-[10px] font-bold px-2 py-1 bg-white/10 text-white rounded-lg">Total</span>
+                        <h4 className="text-xl font-bold text-white">
+                          Progresso Acadêmico
+                        </h4>
+                        <span className="text-micro font-bold px-2 py-1 bg-white/10 text-white rounded-lg">
+                          Total
+                        </span>
                       </div>
                       <div className="space-y-6 flex-1">
                         {summary.zafByYear.map((academicYear) => {
-                          const pct = academicYear.withBio > 0 ? Math.round((academicYear.zsaf / academicYear.withBio) * 100) : 0;
+                          const pct =
+                            academicYear.withBio > 0
+                              ? Math.round(
+                                  (academicYear.zsaf / academicYear.withBio) *
+                                    100,
+                                )
+                              : 0;
                           return (
                             <div key={academicYear.year}>
                               <div className="flex justify-between items-end mb-2">
-                                <span className="text-xs font-medium text-navy-200">{academicYear.year}</span>
-                                <span className="text-sm font-bold text-white">{pct}% ZSAF</span>
+                                <span className="text-xs font-medium text-navy-200">
+                                  {academicYear.year}
+                                </span>
+                                <span className="text-sm font-bold text-white">
+                                  {pct}% ZSAF
+                                </span>
                               </div>
                               <div className="h-2 w-full bg-white/10 rounded-full overflow-hidden">
-                                <div className="h-full bg-gold-400 rounded-full shadow-[0_0_10px_rgba(254,166,25,0.4)]" style={{ width: `${pct}%` }}></div>
+                                <div
+                                  className="h-full bg-gold-400 rounded-full shadow-[0_0_10px_rgba(254,166,25,0.4)]"
+                                  style={{ width: `${pct}%` }}
+                                ></div>
                               </div>
                             </div>
                           );
@@ -666,46 +662,6 @@ export function DashboardClient({ username, summary }: Props) {
           })()}
         </FadeIn>
       ) : null}
-
-      {summary.variant === "staff" ? (
-        <FadeIn delay={0.3}>
-          <PageSection title={t("quickActions")} description={t("quickActionsSummary")} tone="secondary" layout="list">
-            <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-2">
-              {staffActions.slice(2).map((action) => {
-                const Icon = action.icon;
-
-                return (
-                  <Link key={action.href} href={action.href} className="block h-full">
-                    <Card className="group h-full rounded-lg border border-white/30 bg-white/78 transition-all duration-300 hover:-translate-y-1 hover:shadow-card-hover dark:border-white/10 dark:bg-navy-950/66">
-                      <CardContent className="flex h-full flex-col gap-4 p-5">
-                        <div className="flex items-start justify-between gap-3">
-                          <span
-                            className={cn(
-                              "flex size-11 items-center justify-center rounded-2xl transition-transform duration-300 group-hover:scale-105",
-                              ACCENT_STYLES[action.accent].icon,
-                            )}
-                          >
-                            <Icon className="size-5" />
-                          </span>
-                          <ArrowRight className="size-4 text-muted-foreground transition-transform duration-300 group-hover:translate-x-1" />
-                        </div>
-                        <div className="space-y-2">
-                          <p className="text-base font-semibold tracking-[-0.03em] text-foreground">
-                            {action.label}
-                          </p>
-                          <p className="text-sm leading-relaxed text-muted-foreground">
-                            {action.description}
-                          </p>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  </Link>
-                );
-              })}
-            </div>
-          </PageSection>
-        </FadeIn>
-      ) : null}
     </PageScaffold>
   );
 }
@@ -715,18 +671,11 @@ function DashboardHero({
   meta,
   title,
   description,
-  actions,
 }: {
   eyebrow: string;
   meta: string;
   title: string;
   description: string;
-  actions: Array<{
-    href: string;
-    label: string;
-    icon: typeof Users;
-    accent: keyof typeof ACCENT_STYLES;
-  }>;
 }) {
   return (
     <Card className="relative overflow-hidden rounded-xl border border-navy-700/20 bg-gradient-to-br from-navy-800 via-navy-700 to-navy-600 text-white shadow-[0_28px_80px_-36px_rgba(9,21,35,0.82)] dark:border-navy-800">
@@ -734,42 +683,30 @@ function DashboardHero({
       <CardContent className="relative p-6 lg:p-8">
         <div className="space-y-6">
           <div className="flex flex-wrap items-center gap-2">
-            <Badge variant="gold" size="sm" className="border-white/10 bg-white/10 text-gold-200">
+            <Badge
+              variant="gold"
+              size="sm"
+              className="border-white/10 bg-white/10 text-gold-200"
+            >
               <Sparkles className="size-3" />
               {eyebrow}
             </Badge>
-            <Badge variant="info" size="sm" className="border-white/10 bg-white/10 text-white/82">
+            <Badge
+              variant="info"
+              size="sm"
+              className="border-white/10 bg-white/10 text-white/82"
+            >
               {meta}
             </Badge>
           </div>
 
           <div className="space-y-3">
-            <h1 className="max-w-3xl text-4xl font-black tracking-[-0.05em] text-white sm:text-[3.25rem]">
+            <h1 className="max-w-3xl text-3xl font-black tracking-[-0.05em] text-white sm:text-[2.5rem]">
               {title}
             </h1>
             <p className="max-w-2xl text-sm leading-relaxed text-white/78 sm:text-base">
               {description}
             </p>
-          </div>
-
-          <div className="flex flex-wrap gap-3">
-            {actions.map((action, index) => {
-              const Icon = action.icon;
-
-              return (
-                <Link
-                  key={action.href}
-                  href={action.href}
-                  className={buttonVariants({
-                    variant: index === 0 ? "gold" : "secondary",
-                    size: "lg",
-                  })}
-                >
-                  <Icon className="size-4" />
-                  {action.label}
-                </Link>
-              );
-            })}
           </div>
         </div>
       </CardContent>
@@ -777,49 +714,10 @@ function DashboardHero({
   );
 }
 
-function DashboardQuickLink({
-  href,
-  icon: Icon,
-  title,
-  description,
-  accent,
-}: {
-  href: string;
-  icon: typeof Users;
-  title: string;
-  description: string;
-  accent: "blue" | "gold" | "green" | "danger";
-}) {
-  const accents = {
-    blue: "bg-navy-900 text-white dark:bg-gold-300 dark:text-navy-950",
-    gold: "bg-gold-300 text-navy-950",
-    green: "bg-success-600 text-white",
-    danger: "bg-danger-600 text-white",
-  } as const;
-
-  return (
-    <Link
-      href={href}
-      className="group flex items-center justify-between gap-3 rounded-[22px] border border-white/30 bg-white/72 px-4 py-4 shadow-card backdrop-blur-md transition-all duration-300 hover:-translate-y-0.5 hover:shadow-card-hover dark:border-white/10 dark:bg-navy-950/62"
-    >
-      <div className="flex items-center gap-3">
-        <span className={`flex size-10 items-center justify-center rounded-2xl ${accents[accent]}`}>
-          <Icon className="size-4" />
-        </span>
-        <div>
-          <p className="text-sm font-semibold text-foreground">{title}</p>
-          <p className="text-xs text-muted-foreground">{description}</p>
-        </div>
-      </div>
-      <ArrowRight className="size-4 text-muted-foreground transition-transform duration-300 group-hover:translate-x-1" />
-    </Link>
-  );
-}
-
 function DashboardMetaPill({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-[16px] border border-border/60 bg-background/55 px-3 py-2.5">
-      <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+    <div className="rounded-2xl border border-border/60 bg-background/55 px-3 py-2.5">
+      <p className="text-tiny font-semibold uppercase tracking-[0.18em] text-muted-foreground">
         {label}
       </p>
       <p className="mt-1 text-sm font-semibold text-foreground">{value}</p>

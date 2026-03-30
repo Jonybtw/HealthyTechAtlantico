@@ -20,12 +20,18 @@ export function PageScaffold({
   className,
   contentClassName,
 }: PageScaffoldProps) {
-  const headerNode = header ?? (headerProps ? <PageHeader {...headerProps}>{headerActions}</PageHeader> : null);
+  const headerNode =
+    header ??
+    (headerProps ? (
+      <PageHeader {...headerProps}>{headerActions}</PageHeader>
+    ) : null);
 
   return (
     <PageTransition className={cn("page-stack", className)}>
       {headerNode}
-      <div className={cn("page-content-stack", contentClassName)}>{children}</div>
+      <div className={cn("page-content-stack", contentClassName)}>
+        {children}
+      </div>
     </PageTransition>
   );
 }

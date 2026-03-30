@@ -22,7 +22,9 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import type { z } from "zod";
 import { createStudentSchema } from "@/lib/validations";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 import { DateField } from "@/components/ui/date-field";
 import { Input } from "@/components/ui/input";
 import { ZoneBadge } from "@/components/ui/zone-badge";
@@ -254,13 +256,13 @@ export function StudentDetailClient({ student }: Props) {
       {/* Ambient orbs */}
       <div className="pointer-events-none fixed inset-0 z-0 overflow-hidden">
         <div className="absolute -left-[10%] -top-[10%] h-[50%] w-[50%] rounded-full bg-amber-400 opacity-[0.06] blur-[120px]" />
-        <div className="absolute -bottom-[10%] -right-[10%] h-[50%] w-[50%] rounded-full bg-[#1e3a8a] opacity-[0.07] blur-[120px]" />
+        <div className="absolute -bottom-[10%] -right-[10%] h-[50%] w-[50%] rounded-full bg-navy-800 opacity-[0.07] blur-[120px]" />
       </div>
 
       <div className="relative z-10">
         {/* ── Hero Banner ── */}
         <div
-          className="relative overflow-hidden px-8 py-10"
+          className="relative overflow-hidden px-8 py-8"
           style={{
             background: "linear-gradient(135deg, #1e3a8a 0%, #00236f 100%)",
           }}
@@ -270,21 +272,23 @@ export function StudentDetailClient({ student }: Props) {
           <div className="pointer-events-none absolute -bottom-16 left-[40%] h-48 w-48 rounded-full bg-amber-400 opacity-[0.08] blur-3xl" />
 
           {/* Back link */}
-          <button
+          <Button
             type="button"
+            variant="ghost"
+            size="sm"
             onClick={() => router.push("/alunos")}
-            className="mb-6 flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-widest text-blue-200/60 transition-colors hover:text-white"
+            className="mb-6 px-0 text-blue-100/75 hover:bg-transparent hover:text-white"
+            icon={<ArrowLeft className="size-3.5" />}
           >
-            <ArrowLeft className="size-3.5" />
             ALUNOS · PERFIL
-          </button>
+          </Button>
 
           <div className="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
             {/* Student identity */}
             <div className="flex items-center gap-5">
               {/* Avatar */}
               <div
-                className="flex size-20 shrink-0 items-center justify-center rounded-2xl text-3xl font-extrabold shadow-xl ring-4 ring-white/20"
+                className="flex size-20 shrink-0 items-center justify-center rounded-2xl text-3xl font-extrabold shadow-card ring-4 ring-white/20"
                 style={{
                   backgroundColor: avatarColor.bg,
                   color: avatarColor.text,
@@ -293,7 +297,7 @@ export function StudentDetailClient({ student }: Props) {
                 {initials}
               </div>
               <div>
-                <h1 className="text-3xl font-extrabold tracking-tight text-white sm:text-4xl">
+                <h1 className="text-3xl font-extrabold tracking-tight text-white sm:text-3xl">
                   {student.name}
                 </h1>
                 <p className="mt-1 text-sm font-medium text-blue-200/70">
@@ -308,25 +312,25 @@ export function StudentDetailClient({ student }: Props) {
             {/* Action buttons */}
             {canManageStudent && (
               <div className="flex gap-2.5">
-                <button
+                <Button
                   type="button"
+                  variant="gold"
+                  size="lg"
                   onClick={() => setEditing((e) => !e)}
-                  className="flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-bold text-[#2a1700] shadow-md transition-all hover:-translate-y-0.5 hover:shadow-lg active:scale-95"
-                  style={{
-                    background: "linear-gradient(135deg, #fea619, #f59e0b)",
-                  }}
+                  icon={<Pencil className="size-4" />}
                 >
-                  <Pencil className="size-4" />
                   {editing ? t("cancelBtn") : t("editBtn")}
-                </button>
-                <button
+                </Button>
+                <Button
                   type="button"
+                  variant="secondary"
+                  size="lg"
                   onClick={() => setConfirmDelete(true)}
-                  className="flex items-center gap-2 rounded-xl border border-white/20 bg-white/10 px-5 py-2.5 text-sm font-bold text-white backdrop-blur-md transition-all hover:bg-red-500/30 active:scale-95"
+                  icon={<Trash2 className="size-4" />}
+                  className="hover:border-danger-500/30 hover:bg-danger-500/18 hover:text-white"
                 >
-                  <Trash2 className="size-4" />
                   {t("deleteBtn")}
-                </button>
+                </Button>
               </div>
             )}
           </div>
@@ -336,15 +340,8 @@ export function StudentDetailClient({ student }: Props) {
         <div className="px-8 py-8">
           {/* Edit Form */}
           {editing && (
-            <div
-              className="mb-8 overflow-hidden rounded-3xl p-6 shadow-sm"
-              style={{
-                background: "rgba(255,255,255,0.75)",
-                backdropFilter: "blur(12px)",
-                border: "1px solid rgba(255,255,255,0.5)",
-              }}
-            >
-              <h3 className="mb-5 flex items-center gap-2 text-sm font-bold text-[#00236f]">
+            <Card className="mb-8 overflow-hidden p-6">
+              <h3 className="mb-5 flex items-center gap-2 text-sm font-bold text-navy-800">
                 <span className="inline-block h-2 w-2 rounded-full bg-amber-500" />
                 {t("editTitle")}
               </h3>
@@ -382,7 +379,7 @@ export function StudentDetailClient({ student }: Props) {
                               >
                                 <SelectTrigger
                                   aria-label={t("sexLabel")}
-                                  className="h-14 rounded-full px-4 pt-[1.45rem] pb-[0.45rem] text-left shadow-[inset_0_1px_0_rgba(255,255,255,0.3)] focus:ring-4 focus:ring-gold-400/15"
+                                  className="h-14 rounded-full px-4 pt-5 pb-2 text-left shadow-[inset_0_1px_0_rgba(255,255,255,0.3)] focus:ring-4 focus:ring-gold-400/15"
                                 >
                                   <SelectValue />
                                 </SelectTrigger>
@@ -458,14 +455,14 @@ export function StudentDetailClient({ student }: Props) {
                   </Button>
                 </form>
               </Form>
-            </div>
+            </Card>
           )}
 
           {/* Bento Grid */}
           <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
             {/* ── Biometrics Card ── */}
             <GlassCard
-              icon={<Ruler className="size-4 text-[#1e3a8a]" />}
+              icon={<Ruler className="size-4 text-navy-900" />}
               title={t("recentBiometrics")}
             >
               {lastBio ? (
@@ -532,7 +529,7 @@ export function StudentDetailClient({ student }: Props) {
 
             {/* ── Tests Card ── */}
             <GlassCard
-              icon={<Timer className="size-4 text-[#1e3a8a]" />}
+              icon={<Timer className="size-4 text-navy-900" />}
               title={t("recentTests")}
             >
               {student.tests.length > 0 ? (
@@ -540,13 +537,13 @@ export function StudentDetailClient({ student }: Props) {
                   {student.tests.map((test, i) => (
                     <div
                       key={i}
-                      className="flex items-center justify-between rounded-xl px-3 py-2.5 transition-colors hover:bg-[#ecf5fb]"
+                      className="flex items-center justify-between rounded-xl px-3 py-2.5 transition-colors hover:bg-navy-50"
                     >
-                      <span className="text-sm font-medium capitalize text-[#444651]">
+                      <span className="text-sm font-medium capitalize text-muted-foreground">
                         {test.testId}
                       </span>
                       <div className="flex items-center gap-2">
-                        <span className="text-sm font-bold text-[#00236f]">
+                        <span className="text-sm font-bold text-navy-800">
                           {test.valueText}
                           <span className="ml-1 text-xs font-normal text-slate-400">
                             {test.unit}
@@ -564,7 +561,7 @@ export function StudentDetailClient({ student }: Props) {
 
             {/* ── Questionnaires Card ── */}
             <GlassCard
-              icon={<ClipboardList className="size-4 text-[#1e3a8a]" />}
+              icon={<ClipboardList className="size-4 text-navy-900" />}
               title={t("questionnaires")}
             >
               {student.questionnaires.length > 0 ? (
@@ -575,10 +572,10 @@ export function StudentDetailClient({ student }: Props) {
                       className="rounded-2xl border border-blue-50 bg-white p-4 shadow-sm"
                     >
                       <div className="flex items-start justify-between gap-2">
-                        <p className="text-sm font-bold text-[#00236f]">
+                        <p className="text-sm font-bold text-navy-800">
                           {q(getQuestionnaireTypeLabelKey(questionnaire.type))}
                         </p>
-                        <time className="text-[10px] font-bold uppercase tracking-widest text-slate-400">
+                        <time className="text-micro font-bold uppercase tracking-widest text-slate-400">
                           {new Date(
                             questionnaire.submittedAt,
                           ).toLocaleDateString(locale)}
@@ -599,13 +596,15 @@ export function StudentDetailClient({ student }: Props) {
                             return (
                               <span
                                 key={item.key}
-                                className="rounded-full bg-blue-50 px-2.5 py-1 text-[10px] font-bold text-[#1e3a8a]"
+                                className="inline-flex"
                               >
-                                {q(
-                                  getKidmedClassificationLabelKey(
-                                    item.value as KidmedClassification,
-                                  ),
-                                )}
+                                <Badge variant="info" size="sm">
+                                  {q(
+                                    getKidmedClassificationLabelKey(
+                                      item.value as KidmedClassification,
+                                    ),
+                                  )}
+                                </Badge>
                               </span>
                             );
                           }
@@ -613,20 +612,19 @@ export function StudentDetailClient({ student }: Props) {
                             const label =
                               getQuestionnairePeriodLabel(questionnaire);
                             return label ? (
-                              <span
-                                key={item.key}
-                                className="rounded-full bg-blue-50 px-2.5 py-1 text-[10px] font-bold text-[#1e3a8a]"
-                              >
+                              <Badge key={item.key} variant="info" size="sm">
                                 {label}
-                              </span>
+                              </Badge>
                             ) : null;
                           }
                           const meta =
                             QUESTIONNAIRE_FIELD_META[item.key] ?? item;
                           return (
-                            <span
+                            <Badge
                               key={item.key}
-                              className="rounded-full bg-[#ecf5fb] px-2.5 py-1 text-[10px] font-medium text-[#444651]"
+                              variant="default"
+                              size="sm"
+                              className="font-medium normal-case tracking-tight"
                             >
                               {q(item.labelKey)}:{" "}
                               {formatQuestionnaireValue(
@@ -634,7 +632,7 @@ export function StudentDetailClient({ student }: Props) {
                                 item.value,
                                 meta,
                               )}
-                            </span>
+                            </Badge>
                           );
                         })}
                       </div>
@@ -648,13 +646,13 @@ export function StudentDetailClient({ student }: Props) {
 
             {/* ── KIDMED Consent Card ── */}
             <GlassCard
-              icon={<ShieldCheck className="size-4 text-[#1e3a8a]" />}
+              icon={<ShieldCheck className="size-4 text-navy-900" />}
               title={t("kidmedConsentTitle")}
             >
               <div className="flex flex-col gap-4">
                 <div className="flex items-start justify-between gap-4">
                   <div>
-                    <p className="text-sm font-bold text-[#00236f]">
+                    <p className="text-sm font-bold text-navy-800">
                       {student.kidmedConsentAt
                         ? t("kidmedConsentActive")
                         : t("kidmedConsentInactive")}
@@ -672,14 +670,14 @@ export function StudentDetailClient({ student }: Props) {
                     />
                   )}
                 </div>
-                <div className="flex items-start gap-3 rounded-2xl bg-[#ecf5fb] p-4">
+                <div className="flex items-start gap-3 rounded-xl border border-white/20 bg-card/80 p-4 dark:border-white/10">
                   {student.kidmedConsentAt ? (
                     <ShieldCheck className="mt-0.5 size-5 shrink-0 text-emerald-600" />
                   ) : (
                     <ShieldAlert className="mt-0.5 size-5 shrink-0 text-amber-600" />
                   )}
                   <div>
-                    <p className="text-sm font-bold text-[#00236f]">
+                    <p className="text-sm font-bold text-navy-800">
                       {student.kidmedConsentAt
                         ? t("kidmedConsentRecordedAtLabel", {
                             date: new Date(
@@ -704,7 +702,7 @@ export function StudentDetailClient({ student }: Props) {
 
             {/* ── Dispensas Card ── */}
             <GlassCard
-              icon={<ShieldOff className="size-4 text-[#1e3a8a]" />}
+              icon={<ShieldOff className="size-4 text-navy-900" />}
               title={t("dispensas")}
             >
               {student.dispensas.length > 0 ? (
@@ -712,9 +710,9 @@ export function StudentDetailClient({ student }: Props) {
                   {student.dispensas.map((d) => (
                     <li
                       key={d.id}
-                      className="flex items-start justify-between rounded-xl bg-[#ecf5fb] px-4 py-3"
+                      className="flex items-start justify-between rounded-xl bg-navy-50 px-4 py-3"
                     >
-                      <span className="text-sm font-medium text-[#141d21]">
+                      <span className="text-sm font-medium text-slate-900 border-border">
                         {d.reason}
                       </span>
                       <span className="shrink-0 text-xs text-slate-400">
@@ -731,7 +729,7 @@ export function StudentDetailClient({ student }: Props) {
 
             {/* ── Guardians Card ── */}
             <GlassCard
-              icon={<Users className="size-4 text-[#1e3a8a]" />}
+              icon={<Users className="size-4 text-navy-900" />}
               title={t("guardians")}
             >
               {student.guardians.length > 0 ? (
@@ -739,9 +737,9 @@ export function StudentDetailClient({ student }: Props) {
                   {student.guardians.map((g) => (
                     <li
                       key={g.id}
-                      className="flex items-center justify-between rounded-xl bg-[#ecf5fb] px-4 py-3"
+                      className="flex items-center justify-between rounded-xl bg-navy-50 px-4 py-3"
                     >
-                      <span className="text-sm font-medium text-[#141d21]">
+                      <span className="text-sm font-medium text-slate-900 border-border">
                         {g.guardian.name}{" "}
                         <span className="text-xs text-slate-400">
                           ({g.relationship})
@@ -788,23 +786,15 @@ function GlassCard({
   children: ReactNode;
 }) {
   return (
-    <div
-      className="flex flex-col gap-5 rounded-[24px] p-6 shadow-sm"
-      style={{
-        background: "rgba(255, 255, 255, 0.72)",
-        backdropFilter: "blur(12px)",
-        WebkitBackdropFilter: "blur(12px)",
-        border: "1px solid rgba(255, 255, 255, 0.5)",
-      }}
-    >
+    <Card className="flex flex-col gap-5 p-6">
       <div className="flex items-center gap-2">
         {icon}
-        <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400">
+        <p className="text-micro font-bold uppercase tracking-[0.2em] text-slate-400">
           {title}
         </p>
       </div>
       {children}
-    </div>
+    </Card>
   );
 }
 
@@ -818,12 +808,12 @@ function StatTile({
   badge?: ReactNode;
 }) {
   return (
-    <div className="flex flex-col gap-1 rounded-xl bg-[#ecf5fb] p-3">
-      <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">
+    <div className="flex flex-col gap-1 rounded-xl border border-white/20 bg-card/80 p-3 dark:border-white/10">
+      <span className="text-micro font-bold uppercase tracking-widest text-slate-400">
         {label}
       </span>
       <div className="flex items-center gap-1.5">
-        <span className="text-lg font-extrabold text-[#00236f]">{value}</span>
+        <span className="text-lg font-extrabold text-navy-800">{value}</span>
         {badge}
       </div>
     </div>
@@ -831,18 +821,7 @@ function StatTile({
 }
 
 function ZonePill({ zone }: { zone: string }) {
-  const isHealthy = zone.includes("ZSAF");
-  return (
-    <span
-      className={`rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide ${
-        isHealthy
-          ? "bg-emerald-50 text-emerald-700"
-          : "bg-amber-50 text-amber-700"
-      }`}
-    >
-      {isHealthy ? "ZSAF" : "ZMF"}
-    </span>
-  );
+  return <ZoneBadge zone={zone} size="sm" />;
 }
 
 function Empty() {

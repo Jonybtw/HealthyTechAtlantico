@@ -79,14 +79,14 @@ export function AlunosClient({ initialStudents }: AlunosClientProps) {
         <div className="flex items-center gap-3">
           <Avatar className="size-9 shrink-0">
             <AvatarFallback
-              className="text-[10px] font-bold border-2 border-white shadow-sm"
+              className="text-micro font-bold border-2 border-white shadow-sm"
               style={getStudentSwatch(row)}
             >
               {getInitials(row.name)}
             </AvatarFallback>
           </Avatar>
           <div>
-            <p className="font-bold text-sm text-[#00236f] group-hover:text-amber-600 transition-colors leading-tight">
+            <p className="font-bold text-sm text-navy-800 group-hover:text-amber-600 transition-colors leading-tight">
               {row.name}
             </p>
           </div>
@@ -100,12 +100,12 @@ export function AlunosClient({ initialStudents }: AlunosClientProps) {
       className: "w-24",
       render: (row) =>
         row.sex === "M" ? (
-          <span className="inline-flex items-center gap-1 rounded-full bg-blue-50 px-3 py-1 text-[10px] font-bold uppercase tracking-wide text-blue-700">
+          <span className="inline-flex items-center gap-1 rounded-full bg-blue-50 px-3 py-1 text-micro font-bold uppercase tracking-wide text-blue-700">
             <Mars className="size-3" />
             Masc
           </span>
         ) : (
-          <span className="inline-flex items-center gap-1 rounded-full bg-rose-50 px-3 py-1 text-[10px] font-bold uppercase tracking-wide text-rose-700">
+          <span className="inline-flex items-center gap-1 rounded-full bg-rose-50 px-3 py-1 text-micro font-bold uppercase tracking-wide text-rose-700">
             <Venus className="size-3" />
             Fem
           </span>
@@ -125,7 +125,7 @@ export function AlunosClient({ initialStudents }: AlunosClientProps) {
       header: t("colClass"),
       render: (row) =>
         row.className ? (
-          <span className="text-sm font-semibold text-[#1e3a8a]">
+          <span className="text-sm font-semibold text-navy-900">
             {row.className}
           </span>
         ) : (
@@ -178,7 +178,7 @@ export function AlunosClient({ initialStudents }: AlunosClientProps) {
       {/* Ambient background orbs */}
       <div className="pointer-events-none fixed inset-0 z-0 overflow-hidden">
         <div className="absolute -left-[10%] -top-[10%] h-[50%] w-[50%] rounded-full bg-amber-400 opacity-[0.07] blur-[120px]" />
-        <div className="absolute -bottom-[10%] -right-[10%] h-[50%] w-[50%] rounded-full bg-[#1e3a8a] opacity-[0.08] blur-[120px]" />
+        <div className="absolute -bottom-[10%] -right-[10%] h-[50%] w-[50%] rounded-full bg-navy-800 opacity-[0.08] blur-[120px]" />
       </div>
 
       <div className="relative z-10">
@@ -202,7 +202,7 @@ export function AlunosClient({ initialStudents }: AlunosClientProps) {
                 type="button"
                 disabled={isImportingCsv}
                 onClick={() => importInputRef.current?.click()}
-                className="flex items-center gap-2 rounded-xl border border-white/60 bg-white/50 px-5 py-2.5 text-sm font-bold text-[#00236f] shadow-sm backdrop-blur-md transition-all hover:-translate-y-0.5 hover:bg-white/70 active:scale-95 disabled:opacity-60"
+                className="flex items-center gap-2 rounded-xl border border-white/60 bg-white/50 px-5 py-2.5 text-sm font-bold text-navy-800 shadow-sm backdrop-blur-md transition-all hover:-translate-y-0.5 hover:bg-white/70 active:scale-95 disabled:opacity-60"
               >
                 <FileUp className="size-4" />
                 {common("importCsv")}
@@ -237,17 +237,17 @@ export function AlunosClient({ initialStudents }: AlunosClientProps) {
           <AnimatePresence>
             {showCreate ? (
               <FadeIn key="create-form">
-                <div className="relative mb-8 overflow-hidden rounded-3xl border border-blue-50 bg-white p-6 shadow-sm">
+                <div className="relative mb-8 overflow-hidden rounded-2xl border border-blue-50 bg-white p-6 shadow-sm">
                   {/* Decorative orb */}
                   <div className="pointer-events-none absolute -right-16 -top-16 h-32 w-32 rounded-full bg-amber-400 opacity-[0.06] blur-2xl" />
-                  <h3 className="mb-5 flex items-center gap-2 text-sm font-bold text-[#00236f]">
+                  <h3 className="mb-5 flex items-center gap-2 text-sm font-bold text-navy-800">
                     <span className="inline-block h-2 w-2 rounded-full bg-amber-500" />
                     Cadastro Rápido
                   </h3>
                   <form action={formAction}>
                     <div className="grid grid-cols-1 gap-5 md:grid-cols-4">
                       <div className="space-y-1.5">
-                        <label className="ml-1 text-[10px] font-bold uppercase tracking-widest text-slate-400">
+                        <label className="ml-1 text-micro font-bold uppercase tracking-widest text-slate-400">
                           {t("colName")}
                         </label>
                         <Input
@@ -263,7 +263,7 @@ export function AlunosClient({ initialStudents }: AlunosClientProps) {
                       </div>
 
                       <div className="space-y-1.5">
-                        <label className="ml-1 text-[10px] font-bold uppercase tracking-widest text-slate-400">
+                        <label className="ml-1 text-micro font-bold uppercase tracking-widest text-slate-400">
                           {t("colSex")}
                         </label>
                         <PillSelect
@@ -286,7 +286,7 @@ export function AlunosClient({ initialStudents }: AlunosClientProps) {
                       </div>
 
                       <div className="space-y-1.5">
-                        <label className="ml-1 text-[10px] font-bold uppercase tracking-widest text-slate-400">
+                        <label className="ml-1 text-micro font-bold uppercase tracking-widest text-slate-400">
                           {t("birthDateLabel")}
                         </label>
                         <DateField
@@ -326,7 +326,7 @@ export function AlunosClient({ initialStudents }: AlunosClientProps) {
             toolbarTitle={t("title")}
             toolbarSummary={
               <>
-                <span className="text-[#00236f]">{initialStudents.length}</span>{" "}
+                <span className="text-navy-800">{initialStudents.length}</span>{" "}
                 {locale === "en"
                   ? `result${initialStudents.length === 1 ? "" : "s"}`
                   : `resultado${initialStudents.length === 1 ? "" : "s"}`}

@@ -9,7 +9,10 @@ import {
   unauthorized,
   validationError,
 } from "@/lib/api-response";
-import type { AuditLogListItem, AuditLogListResponse } from "@/lib/audit-actions";
+import type {
+  AuditLogListItem,
+  AuditLogListResponse,
+} from "@/lib/audit-actions";
 import { prisma } from "@/lib/prisma";
 import { canRole, PERMISSIONS } from "@/lib/rbac";
 import { listAuditQuerySchema } from "@/lib/validations";
@@ -27,8 +30,11 @@ export async function GET(req: NextRequest) {
     }
 
     const { searchParams } = new URL(req.url);
-    const parsedQuery = listAuditQuerySchema.parse(Object.fromEntries(searchParams.entries()));
-    const { page, limit, action, startDate, endDate, sortBy, sortDir } = parsedQuery;
+    const parsedQuery = listAuditQuerySchema.parse(
+      Object.fromEntries(searchParams.entries()),
+    );
+    const { page, limit, action, startDate, endDate, sortBy, sortDir } =
+      parsedQuery;
     const skip = (page - 1) * limit;
 
     const where = {

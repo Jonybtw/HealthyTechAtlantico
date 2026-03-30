@@ -120,7 +120,10 @@ export async function POST(
       data.type === "KIDMED"
         ? await (async () => {
             if (!student.kidmedConsentAt) {
-              return err("Consentimento parental obrigatorio para o KIDMED", 403);
+              return err(
+                "Consentimento parental obrigatorio para o KIDMED",
+                403,
+              );
             }
 
             const period = getSchoolPeriodInfo();

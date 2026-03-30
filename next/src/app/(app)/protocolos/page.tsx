@@ -155,7 +155,7 @@ export default async function ProtocolosPage() {
   return (
     <PageScaffold>
       {/* ── Hero Banner ──────────────────────────────────────────────────────── */}
-      <div className="relative mb-2 overflow-hidden rounded-[24px] bg-gradient-to-br from-navy-800 via-navy-700 to-navy-600 px-6 py-8 shadow-xl lg:px-10 lg:py-10">
+      <div className="relative mb-2 overflow-hidden rounded-2xl bg-gradient-to-br from-navy-800 via-navy-700 to-navy-600 px-6 py-8 shadow-card lg:px-10 lg:py-8">
         {/* Decorative blobs */}
         <div className="pointer-events-none absolute -right-12 -top-10 size-64 rounded-full bg-gold-400/10 blur-3xl" />
         <div className="pointer-events-none absolute -bottom-10 -left-8 size-52 rounded-full bg-navy-400/20 blur-3xl" />
@@ -168,13 +168,13 @@ export default async function ProtocolosPage() {
               <FlaskConical className="h-7 w-7 text-gold-300" />
             </div>
             <div>
-              <p className="mb-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-navy-200">
+              <p className="mb-1 text-tiny font-semibold uppercase tracking-[0.18em] text-navy-200">
                 {t("eyebrow")}
               </p>
               <h2 className="font-display text-xl font-bold tracking-tight text-white sm:text-2xl">
                 {t("title")}
               </h2>
-              <p className="mt-1 text-sm text-navy-200/80 sm:text-[13px]">
+              <p className="mt-1 text-sm text-navy-200/80 sm:text-sm">
                 {t("description")}
               </p>
             </div>
@@ -196,7 +196,7 @@ export default async function ProtocolosPage() {
                   <div className="text-sm font-bold text-white leading-none">
                     {value}
                   </div>
-                  <div className="mt-0.5 text-[11px] text-navy-200/70">
+                  <div className="mt-0.5 text-tiny text-navy-200/70">
                     {label}
                   </div>
                 </div>
@@ -209,7 +209,7 @@ export default async function ProtocolosPage() {
       {/* ── Sticky Quick Navigation ────────────────────────────────────────── */}
       <ProtocolosNav />
 
-      <div className="flex flex-col gap-10 lg:gap-14">
+      <div className="flex flex-col gap-8 lg:gap-14">
         {/* ── Reference Tables ─────────────────────────────────────────────── */}
         <section id="body-eval" className="scroll-mt-32">
           <div className="mb-5 flex items-center gap-3">
@@ -217,7 +217,7 @@ export default async function ProtocolosPage() {
               <Scale className="h-4 w-4 text-navy-600 dark:text-navy-300" />
             </div>
             <div>
-              <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+              <p className="text-micro font-semibold uppercase tracking-[0.18em] text-muted-foreground">
                 Avaliação Corporal
               </p>
               <h2 className="font-display text-base font-bold text-foreground sm:text-lg">
@@ -229,7 +229,7 @@ export default async function ProtocolosPage() {
           <div className="grid gap-6 lg:grid-cols-2">
             {/* ── BMI Table ─────────────────────────────────────────────── */}
             <div id="bmi" className="scroll-mt-40 animate-fade-in-up">
-              <div className="group relative overflow-hidden rounded-[24px] border border-navy-200/60 bg-gradient-to-br from-navy-50/80 via-white/60 to-navy-50/40 shadow-[0_8px_32px_-16px_rgb(9_21_35_/_0.15)] backdrop-blur-sm transition-all duration-300 hover:shadow-[0_16px_40px_-20px_rgb(9_21_35_/_0.22)] dark:border-navy-800/40 dark:from-navy-950/60 dark:via-navy-950/40 dark:to-navy-900/30">
+              <div className="group relative overflow-hidden rounded-2xl border border-navy-200/60 bg-gradient-to-br from-navy-50/80 via-white/60 to-navy-50/40 shadow-[0_8px_32px_-16px_rgb(9_21_35_/_0.15)] backdrop-blur-sm transition-all duration-300 hover:shadow-[0_16px_40px_-20px_rgb(9_21_35_/_0.22)] dark:border-navy-800/40 dark:from-navy-950/60 dark:via-navy-950/40 dark:to-navy-900/30">
                 {/* Top accent stripe */}
                 <div className="h-1 w-full bg-gradient-to-r from-navy-600 via-navy-500 to-navy-400" />
 
@@ -243,12 +243,12 @@ export default async function ProtocolosPage() {
                       <h3 className="font-display text-sm font-bold text-navy-900 dark:text-navy-100">
                         {t("bmiTableTitle")}
                       </h3>
-                      <p className="mt-0.5 text-[11px] text-muted-foreground">
+                      <p className="mt-0.5 text-tiny text-muted-foreground">
                         {t("bmiTableCaption")}
                       </p>
                     </div>
                   </div>
-                  <span className="mt-1 inline-flex items-center rounded-full bg-navy-100/80 px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-navy-600 dark:bg-navy-800/60 dark:text-navy-300">
+                  <span className="mt-1 inline-flex items-center rounded-full bg-navy-100/80 px-2.5 py-0.5 text-micro font-semibold uppercase tracking-wide text-navy-600 dark:bg-navy-800/60 dark:text-navy-300">
                     IMC
                   </span>
                 </div>
@@ -259,16 +259,16 @@ export default async function ProtocolosPage() {
                       <tr className="bg-navy-100/70 dark:bg-navy-900/50">
                         <th
                           scope="col"
-                          className="w-[22%] border-b border-navy-200/60 px-5 py-3 text-left text-[10px] font-bold uppercase tracking-[0.12em] text-navy-600 dark:border-navy-800/50 dark:text-navy-300"
+                          className="w-[22%] border-b border-navy-200/60 px-5 py-3 text-left text-micro font-bold uppercase tracking-[0.12em] text-navy-600 dark:border-navy-800/50 dark:text-navy-300"
                         >
                           {t("age")}
                         </th>
                         <th
                           scope="col"
-                          className="w-[39%] border-b border-navy-200/60 px-5 py-3 text-left text-[10px] font-bold uppercase tracking-[0.12em] text-navy-600 dark:border-navy-800/50 dark:text-navy-300"
+                          className="w-[39%] border-b border-navy-200/60 px-5 py-3 text-left text-micro font-bold uppercase tracking-[0.12em] text-navy-600 dark:border-navy-800/50 dark:text-navy-300"
                         >
                           <span className="inline-flex items-center gap-1.5">
-                            <span className="inline-flex h-4 w-4 items-center justify-center rounded-full bg-navy-600 text-[9px] font-bold text-white dark:bg-navy-400">
+                            <span className="inline-flex h-4 w-4 items-center justify-center rounded-full bg-navy-600 text-micro font-bold text-white dark:bg-navy-400">
                               ♂
                             </span>
                             {t("male")}
@@ -276,10 +276,10 @@ export default async function ProtocolosPage() {
                         </th>
                         <th
                           scope="col"
-                          className="w-[39%] border-b border-navy-200/60 px-5 py-3 text-left text-[10px] font-bold uppercase tracking-[0.12em] text-navy-600 dark:border-navy-800/50 dark:text-navy-300"
+                          className="w-[39%] border-b border-navy-200/60 px-5 py-3 text-left text-micro font-bold uppercase tracking-[0.12em] text-navy-600 dark:border-navy-800/50 dark:text-navy-300"
                         >
                           <span className="inline-flex items-center gap-1.5">
-                            <span className="inline-flex h-4 w-4 items-center justify-center rounded-full bg-gold-500 text-[9px] font-bold text-white dark:bg-gold-400">
+                            <span className="inline-flex h-4 w-4 items-center justify-center rounded-full bg-gold-500 text-micro font-bold text-white dark:bg-gold-400">
                               ♀
                             </span>
                             {t("female")}
@@ -322,7 +322,7 @@ export default async function ProtocolosPage() {
               id="waist"
               className="scroll-mt-40 animate-fade-in-up delay-100"
             >
-              <div className="group relative overflow-hidden rounded-[24px] border border-gold-200/60 bg-gradient-to-br from-gold-50/80 via-white/60 to-gold-50/40 shadow-[0_8px_32px_-16px_rgb(9_21_35_/_0.12)] backdrop-blur-sm transition-all duration-300 hover:shadow-[0_16px_40px_-20px_rgb(184_140_25_/_0.2)] dark:border-gold-800/30 dark:from-gold-950/40 dark:via-navy-950/40 dark:to-gold-950/20">
+              <div className="group relative overflow-hidden rounded-2xl border border-gold-200/60 bg-gradient-to-br from-gold-50/80 via-white/60 to-gold-50/40 shadow-[0_8px_32px_-16px_rgb(9_21_35_/_0.12)] backdrop-blur-sm transition-all duration-300 hover:shadow-[0_16px_40px_-20px_rgb(184_140_25_/_0.2)] dark:border-gold-800/30 dark:from-gold-950/40 dark:via-navy-950/40 dark:to-gold-950/20">
                 {/* Top accent stripe */}
                 <div className="h-1 w-full bg-gradient-to-r from-gold-600 via-gold-400 to-gold-300" />
 
@@ -336,12 +336,12 @@ export default async function ProtocolosPage() {
                       <h3 className="font-display text-sm font-bold text-gold-900 dark:text-gold-100">
                         {t("waistTableTitle")}
                       </h3>
-                      <p className="mt-0.5 text-[11px] text-muted-foreground">
+                      <p className="mt-0.5 text-tiny text-muted-foreground">
                         {t("waistTableCaption")}
                       </p>
                     </div>
                   </div>
-                  <span className="mt-1 inline-flex items-center rounded-full bg-gold-100/80 px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-gold-700 dark:bg-gold-900/40 dark:text-gold-300">
+                  <span className="mt-1 inline-flex items-center rounded-full bg-gold-100/80 px-2.5 py-0.5 text-micro font-semibold uppercase tracking-wide text-gold-700 dark:bg-gold-900/40 dark:text-gold-300">
                     cm
                   </span>
                 </div>
@@ -352,16 +352,16 @@ export default async function ProtocolosPage() {
                       <tr className="bg-gold-100/60 dark:bg-gold-900/30">
                         <th
                           scope="col"
-                          className="w-[22%] border-b border-gold-200/60 px-5 py-3 text-left text-[10px] font-bold uppercase tracking-[0.12em] text-gold-700 dark:border-gold-800/40 dark:text-gold-300"
+                          className="w-[22%] border-b border-gold-200/60 px-5 py-3 text-left text-micro font-bold uppercase tracking-[0.12em] text-gold-700 dark:border-gold-800/40 dark:text-gold-300"
                         >
                           {t("age")}
                         </th>
                         <th
                           scope="col"
-                          className="w-[39%] border-b border-gold-200/60 px-5 py-3 text-left text-[10px] font-bold uppercase tracking-[0.12em] text-gold-700 dark:border-gold-800/40 dark:text-gold-300"
+                          className="w-[39%] border-b border-gold-200/60 px-5 py-3 text-left text-micro font-bold uppercase tracking-[0.12em] text-gold-700 dark:border-gold-800/40 dark:text-gold-300"
                         >
                           <span className="inline-flex items-center gap-1.5">
-                            <span className="inline-flex h-4 w-4 items-center justify-center rounded-full bg-navy-600 text-[9px] font-bold text-white dark:bg-navy-400">
+                            <span className="inline-flex h-4 w-4 items-center justify-center rounded-full bg-navy-600 text-micro font-bold text-white dark:bg-navy-400">
                               ♂
                             </span>
                             {t("male")}
@@ -369,10 +369,10 @@ export default async function ProtocolosPage() {
                         </th>
                         <th
                           scope="col"
-                          className="w-[39%] border-b border-gold-200/60 px-5 py-3 text-left text-[10px] font-bold uppercase tracking-[0.12em] text-gold-700 dark:border-gold-800/40 dark:text-gold-300"
+                          className="w-[39%] border-b border-gold-200/60 px-5 py-3 text-left text-micro font-bold uppercase tracking-[0.12em] text-gold-700 dark:border-gold-800/40 dark:text-gold-300"
                         >
                           <span className="inline-flex items-center gap-1.5">
-                            <span className="inline-flex h-4 w-4 items-center justify-center rounded-full bg-gold-500 text-[9px] font-bold text-white dark:bg-gold-400">
+                            <span className="inline-flex h-4 w-4 items-center justify-center rounded-full bg-gold-500 text-micro font-bold text-white dark:bg-gold-400">
                               ♀
                             </span>
                             {t("female")}
@@ -421,7 +421,7 @@ export default async function ProtocolosPage() {
                 <Activity className="h-4 w-4 text-navy-600 dark:text-navy-300" />
               </div>
               <div>
-                <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+                <p className="text-micro font-semibold uppercase tracking-[0.18em] text-muted-foreground">
                   Aptidão Física
                 </p>
                 <h2 className="font-display text-base font-bold text-foreground sm:text-lg">
@@ -464,7 +464,7 @@ export default async function ProtocolosPage() {
               <span
                 key={label}
                 className={cn(
-                  "inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-[11px] font-semibold",
+                  "inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-tiny font-semibold",
                   color,
                 )}
               >
@@ -487,7 +487,7 @@ export default async function ProtocolosPage() {
                 <article
                   key={item.testKey}
                   className={cn(
-                    "group relative flex flex-col overflow-hidden rounded-[22px] border bg-white/60 dark:bg-navy-950/40 backdrop-blur-md/80 shadow-[0_4px_20px_-10px_rgb(9_21_35_/_0.12)] backdrop-blur-sm transition-all duration-300",
+                    "group relative flex flex-col overflow-hidden rounded-2xl border bg-white/60 dark:bg-navy-950/40 backdrop-blur-md/80 shadow-[0_4px_20px_-10px_rgb(9_21_35_/_0.12)] backdrop-blur-sm transition-all duration-300",
                     "hover:-translate-y-1.5 hover:shadow-[0_16px_40px_-16px_rgb(9_21_35_/_0.18)]",
                     "animate-fade-in-up",
                     "border-white/20 dark:border-white/10 hover:border-white/20 dark:border-white/10/80",
@@ -527,7 +527,7 @@ export default async function ProtocolosPage() {
                       {category && (
                         <span
                           className={cn(
-                            "inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-semibold",
+                            "inline-flex items-center rounded-full border px-2 py-0.5 text-micro font-semibold",
                             category.bg,
                             category.color,
                             category.border,
@@ -545,18 +545,18 @@ export default async function ProtocolosPage() {
                     <h3 className="mb-1.5 text-sm font-bold tracking-tight text-foreground transition-colors group-hover:text-navy-950 dark:group-hover:text-navy-100">
                       {t(item.testKey)}
                     </h3>
-                    <p className="line-clamp-2 flex-1 text-[12px] leading-relaxed text-muted-foreground">
+                    <p className="line-clamp-2 flex-1 text-xs leading-relaxed text-muted-foreground">
                       {t(item.descKey)}
                     </p>
 
                     {/* Footer: unit */}
                     <div className="mt-4 flex items-center justify-between border-t border-white/20 dark:border-white/10/30 pt-3.5">
-                      <span className="text-[11px] font-medium uppercase tracking-[0.08em] text-muted-foreground">
+                      <span className="text-tiny font-medium uppercase tracking-[0.08em] text-muted-foreground">
                         {t("unitLabel")}
                       </span>
                       <span
                         className={cn(
-                          "inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-bold",
+                          "inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-tiny font-bold",
                           category
                             ? cn(
                                 category.bg,

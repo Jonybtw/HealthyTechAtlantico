@@ -8,11 +8,13 @@ import {
   ArrowLeft,
   ArrowRight,
   CheckCircle2,
+  GraduationCap,
   LogIn,
   UserPlus,
   Mail,
   Lock,
   User,
+  Users,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useForm, useWatch } from "react-hook-form";
@@ -22,7 +24,6 @@ import { loginSchema, registerFormSchema } from "@/lib/validations";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { PillSelect } from "@/components/ui/pill-select";
 import { Form, FormField, FormItem, FormControl } from "@/components/ui/form";
 import { readApiResponse } from "@/lib/api-client";
 
@@ -215,17 +216,7 @@ export default function LoginClient() {
   });
 
   return (
-    <div
-      className="animate-fade-in-up mx-auto w-full max-w-md rounded-[24px] overflow-hidden"
-      style={{
-        background: "rgba(255,255,255,0.82)",
-        backdropFilter: "blur(16px)",
-        WebkitBackdropFilter: "blur(16px)",
-        border: "1px solid rgba(255,255,255,0.6)",
-        boxShadow:
-          "0 8px 32px rgba(0,35,111,0.10), 0 2px 8px rgba(0,35,111,0.06)",
-      }}
-    >
+    <div className="animate-fade-in-up mx-auto w-full max-w-md rounded-2xl overflow-hidden bg-white/90 dark:bg-navy-950/80 backdrop-blur-2xl border border-white/40 dark:border-white/10 shadow-2xl">
       {/* Gold accent line */}
       <div className="h-px bg-gradient-to-r from-transparent via-gold-400/60 to-transparent" />
       {/* Header */}
@@ -264,7 +255,7 @@ export default function LoginClient() {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: 6 }}
                 transition={{ duration: 0.2 }}
-                className="font-display text-lg font-semibold tracking-tight"
+                className="font-display text-lg font-semibold tracking-tight text-navy-950 dark:text-white"
               >
                 {t("login")}
               </motion.h1>
@@ -275,7 +266,7 @@ export default function LoginClient() {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: 6 }}
                 transition={{ duration: 0.2 }}
-                className="font-display text-lg font-semibold tracking-tight"
+                className="font-display text-lg font-semibold tracking-tight text-navy-950 dark:text-white"
               >
                 {t("register")}
               </motion.h1>
@@ -288,10 +279,10 @@ export default function LoginClient() {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.18 }}
-            className="max-w-xs text-xs leading-relaxed text-muted-foreground"
-          >
-            {mode === "login" ? t("loginSubtitle") : t("registerSubtitle")}
-          </motion.p>
+              className="max-w-xs text-xs leading-relaxed text-muted-foreground"
+            >
+              {mode === "login" ? t("loginSubtitle") : t("registerSubtitle")}
+            </motion.p>
           </AnimatePresence>
         </div>
         {/* Step indicator */}
@@ -459,7 +450,7 @@ export default function LoginClient() {
                   {strengthInfo ? (
                     <p
                       className={cn(
-                        "text-right text-[11px] font-medium",
+                        "text-right text-tiny font-medium",
                         strengthInfo.text,
                       )}
                     >
@@ -511,19 +502,63 @@ export default function LoginClient() {
                     <label className="text-sm font-semibold tracking-tight text-foreground">
                       {t("roleLabel")}
                     </label>
-                    <PillSelect
-                      options={[
-                        { value: "ALUNO", label: t("role_aluno") },
-                        { value: "PAIS", label: t("role_pais") },
-                      ]}
-                      value={roleValue}
-                      onChange={(value) =>
-                        form.setValue("role", value as "ALUNO" | "PAIS")
-                      }
-                    />
+                    <div className="grid gap-2 sm:grid-cols-2">
+                      {[
+                        {
+                          value: "ALUNO",
+                          label: t("role_aluno"),
+                          icon: GraduationCap,
+                        },
+                        {
+                          value: "PAIS",
+                          label: t("role_pais"),
+                          icon: Users,
+                        },
+                      ].map((option) => {
+                        const active = roleValue === option.value;
+                        const Icon = option.icon;
+
+                        return (
+                          <button
+                            key={option.value}
+                            type="button"
+                            onClick={() =>
+                              form.setValue(
+                                "role",
+                                option.value as "ALUNO" | "PAIS",
+                                { shouldValidate: true },
+                              )
+                            }
+                            className={cn(
+                              "flex min-h-[72px] items-center gap-3 rounded-2xl border px-4 py-3 text-left transition-all duration-300",
+                              active
+                                ? "border-navy-800/10 bg-gradient-to-r from-navy-900 via-navy-800 to-navy-700 text-white shadow-card"
+                                : "border-white/20 bg-white/55 text-navy-900 shadow-inner backdrop-blur-sm hover:border-gold-300/40 hover:bg-white/80 dark:border-white/10 dark:bg-navy-950/40 dark:text-white dark:hover:bg-navy-900/60",
+                            )}
+                            aria-pressed={active}
+                          >
+                            <span
+                              className={cn(
+                                "flex size-10 shrink-0 items-center justify-center rounded-2xl border",
+                                active
+                                  ? "border-white/15 bg-white/10 text-gold-300"
+                                  : "border-gold-400/20 bg-gold-400/10 text-gold-600 dark:text-gold-300",
+                              )}
+                            >
+                              <Icon className="size-4" />
+                            </span>
+                            <span className="min-w-0">
+                              <span className="block text-sm font-semibold leading-snug">
+                                {option.label}
+                              </span>
+                            </span>
+                          </button>
+                        );
+                      })}
+                    </div>
                   </div>
 
-                  <div className="rounded-xl border border-white/20 bg-white/50 p-3.5 backdrop-blur-sm dark:border-white/10 dark:bg-navy-950/40 sm:p-4">
+                  <div className="rounded-2xl border border-white/20 bg-white/50 p-3.5 backdrop-blur-sm dark:border-white/10 dark:bg-navy-950/40 sm:p-4">
                     <label
                       htmlFor="register-rgpd"
                       className="flex cursor-pointer items-start gap-3"

@@ -22,7 +22,7 @@ export async function requireAuth(): Promise<AppSessionUser> {
  */
 export async function requireAnyRole(
   roles: readonly Role[],
-  redirectTo = "/dashboard"
+  redirectTo = "/dashboard",
 ): Promise<AppSessionUser> {
   const user = await requireAuth();
   if (!roles.includes(user.role)) {
@@ -36,7 +36,7 @@ export async function requireAnyRole(
  * Use in API Route Handlers.
  */
 export async function requirePermission(
-  permission: Permission
+  permission: Permission,
 ): Promise<AppSessionUser> {
   const user = await requireAuth();
   if (!canRole(user.role, permission)) {

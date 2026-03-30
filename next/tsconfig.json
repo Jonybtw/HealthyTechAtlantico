@@ -27,13 +27,17 @@
       ]
     },
     "incremental": true,
-    "types": ["vitest/globals", "@testing-library/jest-dom"]
+    "types": [
+      "vitest/globals",
+      "@testing-library/jest-dom"
+    ]
   },
   "include": [
     "next-env.d.ts",
     "**/*.ts",
     "**/*.tsx",
     "**/*.mts",
+    ".next/types/cache-life.d.ts",
     ".next/types/routes.d.ts",
     ".next/types/validator.ts",
     ".next/dev/types/**/*.ts",

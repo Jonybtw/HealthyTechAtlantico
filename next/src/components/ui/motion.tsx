@@ -1,42 +1,8 @@
 "use client";
 
 import { motion, AnimatePresence, type Variants } from "motion/react";
-import { useEffect, useState, type ReactNode } from "react";
-
-function usePrefersReducedMotion() {
-  const [reducedMotion, setReducedMotion] = useState(() => {
-    if (typeof window === "undefined" || typeof window.matchMedia !== "function") {
-      return false;
-    }
-
-    return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  });
-
-  useEffect(() => {
-    if (typeof window === "undefined" || typeof window.matchMedia !== "function") {
-      return;
-    }
-
-    const media = window.matchMedia("(prefers-reduced-motion: reduce)");
-
-    const handleChange = () => setReducedMotion(media.matches);
-    if (typeof media.addEventListener === "function") {
-      media.addEventListener("change", handleChange);
-    } else {
-      media.addListener(handleChange);
-    }
-
-    return () => {
-      if (typeof media.removeEventListener === "function") {
-        media.removeEventListener("change", handleChange);
-      } else {
-        media.removeListener(handleChange);
-      }
-    };
-  }, []);
-
-  return reducedMotion;
-}
+import type { ReactNode } from "react";
+import { useReducedEffects } from "@/hooks/use-reduced-effects";
 
 // Page wrapper
 const pageVariants: Variants = {
@@ -56,7 +22,7 @@ export function PageTransition({
   children: ReactNode;
   className?: string;
 }) {
-  const reducedMotion = usePrefersReducedMotion();
+  const reducedMotion = useReducedEffects();
 
   return (
     <motion.div
@@ -83,7 +49,7 @@ export function FadeIn({
   delay?: number;
   duration?: number;
 }) {
-  const reducedMotion = usePrefersReducedMotion();
+  const reducedMotion = useReducedEffects();
 
   return (
     <motion.div
@@ -129,7 +95,7 @@ export function StaggerList({
   children: ReactNode;
   className?: string;
 }) {
-  const reducedMotion = usePrefersReducedMotion();
+  const reducedMotion = useReducedEffects();
 
   return (
     <motion.div
@@ -150,10 +116,13 @@ export function StaggerItem({
   children: ReactNode;
   className?: string;
 }) {
-  const reducedMotion = usePrefersReducedMotion();
+  const reducedMotion = useReducedEffects();
 
   return (
-    <motion.div variants={reducedMotion ? undefined : itemVariants} className={className}>
+    <motion.div
+      variants={reducedMotion ? undefined : itemVariants}
+      className={className}
+    >
       {children}
     </motion.div>
   );
@@ -169,7 +138,7 @@ export function ScaleIn({
   className?: string;
   delay?: number;
 }) {
-  const reducedMotion = usePrefersReducedMotion();
+  const reducedMotion = useReducedEffects();
 
   return (
     <motion.div
@@ -195,7 +164,7 @@ export function AnimatedNumber({
   value: number;
   className?: string;
 }) {
-  const reducedMotion = usePrefersReducedMotion();
+  const reducedMotion = useReducedEffects();
 
   return (
     <motion.span

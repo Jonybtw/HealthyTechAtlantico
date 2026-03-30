@@ -9,10 +9,20 @@ const FONT_SCALE_KEY = "healthytech:font-scale";
 const CONTRAST_MODE_KEY = "healthytech:contrast-mode";
 const ACCESSIBILITY_EVENT = "healthytech:accessibility-change";
 
-function updateRootClasses({ fontScale, contrast }: { fontScale: FontScale; contrast: ContrastMode }) {
+function updateRootClasses({
+  fontScale,
+  contrast,
+}: {
+  fontScale: FontScale;
+  contrast: ContrastMode;
+}) {
   if (typeof document === "undefined") return;
 
-  document.documentElement.classList.remove("font-size-small", "font-size-default", "font-size-large");
+  document.documentElement.classList.remove(
+    "font-size-small",
+    "font-size-default",
+    "font-size-large",
+  );
   document.documentElement.classList.add(`font-size-${fontScale}`);
 
   if (contrast === "high") {
@@ -37,7 +47,9 @@ export function writeFontScale(fontScale: FontScale) {
 
 export function readContrastMode(): ContrastMode {
   if (typeof window === "undefined") return "normal";
-  const raw = window.localStorage.getItem(CONTRAST_MODE_KEY) as ContrastMode | null;
+  const raw = window.localStorage.getItem(
+    CONTRAST_MODE_KEY,
+  ) as ContrastMode | null;
   return raw === "high" ? "high" : "normal";
 }
 
@@ -60,7 +72,7 @@ export function useFontScale(): FontScale {
       };
     },
     readFontScale,
-    () => "default"
+    () => "default",
   );
 }
 
@@ -76,11 +88,14 @@ export function useContrastMode(): ContrastMode {
       };
     },
     readContrastMode,
-    () => "normal"
+    () => "normal",
   );
 }
 
 // Initialize if we are running client side and settings exist
 if (typeof window !== "undefined") {
-  updateRootClasses({ fontScale: readFontScale(), contrast: readContrastMode() });
+  updateRootClasses({
+    fontScale: readFontScale(),
+    contrast: readContrastMode(),
+  });
 }

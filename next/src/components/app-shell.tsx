@@ -70,7 +70,12 @@ function isActivePath(pathname: string, href: string) {
   return pathname === href || pathname.startsWith(`${href}/`);
 }
 
-const SECTION_ORDER: NavItem["section"][] = ["core", "operations", "reference", "admin"];
+const SECTION_ORDER: NavItem["section"][] = [
+  "core",
+  "operations",
+  "reference",
+  "admin",
+];
 
 function getSectionLabel(section: NavItem["section"]) {
   switch (section) {
@@ -128,8 +133,8 @@ function NavLink({
       className={cn(
         "group relative flex items-center gap-3 rounded-xl px-2.5 py-2.5 text-xs font-medium transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400/40 focus-visible:ring-offset-2",
         active
-          ? "bg-navy-200/50 dark:bg-[linear-gradient(135deg,rgba(255,255,255,0.14),rgba(255,255,255,0.06))] text-navy-900 dark:text-white shadow-sm dark:shadow-[0_18px_36px_rgba(4,10,18,0.22)]"
-          : "text-navy-600 dark:text-navy-200/78 hover:bg-navy-200/30 dark:hover:bg-white/6 hover:text-navy-900 dark:hover:text-white"
+          ? "bg-navy-100 dark:bg-white/10 text-navy-900 dark:text-white"
+          : "text-navy-600 dark:text-navy-200/78 hover:bg-navy-200/30 dark:hover:bg-white/6 hover:text-navy-900 dark:hover:text-white",
       )}
     >
       <span
@@ -137,7 +142,7 @@ function NavLink({
           "flex size-8 items-center justify-center rounded-xl ring-1 transition-colors",
           active
             ? "bg-gold-400/20 text-gold-600 ring-gold-400/30 dark:bg-gold-300/15 dark:text-gold-300 dark:ring-gold-300/20"
-            : "bg-navy-200/20 text-navy-600 ring-navy-300/30 group-hover:text-gold-600 dark:bg-white/5 dark:text-navy-200/70 dark:ring-white/10 dark:group-hover:text-gold-200"
+            : "bg-navy-200/20 text-navy-600 ring-navy-300/30 group-hover:text-gold-600 dark:bg-white/5 dark:text-navy-200/70 dark:ring-white/10 dark:group-hover:text-gold-200",
         )}
       >
         <Icon className="size-4" />
@@ -174,7 +179,8 @@ export function AppShell({ user, children }: AppShellProps) {
       key: "m",
       mods: ["alt"],
       handler: () => {
-        const firstNavLink = document.querySelector<HTMLAnchorElement>("nav a[href]");
+        const firstNavLink =
+          document.querySelector<HTMLAnchorElement>("nav a[href]");
         firstNavLink?.focus();
       },
     },
@@ -196,13 +202,17 @@ export function AppShell({ user, children }: AppShellProps) {
     return () => document.removeEventListener("visibilitychange", onVisibility);
   }, []);
 
-  const visibleItems = NAV_ITEMS.filter((item) => item.roles.includes(user.role));
-  const groupedItems = visibleItems.reduce<Record<NavItem["section"], NavItem[]>>(
+  const visibleItems = NAV_ITEMS.filter((item) =>
+    item.roles.includes(user.role),
+  );
+  const groupedItems = visibleItems.reduce<
+    Record<NavItem["section"], NavItem[]>
+  >(
     (groups, item) => {
       groups[item.section].push(item);
       return groups;
     },
-    { core: [], operations: [], reference: [], admin: [] }
+    { core: [], operations: [], reference: [], admin: [] },
   );
   const mobileItems = getMobileItems(user.role, visibleItems);
   const currentItem =
@@ -225,7 +235,9 @@ export function AppShell({ user, children }: AppShellProps) {
   const initials =
     displayName
       .split(" ")
-      .filter((chunk) => Boolean(chunk) && !/^(prof|dr|dra|sr|sra)\.*$/i.test(chunk))
+      .filter(
+        (chunk) => Boolean(chunk) && !/^(prof|dr|dra|sr|sra)\.*$/i.test(chunk),
+      )
       .slice(0, 2)
       .map((chunk) => chunk[0]?.toUpperCase())
       .join("") || user.email.charAt(0).toUpperCase();
@@ -235,7 +247,7 @@ export function AppShell({ user, children }: AppShellProps) {
       {SECTION_ORDER.map((section) =>
         groupedItems[section].length > 0 ? (
           <div key={section} className="space-y-1.5">
-            <p className="px-2.5 pb-1 text-[10px] font-semibold uppercase tracking-[0.22em] text-navy-200/44">
+            <p className="px-2.5 pb-1 text-micro font-semibold uppercase tracking-[0.22em] text-navy-200/44">
               {getSectionLabel(section)}
             </p>
             {groupedItems[section].map((item) => (
@@ -248,7 +260,7 @@ export function AppShell({ user, children }: AppShellProps) {
               />
             ))}
           </div>
-        ) : null
+        ) : null,
       )}
     </>
   );
@@ -266,16 +278,29 @@ export function AppShell({ user, children }: AppShellProps) {
         <div className="bg-noise" aria-hidden="true" />
 
         <aside
+          data-theme="dark"
           aria-label={t("nav.sidebarNavigation")}
-          className="fixed inset-y-0 left-0 z-30 hidden w-72 overflow-hidden rounded-r-[2.75rem] border-r border-white/20 bg-white/48 shadow-2xl backdrop-blur-2xl transition-colors duration-300 dark:border-navy-800 dark:bg-navy-950/70 lg:flex lg:flex-col"
+          className="dark fixed inset-y-0 left-0 z-30 hidden w-72 overflow-hidden rounded-r-[2.75rem] border-r border-navy-800 shadow-2xl transition-colors duration-300 lg:flex lg:flex-col"
         >
-          <div className="absolute inset-x-0 top-0 h-28 bg-[radial-gradient(circle_at_top_left,rgba(216,173,52,0.18),transparent_42%),linear-gradient(180deg,rgba(20,48,76,0.12),transparent)] dark:bg-[radial-gradient(circle_at_top_left,rgba(216,173,52,0.16),transparent_40%),linear-gradient(180deg,rgba(20,48,76,0.24),transparent)]" />
+          {/* Base sólida para isolar e preservar o Dark Mode Perfeito */}
+          <div className="absolute inset-0 bg-navy-950 rounded-r-[2.75rem]" />
 
-          <div className="relative flex items-center justify-center border-b border-navy-200/50 px-6 py-5 dark:border-white/10">
+          {/* Malha sutil de fundo para dar textura rica e blur */}
+          <div className="absolute inset-0 pointer-events-none overflow-hidden rounded-r-[2.75rem]">
+            <div className="absolute -left-20 -top-20 size-96 rounded-full bg-gold-400/5" />
+            <div className="absolute -bottom-20 -right-20 size-96 rounded-full bg-navy-300/5" />
+            <div className="bg-noise absolute inset-0 opacity-[0.03]" />
+          </div>
+
+          <div className="absolute inset-0 bg-navy-950/90 rounded-r-[2.75rem]" />
+
+          <div className="absolute inset-x-0 top-0 h-28 rounded-tr-[2.75rem] bg-[radial-gradient(circle_at_top_left,rgba(216,173,52,0.16),transparent_40%),linear-gradient(180deg,rgba(20,48,76,0.24),transparent)] z-0" />
+
+          <div className="relative z-10 flex items-center justify-center border-b border-white/10 px-6 py-5">
             <BrandLogo
               alt={brandName}
               className="h-[98px] w-[96px]"
-              imageClassName="drop-shadow-sm dark:brightness-0 dark:invert dark:drop-shadow-[0_2px_8px_rgba(255,255,255,0.12)]"
+              imageClassName="drop-shadow-[0_2px_8px_rgba(255,255,255,0.12)] brightness-0 invert"
               priority
               sizes="96px"
             />
@@ -285,15 +310,17 @@ export function AppShell({ user, children }: AppShellProps) {
             <nav className="space-y-4">{sidebarNav()}</nav>
           </ScrollArea>
 
-          <div className="relative border-t border-navy-200/50 p-3 dark:border-white/10">
-            <div className="rounded-[22px] border border-white/40 bg-white/60 p-3 text-navy-900 shadow-sm backdrop-blur-md dark:border-white/10 dark:bg-white/6 dark:text-white dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]">
+          <div className="relative border-t border-white/10 p-3">
+            <div className="rounded-2xl border border-white/10 bg-white/6 p-3 text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] ">
               <div className="flex items-center gap-3">
-                <Avatar className="size-8 shadow-sm dark:shadow-[0_10px_20px_rgba(217,166,28,0.25)]">
+                <Avatar className="size-8 shadow-[0_10px_20px_rgba(217,166,28,0.25)]">
                   <AvatarFallback>{initials}</AvatarFallback>
                 </Avatar>
                 <div className="min-w-0 flex-1">
-                  <p className="truncate text-xs font-semibold">{displayName}</p>
-                  <p className="mt-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-gold-600 dark:text-gold-300">
+                  <p className="truncate text-xs font-semibold">
+                    {displayName}
+                  </p>
+                  <p className="mt-1 text-micro font-semibold uppercase tracking-[0.18em] text-gold-300">
                     {roleLabels[user.role]}
                   </p>
                 </div>
@@ -305,7 +332,7 @@ export function AppShell({ user, children }: AppShellProps) {
         <div className="relative flex min-h-screen flex-col lg:ml-72">
           <header
             aria-label={t("nav.topBar")}
-            className="sticky top-0 z-20 border-b border-navy-200/50 bg-white/72 backdrop-blur-xl transition-colors duration-300 dark:border-navy-800 dark:bg-navy-950/68"
+            className="sticky top-0 z-20 border-b border-navy-200/50 bg-white/72  transition-colors duration-300 dark:border-navy-800 dark:bg-navy-950/68"
           >
             <div className="mx-auto flex w-full max-w-[1600px] items-center justify-between gap-3 px-4 py-2 sm:px-6 lg:px-8">
               <div className="flex min-w-0 items-center gap-3">
@@ -320,9 +347,11 @@ export function AppShell({ user, children }: AppShellProps) {
                   <Menu className="size-5" />
                 </Button>
 
-                <div className="min-w-0">
-                  <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-gold-600 dark:text-gold-300">
-                    {currentItem ? getSectionLabel(currentItem.section) : roleLabels[user.role]}
+                <div className="min-w-0 lg:hidden">
+                  <p className="text-micro font-semibold uppercase tracking-[0.22em] text-gold-600 dark:text-gold-300">
+                    {currentItem
+                      ? getSectionLabel(currentItem.section)
+                      : roleLabels[user.role]}
                   </p>
                   <p className="truncate text-sm font-semibold text-foreground sm:text-base">
                     {currentItemLabel}
@@ -344,12 +373,14 @@ export function AppShell({ user, children }: AppShellProps) {
                       <span className="max-w-[120px] truncate">
                         {t("commandPalette.placeholder")}
                       </span>
-                      <kbd className="ml-1 inline-flex h-4 items-center rounded border border-border bg-muted px-1 text-[9px] font-medium">
+                      <kbd className="ml-1 inline-flex h-4 items-center rounded border border-border bg-muted px-1 text-micro font-medium">
                         Ctrl+K
                       </kbd>
                     </Button>
                   </TooltipTrigger>
-                  <TooltipContent>{t("commandPalette.placeholder")}</TooltipContent>
+                  <TooltipContent>
+                    {t("commandPalette.placeholder")}
+                  </TooltipContent>
                 </Tooltip>
 
                 <Tooltip>
@@ -365,13 +396,19 @@ export function AppShell({ user, children }: AppShellProps) {
                       <Search className="size-4" />
                     </Button>
                   </TooltipTrigger>
-                  <TooltipContent>{t("commandPalette.placeholder")}</TooltipContent>
+                  <TooltipContent>
+                    {t("commandPalette.placeholder")}
+                  </TooltipContent>
                 </Tooltip>
 
                 <NotificationCenter userRole={user.role} />
 
                 {isClient ? (
-                  <DropdownMenu onOpenChange={(open) => !open && setAccessibilityOpen(false)}>
+                  <DropdownMenu
+                    onOpenChange={(open) =>
+                      !open && setAccessibilityOpen(false)
+                    }
+                  >
                     <DropdownMenuTrigger asChild>
                       <Button
                         type="button"
@@ -379,7 +416,9 @@ export function AppShell({ user, children }: AppShellProps) {
                         className="hidden h-fit min-w-fit items-center gap-2 rounded-full border border-transparent px-2.5 py-1.5 lg:flex hover:border-navy-200/70 hover:bg-white/70 dark:hover:border-white/10 dark:hover:bg-white/6"
                       >
                         <Avatar className="size-6">
-                          <AvatarFallback className="text-[10px]">{initials}</AvatarFallback>
+                          <AvatarFallback className="text-micro">
+                            {initials}
+                          </AvatarFallback>
                         </Avatar>
                         <span className="max-w-[120px] truncate text-xs font-medium leading-tight text-foreground">
                           {displayName}
@@ -389,24 +428,33 @@ export function AppShell({ user, children }: AppShellProps) {
                     <DropdownMenuContent
                       align="end"
                       sideOffset={10}
-                      className="w-72 rounded-[22px] border border-white/45 bg-white/84 p-1.5 shadow-[0_24px_60px_-28px_rgba(9,21,35,0.28)] backdrop-blur-2xl dark:border-white/10 dark:bg-navy-950/84"
+                      className="w-72 rounded-2xl border border-white/45 bg-white/84 p-1.5 shadow-[0_24px_60px_-28px_rgba(9,21,35,0.28)]  dark:border-white/10 dark:bg-navy-950/84"
                     >
-                      <div className="rounded-[18px] bg-gradient-to-br from-navy-50 to-white px-3.5 py-3 dark:from-white/8 dark:to-white/4">
+                      <div className="rounded-2xl bg-gradient-to-br from-navy-50 to-white px-3.5 py-3 dark:from-white/8 dark:to-white/4">
                         <div className="flex items-start gap-3">
                           <Avatar className="size-10 shadow-sm ring-1 ring-white/70 dark:ring-white/10">
-                            <AvatarFallback className="text-xs font-semibold">{initials}</AvatarFallback>
+                            <AvatarFallback className="text-xs font-semibold">
+                              {initials}
+                            </AvatarFallback>
                           </Avatar>
                           <div className="min-w-0 flex-1">
-                            <p className="truncate text-[15px] font-semibold text-foreground">{displayName}</p>
-                            <p className="truncate pt-0.5 text-xs text-muted-foreground">{user.email}</p>
-                            <p className="pt-2 text-[10px] font-semibold uppercase tracking-[0.24em] text-gold-600 dark:text-gold-300">
+                            <p className="truncate text-base font-semibold text-foreground">
+                              {displayName}
+                            </p>
+                            <p className="truncate pt-0.5 text-xs text-muted-foreground">
+                              {user.email}
+                            </p>
+                            <p className="pt-2 text-micro font-semibold uppercase tracking-[0.24em] text-gold-600 dark:text-gold-300">
                               {roleLabels[user.role]}
                             </p>
                           </div>
                         </div>
                       </div>
                       <DropdownMenuSeparator />
-                      <DropdownMenuItem asChild className="rounded-2xl px-3 py-3">
+                      <DropdownMenuItem
+                        asChild
+                        className="rounded-2xl px-3 py-3"
+                      >
                         <Link href="/perfil">
                           <span className="flex size-8 items-center justify-center rounded-2xl bg-navy-100 text-navy-700 dark:bg-white/8 dark:text-navy-100">
                             <User className="size-4" />
@@ -415,8 +463,13 @@ export function AppShell({ user, children }: AppShellProps) {
                         </Link>
                       </DropdownMenuItem>
                       <DropdownMenuSeparator />
-                      <DropdownMenuLabel>{t("nav.preferences")}</DropdownMenuLabel>
-                      <DropdownMenuItem onClick={toggleTheme} className="rounded-2xl px-3 py-3">
+                      <DropdownMenuLabel>
+                        {t("nav.preferences")}
+                      </DropdownMenuLabel>
+                      <DropdownMenuItem
+                        onClick={toggleTheme}
+                        className="rounded-2xl px-3 py-3"
+                      >
                         {theme === "light" ? (
                           <Moon className="size-4" />
                         ) : (
@@ -424,10 +477,15 @@ export function AppShell({ user, children }: AppShellProps) {
                         )}
                         {t("nav.changeTheme")}
                         <DropdownMenuShortcut>
-                          {theme === "light" ? t("nav.darkMode") : t("nav.lightMode")}
+                          {theme === "light"
+                            ? t("nav.darkMode")
+                            : t("nav.lightMode")}
                         </DropdownMenuShortcut>
                       </DropdownMenuItem>
-                      <DropdownMenuItem onClick={toggleLocale} className="rounded-2xl px-3 py-3">
+                      <DropdownMenuItem
+                        onClick={toggleLocale}
+                        className="rounded-2xl px-3 py-3"
+                      >
                         <Globe className="size-4" />
                         {t("nav.changeLanguage")}
                         <DropdownMenuShortcut className="font-semibold text-navy-500 dark:text-navy-200">
@@ -448,22 +506,37 @@ export function AppShell({ user, children }: AppShellProps) {
                         </DropdownMenuShortcut>
                       </DropdownMenuItem>
                       {accessibilityOpen ? (
-                        <div className="space-y-3 rounded-[20px] border border-navy-200/70 bg-navy-50/75 px-2 py-2.5 dark:border-white/10 dark:bg-white/6">
+                        <div className="space-y-3 rounded-2xl border border-navy-200/70 bg-navy-50/75 px-2 py-2.5 dark:border-white/10 dark:bg-white/6">
                           <div>
-                            <DropdownMenuLabel className="px-2 pb-1 pt-1">{t("nav.textSize")}</DropdownMenuLabel>
+                            <DropdownMenuLabel className="px-2 pb-1 pt-1">
+                              {t("nav.textSize")}
+                            </DropdownMenuLabel>
                             <DropdownMenuRadioGroup
                               value={fontScale}
-                              onValueChange={(value) => setFontScale(value as "small" | "default" | "large")}
+                              onValueChange={(value) =>
+                                setFontScale(
+                                  value as "small" | "default" | "large",
+                                )
+                              }
                             >
-                              <DropdownMenuRadioItem value="small" className="rounded-none border-0 bg-transparent px-7 py-2 text-[15px]">
+                              <DropdownMenuRadioItem
+                                value="small"
+                                className="rounded-none border-0 bg-transparent px-7 py-2 text-base"
+                              >
                                 <Type className="size-4" />
                                 {t("nav.textSmall")}
                               </DropdownMenuRadioItem>
-                              <DropdownMenuRadioItem value="default" className="rounded-none border-0 bg-transparent px-7 py-2 text-[15px]">
+                              <DropdownMenuRadioItem
+                                value="default"
+                                className="rounded-none border-0 bg-transparent px-7 py-2 text-base"
+                              >
                                 <Type className="size-4" />
                                 {t("nav.textDefault")}
                               </DropdownMenuRadioItem>
-                              <DropdownMenuRadioItem value="large" className="rounded-none border-0 bg-transparent px-7 py-2 text-[15px]">
+                              <DropdownMenuRadioItem
+                                value="large"
+                                className="rounded-none border-0 bg-transparent px-7 py-2 text-base"
+                              >
                                 <Type className="size-4" />
                                 {t("nav.textLarge")}
                               </DropdownMenuRadioItem>
@@ -471,15 +544,25 @@ export function AppShell({ user, children }: AppShellProps) {
                           </div>
                           <DropdownMenuSeparator className="mx-0" />
                           <div>
-                            <DropdownMenuLabel className="px-2 pb-1 pt-1">{t("nav.contrast")}</DropdownMenuLabel>
+                            <DropdownMenuLabel className="px-2 pb-1 pt-1">
+                              {t("nav.contrast")}
+                            </DropdownMenuLabel>
                             <DropdownMenuRadioGroup
                               value={contrast}
-                              onValueChange={(value) => setContrastMode(value as "normal" | "high")}
+                              onValueChange={(value) =>
+                                setContrastMode(value as "normal" | "high")
+                              }
                             >
-                              <DropdownMenuRadioItem value="normal" className="rounded-none border-0 bg-transparent px-7 py-2 text-[15px]">
+                              <DropdownMenuRadioItem
+                                value="normal"
+                                className="rounded-none border-0 bg-transparent px-7 py-2 text-base"
+                              >
                                 {t("nav.contrastNormal")}
                               </DropdownMenuRadioItem>
-                              <DropdownMenuRadioItem value="high" className="rounded-none border-0 bg-transparent px-7 py-2 text-[15px]">
+                              <DropdownMenuRadioItem
+                                value="high"
+                                className="rounded-none border-0 bg-transparent px-7 py-2 text-base"
+                              >
                                 {t("nav.contrastHigh")}
                               </DropdownMenuRadioItem>
                             </DropdownMenuRadioGroup>
@@ -521,30 +604,52 @@ export function AppShell({ user, children }: AppShellProps) {
           <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
             <SheetContent
               side="left"
-              className="w-72 border-r border-navy-200/50 bg-white/90 p-0 backdrop-blur-3xl dark:border-navy-800 dark:bg-navy-950/90 transition-colors duration-300"
+              data-theme="dark"
+              className="dark w-72 rounded-none border-r border-navy-800 p-0 transition-colors duration-300 overflow-hidden"
             >
-              <div className="flex items-center justify-center border-b border-navy-200/50 dark:border-white/10 px-6 py-5">
-                <BrandLogo
-                  alt={brandName}
-                  className="h-[98px] w-[96px]"
-                  imageClassName="drop-shadow-sm dark:brightness-0 dark:invert dark:drop-shadow-[0_2px_8px_rgba(255,255,255,0.12)]"
-                  sizes="96px"
-                />
+              {/* Dark Mode Base Layer */}
+              <div className="absolute inset-0 bg-navy-950" />
+
+              <div className="absolute inset-0 pointer-events-none overflow-hidden">
+                <div className="absolute -left-20 -top-20 size-96 rounded-full bg-gold-400/10 " />
+                <div className="absolute -bottom-20 -right-20 size-96 rounded-full bg-navy-300/5 " />
+                <div className="bg-noise absolute inset-0 opacity-[0.03]" />
               </div>
-              <ScrollArea className="h-[calc(100vh-224px)] px-3 py-4">
-                <nav className="space-y-4">{sidebarNav(() => setMobileOpen(false))}</nav>
-              </ScrollArea>
-              <div className="border-t border-navy-200/50 dark:border-white/10 p-3">
-                <div className="rounded-[18px] border border-white/40 bg-white/50 p-3 text-navy-900 shadow-sm backdrop-blur-md dark:border-white/10 dark:bg-white/5 dark:text-white dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]">
-                  <div className="flex items-center gap-3">
-                    <Avatar className="size-8 shadow-sm dark:shadow-[0_10px_20px_rgba(217,166,28,0.25)]">
-                      <AvatarFallback className="text-[10px]">{initials}</AvatarFallback>
-                    </Avatar>
-                    <div className="min-w-0 flex-1">
-                      <p className="truncate text-xs font-semibold">{displayName}</p>
-                      <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-gold-600 dark:text-gold-300">
-                        {roleLabels[user.role]}
-                      </p>
+
+              <div className="absolute inset-0 bg-navy-950 " />
+
+              <div className="absolute inset-x-0 top-0 h-28 bg-[radial-gradient(circle_at_top_left,rgba(216,173,52,0.16),transparent_40%),linear-gradient(180deg,rgba(20,48,76,0.24),transparent)] z-0" />
+
+              <div className="relative z-10 flex h-full flex-col">
+                <div className="relative flex items-center justify-center border-b border-white/10 px-6 py-5">
+                  <BrandLogo
+                    alt={brandName}
+                    className="h-[98px] w-[96px]"
+                    imageClassName="drop-shadow-[0_2px_8px_rgba(255,255,255,0.12)] brightness-0 invert"
+                    sizes="96px"
+                  />
+                </div>
+                <ScrollArea className="h-[calc(100vh-224px)] px-3 py-4">
+                  <nav className="space-y-4">
+                    {sidebarNav(() => setMobileOpen(false))}
+                  </nav>
+                </ScrollArea>
+                <div className="border-t border-navy-200/50 dark:border-white/10 p-3">
+                  <div className="rounded-2xl border border-white/40 bg-white/50 p-3 text-navy-900 shadow-sm  dark:border-white/10 dark:bg-white/5 dark:text-white dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]">
+                    <div className="flex items-center gap-3">
+                      <Avatar className="size-8 shadow-sm dark:shadow-[0_10px_20px_rgba(217,166,28,0.25)]">
+                        <AvatarFallback className="text-micro">
+                          {initials}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate text-xs font-semibold">
+                          {displayName}
+                        </p>
+                        <p className="text-micro font-semibold uppercase tracking-[0.2em] text-gold-600 dark:text-gold-300">
+                          {roleLabels[user.role]}
+                        </p>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -559,7 +664,7 @@ export function AppShell({ user, children }: AppShellProps) {
             {children}
           </main>
 
-          <nav className="fixed inset-x-0 bottom-0 z-20 border-t border-navy-200/50 bg-white/80 px-3 py-2 backdrop-blur-2xl dark:border-white/10 dark:bg-navy-950/80 lg:hidden transition-colors duration-300">
+          <nav className="fixed inset-x-0 bottom-0 z-20 border-t border-navy-200/50 bg-white/80 px-3 py-2  dark:border-white/10 dark:bg-navy-950/80 lg:hidden transition-colors duration-300">
             <div className="mx-auto grid max-w-xl grid-cols-5 gap-1.5">
               {mobileItems.map((item) => {
                 const Icon = item.icon;
@@ -570,10 +675,10 @@ export function AppShell({ user, children }: AppShellProps) {
                     key={item.href}
                     href={item.href}
                     className={cn(
-                      "flex flex-col items-center gap-0.5 rounded-xl px-2 py-1 text-[10px] font-semibold transition-all duration-300",
+                      "flex flex-col items-center gap-0.5 rounded-xl px-2 py-1 text-micro font-semibold transition-all duration-300",
                       active
                         ? "bg-navy-100 text-navy-900 shadow-sm dark:bg-[linear-gradient(135deg,rgba(255,255,255,0.14),rgba(255,255,255,0.06))] dark:text-white dark:shadow-[0_18px_36px_rgba(4,10,18,0.22)]"
-                        : "text-navy-500 hover:bg-navy-50 hover:text-navy-900 dark:text-navy-300 dark:hover:bg-white/5 dark:hover:text-white"
+                        : "text-navy-500 hover:bg-navy-50 hover:text-navy-900 dark:text-navy-300 dark:hover:bg-white/5 dark:hover:text-white",
                     )}
                   >
                     <span
@@ -581,12 +686,14 @@ export function AppShell({ user, children }: AppShellProps) {
                         "flex size-7 items-center justify-center rounded-xl",
                         active
                           ? "bg-gold-400/20 text-gold-600 ring-1 ring-gold-400/30 dark:bg-gold-300/15 dark:text-gold-300 dark:ring-gold-300/20"
-                          : "bg-navy-100/50 dark:bg-white/5"
+                          : "bg-navy-100/50 dark:bg-white/5",
                       )}
                     >
                       <Icon className="size-4" />
                     </span>
-                    <span className="truncate">{t(item.label as Parameters<typeof t>[0])}</span>
+                    <span className="truncate">
+                      {t(item.label as Parameters<typeof t>[0])}
+                    </span>
                   </Link>
                 );
               })}
@@ -595,18 +702,26 @@ export function AppShell({ user, children }: AppShellProps) {
                 type="button"
                 onClick={() => setMobileOpen(true)}
                 className={cn(
-                  "flex flex-col items-center gap-0.5 rounded-xl px-2 py-1 text-[10px] font-semibold transition-all duration-300",
-                  mobileOpen || (currentItem && !mobileItems.some((item) => item.href === currentItem.href))
+                  "flex flex-col items-center gap-0.5 rounded-xl px-2 py-1 text-micro font-semibold transition-all duration-300",
+                  mobileOpen ||
+                    (currentItem &&
+                      !mobileItems.some(
+                        (item) => item.href === currentItem.href,
+                      ))
                     ? "bg-navy-100 text-navy-900 shadow-sm dark:bg-[linear-gradient(135deg,rgba(255,255,255,0.14),rgba(255,255,255,0.06))] dark:text-white dark:shadow-[0_18px_36px_rgba(4,10,18,0.22)]"
-                    : "text-navy-500 hover:bg-navy-50 hover:text-navy-900 dark:text-navy-300 dark:hover:bg-white/5 dark:hover:text-white"
+                    : "text-navy-500 hover:bg-navy-50 hover:text-navy-900 dark:text-navy-300 dark:hover:bg-white/5 dark:hover:text-white",
                 )}
               >
                 <span
                   className={cn(
                     "flex size-7 items-center justify-center rounded-xl",
-                    mobileOpen || (currentItem && !mobileItems.some((item) => item.href === currentItem.href))
+                    mobileOpen ||
+                      (currentItem &&
+                        !mobileItems.some(
+                          (item) => item.href === currentItem.href,
+                        ))
                       ? "bg-gold-400/20 text-gold-600 ring-1 ring-gold-400/30 dark:bg-gold-300/15 dark:text-gold-300 dark:ring-gold-300/20"
-                      : "bg-navy-100/50 dark:bg-white/5"
+                      : "bg-navy-100/50 dark:bg-white/5",
                   )}
                 >
                   <Menu className="size-4" />
@@ -618,7 +733,11 @@ export function AppShell({ user, children }: AppShellProps) {
         </div>
       </div>
 
-      <CommandPalette open={cmdOpen} onOpenChange={setCmdOpen} userRole={user.role} />
+      <CommandPalette
+        open={cmdOpen}
+        onOpenChange={setCmdOpen}
+        userRole={user.role}
+      />
     </TooltipProvider>
   );
 }

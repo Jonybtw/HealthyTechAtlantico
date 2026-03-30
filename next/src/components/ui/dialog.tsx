@@ -20,7 +20,7 @@ const DialogOverlay = React.forwardRef<
       "fixed inset-0 z-50 bg-navy-950/65 backdrop-blur",
       "data-[state=open]:animate-in data-[state=closed]:animate-out",
       "data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
-      className
+      className,
     )}
     {...props}
   />
@@ -40,10 +40,10 @@ const DialogContent = React.forwardRef<
       aria-describedby={props["aria-describedby"] ?? undefined}
       className={cn(
         "fixed left-1/2 top-1/2 z-50 w-full max-w-md -translate-x-1/2 -translate-y-1/2",
-        "overflow-hidden rounded-[18px] border border-border/70 bg-card/95 p-4 shadow-float sm:p-5",
+        "overflow-hidden rounded-2xl border border-border/70 bg-card/95 p-4 shadow-float sm:p-5",
         "animate-scale-in",
         "duration-200",
-        className
+        className,
       )}
       {...props}
     >
@@ -65,7 +65,10 @@ function DialogHeader({
 }: React.HTMLAttributes<HTMLDivElement>) {
   return (
     <div
-      className={cn("flex flex-col space-y-1.5 text-center sm:text-left", className)}
+      className={cn(
+        "flex flex-col space-y-1.5 text-center sm:text-left",
+        className,
+      )}
       {...props}
     />
   );
@@ -77,7 +80,10 @@ function DialogFooter({
 }: React.HTMLAttributes<HTMLDivElement>) {
   return (
     <div
-      className={cn("flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2", className)}
+      className={cn(
+        "flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2",
+        className,
+      )}
       {...props}
     />
   );
@@ -89,7 +95,10 @@ const DialogTitle = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <DialogPrimitive.Title
     ref={ref}
-    className={cn("font-display text-base font-semibold tracking-tight text-foreground", className)}
+    className={cn(
+      "font-display text-base font-semibold tracking-tight text-foreground",
+      className,
+    )}
     {...props}
   />
 ));

@@ -4,7 +4,11 @@ import * as React from "react";
 import { useLocale } from "next-intl";
 import { CalendarDays, ChevronLeft, ChevronRight, X } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 
 interface DateFieldProps {
   id?: string;
@@ -96,14 +100,14 @@ export const DateField = React.forwardRef<HTMLButtonElement, DateFieldProps>(
       max,
       autoFocus,
     },
-    ref
+    ref,
   ) => {
     const locale = useLocale();
     const uid = id ?? name;
     const selectedDate = parseDateValue(value);
     const [open, setOpen] = React.useState(false);
     const [visibleMonth, setVisibleMonth] = React.useState<Date>(
-      selectedDate ?? new Date()
+      selectedDate ?? new Date(),
     );
 
     React.useEffect(() => {
@@ -115,16 +119,24 @@ export const DateField = React.forwardRef<HTMLButtonElement, DateFieldProps>(
 
     const localizedPlaceholder =
       placeholder ?? (locale.startsWith("pt") ? "dd/mm/aaaa" : "mm/dd/yyyy");
-    const displayValue = value ? formatDateValue(value, locale) : localizedPlaceholder;
-    const weekdayLabels = React.useMemo(() => getWeekdayLabels(locale), [locale]);
-    const days = React.useMemo(() => getCalendarDays(visibleMonth), [visibleMonth]);
+    const displayValue = value
+      ? formatDateValue(value, locale)
+      : localizedPlaceholder;
+    const weekdayLabels = React.useMemo(
+      () => getWeekdayLabels(locale),
+      [locale],
+    );
+    const days = React.useMemo(
+      () => getCalendarDays(visibleMonth),
+      [visibleMonth],
+    );
     const monthLabel = React.useMemo(
       () =>
         new Intl.DateTimeFormat(locale, {
           month: "long",
           year: "numeric",
         }).format(visibleMonth),
-      [locale, visibleMonth]
+      [locale, visibleMonth],
     );
 
     const todayLabel = locale.startsWith("pt") ? "Hoje" : "Today";
@@ -153,7 +165,9 @@ export const DateField = React.forwardRef<HTMLButtonElement, DateFieldProps>(
 
     return (
       <div className="flex flex-col gap-1.5">
-        {name ? <input type="hidden" name={name} value={value} required={required} /> : null}
+        {name ? (
+          <input type="hidden" name={name} value={value} required={required} />
+        ) : null}
         <Popover
           open={open}
           onOpenChange={(nextOpen) => {
@@ -170,7 +184,9 @@ export const DateField = React.forwardRef<HTMLButtonElement, DateFieldProps>(
               id={uid}
               type="button"
               aria-label={typeof label === "string" ? label : undefined}
-              aria-describedby={error ? `${uid}-error` : hint ? `${uid}-hint` : undefined}
+              aria-describedby={
+                error ? `${uid}-error` : hint ? `${uid}-hint` : undefined
+              }
               aria-expanded={open}
               aria-haspopup="dialog"
               disabled={disabled}
@@ -184,19 +200,21 @@ export const DateField = React.forwardRef<HTMLButtonElement, DateFieldProps>(
                 error
                   ? "border-danger-500/60 focus:border-danger-500 focus:ring-danger-500/15"
                   : "border-border/80",
-                className
+                className,
               )}
             >
               <span className="flex min-w-0 flex-1 flex-col">
                 {label ? (
-                  <span className="text-[10px] font-semibold text-muted-foreground">
+                  <span className="text-micro font-semibold text-muted-foreground">
                     {label}
                   </span>
                 ) : null}
                 <span
                   className={cn(
                     "mt-0.5 truncate text-sm leading-tight",
-                    value ? "font-medium text-foreground" : "text-muted-foreground/70"
+                    value
+                      ? "font-medium text-foreground"
+                      : "text-muted-foreground/70",
                   )}
                 >
                   {displayValue}
@@ -208,7 +226,7 @@ export const DateField = React.forwardRef<HTMLButtonElement, DateFieldProps>(
             </button>
           </PopoverTrigger>
 
-          <PopoverContent align="start" className="w-[320px] rounded-[20px] p-4">
+          <PopoverContent align="start" className="w-[320px] rounded-2xl p-4">
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <button
@@ -216,7 +234,11 @@ export const DateField = React.forwardRef<HTMLButtonElement, DateFieldProps>(
                   onClick={() =>
                     setVisibleMonth(
                       (current) =>
-                        new Date(current.getFullYear(), current.getMonth() - 1, 1)
+                        new Date(
+                          current.getFullYear(),
+                          current.getMonth() - 1,
+                          1,
+                        ),
                     )
                   }
                   className="flex size-9 items-center justify-center rounded-full border border-border/70 bg-card/70 text-muted-foreground transition hover:border-navy-300/40 hover:text-foreground"
@@ -231,7 +253,11 @@ export const DateField = React.forwardRef<HTMLButtonElement, DateFieldProps>(
                   onClick={() =>
                     setVisibleMonth(
                       (current) =>
-                        new Date(current.getFullYear(), current.getMonth() + 1, 1)
+                        new Date(
+                          current.getFullYear(),
+                          current.getMonth() + 1,
+                          1,
+                        ),
                     )
                   }
                   className="flex size-9 items-center justify-center rounded-full border border-border/70 bg-card/70 text-muted-foreground transition hover:border-navy-300/40 hover:text-foreground"
@@ -244,7 +270,7 @@ export const DateField = React.forwardRef<HTMLButtonElement, DateFieldProps>(
                 {weekdayLabels.map((weekday, index) => (
                   <span
                     key={`${weekday}-${index}`}
-                    className="pb-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground"
+                    className="pb-1 text-micro font-semibold uppercase tracking-[0.18em] text-muted-foreground"
                   >
                     {weekday}
                   </span>
@@ -268,8 +294,11 @@ export const DateField = React.forwardRef<HTMLButtonElement, DateFieldProps>(
                           : isToday
                             ? "border border-gold-400/50 bg-gold-100/80 text-navy-950"
                             : "text-foreground hover:bg-muted/70",
-                        !isCurrentMonth && !isSelected && "text-muted-foreground/45",
-                        isDisabledDay && "cursor-not-allowed opacity-35 hover:bg-transparent"
+                        !isCurrentMonth &&
+                          !isSelected &&
+                          "text-muted-foreground/45",
+                        isDisabledDay &&
+                          "cursor-not-allowed opacity-35 hover:bg-transparent",
                       )}
                     >
                       {date.getDate()}
@@ -303,17 +332,24 @@ export const DateField = React.forwardRef<HTMLButtonElement, DateFieldProps>(
         </Popover>
 
         {error ? (
-          <p id={`${uid}-error`} role="alert" className="text-[11px] font-medium leading-relaxed text-danger-600">
+          <p
+            id={`${uid}-error`}
+            role="alert"
+            className="text-tiny font-medium leading-relaxed text-danger-600"
+          >
             {error}
           </p>
         ) : hint ? (
-          <p id={`${uid}-hint`} className="text-[11px] leading-relaxed text-muted-foreground">
+          <p
+            id={`${uid}-hint`}
+            className="text-tiny leading-relaxed text-muted-foreground"
+          >
             {hint}
           </p>
         ) : null}
       </div>
     );
-  }
+  },
 );
 
 DateField.displayName = "DateField";

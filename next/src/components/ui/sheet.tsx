@@ -5,11 +5,7 @@ import * as DialogPrimitive from "@radix-ui/react-dialog";
 import { DialogTitle } from "@radix-ui/react-dialog";
 import { X } from "lucide-react";
 import { cn } from "@/lib/utils";
-import {
-  Dialog,
-  DialogOverlay,
-  DialogPortal,
-} from "@/components/ui/dialog";
+import { Dialog, DialogOverlay, DialogPortal } from "@/components/ui/dialog";
 
 // Sheet is built on top of Dialog but slides in from a side.
 // Re-export Dialog primitives with Sheet naming.
@@ -18,8 +14,7 @@ const Sheet = Dialog;
 const SheetTrigger = DialogPrimitive.Trigger;
 const SheetClose = DialogPrimitive.Close;
 
-interface SheetContentProps
-  extends React.ComponentPropsWithoutRef<"div"> {
+interface SheetContentProps extends React.ComponentPropsWithoutRef<"div"> {
   side?: "top" | "right" | "bottom" | "left";
   onClose?: () => void;
 }
@@ -43,7 +38,7 @@ const SheetContent = React.forwardRef<HTMLDivElement, SheetContentProps>(
           className={cn(
             "fixed z-50 gap-4 bg-card/95 p-4 shadow-float backdrop-blur-xl transition-transform duration-300 ease-in-out",
             sideVariants[side],
-            className
+            className,
           )}
           {...props}
         >
@@ -56,36 +51,71 @@ const SheetContent = React.forwardRef<HTMLDivElement, SheetContentProps>(
         </div>
       </DialogPrimitive.Content>
     </DialogPortal>
-  )
+  ),
 );
 SheetContent.displayName = "SheetContent";
 
-function SheetHeader({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) {
-  return (
-    <div className={cn("flex flex-col space-y-2 text-center sm:text-left", className)} {...props} />
-  );
-}
-
-function SheetFooter({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) {
+function SheetHeader({
+  className,
+  ...props
+}: React.HTMLAttributes<HTMLDivElement>) {
   return (
     <div
-      className={cn("flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2", className)}
+      className={cn(
+        "flex flex-col space-y-2 text-center sm:text-left",
+        className,
+      )}
       {...props}
     />
   );
 }
 
-function SheetTitle({ className, ...props }: React.HTMLAttributes<HTMLHeadingElement>) {
+function SheetFooter({
+  className,
+  ...props
+}: React.HTMLAttributes<HTMLDivElement>) {
+  return (
+    <div
+      className={cn(
+        "flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2",
+        className,
+      )}
+      {...props}
+    />
+  );
+}
+
+function SheetTitle({
+  className,
+  ...props
+}: React.HTMLAttributes<HTMLHeadingElement>) {
   return (
     <h3
-      className={cn("font-display text-lg font-semibold text-foreground", className)}
+      className={cn(
+        "font-display text-lg font-semibold text-foreground",
+        className,
+      )}
       {...props}
     />
   );
 }
 
-function SheetDescription({ className, ...props }: React.HTMLAttributes<HTMLParagraphElement>) {
-  return <p className={cn("text-sm text-muted-foreground", className)} {...props} />;
+function SheetDescription({
+  className,
+  ...props
+}: React.HTMLAttributes<HTMLParagraphElement>) {
+  return (
+    <p className={cn("text-sm text-muted-foreground", className)} {...props} />
+  );
 }
 
-export { Sheet, SheetTrigger, SheetClose, SheetContent, SheetHeader, SheetFooter, SheetTitle, SheetDescription };
+export {
+  Sheet,
+  SheetTrigger,
+  SheetClose,
+  SheetContent,
+  SheetHeader,
+  SheetFooter,
+  SheetTitle,
+  SheetDescription,
+};

@@ -100,7 +100,9 @@ export async function PUT(
         ...(data.className !== undefined && { className: data.className }),
         ...(data.kidmedConsentGranted !== undefined && {
           kidmedConsentAt: data.kidmedConsentGranted ? new Date() : null,
-          kidmedConsentRecordedById: data.kidmedConsentGranted ? session.user.id : null,
+          kidmedConsentRecordedById: data.kidmedConsentGranted
+            ? session.user.id
+            : null,
         }),
       },
     });
@@ -148,7 +150,10 @@ export async function DELETE(
     }
 
     const { id } = await params;
-    const existing = await prisma.student.findUnique({ where: { id }, select: { id: true } });
+    const existing = await prisma.student.findUnique({
+      where: { id },
+      select: { id: true },
+    });
     if (!existing) {
       return notFound("Aluno não encontrado");
     }

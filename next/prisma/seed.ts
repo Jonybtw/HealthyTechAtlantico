@@ -169,7 +169,8 @@ async function main() {
       sessionDate.setMonth(sessionLabel.includes("1º") ? 10 : sessionLabel.includes("2º") ? 2 : 5);
       sessionDate.setDate(15 + Math.floor(Math.random() * 10));
 
-      const session = await prisma.evaluationSession.create({
+      await prisma.$transaction(async (tx) => {
+        const session = await tx.evaluationSession.create({
         data: {
           studentId: student.id,
           label: sessionLabel,
@@ -187,7 +188,7 @@ async function main() {
 
       const bmi = baseWeight / (baseHeight * baseHeight);
 
-      await prisma.biometric.create({
+      await tx.biometric.create({
         data: {
           studentId: student.id,
           sessionId: session.id,
@@ -230,7 +231,7 @@ async function main() {
 
         const isGood = Math.random() > 0.3;
 
-        await prisma.test.create({
+        await tx.test.create({
           data: {
             studentId: student.id,
             sessionId: session.id,
@@ -245,7 +246,7 @@ async function main() {
       }
       
       if (t > 1) { 
-        await prisma.questionnaire.create({
+        await tx.questionnaire.create({
           data: {
             studentId: student.id,
             type: QuestionnaireType.AUTOCONCEITO,
@@ -259,6 +260,7 @@ async function main() {
           },
         });
       }
+      });
     }
     progress++;
     if (progress % 10 === 0) console.log(`  ...${progress} students processed`);

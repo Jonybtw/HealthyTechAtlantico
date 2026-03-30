@@ -306,24 +306,26 @@ export default function BiometriaPage() {
               description={t("registerCardDescription")}
               actions={
                 selectedStudent ? (
-                  <span className="inline-flex items-center rounded-full border border-white/20 bg-white/55 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-navy-800 shadow-sm dark:border-white/10 dark:bg-white/10 dark:text-gold-200">
-                    {selectedStudent.className ?? selectedStudent.schoolYear ?? t("selectedStudentLabel")}
+                  <span className="inline-flex items-center rounded-full border border-white/20 bg-white/55 px-3 py-1 text-tiny font-semibold uppercase tracking-[0.18em] text-navy-800 shadow-sm dark:border-white/10 dark:bg-white/10 dark:text-gold-200">
+                    {selectedStudent.className ??
+                      selectedStudent.schoolYear ??
+                      t("selectedStudentLabel")}
                   </span>
                 ) : null
               }
             >
               <form onSubmit={handleSubmit} className="flex flex-col gap-6">
-                <div className="rounded-[24px] border border-white/35 bg-white/72 p-4 shadow-card backdrop-blur-md dark:border-white/10 dark:bg-navy-950/42">
+                <div className="rounded-2xl border border-white/35 bg-white/72 p-4 shadow-card backdrop-blur-md dark:border-white/10 dark:bg-navy-950/42">
                   <div className="mb-3 flex items-center justify-between gap-3">
                     <div>
-                      <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-muted-foreground">
+                      <p className="text-tiny font-semibold uppercase tracking-[0.22em] text-muted-foreground">
                         {t("selectionLabel")}
                       </p>
                       <p className="mt-1 text-sm text-muted-foreground">
                         {t("selectionHint")}
                       </p>
                     </div>
-                    <span className="hidden rounded-full border border-gold-400/25 bg-gold-400/10 px-2.5 py-1 text-[11px] font-semibold text-gold-700 dark:text-gold-200 sm:inline-flex">
+                    <span className="hidden rounded-full border border-gold-400/25 bg-gold-400/10 px-2.5 py-1 text-tiny font-semibold text-gold-700 dark:text-gold-200 sm:inline-flex">
                       {t("studentCount", { count: students.length })}
                     </span>
                   </div>
@@ -380,10 +382,10 @@ export default function BiometriaPage() {
                   />
                 </div>
 
-                <div className="rounded-[24px] border border-gold-400/18 bg-gradient-to-r from-gold-400/10 via-white/70 to-white/55 p-4 shadow-card dark:from-gold-400/10 dark:via-navy-950/60 dark:to-navy-950/50">
+                <div className="rounded-2xl border border-gold-400/18 bg-gradient-to-r from-gold-400/10 via-white/70 to-white/55 p-4 shadow-card dark:from-gold-400/10 dark:via-navy-950/60 dark:to-navy-950/50">
                   <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                     <div className="space-y-2">
-                      <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-muted-foreground">
+                      <p className="text-tiny font-semibold uppercase tracking-[0.22em] text-muted-foreground">
                         {t("classificationTitle")}
                       </p>
                       {classification ? (
@@ -393,7 +395,10 @@ export default function BiometriaPage() {
                           </span>
                           <ZoneBadge zone={classification.imcZone} />
                           {classification.waistZone ? (
-                            <ZoneBadge zone={classification.waistZone} size="sm" />
+                            <ZoneBadge
+                              zone={classification.waistZone}
+                              size="sm"
+                            />
                           ) : null}
                         </div>
                       ) : (
@@ -444,7 +449,7 @@ export default function BiometriaPage() {
                       />
                     </div>
 
-                    <div className="rounded-[20px] border border-border/60 bg-background/55 p-4">
+                    <div className="rounded-2xl border border-border/60 bg-background/55 p-4">
                       <div className="flex items-center justify-between gap-3">
                         <span className="text-sm font-semibold text-foreground">
                           {t("waistZone")}
@@ -457,7 +462,7 @@ export default function BiometriaPage() {
                     </div>
                   </>
                 ) : (
-                  <div className="rounded-[24px] border border-dashed border-border/70 bg-background/40 px-4 py-8 text-center">
+                  <div className="rounded-2xl border border-dashed border-border/70 bg-background/40 px-4 py-8 text-center">
                     <p className="text-3xl font-black tracking-[-0.05em] text-foreground">
                       --.-
                     </p>
@@ -496,7 +501,9 @@ export default function BiometriaPage() {
                     <MetaRow
                       label={t("sexLabel")}
                       value={
-                        selectedStudent.sex === "F" ? t("sexFemale") : t("sexMale")
+                        selectedStudent.sex === "F"
+                          ? t("sexFemale")
+                          : t("sexMale")
                       }
                     />
                     <MetaRow
@@ -547,25 +554,25 @@ function BiometriaLoadingState() {
     <>
       <div className="grid gap-4 md:grid-cols-3">
         {[1, 2, 3].map((item) => (
-          <Skeleton key={item} className="h-28 rounded-[24px]" />
+          <Skeleton key={item} className="h-28 rounded-2xl" />
         ))}
       </div>
 
       <div className="grid grid-cols-1 items-start gap-6 xl:grid-cols-[minmax(0,1fr)_360px]">
         <PageSection tone="primary" layout="form" contentClassName="gap-6">
-          <Skeleton className="h-24 rounded-[24px]" />
+          <Skeleton className="h-24 rounded-2xl" />
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             {[1, 2, 3, 4].map((item) => (
               <Skeleton key={item} className="h-16 rounded-2xl" />
             ))}
           </div>
-          <Skeleton className="h-24 rounded-[24px]" />
+          <Skeleton className="h-24 rounded-2xl" />
         </PageSection>
 
         <div className="flex flex-col gap-6">
-          <Skeleton className="h-56 rounded-[24px]" />
-          <Skeleton className="h-48 rounded-[24px]" />
-          <Skeleton className="h-48 rounded-[24px]" />
+          <Skeleton className="h-56 rounded-2xl" />
+          <Skeleton className="h-48 rounded-2xl" />
+          <Skeleton className="h-48 rounded-2xl" />
         </div>
       </div>
     </>
@@ -593,10 +600,10 @@ function BiometriaOverviewCard({
         : "bg-navy-100 text-navy-800 dark:bg-white/10 dark:text-navy-100";
 
   return (
-    <div className="rounded-[24px] border border-white/30 bg-white/72 p-5 shadow-card backdrop-blur-md dark:border-white/10 dark:bg-navy-950/58">
+    <div className="rounded-2xl border border-white/30 bg-white/72 p-5 shadow-card backdrop-blur-md dark:border-white/10 dark:bg-navy-950/58">
       <div className="flex items-start justify-between gap-4">
         <div className="space-y-2">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-muted-foreground">
+          <p className="text-tiny font-semibold uppercase tracking-[0.22em] text-muted-foreground">
             {label}
           </p>
           <p className="text-2xl font-black tracking-[-0.04em] text-foreground">
@@ -626,8 +633,8 @@ function SummaryStat({
   highlight?: boolean;
 }) {
   return (
-    <div className="rounded-[20px] border border-border/60 bg-background/55 p-4">
-      <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-muted-foreground">
+    <div className="rounded-2xl border border-border/60 bg-background/55 p-4">
+      <p className="text-tiny font-semibold uppercase tracking-[0.22em] text-muted-foreground">
         {label}
       </p>
       <p
@@ -643,8 +650,8 @@ function SummaryStat({
 
 function MetaRow({ label, value }: { label: string; value: string }) {
   return (
-    <div className="flex items-center justify-between gap-3 rounded-[18px] border border-border/60 bg-background/45 px-4 py-3">
-      <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+    <div className="flex items-center justify-between gap-3 rounded-2xl border border-border/60 bg-background/45 px-4 py-3">
+      <span className="text-tiny font-semibold uppercase tracking-[0.18em] text-muted-foreground">
         {label}
       </span>
       <span className="text-sm font-semibold text-foreground">{value}</span>
@@ -669,7 +676,7 @@ function ReferenceRow({
         : "bg-red-500";
 
   return (
-    <div className="rounded-[18px] border border-border/60 bg-background/45 p-4">
+    <div className="rounded-2xl border border-border/60 bg-background/45 p-4">
       <div className="flex items-center gap-3">
         <span className={`size-2.5 rounded-full ${toneClass}`} />
         <p className="text-sm font-semibold text-foreground">{title}</p>

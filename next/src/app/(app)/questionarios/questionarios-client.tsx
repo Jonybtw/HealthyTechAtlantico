@@ -404,9 +404,9 @@ export default function QuestionariosPage() {
         }}
       >
         <div className="mx-auto grid w-full max-w-4xl gap-5">
-          <Skeleton className="h-[220px] rounded-3xl" />
-          <Skeleton className="h-[420px] rounded-3xl" />
-          <Skeleton className="h-[220px] rounded-3xl" />
+          <Skeleton className="h-[220px] rounded-2xl" />
+          <Skeleton className="h-[420px] rounded-2xl" />
+          <Skeleton className="h-[220px] rounded-2xl" />
         </div>
       </PageScaffold>
     );
@@ -650,10 +650,10 @@ export default function QuestionariosPage() {
       <div className="mx-auto flex w-full max-w-4xl flex-col gap-5 pb-28">
         <PageSection tone="primary" layout="form" className="overflow-hidden">
           <div className="grid gap-6">
-            <div className="relative overflow-hidden rounded-3xl border border-white/20 dark:border-white/10 bg-[radial-gradient(circle_at_top_right,rgba(212,175,55,0.18),transparent_36%),linear-gradient(180deg,rgba(15,23,42,0.02),rgba(15,23,42,0.06))] p-5 sm:p-6">
+            <div className="relative overflow-hidden rounded-2xl border border-white/20 dark:border-white/10 bg-[radial-gradient(circle_at_top_right,rgba(212,175,55,0.18),transparent_36%),linear-gradient(180deg,rgba(15,23,42,0.02),rgba(15,23,42,0.06))] p-5 sm:p-6">
               <div className="absolute inset-x-6 top-0 h-px bg-gradient-to-r from-transparent via-gold-300/70 to-transparent" />
               <div className="flex flex-col gap-4">
-                <div className="flex flex-wrap items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
+                <div className="flex flex-wrap items-center gap-2 text-tiny font-semibold uppercase tracking-[0.2em] text-muted-foreground">
                   <span>{t("flowEyebrow")}</span>
                   <span className="text-border">/</span>
                   <span>{t(`step${currentStepOrder}`)}</span>
@@ -665,7 +665,7 @@ export default function QuestionariosPage() {
                         instrument: t(selectedInstrument.labelKey),
                       })}
                     </h2>
-                    <p className="max-w-2xl text-sm leading-relaxed text-muted-foreground sm:text-[15px]">
+                    <p className="max-w-2xl text-sm leading-relaxed text-muted-foreground sm:text-base">
                       {t("heroDescription", {
                         instrument: t(selectedInstrument.labelKey),
                       })}
@@ -711,7 +711,7 @@ export default function QuestionariosPage() {
                     }
                   />
                 </div>
-                <div className="rounded-[20px] border border-white/20 dark:border-white/10 bg-white/50 dark:bg-navy-950/40 backdrop-blur-sm p-4">
+                <div className="rounded-2xl border border-white/20 dark:border-white/10 bg-white/50 dark:bg-navy-950/40 backdrop-blur-sm p-4">
                   <div className="flex items-start gap-3">
                     <Sparkles className="mt-0.5 size-4 text-gold-600" />
                     <div className="space-y-1.5">
@@ -753,7 +753,7 @@ export default function QuestionariosPage() {
                     aria-checked={active}
                     onClick={() => setQType(type)}
                     className={cn(
-                      "group rounded-3xl border p-4 text-left transition-all duration-300",
+                      "group rounded-2xl border p-4 text-left transition-all duration-300",
                       active
                         ? "border-navy-900/75 bg-[radial-gradient(circle_at_top,rgba(245,158,11,0.16),transparent_48%),linear-gradient(180deg,rgba(2,6,23,0.96),rgba(15,23,42,0.92))] text-white shadow-[0_22px_44px_rgba(15,23,42,0.26)]"
                         : "border-white/20 dark:border-white/10/70 bg-white/60 dark:bg-navy-950/40 backdrop-blur-md/70 hover:-translate-y-1 hover:border-gold-400/45 hover:shadow-card-hover",
@@ -764,7 +764,7 @@ export default function QuestionariosPage() {
                         <div>
                           <span
                             className={cn(
-                              "inline-flex rounded-full px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.18em]",
+                              "inline-flex rounded-full px-2.5 py-1 text-micro font-semibold uppercase tracking-[0.18em]",
                               active
                                 ? "bg-white/12 text-gold-200"
                                 : "bg-muted text-muted-foreground",
@@ -795,7 +795,7 @@ export default function QuestionariosPage() {
                         </div>
                         <span
                           className={cn(
-                            "rounded-full px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.18em]",
+                            "rounded-full px-2.5 py-1 text-tiny font-semibold uppercase tracking-[0.18em]",
                             active
                               ? "bg-white/12 text-gold-200"
                               : "bg-muted text-muted-foreground",
@@ -859,7 +859,7 @@ export default function QuestionariosPage() {
                   ) : null
                 }
               />
-              <div className="rounded-[22px] border border-dashed border-white/20 dark:border-white/10/70 bg-white/50 dark:bg-navy-950/40 backdrop-blur-sm p-4 sm:p-5">
+              <div className="rounded-2xl border border-dashed border-white/20 dark:border-white/10/70 bg-white/50 dark:bg-navy-950/40 backdrop-blur-sm p-4 sm:p-5">
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                   <div>
                     <p className="text-sm font-semibold text-foreground">
@@ -1187,7 +1187,7 @@ export default function QuestionariosPage() {
                 </div>
 
                 {qType === "AUTOCONCEITO" ? (
-                  <div className="grid gap-3 rounded-[22px] border border-white/20 dark:border-white/10 bg-white/50 dark:bg-navy-950/40 backdrop-blur-sm p-4 sm:grid-cols-3">
+                  <div className="grid gap-3 rounded-2xl border border-white/20 dark:border-white/10 bg-white/50 dark:bg-navy-950/40 backdrop-blur-sm p-4 sm:grid-cols-3">
                     {[
                       {
                         key: "energyLevel",
@@ -1252,7 +1252,7 @@ export default function QuestionariosPage() {
             </PageSection>
 
             <div className="sticky bottom-4 z-10">
-              <div className="overflow-hidden rounded-3xl border border-white/20 dark:border-white/10/70 bg-white/50 dark:bg-navy-950/40 backdrop-blur-sm shadow-[0_18px_55px_rgba(15,23,42,0.2)] backdrop-blur">
+              <div className="overflow-hidden rounded-2xl border border-white/20 dark:border-white/10/70 bg-white/50 dark:bg-navy-950/40 backdrop-blur-sm shadow-[0_18px_55px_rgba(15,23,42,0.2)] backdrop-blur">
                 <div className="flex flex-col gap-4 p-4 sm:p-5 lg:flex-row lg:items-center lg:justify-between">
                   <div className="space-y-2">
                     <div className="flex flex-wrap items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
@@ -1329,7 +1329,7 @@ export default function QuestionariosPage() {
               {questionnaireHistory.map((item) => (
                 <div
                   key={item.id}
-                  className="rounded-[18px] border border-white/20 dark:border-white/10 bg-white/50 dark:bg-navy-950/40 backdrop-blur-sm p-4"
+                  className="rounded-2xl border border-white/20 dark:border-white/10 bg-white/50 dark:bg-navy-950/40 backdrop-blur-sm p-4"
                 >
                   <div className="flex flex-wrap items-start justify-between gap-3">
                     <div>
@@ -1458,7 +1458,7 @@ function WizardStepper({
             disabled={step.disabled}
             onClick={step.action}
             className={cn(
-              "rounded-[22px] border px-4 py-4 text-left transition-all duration-300",
+              "rounded-2xl border px-4 py-4 text-left transition-all duration-300",
               active
                 ? "border-navy-900/70 bg-navy-950 text-white shadow-card"
                 : completed
@@ -1508,8 +1508,8 @@ function WizardStepper({
 
 function MetaChip({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-[18px] border border-white/20 dark:border-white/10 bg-white/50 dark:bg-navy-950/40 backdrop-blur-sm px-3.5 py-3">
-      <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+    <div className="rounded-2xl border border-white/20 dark:border-white/10 bg-white/50 dark:bg-navy-950/40 backdrop-blur-sm px-3.5 py-3">
+      <p className="text-tiny font-semibold uppercase tracking-[0.18em] text-muted-foreground">
         {label}
       </p>
       <p className="mt-1.5 text-sm font-medium leading-relaxed text-foreground">
@@ -1562,7 +1562,7 @@ function BinaryRow({
   ] as const;
 
   return (
-    <fieldset className="rounded-[22px] border border-white/20 dark:border-white/10 bg-white/50 dark:bg-navy-950/40 backdrop-blur-sm p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]">
+    <fieldset className="rounded-2xl border border-white/20 dark:border-white/10 bg-white/50 dark:bg-navy-950/40 backdrop-blur-sm p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]">
       <legend className="px-1 text-sm font-semibold leading-relaxed text-foreground">
         {label}
       </legend>
@@ -1575,14 +1575,14 @@ function BinaryRow({
             aria-label={`${label} - ${option.label}`}
             onClick={option.onSelect}
             className={cn(
-              "group min-h-[92px] rounded-[20px] border p-4 text-left transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400/60 focus-visible:ring-offset-2",
+              "group min-h-[92px] rounded-2xl border p-4 text-left transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400/60 focus-visible:ring-offset-2",
               option.selected ? option.activeClass : option.inactiveClass,
             )}
           >
             <div className="flex items-start justify-between gap-3">
               <span
                 className={cn(
-                  "flex size-11 items-center justify-center rounded-[16px] transition-all duration-300",
+                  "flex size-11 items-center justify-center rounded-2xl transition-all duration-300",
                   option.iconClass,
                 )}
               >
@@ -1622,7 +1622,7 @@ function StatusPanel({
   footer?: ReactNode;
 }) {
   return (
-    <div className="rounded-[22px] border border-white/20 dark:border-white/10 bg-white/50 dark:bg-navy-950/40 backdrop-blur-sm p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] sm:p-5">
+    <div className="rounded-2xl border border-white/20 dark:border-white/10 bg-white/50 dark:bg-navy-950/40 backdrop-blur-sm p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] sm:p-5">
       <div className="flex items-start gap-3">
         <span className="mt-0.5">{icon}</span>
         <div className="flex-1">
@@ -1647,7 +1647,7 @@ function QuestionBlock({
   children: ReactNode;
 }) {
   return (
-    <div className="rounded-3xl border border-white/20 dark:border-white/10 bg-white/50 dark:bg-navy-950/40 backdrop-blur-sm p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] sm:p-5">
+    <div className="rounded-2xl border border-white/20 dark:border-white/10 bg-white/50 dark:bg-navy-950/40 backdrop-blur-sm p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] sm:p-5">
       <div className="mb-4">
         <p className="text-base font-semibold tracking-tight text-foreground">
           {title}
@@ -1671,8 +1671,8 @@ function ReviewCard({
   detail: string;
 }) {
   return (
-    <div className="rounded-[22px] border border-white/20 dark:border-white/10 bg-white/50 dark:bg-navy-950/40 backdrop-blur-sm p-4">
-      <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+    <div className="rounded-2xl border border-white/20 dark:border-white/10 bg-white/50 dark:bg-navy-950/40 backdrop-blur-sm p-4">
+      <p className="text-tiny font-semibold uppercase tracking-[0.18em] text-muted-foreground">
         {label}
       </p>
       <p className="mt-2 text-lg font-semibold tracking-tight text-foreground">
@@ -1695,7 +1695,7 @@ function ProgressReviewCard({
   colorClass: string;
 }) {
   return (
-    <div className="rounded-[18px] border border-white/20 dark:border-white/10 bg-white/50 dark:bg-navy-950/40 backdrop-blur-sm p-4">
+    <div className="rounded-2xl border border-white/20 dark:border-white/10 bg-white/50 dark:bg-navy-950/40 backdrop-blur-sm p-4">
       <div className="flex items-center justify-between gap-3">
         <span className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
           {label}
@@ -1723,7 +1723,7 @@ function HistorySkeletonList() {
       {Array.from({ length: 3 }, (_, index) => (
         <div
           key={index}
-          className="rounded-[18px] border border-white/20 dark:border-white/10 bg-white/50 dark:bg-navy-950/40 backdrop-blur-sm p-4"
+          className="rounded-2xl border border-white/20 dark:border-white/10 bg-white/50 dark:bg-navy-950/40 backdrop-blur-sm p-4"
         >
           <div className="flex items-start justify-between gap-3">
             <div className="flex-1 space-y-2">
@@ -1755,13 +1755,13 @@ function KidmedResultSummary({
   if (result.score === null || result.classification === null) return null;
 
   return (
-    <div className="rounded-[18px] border border-success-300/50 bg-success-50/60 p-4 dark:border-success-900/30 dark:bg-success-950/20">
+    <div className="rounded-2xl border border-success-300/50 bg-success-50/60 p-4 dark:border-success-900/30 dark:bg-success-950/20">
       <p className="text-xs uppercase tracking-[0.18em] text-success-700 dark:text-success-300">
         {t("kidmedLatestResultLabel")}
       </p>
       <div className="mt-3 grid gap-3 sm:grid-cols-2">
         <div>
-          <p className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
+          <p className="text-tiny uppercase tracking-[0.18em] text-muted-foreground">
             {t("kidmedScoreLabel")}
           </p>
           <p className="mt-1 text-2xl font-extrabold tracking-tight text-foreground">
@@ -1769,7 +1769,7 @@ function KidmedResultSummary({
           </p>
         </div>
         <div>
-          <p className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
+          <p className="text-tiny uppercase tracking-[0.18em] text-muted-foreground">
             {t("kidmedClassificationLabel")}
           </p>
           <p className="mt-1 text-sm font-semibold text-foreground">

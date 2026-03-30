@@ -25,10 +25,11 @@ export const AUDIT_ACTIONS = {
   UPDATE_CONSENT: "update_consent",
 } as const;
 
-export type AuditAction =
-  (typeof AUDIT_ACTIONS)[keyof typeof AUDIT_ACTIONS];
+export type AuditAction = (typeof AUDIT_ACTIONS)[keyof typeof AUDIT_ACTIONS];
 
-export const AUDIT_ACTION_VALUES = Object.values(AUDIT_ACTIONS) as AuditAction[];
+export const AUDIT_ACTION_VALUES = Object.values(
+  AUDIT_ACTIONS,
+) as AuditAction[];
 
 export interface AuditLogListItem {
   id: string;

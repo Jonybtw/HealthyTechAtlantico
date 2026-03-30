@@ -2,13 +2,24 @@ import { Card, CardContent } from "@/components/ui/card";
 import type { LucideIcon } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
+import { useReducedEffects } from "@/hooks/use-reduced-effects";
 
-function useAnimatedNumber(target: number, duration = 600) {
+function useAnimatedNumber(
+  target: number,
+  duration = 600,
+  disabled = false,
+) {
   const [display, setDisplay] = useState(target);
   const raf = useRef<number | undefined>(undefined);
   const previousTarget = useRef(target);
 
   useEffect(() => {
+    if (disabled) {
+      previousTarget.current = target;
+      setDisplay(target);
+      return;
+    }
+
     if (previousTarget.current === target) {
       return;
     }
@@ -28,7 +39,7 @@ function useAnimatedNumber(target: number, duration = 600) {
     return () => {
       if (raf.current) cancelAnimationFrame(raf.current);
     };
-  }, [target, duration]);
+  }, [target, duration, disabled]);
 
   return display;
 }
@@ -76,13 +87,19 @@ export function KpiCard({
 }: KpiCardProps) {
   const styles = accents[accent];
   const isNumeric = typeof value === "number";
-  const animatedValue = useAnimatedNumber(isNumeric ? value : 0);
+  const reducedEffects = useReducedEffects();
+  const animatedValue = useAnimatedNumber(
+    isNumeric ? value : 0,
+    600,
+    reducedEffects,
+  );
   const heroCard = emphasis === "hero";
 
   return (
     <Card
       className={cn(
         "group relative overflow-hidden rounded-xl border border-white/25 bg-white/78 shadow-float backdrop-blur-xl transition-all duration-300 hover:-translate-y-1.5 hover:shadow-card-hover dark:border-white/10 dark:bg-navy-950/72",
+        reducedEffects && "transition-none hover:translate-y-0 hover:shadow-float",
         heroCard &&
           "bg-gradient-to-br from-navy-800 via-navy-700 to-navy-600 text-white dark:from-navy-900 dark:via-navy-800 dark:to-navy-700",
       )}
@@ -142,7 +159,9 @@ export function KpiCard({
           <div
             className={cn(
               "mt-4 border-t pt-3",
-              heroCard ? "border-white/12" : "border-navy-200 dark:border-navy-800",
+              heroCard
+                ? "border-white/12"
+                : "border-navy-200 dark:border-navy-800",
             )}
           >
             {footer}

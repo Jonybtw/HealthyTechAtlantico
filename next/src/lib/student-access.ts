@@ -25,7 +25,7 @@ export async function getStudentAccessContext(
   studentId: string,
   userId: string,
   role: Role,
-  permission: Permission
+  permission: Permission,
 ): Promise<StudentAccessResult> {
   const student = await prisma.student.findUnique({
     where: { id: studentId },
@@ -42,7 +42,7 @@ export async function getStudentAccessContext(
 
   const isOwner = student.linkedUserId === userId;
   const isGuardian = student.guardians.some(
-    (guardian) => guardian.guardianUserId === userId
+    (guardian) => guardian.guardianUserId === userId,
   );
 
   if (!canAccessStudentByRole({ role, permission, isOwner, isGuardian })) {

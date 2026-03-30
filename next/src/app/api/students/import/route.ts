@@ -110,7 +110,10 @@ export async function POST(req: Request) {
 
         const normalizedBirthDate = normalizeDateField(birthDateRaw);
         if (birthDateRaw && !normalizedBirthDate) {
-          issues.push({ line, message: "Data invalida (use YYYY-MM-DD ou DD/MM/YYYY)" });
+          issues.push({
+            line,
+            message: "Data invalida (use YYYY-MM-DD ou DD/MM/YYYY)",
+          });
           return;
         }
 

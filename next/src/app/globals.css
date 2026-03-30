@@ -90,6 +90,9 @@
   --font-display: var(--font-display);
   --font-mono: var(--font-mono);
 
+  --text-micro: 10px;
+  --text-tiny: 11px;
+
   --shadow-card:
     0 8px 22px -20px rgb(9 21 35 / 0.18),
     0 2px 7px rgb(9 21 35 / 0.05),
@@ -367,18 +370,6 @@ html[data-theme="dark"] .bg-noise::after {
   }
 }
 
-.glass {
-  background: rgba(44, 54, 66, 0.4);
-  border: 1px solid rgba(143, 144, 157, 0.1);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-}
-
-html[data-theme="dark"] .glass {
-  background: rgba(23, 32, 44, 0.6);
-  border: 1px solid rgba(143, 144, 157, 0.15);
-}
-
 .pill-gradient {
   background: linear-gradient(135deg, #1e3a8a 0%, #b6c4ff 100%);
 }
@@ -429,10 +420,6 @@ html[data-theme="dark"] .surface-utility {
   box-shadow:
     inset 0 1px 0 rgb(255 255 255 / 0.04),
     0 8px 22px -20px rgb(0 0 0 / 0.48);
-}
-
-.page-frame {
-  @apply rounded-[20px] p-3 sm:p-4;
 }
 
 .page-stack {

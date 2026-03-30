@@ -653,6 +653,8 @@
     "noData": "Not enough data for analysis.",
     "selectYear": "Select year",
     "chartBmi": "BMI",
+    "chartHeight": "Height",
+    "chartWeight": "Weight",
     "chartTests": "Tests",
     "chartClass": "Class Average",
     "noStudentSelected": "No Student Selected",

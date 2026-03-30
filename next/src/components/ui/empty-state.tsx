@@ -14,7 +14,7 @@ export function EmptyState({
   action,
 }: EmptyStateProps) {
   return (
-    <section className="animate-fade-in-up relative overflow-hidden rounded-[20px] bg-white/50 dark:bg-navy-950/40 border border-white/20 dark:border-white/10 p-4 text-center sm:p-5 backdrop-blur-md">
+    <section className="animate-fade-in-up relative overflow-hidden rounded-2xl bg-white/50 dark:bg-navy-950/40 border border-white/20 dark:border-white/10 p-4 text-center sm:p-5 backdrop-blur-md">
       <div className="absolute inset-x-12 top-0 h-px bg-gradient-to-r from-transparent via-gold-400/40 to-transparent" />
       <div className="absolute right-0 top-0 h-28 w-28 rounded-full bg-gold-300/8 blur-3xl" />
       <div className="absolute bottom-0 left-0 h-28 w-28 rounded-full bg-navy-400/10 blur-3xl" />
@@ -33,7 +33,7 @@ export function EmptyState({
           <h3 className="font-display text-lg font-semibold tracking-[-0.03em] text-foreground sm:text-xl">
             {title}
           </h3>
-          <p className="mx-auto max-w-md text-[13px] leading-relaxed text-muted-foreground sm:text-sm">
+          <p className="mx-auto max-w-md text-sm leading-relaxed text-muted-foreground sm:text-sm">
             {description}
           </p>
         </div>

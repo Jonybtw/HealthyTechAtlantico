@@ -22,6 +22,8 @@ import { PageScaffold } from "@/components/ui/page-scaffold";
 import { PageSection } from "@/components/ui/page-section";
 import { StudentPicker } from "@/components/ui/student-picker";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Card } from "@/components/ui/card";
 import { DateField } from "@/components/ui/date-field";
 import { Input } from "@/components/ui/input";
 import { ConfirmModal } from "@/components/ui/confirm-modal";
@@ -155,7 +157,6 @@ export default function DispensasPage() {
           size="sm"
           icon={showForm ? undefined : <Plus className="size-4" />}
           onClick={() => setShowForm((v) => !v)}
-          className="shadow-[0_0_15px_rgba(216,173,52,0.3)]"
         >
           {showForm ? t("cancelBtn") : t("newBtn")}
         </Button>
@@ -179,7 +180,7 @@ export default function DispensasPage() {
         <AnimatePresence>
           {showForm && (
             <FadeIn key="dispensa-form" className="mb-8">
-              <PageSection className="glass-card max-w-2xl border-primary-500/20 shadow-[0_8px_32px_rgba(0,0,0,0.4)]">
+              <PageSection className="max-w-2xl border-primary-500/20">
                 <div className="flex items-center gap-3 mb-6">
                   <div className="size-8 rounded-full bg-primary-500/10 flex items-center justify-center">
                     <Plus className="size-4 text-primary-400" />
@@ -202,7 +203,6 @@ export default function DispensasPage() {
                         setForm((f) => ({ ...f, reason: e.target.value }))
                       }
                       required
-                      className="glass-input"
                     />
                   </div>
                   <DateField
@@ -283,16 +283,16 @@ export default function DispensasPage() {
           ) : loading ? (
             <div className="grid gap-4">
               {[1, 2, 3].map((i) => (
-                <div
+                <Card
                   key={i}
-                  className="glass-card p-6 flex justify-between items-center opacity-50"
+                  className="flex items-center justify-between p-6 opacity-50"
                 >
                   <div className="flex flex-col gap-3">
                     <Skeleton className="h-4 w-48 bg-white/5" />
                     <Skeleton className="h-3 w-32 bg-white/5" />
                   </div>
                   <Skeleton className="size-10 rounded-full bg-white/5" />
-                </div>
+                </Card>
               ))}
             </div>
           ) : dispensas.length === 0 ? (
@@ -319,12 +319,10 @@ export default function DispensasPage() {
                 const active = isDispensaActive(dispensa.endDate);
                 return (
                   <StaggerItem key={dispensa.id}>
-                    <div
+                    <Card
                       className={cn(
-                        "glass-card group p-6 flex items-center justify-between transition-all duration-500 hover:scale-[1.01]",
-                        active
-                          ? "border-gold-500/30"
-                          : "opacity-60 border-white/5",
+                        "group flex items-center justify-between p-6 transition-all duration-300 hover:-translate-y-0.5",
+                        active ? "border-gold-500/30" : "opacity-60",
                       )}
                     >
                       <div className="flex items-center gap-5">
@@ -351,7 +349,7 @@ export default function DispensasPage() {
                             {dispensa.reason}
                           </h4>
                           <div className="flex items-center gap-3">
-                            <div className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-widest text-slate-400">
+                            <div className="flex items-center gap-1.5 text-tiny font-bold uppercase tracking-widest text-slate-400">
                               <Calendar className="size-3" />
                               <span>
                                 {new Date(
@@ -362,27 +360,38 @@ export default function DispensasPage() {
                               </span>
                             </div>
                             {active ? (
-                              <span className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-gold-500/20 border border-gold-500/20 text-[10px] font-black uppercase tracking-tighter text-gold-500">
+                              <Badge
+                                variant="gold"
+                                size="sm"
+                                className="gap-1.5 uppercase tracking-[0.18em]"
+                              >
                                 <div className="size-1 rounded-full bg-gold-500 animate-pulse" />
                                 Ativa
-                              </span>
+                              </Badge>
                             ) : (
-                              <span className="px-2 py-0.5 rounded-full bg-white/5 border border-white/10 text-[10px] font-black uppercase tracking-tighter text-slate-500">
+                              <Badge
+                                variant="default"
+                                size="sm"
+                                className="uppercase tracking-[0.18em] text-slate-500"
+                              >
                                 Expirada
-                              </span>
+                              </Badge>
                             )}
                           </div>
                         </div>
                       </div>
 
-                      <button
+                      <Button
+                        type="button"
+                        size="icon"
+                        variant="ghost"
                         onClick={() => setDeleteId(dispensa.id)}
-                        className="size-10 rounded-full flex items-center justify-center text-slate-500 hover:text-red-400 hover:bg-red-500/10 transition-all duration-300 border border-transparent hover:border-red-500/20"
+                        className="text-slate-500 hover:border-danger-500/20 hover:bg-danger-500/10 hover:text-danger-500"
                         title={t("deleteBtn")}
                       >
                         <Trash2 className="size-4" />
-                      </button>
-                    </div>
+                      </Button>
+                    </Card>
                   </StaggerItem>
                 );
               })}

@@ -45,12 +45,13 @@ export async function GET() {
         return ok({});
       }
 
-      const [biometricCount, testCount, questionnaireCount] =
-        await Promise.all([
+      const [biometricCount, testCount, questionnaireCount] = await Promise.all(
+        [
           prisma.biometric.count({ where: { studentId: student.id } }),
           prisma.test.count({ where: { studentId: student.id } }),
           prisma.questionnaire.count({ where: { studentId: student.id } }),
-        ]);
+        ],
+      );
 
       return ok({
         biometricCount,

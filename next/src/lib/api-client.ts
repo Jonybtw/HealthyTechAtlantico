@@ -5,11 +5,7 @@ type ApiErrorPayload<TIssues = unknown> = {
 };
 
 function unwrapApiData<T>(payload: ApiEnvelope<T> | T): T {
-  if (
-    typeof payload === "object" &&
-    payload !== null &&
-    "data" in payload
-  ) {
+  if (typeof payload === "object" && payload !== null && "data" in payload) {
     return (payload as ApiEnvelope<T>).data;
   }
 

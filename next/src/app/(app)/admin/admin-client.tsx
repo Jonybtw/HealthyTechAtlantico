@@ -251,7 +251,7 @@ export default function AdminPage() {
           ) : null}
 
           {!loading && staff.length > 0 ? (
-            <div className="surface-utility overflow-x-auto rounded-[20px] p-1">
+            <div className="surface-utility overflow-x-auto rounded-2xl p-1">
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-white/20 dark:border-white/10 bg-muted/30">

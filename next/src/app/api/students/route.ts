@@ -14,7 +14,10 @@ import { auditLog } from "@/lib/audit";
 import { AUDIT_ACTIONS } from "@/lib/audit-actions";
 import { prisma } from "@/lib/prisma";
 import { canRole, isStaffRole, PERMISSIONS } from "@/lib/rbac";
-import { createStudentSchema, listStudentsQuerySchema } from "@/lib/validations";
+import {
+  createStudentSchema,
+  listStudentsQuerySchema,
+} from "@/lib/validations";
 
 // GET /api/students - list students (paginated, role-scoped)
 export async function GET(req: NextRequest) {
@@ -33,7 +36,13 @@ export async function GET(req: NextRequest) {
     const parsedQuery = listStudentsQuerySchema.parse(
       Object.fromEntries(searchParams.entries()),
     );
-    const { page, limit, search, school_year: schoolYear, class_name: className } = parsedQuery;
+    const {
+      page,
+      limit,
+      search,
+      school_year: schoolYear,
+      class_name: className,
+    } = parsedQuery;
     const skip = (page - 1) * limit;
 
     const where: Prisma.StudentWhereInput = {};

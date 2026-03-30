@@ -153,9 +153,13 @@ export async function POST(
       targetId: alert.id,
     }).catch(console.error);
 
-    const emails = [data.psychEmail, data.teacherEmail].filter(Boolean) as string[];
+    const emails = [data.psychEmail, data.teacherEmail].filter(
+      Boolean,
+    ) as string[];
     if (emails.length > 0) {
-      const classLabel = student.className ? ` (${escapeHtml(student.className)})` : "";
+      const classLabel = student.className
+        ? ` (${escapeHtml(student.className)})`
+        : "";
 
       await Promise.allSettled(
         emails.map((to) =>

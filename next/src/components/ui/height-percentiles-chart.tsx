@@ -76,8 +76,15 @@ export function HeightPercentilesChart({
 
   return (
     <ResponsiveContainer width="100%" height="100%">
-      <ComposedChart data={chartData} margin={{ top: 10, right: 10, bottom: 20, left: -20 }}>
-        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--color-border)" />
+      <ComposedChart
+        data={chartData}
+        margin={{ top: 10, right: 10, bottom: 20, left: -20 }}
+      >
+        <CartesianGrid
+          strokeDasharray="3 3"
+          vertical={false}
+          stroke="var(--color-border)"
+        />
         <XAxis
           dataKey="age"
           type="number"
@@ -96,16 +103,32 @@ export function HeightPercentilesChart({
           tickFormatter={(v) => `${v} cm`}
         />
         <RechartsTooltip
-          cursor={{ stroke: "var(--color-border)", strokeWidth: 1, strokeDasharray: "4 4" }}
+          cursor={{
+            stroke: "var(--color-border)",
+            strokeWidth: 1,
+            strokeDasharray: "4 4",
+          }}
           content={({ active, payload }) => {
             if (active && payload && payload.length) {
               const data = payload[0].payload;
               return (
                 <div className="rounded-lg border border-border/60 bg-background p-2.5 text-xs shadow-sm">
                   <p className="font-semibold mb-1">Idade: {data.age} anos</p>
-                  {data.studentHeight !== null && <p className="text-success-600 font-bold mt-1">Aluno: {data.studentHeight} cm</p>}
-                  {data.p50 !== null && <p className="text-muted-foreground mt-1">P50 (Médio): {data.p50} cm</p>}
-                  {data.range && <p className="text-muted-foreground">P5-P95: {data.range[0]} - {data.range[1]} cm</p>}
+                  {data.studentHeight !== null && (
+                    <p className="text-success-600 font-bold mt-1">
+                      Aluno: {data.studentHeight} cm
+                    </p>
+                  )}
+                  {data.p50 !== null && (
+                    <p className="text-muted-foreground mt-1">
+                      P50 (Médio): {data.p50} cm
+                    </p>
+                  )}
+                  {data.range && (
+                    <p className="text-muted-foreground">
+                      P5-P95: {data.range[0]} - {data.range[1]} cm
+                    </p>
+                  )}
                 </div>
               );
             }
@@ -138,7 +161,12 @@ export function HeightPercentilesChart({
           stroke="var(--color-success-600)"
           strokeWidth={3}
           connectNulls
-          dot={{ r: 4, strokeWidth: 2, fill: "var(--color-background)", stroke: "var(--color-success-600)" }}
+          dot={{
+            r: 4,
+            strokeWidth: 2,
+            fill: "var(--color-background)",
+            stroke: "var(--color-success-600)",
+          }}
           activeDot={{ r: 6, strokeWidth: 0, fill: "var(--color-success-600)" }}
           isAnimationActive={true}
         />

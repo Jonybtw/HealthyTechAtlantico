@@ -15,7 +15,12 @@ export function isAllowedEmailForRole(role: string, email: string): boolean {
     return !isInternalEmail(email);
   }
 
-  if (role === "ADMIN" || role === "ALUNO" || role === "PROFESSOR" || role === "PSICOLOGO") {
+  if (
+    role === "ADMIN" ||
+    role === "ALUNO" ||
+    role === "PROFESSOR" ||
+    role === "PSICOLOGO"
+  ) {
     return isInternalEmail(email);
   }
 

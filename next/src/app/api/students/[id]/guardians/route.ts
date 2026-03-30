@@ -93,12 +93,17 @@ export async function POST(
       return notFound(`Nenhum utilizador com e-mail "${data.guardianEmail}".`);
     }
     if (guardianUser.role !== "PAIS") {
-      return badRequest("O utilizador não tem o perfil de Encarregado de Educação.");
+      return badRequest(
+        "O utilizador não tem o perfil de Encarregado de Educação.",
+      );
     }
 
     const link = await prisma.studentGuardian.upsert({
       where: {
-        studentId_guardianUserId: { studentId: id, guardianUserId: guardianUser.id },
+        studentId_guardianUserId: {
+          studentId: id,
+          guardianUserId: guardianUser.id,
+        },
       },
       update: { relationship: data.relationship },
       create: {

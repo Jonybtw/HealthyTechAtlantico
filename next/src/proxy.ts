@@ -31,7 +31,7 @@ const store = new Map<string, RateLimitEntry>();
 
 function applySecurityHeaders(
   response: NextResponse,
-  request: NextRequest
+  request: NextRequest,
 ): NextResponse {
   for (const [key, value] of Object.entries(SECURITY_HEADERS)) {
     response.headers.set(key, value);
@@ -43,7 +43,7 @@ function applySecurityHeaders(
   ) {
     response.headers.set(
       "Strict-Transport-Security",
-      "max-age=63072000; includeSubDomains; preload"
+      "max-age=63072000; includeSubDomains; preload",
     );
   }
 
@@ -53,7 +53,7 @@ function applySecurityHeaders(
 function rateLimit(
   key: string,
   limit: number,
-  windowMs: number
+  windowMs: number,
 ): { allowed: boolean; retryAfterSec: number } {
   const now = Date.now();
   const entry = store.get(key);
@@ -75,14 +75,17 @@ function rateLimit(
 }
 
 if (typeof setInterval !== "undefined") {
-  setInterval(() => {
-    const now = Date.now();
-    for (const [key, entry] of store.entries()) {
-      if (now - entry.windowStart > 15 * 60 * 1000) {
-        store.delete(key);
+  setInterval(
+    () => {
+      const now = Date.now();
+      for (const [key, entry] of store.entries()) {
+        if (now - entry.windowStart > 15 * 60 * 1000) {
+          store.delete(key);
+        }
       }
-    }
-  }, 5 * 60 * 1000);
+    },
+    5 * 60 * 1000,
+  );
 }
 
 export function proxy(request: NextRequest) {
@@ -93,8 +96,10 @@ export function proxy(request: NextRequest) {
 
   if (request.nextUrl.pathname.startsWith("/api")) {
     const pathname = request.nextUrl.pathname;
-    const isAuthSignin = pathname === "/api/auth/signin" && request.method === "POST";
-    const isImportEndpoint = pathname.includes("/import") && request.method === "POST";
+    const isAuthSignin =
+      pathname === "/api/auth/signin" && request.method === "POST";
+    const isImportEndpoint =
+      pathname.includes("/import") && request.method === "POST";
 
     const limit = isAuthSignin
       ? rateLimit(`auth:${ip}`, 8, 15 * 60 * 1000)
@@ -118,9 +123,9 @@ export function proxy(request: NextRequest) {
               "Content-Type": "application/json",
               "Retry-After": String(limit.retryAfterSec),
             },
-          }
+          },
         ),
-        request
+        request,
       );
     }
   }

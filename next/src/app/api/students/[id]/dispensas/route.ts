@@ -135,7 +135,9 @@ export async function DELETE(
       return badRequest("dispensaId obrigatório");
     }
 
-    const dispensa = await prisma.dispensa.findUnique({ where: { id: dispensaId } });
+    const dispensa = await prisma.dispensa.findUnique({
+      where: { id: dispensaId },
+    });
     if (!dispensa || dispensa.studentId !== id) {
       return notFound("Dispensa não encontrada");
     }

@@ -129,21 +129,21 @@ export default function PerfilPage() {
           title={user?.name || user?.email || "-"}
           description={user?.email}
           actions={
-            <div className="flex size-9 items-center justify-center rounded-[14px] bg-navy-900 text-white shadow-card">
+            <div className="flex size-9 items-center justify-center rounded-xl bg-navy-900 text-white shadow-card">
               <User className="size-4" />
             </div>
           }
         >
-          <div className="surface-utility rounded-[18px] p-3">
+          <div className="surface-utility rounded-2xl p-3">
             <p className="section-kicker">{t("roleLabel")}</p>
             <p className="mt-1 text-sm font-semibold text-foreground">
               {roles(user?.role ?? "ALUNO")}
             </p>
           </div>
 
-          <div className="surface-utility rounded-[18px] p-3.5 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-card">
+          <div className="surface-utility rounded-2xl p-3.5 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-card">
             <div className="flex items-start gap-3">
-              <div className="flex size-8 items-center justify-center rounded-[12px] bg-gold-100 text-gold-700 dark:bg-gold-400/10 dark:text-gold-300">
+              <div className="flex size-8 items-center justify-center rounded-xl bg-gold-100 text-gold-700 dark:bg-gold-400/10 dark:text-gold-300">
                 <ShieldCheck className="size-4" />
               </div>
               <div className="space-y-3">
@@ -151,7 +151,7 @@ export default function PerfilPage() {
                   <h3 className="text-sm font-semibold tracking-tight text-foreground">
                     {t("rgpdTitle")}
                   </h3>
-                  <p className="text-[13px] leading-relaxed text-muted-foreground sm:text-sm">
+                  <p className="text-sm leading-relaxed text-muted-foreground sm:text-sm">
                     {t("rgpdDescription")}
                   </p>
                 </div>
@@ -182,9 +182,9 @@ export default function PerfilPage() {
             </div>
           </div>
 
-          <div className="surface-utility rounded-[18px] p-3.5 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-card">
+          <div className="surface-utility rounded-2xl p-3.5 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-card">
             <div className="flex items-start gap-3">
-              <div className="flex size-8 items-center justify-center rounded-[12px] bg-navy-100 text-navy-700 dark:bg-navy-500/10 dark:text-navy-200">
+              <div className="flex size-8 items-center justify-center rounded-xl bg-navy-100 text-navy-700 dark:bg-navy-500/10 dark:text-navy-200">
                 <Share2 className="size-4" />
               </div>
               <div className="space-y-3">
@@ -192,7 +192,7 @@ export default function PerfilPage() {
                   <h3 className="text-sm font-semibold tracking-tight text-foreground">
                     {t("shareTitle")}
                   </h3>
-                  <p className="text-[13px] leading-relaxed text-muted-foreground sm:text-sm">
+                  <p className="text-sm leading-relaxed text-muted-foreground sm:text-sm">
                     {t("shareDescription")}
                   </p>
                 </div>
@@ -232,7 +232,7 @@ export default function PerfilPage() {
               title={t("changePassword")}
               description={t("passwordDescription")}
               actions={
-                <div className="flex size-9 items-center justify-center rounded-[14px] bg-danger-100 text-danger-700 dark:bg-danger-500/10 dark:text-danger-300">
+                <div className="flex size-9 items-center justify-center rounded-xl bg-danger-100 text-danger-700 dark:bg-danger-500/10 dark:text-danger-300">
                   <Lock className="size-4" />
                 </div>
               }

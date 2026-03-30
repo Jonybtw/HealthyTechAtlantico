@@ -1,7 +1,12 @@
 import { type NextRequest } from "next/server";
 import { hash } from "bcryptjs";
 import { z } from "zod";
-import { conflict, created, serverError, validationError } from "@/lib/api-response";
+import {
+  conflict,
+  created,
+  serverError,
+  validationError,
+} from "@/lib/api-response";
 import { auditLog } from "@/lib/audit";
 import { AUDIT_ACTIONS } from "@/lib/audit-actions";
 import { prisma } from "@/lib/prisma";

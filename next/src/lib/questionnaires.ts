@@ -105,43 +105,141 @@ export type KidmedQuestionKey =
 export type KidmedAnswers = Record<KidmedQuestionKey, boolean>;
 
 export const ROUTINE_QUESTIONS: NumericQuestionDefinition[] = [
-  { key: "sleepHours", labelKey: "sleepHoursLabel", min: 0, max: 12, step: 0.5, unitKey: "unitHours" },
-  { key: "screenHours", labelKey: "screenHoursLabel", min: 0, max: 16, step: 0.5, unitKey: "unitHours" },
-  { key: "waterGlasses", labelKey: "waterGlassesLabel", min: 0, max: 15, step: 1, unitKey: "unitGlasses" },
-  { key: "mealsCount", labelKey: "mealsCountLabel", min: 0, max: 8, step: 1, unitKey: "unitMeals" },
-  { key: "energyLevel", labelKey: "energyLevelLabel", min: 0, max: 10, step: 1, slider: true },
-  { key: "stressLevel", labelKey: "stressLevelLabel", min: 0, max: 10, step: 1, slider: true },
-  { key: "wellnessLevel", labelKey: "wellnessLevelLabel", min: 0, max: 10, step: 1, slider: true },
+  {
+    key: "sleepHours",
+    labelKey: "sleepHoursLabel",
+    min: 0,
+    max: 12,
+    step: 0.5,
+    unitKey: "unitHours",
+  },
+  {
+    key: "screenHours",
+    labelKey: "screenHoursLabel",
+    min: 0,
+    max: 16,
+    step: 0.5,
+    unitKey: "unitHours",
+  },
+  {
+    key: "waterGlasses",
+    labelKey: "waterGlassesLabel",
+    min: 0,
+    max: 15,
+    step: 1,
+    unitKey: "unitGlasses",
+  },
+  {
+    key: "mealsCount",
+    labelKey: "mealsCountLabel",
+    min: 0,
+    max: 8,
+    step: 1,
+    unitKey: "unitMeals",
+  },
+  {
+    key: "energyLevel",
+    labelKey: "energyLevelLabel",
+    min: 0,
+    max: 10,
+    step: 1,
+    slider: true,
+  },
+  {
+    key: "stressLevel",
+    labelKey: "stressLevelLabel",
+    min: 0,
+    max: 10,
+    step: 1,
+    slider: true,
+  },
+  {
+    key: "wellnessLevel",
+    labelKey: "wellnessLevelLabel",
+    min: 0,
+    max: 10,
+    step: 1,
+    slider: true,
+  },
 ];
 
-export const INITIAL_QUESTIONS: Array<NumericQuestionDefinition | BinaryQuestionDefinition> = [
-  { key: "physicalActivityFreq", labelKey: "physicalActivityLabel", min: 0, max: 7, step: 1, unitKey: "unitDays" },
+export const INITIAL_QUESTIONS: Array<
+  NumericQuestionDefinition | BinaryQuestionDefinition
+> = [
+  {
+    key: "physicalActivityFreq",
+    labelKey: "physicalActivityLabel",
+    min: 0,
+    max: 7,
+    step: 1,
+    unitKey: "unitDays",
+  },
   { key: "sportsPractice", labelKey: "sportsPracticeLabel", type: "yesno" },
   { key: "hasAllergies", labelKey: "hasAllergiesLabel", type: "yesno" },
   { key: "hasMedication", labelKey: "hasMedicationLabel", type: "yesno" },
   { key: "hasInjuries", labelKey: "hasInjuriesLabel", type: "yesno" },
   { key: "eatsBreakfast", labelKey: "eatsBreakfastLabel", type: "yesno" },
-  { key: "eatsFruitsVegetables", labelKey: "eatsFruitsVegetablesLabel", type: "yesno" },
-  { key: "drinksWaterEnough", labelKey: "drinksWaterEnoughLabel", type: "yesno" },
+  {
+    key: "eatsFruitsVegetables",
+    labelKey: "eatsFruitsVegetablesLabel",
+    type: "yesno",
+  },
+  {
+    key: "drinksWaterEnough",
+    labelKey: "drinksWaterEnoughLabel",
+    type: "yesno",
+  },
 ];
 
 export const KIDMED_QUESTIONS: KidmedQuestionDefinition[] = [
   { key: "fruitDaily", labelKey: "kidmedFruitDaily", positive: true },
-  { key: "secondFruitDaily", labelKey: "kidmedSecondFruitDaily", positive: true },
+  {
+    key: "secondFruitDaily",
+    labelKey: "kidmedSecondFruitDaily",
+    positive: true,
+  },
   { key: "vegetablesDaily", labelKey: "kidmedVegetablesDaily", positive: true },
-  { key: "vegetablesMoreThanOnceDaily", labelKey: "kidmedVegetablesMoreThanOnceDaily", positive: true },
+  {
+    key: "vegetablesMoreThanOnceDaily",
+    labelKey: "kidmedVegetablesMoreThanOnceDaily",
+    positive: true,
+  },
   { key: "fishRegularly", labelKey: "kidmedFishRegularly", positive: true },
   { key: "fastFoodWeekly", labelKey: "kidmedFastFoodWeekly", positive: false },
-  { key: "pulsesMoreThanOnceWeekly", labelKey: "kidmedPulsesMoreThanOnceWeekly", positive: true },
-  { key: "wholeGrainPastaOrRice", labelKey: "kidmedWholeGrainPastaOrRice", positive: true },
-  { key: "wholeGrainsBreakfast", labelKey: "kidmedWholeGrainsBreakfast", positive: true },
+  {
+    key: "pulsesMoreThanOnceWeekly",
+    labelKey: "kidmedPulsesMoreThanOnceWeekly",
+    positive: true,
+  },
+  {
+    key: "wholeGrainPastaOrRice",
+    labelKey: "kidmedWholeGrainPastaOrRice",
+    positive: true,
+  },
+  {
+    key: "wholeGrainsBreakfast",
+    labelKey: "kidmedWholeGrainsBreakfast",
+    positive: true,
+  },
   { key: "nutsRegularly", labelKey: "kidmedNutsRegularly", positive: true },
   { key: "oliveOilAtHome", labelKey: "kidmedOliveOilAtHome", positive: true },
   { key: "skipsBreakfast", labelKey: "kidmedSkipsBreakfast", positive: false },
   { key: "dairyBreakfast", labelKey: "kidmedDairyBreakfast", positive: true },
-  { key: "pastriesBreakfast", labelKey: "kidmedPastriesBreakfast", positive: false },
-  { key: "yogurtOrCheeseDaily", labelKey: "kidmedYogurtOrCheeseDaily", positive: true },
-  { key: "sweetsSeveralTimesDaily", labelKey: "kidmedSweetsSeveralTimesDaily", positive: false },
+  {
+    key: "pastriesBreakfast",
+    labelKey: "kidmedPastriesBreakfast",
+    positive: false,
+  },
+  {
+    key: "yogurtOrCheeseDaily",
+    labelKey: "kidmedYogurtOrCheeseDaily",
+    positive: true,
+  },
+  {
+    key: "sweetsSeveralTimesDaily",
+    labelKey: "kidmedSweetsSeveralTimesDaily",
+    positive: false,
+  },
 ];
 
 export const QUESTIONNAIRE_INSTRUMENTS: Record<
@@ -198,7 +296,10 @@ export const QUESTIONNAIRE_FIELD_META: Record<
   energyLevel: { labelKey: "energyLevelLabel", scaleMax: 10 },
   stressLevel: { labelKey: "stressLevelLabel", scaleMax: 10 },
   wellnessLevel: { labelKey: "wellnessLevelLabel", scaleMax: 10 },
-  physicalActivityFreq: { labelKey: "physicalActivityLabel", unitKey: "unitDays" },
+  physicalActivityFreq: {
+    labelKey: "physicalActivityLabel",
+    unitKey: "unitDays",
+  },
   sportsPractice: { labelKey: "sportsPracticeLabel" },
   hasAllergies: { labelKey: "hasAllergiesLabel" },
   hasMedication: { labelKey: "hasMedicationLabel" },
@@ -219,18 +320,26 @@ export const QUESTIONNAIRE_PREVIEW_FIELDS: Record<
     { key: "sleepHours", labelKey: "sleepHoursLabel", unitKey: "unitHours" },
   ],
   AUTOESTIMA: [
-    { key: "physicalActivityFreq", labelKey: "physicalActivityLabel", unitKey: "unitDays" },
+    {
+      key: "physicalActivityFreq",
+      labelKey: "physicalActivityLabel",
+      unitKey: "unitDays",
+    },
     { key: "sportsPractice", labelKey: "sportsPracticeLabel" },
     { key: "eatsBreakfast", labelKey: "eatsBreakfastLabel" },
     { key: "drinksWaterEnough", labelKey: "drinksWaterEnoughLabel" },
   ],
 };
 
-export function isQuestionnaireType(value: string): value is QuestionnaireTypeValue {
+export function isQuestionnaireType(
+  value: string,
+): value is QuestionnaireTypeValue {
   return QUESTIONNAIRE_TYPES.includes(value as QuestionnaireTypeValue);
 }
 
-export function isKidmedClassification(value: string): value is KidmedClassification {
+export function isKidmedClassification(
+  value: string,
+): value is KidmedClassification {
   return KIDMED_CLASSIFICATIONS.includes(value as KidmedClassification);
 }
 
@@ -247,7 +356,12 @@ export function getQuestionnairePreviewItems(
     }
 
     return [
-      { key: "score", labelKey: "kidmedScoreLabel", value: questionnaire.score, scaleMax: 12 },
+      {
+        key: "score",
+        labelKey: "kidmedScoreLabel",
+        value: questionnaire.score,
+        scaleMax: 12,
+      },
       {
         key: "classification",
         labelKey: "kidmedClassificationLabel",
@@ -274,7 +388,9 @@ export function getQuestionnairePreviewItems(
     .filter((item) => item.value !== undefined);
 }
 
-export function getKidmedClassificationLabelKey(classification: KidmedClassification) {
+export function getKidmedClassificationLabelKey(
+  classification: KidmedClassification,
+) {
   switch (classification) {
     case "OPTIMAL":
       return "kidmedClassificationOptimal";
@@ -285,7 +401,9 @@ export function getKidmedClassificationLabelKey(classification: KidmedClassifica
   }
 }
 
-export function getKidmedClassificationFeedbackKey(classification: KidmedClassification) {
+export function getKidmedClassificationFeedbackKey(
+  classification: KidmedClassification,
+) {
   switch (classification) {
     case "OPTIMAL":
       return "kidmedFeedbackOptimal";
@@ -340,8 +458,11 @@ export function evaluateKidmed(answers: KidmedAnswers): KidmedResult {
   };
 }
 
-export function getSchoolPeriodInfo(dateInput: Date | string = new Date()): SchoolPeriodInfo {
-  const date = dateInput instanceof Date ? new Date(dateInput) : new Date(dateInput);
+export function getSchoolPeriodInfo(
+  dateInput: Date | string = new Date(),
+): SchoolPeriodInfo {
+  const date =
+    dateInput instanceof Date ? new Date(dateInput) : new Date(dateInput);
   const month = date.getMonth();
   const year = date.getFullYear();
   const schoolYearStart = month >= 8 ? year : year - 1;

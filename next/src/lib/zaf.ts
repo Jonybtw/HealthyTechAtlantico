@@ -71,9 +71,14 @@ export function getAgeKey(age: number | null | undefined): AgeKey | null {
   return age as AgeKey;
 }
 
-export function calcAgeFromBirthDate(birthDate: Date | string | null): number | null {
+export function calcAgeFromBirthDate(
+  birthDate: Date | string | null,
+): number | null {
   if (!birthDate) return null;
-  const birth = typeof birthDate === "string" ? new Date(birthDate + "T00:00:00") : birthDate;
+  const birth =
+    typeof birthDate === "string"
+      ? new Date(birthDate + "T00:00:00")
+      : birthDate;
   if (isNaN(birth.getTime())) return null;
   const today = new Date();
   let age = today.getFullYear() - birth.getFullYear();
@@ -84,16 +89,16 @@ export function calcAgeFromBirthDate(birthDate: Date | string | null): number | 
 
 // ── BMI Classification ───────────────────────────────────────────────────────
 
-
 export function classifyBmi(
   imc: number,
   sex: Sex,
-  age: number
+  age: number,
 ): { zone: ZoneResult; min: number; max: number } | null {
   const ageKey = getAgeKey(age);
   if (!ageKey || !BMI_TABLE[sex]?.[ageKey]) return null;
   const [min, max] = BMI_TABLE[sex][ageKey];
-  const zone: ZoneResult = imc >= min && imc <= max ? "Zona Saudável" : "Zona de Melhoria";
+  const zone: ZoneResult =
+    imc >= min && imc <= max ? "Zona Saudável" : "Zona de Melhoria";
   return { zone, min, max };
 }
 
@@ -102,16 +107,16 @@ export function classifyBmi(
 export function classifyWaist(
   waistCm: number,
   sex: Sex,
-  age: number
+  age: number,
 ): { zone: ZoneResult; maxWaist: number } | null {
   const ageKey = getAgeKey(age);
   if (!ageKey || !WAIST_TABLE[sex]?.[ageKey]) return null;
   const maxWaist = WAIST_TABLE[sex][ageKey];
-  const zone: ZoneResult = waistCm <= maxWaist ? "Zona Saudável" : "Zona de Melhoria";
+  const zone: ZoneResult =
+    waistCm <= maxWaist ? "Zona Saudável" : "Zona de Melhoria";
   return { zone, maxWaist };
 }
 
 // ── Export tables for reference/protocols page ───────────────────────────────
-
 
 export type { AgeKey };

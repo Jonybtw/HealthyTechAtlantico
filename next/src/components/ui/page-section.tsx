@@ -18,7 +18,7 @@ const toneClasses: Record<NonNullable<PageSectionProps["tone"]>, string> = {
   secondary:
     "rounded-lg border border-white/20 bg-white/65 p-5 shadow-card backdrop-blur-xl dark:border-navy-800 dark:bg-navy-950/58",
   utility:
-    "rounded-[22px] border border-white/18 bg-white/55 p-4 shadow-card backdrop-blur-md dark:border-navy-800 dark:bg-navy-950/48",
+    "rounded-2xl border border-white/18 bg-white/55 p-4 shadow-card backdrop-blur-md dark:border-navy-800 dark:bg-navy-950/48",
 };
 
 const layoutClasses: Record<NonNullable<PageSectionProps["layout"]>, string> = {

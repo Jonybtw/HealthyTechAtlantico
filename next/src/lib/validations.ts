@@ -1,12 +1,16 @@
 import { z } from "zod";
-import { getEmailRuleMessage, isAllowedEmailForRole, isInternalEmail } from "@/lib/email-rules";
+import {
+  getEmailRuleMessage,
+  isAllowedEmailForRole,
+  isInternalEmail,
+} from "@/lib/email-rules";
 import { QUESTIONNAIRE_TYPES } from "@/lib/questionnaires";
 
 const emailSchema = z.string().trim().toLowerCase().email("Email invalido");
 
 function validateRoleEmailRule(
   data: { email: string; role: string },
-  ctx: z.RefinementCtx
+  ctx: z.RefinementCtx,
 ) {
   if (!isAllowedEmailForRole(data.role, data.email)) {
     ctx.addIssue({
@@ -19,7 +23,7 @@ function validateRoleEmailRule(
 
 function validateRegisterRule(
   data: { email: string; role: string; consentRgpd: boolean },
-  ctx: z.RefinementCtx
+  ctx: z.RefinementCtx,
 ) {
   validateRoleEmailRule(data, ctx);
 
@@ -55,13 +59,13 @@ const optionalInternalEmailSchema = z
     message: getEmailRuleMessage("PROFESSOR"),
   });
 
-
 export const loginSchema = z.object({
   email: emailSchema,
   password: z.string().min(1, "A palavra-passe é obrigatória"),
 });
 
-export const registerSchema = registerBaseSchema.superRefine(validateRegisterRule);
+export const registerSchema =
+  registerBaseSchema.superRefine(validateRegisterRule);
 
 export const registerFormSchema = registerBaseSchema
   .extend({
@@ -73,7 +77,9 @@ export const registerFormSchema = registerBaseSchema
     path: ["confirmPassword"],
   });
 
-export const createStaffSchema = createStaffBaseSchema.superRefine(validateRoleEmailRule);
+export const createStaffSchema = createStaffBaseSchema.superRefine(
+  validateRoleEmailRule,
+);
 
 export const updateConsentSchema = z.object({
   consentRgpd: z.boolean().optional(),
@@ -216,7 +222,8 @@ export const guardianSchema = z.object({
 
 function queryNumberSchema(schema: z.ZodNumber) {
   return z.preprocess(
-    (value) => (value === undefined || value === null || value === "" ? undefined : value),
+    (value) =>
+      value === undefined || value === null || value === "" ? undefined : value,
     z.coerce.number().int().pipe(schema),
   );
 }
@@ -230,7 +237,8 @@ function queryTextSchema(schema: z.ZodString) {
 
 function queryIsoDateSchema() {
   return z.preprocess(
-    (value) => (value === undefined || value === null || value === "" ? undefined : value),
+    (value) =>
+      value === undefined || value === null || value === "" ? undefined : value,
     z.string().datetime({ offset: true }),
   );
 }
@@ -268,15 +276,12 @@ export const listAuditQuerySchema = z
   });
 
 export const listQuestionnairesQuerySchema = z.object({
-  type: z.preprocess(
-    (value) => {
-      if (value === undefined || value === null || value === "") {
-        return undefined;
-      }
+  type: z.preprocess((value) => {
+    if (value === undefined || value === null || value === "") {
+      return undefined;
+    }
 
-      return typeof value === "string" ? value.trim() : value;
-    },
-    z.enum(QUESTIONNAIRE_TYPES).optional(),
-  ),
+    return typeof value === "string" ? value.trim() : value;
+  }, z.enum(QUESTIONNAIRE_TYPES).optional()),
   limit: queryNumberSchema(z.number().min(1).max(100)).optional(),
 });

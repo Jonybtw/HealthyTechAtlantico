@@ -103,7 +103,9 @@ async function getRecentZafStats(): Promise<ZafYearStat[]> {
         },
       });
 
-      const withBio = students.filter((student) => student.biometrics.length > 0);
+      const withBio = students.filter(
+        (student) => student.biometrics.length > 0,
+      );
       const zsaf = withBio.filter((student) => {
         const zone = student.biometrics[0]?.imcZone ?? "";
         return zone.toLowerCase().includes("saudável") || zone === "ZSAF";
@@ -116,7 +118,7 @@ async function getRecentZafStats(): Promise<ZafYearStat[]> {
         zsaf,
         zmf: withBio.length - zsaf,
       };
-    })
+    }),
   );
 }
 
@@ -138,7 +140,8 @@ export async function getDashboardSummaryForUser(user: {
       studentSummary: student
         ? {
             name: student.name,
-            lastBiometric: student.biometrics[0]?.recordedAt?.toISOString() ?? null,
+            lastBiometric:
+              student.biometrics[0]?.recordedAt?.toISOString() ?? null,
             lastTest: student.tests[0]?.recordedAt?.toISOString() ?? null,
           }
         : null,
@@ -148,7 +151,13 @@ export async function getDashboardSummaryForUser(user: {
   }
 
   if (user.role === "PSICOLOGO") {
-    const [openSos, questionnaireCount, followedStudents, recentAlerts, recentQuestionnaires] = await Promise.all([
+    const [
+      openSos,
+      questionnaireCount,
+      followedStudents,
+      recentAlerts,
+      recentQuestionnaires,
+    ] = await Promise.all([
       prisma.sosAlert.count({ where: { resolved: false } }),
       prisma.questionnaire.count(),
       prisma.sosAlert.findMany({
@@ -242,51 +251,52 @@ export async function getDashboardSummaryForUser(user: {
       select: { studentId: true },
     });
     const linkedStudentIds = guardianLinks.map((link) => link.studentId);
-    const [reportCount, questionnaireCount, linkedStudents, recentReports] = linkedStudentIds.length
-      ? await Promise.all([
-          prisma.report.count({
-            where: { studentId: { in: linkedStudentIds } },
-          }),
-          prisma.questionnaire.count({
-            where: { studentId: { in: linkedStudentIds } },
-          }),
-          prisma.student.findMany({
-            where: { id: { in: linkedStudentIds } },
-            orderBy: { name: "asc" },
-            select: {
-              id: true,
-              name: true,
-              className: true,
-              schoolYear: true,
-              reports: {
-                orderBy: { createdAt: "desc" },
-                take: 1,
-                select: { createdAt: true },
-              },
-              questionnaires: {
-                orderBy: { submittedAt: "desc" },
-                take: 1,
-                select: { submittedAt: true },
-              },
-            },
-          }),
-          prisma.report.findMany({
-            where: { studentId: { in: linkedStudentIds } },
-            orderBy: { createdAt: "desc" },
-            take: 4,
-            select: {
-              id: true,
-              title: true,
-              createdAt: true,
-              student: {
-                select: {
-                  name: true,
+    const [reportCount, questionnaireCount, linkedStudents, recentReports] =
+      linkedStudentIds.length
+        ? await Promise.all([
+            prisma.report.count({
+              where: { studentId: { in: linkedStudentIds } },
+            }),
+            prisma.questionnaire.count({
+              where: { studentId: { in: linkedStudentIds } },
+            }),
+            prisma.student.findMany({
+              where: { id: { in: linkedStudentIds } },
+              orderBy: { name: "asc" },
+              select: {
+                id: true,
+                name: true,
+                className: true,
+                schoolYear: true,
+                reports: {
+                  orderBy: { createdAt: "desc" },
+                  take: 1,
+                  select: { createdAt: true },
+                },
+                questionnaires: {
+                  orderBy: { submittedAt: "desc" },
+                  take: 1,
+                  select: { submittedAt: true },
                 },
               },
-            },
-          }),
-        ])
-      : [0, 0, [], []];
+            }),
+            prisma.report.findMany({
+              where: { studentId: { in: linkedStudentIds } },
+              orderBy: { createdAt: "desc" },
+              take: 4,
+              select: {
+                id: true,
+                title: true,
+                createdAt: true,
+                student: {
+                  select: {
+                    name: true,
+                  },
+                },
+              },
+            }),
+          ])
+        : [0, 0, [], []];
 
     return {
       variant: "parent",
@@ -324,7 +334,8 @@ export async function getDashboardSummaryForUser(user: {
         className: student.className,
         schoolYear: student.schoolYear,
         lastReportAt: student.reports[0]?.createdAt?.toISOString() ?? null,
-        lastQuestionnaireAt: student.questionnaires[0]?.submittedAt?.toISOString() ?? null,
+        lastQuestionnaireAt:
+          student.questionnaires[0]?.submittedAt?.toISOString() ?? null,
       })),
       recentReports: recentReports.map((report) => ({
         id: report.id,
@@ -384,4 +395,3 @@ export async function getDashboardSummaryForUser(user: {
     ],
   };
 }
-

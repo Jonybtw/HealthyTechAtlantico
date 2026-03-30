@@ -49,7 +49,11 @@ export function NotificationCenter({ userRole }: NotificationCenterProps) {
   const unreadCount = Math.max(0, pendingCount - seenCount);
 
   return (
-    <Popover onOpenChange={(open) => { if (open) markAllSeen(); }}>
+    <Popover
+      onOpenChange={(open) => {
+        if (open) markAllSeen();
+      }}
+    >
       <PopoverTrigger asChild>
         <Button
           variant="ghost"
@@ -61,14 +65,17 @@ export function NotificationCenter({ userRole }: NotificationCenterProps) {
           {unreadCount > 0 && (
             <Badge
               variant="danger"
-              className="absolute -top-0.5 -right-0.5 min-w-3.5 justify-center px-1 text-[9px] shadow-sm"
+              className="absolute -top-0.5 -right-0.5 min-w-3.5 justify-center px-1 text-micro shadow-sm"
             >
               {unreadCount > 9 ? "9+" : unreadCount}
             </Badge>
           )}
         </Button>
       </PopoverTrigger>
-      <PopoverContent align="end" className="w-[min(320px,calc(100vw-2rem))] p-0">
+      <PopoverContent
+        align="end"
+        className="w-[min(320px,calc(100vw-2rem))] p-0"
+      >
         <div className="border-b border-border/60 px-3 py-2.5">
           <h3 className="text-xs font-semibold">{t("title")}</h3>
         </div>
@@ -87,7 +94,7 @@ export function NotificationCenter({ userRole }: NotificationCenterProps) {
                 <p className="text-xs font-semibold text-danger-700 dark:text-danger-300">
                   {t("pendingAlerts", { count: pendingCount })}
                 </p>
-                <p className="mt-1 text-[11px] leading-relaxed text-muted-foreground">
+                <p className="mt-1 text-tiny leading-relaxed text-muted-foreground">
                   {t("pendingDescription")}
                 </p>
               </div>

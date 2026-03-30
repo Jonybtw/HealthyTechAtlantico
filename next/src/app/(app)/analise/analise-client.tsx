@@ -328,7 +328,7 @@ export default function AnalisePage() {
           description={
             chart === "class" ? t("classDistribution") : t("description")
           }
-          className="glass-card overflow-hidden"
+          className="overflow-hidden"
           layout="analytics"
         >
           <div className="relative p-2 md:p-6 min-h-[450px]">
@@ -414,7 +414,7 @@ export default function AnalisePage() {
                       height={36}
                       iconType="circle"
                       content={({ payload }) => (
-                        <div className="flex justify-end gap-4 mb-8 text-[11px] font-bold uppercase tracking-widest text-slate-400">
+                        <div className="flex justify-end gap-4 mb-8 text-tiny font-bold uppercase tracking-widest text-slate-400">
                           {payload?.map((entry: any, index: number) => (
                             <div
                               key={index}
@@ -605,7 +605,7 @@ export default function AnalisePage() {
         </PageSection>
 
         {currentStudent && (
-          <PageSection className="mt-8 glass-card border-gold-500/20">
+          <PageSection className="mt-8 border-gold-500/20">
             <div className="flex items-start gap-4 p-4">
               <div className="size-10 rounded-full bg-gold-500/10 flex items-center justify-center shrink-0">
                 <ChartIcon className="size-5 text-gold-500 shadow-[0_0_10px_rgba(216,173,52,0.5)]" />
@@ -614,7 +614,7 @@ export default function AnalisePage() {
                 <h4 className="text-sm font-bold uppercase tracking-widest text-gold-500 mb-1">
                   Destaque de Evolução
                 </h4>
-                <p className="text-slate-300 text-[13px] leading-relaxed">
+                <p className="text-slate-300 text-sm leading-relaxed">
                   O aluno{" "}
                   <span className="text-white font-semibold">
                     {currentStudent.name}

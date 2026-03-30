@@ -374,5 +374,10 @@ function computeZone({
     return null;
   }
 
-  return classifyTest(testId, testId === "milha" ? valueText : valueNum ?? valueText, sex, age);
+  return classifyTest(
+    testId,
+    testId === "milha" ? valueText : (valueNum ?? valueText),
+    sex,
+    age,
+  );
 }

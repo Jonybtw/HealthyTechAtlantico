@@ -25,7 +25,7 @@ export function ZoneBadge({ zone, size = "md" }: ZoneBadgeProps) {
 
   const sizeClasses =
     size === "sm"
-      ? "gap-1 px-2 py-0.5 text-[10px]"
+      ? "gap-1 px-2 py-0.5 text-micro"
       : "gap-1.5 px-2.5 py-1 text-xs";
 
   return (
@@ -36,7 +36,9 @@ export function ZoneBadge({ zone, size = "md" }: ZoneBadgeProps) {
           : "border-warning-500/25 bg-warning-100/80 text-warning-700 dark:border-warning-500/20 dark:bg-warning-500/10 dark:text-warning-300"
       }`}
     >
-      <span className={`size-1.5 rounded-full ${isPositive ? "bg-success-500" : "bg-warning-500"}`} />
+      <span
+        className={`size-1.5 rounded-full ${isPositive ? "bg-success-500" : "bg-warning-500"}`}
+      />
       {zone}
     </span>
   );

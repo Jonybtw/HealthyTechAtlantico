@@ -196,7 +196,9 @@ export default function TestesPage() {
   const [saving, setSaving] = useState(false);
   const [isImportingCsv, setIsImportingCsv] = useState(false);
   const [form, setForm] =
-    useState<Record<TestFieldId | "weightKg" | "heightM", string>>(INITIAL_FORM);
+    useState<Record<TestFieldId | "weightKg" | "heightM", string>>(
+      INITIAL_FORM,
+    );
   const [lastSubmission, setLastSubmission] = useState<{
     count: number;
     zone: string | null;
@@ -239,7 +241,12 @@ export default function TestesPage() {
 
       const zone =
         selectedStudentAge !== null
-          ? classifyTest(field.id, value, selectedStudent.sex, selectedStudentAge)
+          ? classifyTest(
+              field.id,
+              value,
+              selectedStudent.sex,
+              selectedStudentAge,
+            )
           : null;
 
       return [
@@ -280,10 +287,16 @@ export default function TestesPage() {
     return {
       bmi,
       zone:
-        imcResult?.zone ??
-        (bmi <= 25 ? "Zona Saudavel" : t("improvementZone")),
+        imcResult?.zone ?? (bmi <= 25 ? "Zona Saudavel" : t("improvementZone")),
     };
-  }, [biometricsReady, form.heightM, form.weightKg, selectedStudent, selectedStudentAge, t]);
+  }, [
+    biometricsReady,
+    form.heightM,
+    form.weightKg,
+    selectedStudent,
+    selectedStudentAge,
+    t,
+  ]);
 
   const loadStudents = useCallback(async () => {
     setLoadingStudents(true);
@@ -343,8 +356,12 @@ export default function TestesPage() {
       .map((field) => {
         const zone =
           selectedStudentAge !== null
-            ? classifyTest(field.id, form[field.id], selectedStudent.sex, selectedStudentAge) ??
-              t("improvementZone")
+            ? (classifyTest(
+                field.id,
+                form[field.id],
+                selectedStudent.sex,
+                selectedStudentAge,
+              ) ?? t("improvementZone"))
             : t("improvementZone");
 
         return {
@@ -499,7 +516,8 @@ export default function TestesPage() {
               label="Aluno em foco"
               value={selectedStudent?.name ?? "Sem aluno selecionado"}
               description={
-                selectedStudent?.className ?? "Seleciona o aluno antes de registar os resultados."
+                selectedStudent?.className ??
+                "Seleciona o aluno antes de registar os resultados."
               }
             />
             <OverviewCard
@@ -518,13 +536,21 @@ export default function TestesPage() {
             <OverviewCard
               icon={CheckCircle2}
               label="Estado do registo"
-              value={biometricsReady || completedTestsCount > 0 ? "Pronto" : "Pendente"}
+              value={
+                biometricsReady || completedTestsCount > 0
+                  ? "Pronto"
+                  : "Pendente"
+              }
               description={
                 biometricsReady || completedTestsCount > 0
                   ? "Ja ha informacao suficiente para guardar a sessao."
                   : "Preenche pelo menos um teste ou altura e peso."
               }
-              accent={biometricsReady || completedTestsCount > 0 ? "success" : "default"}
+              accent={
+                biometricsReady || completedTestsCount > 0
+                  ? "success"
+                  : "default"
+              }
             />
           </div>
 
@@ -537,17 +563,17 @@ export default function TestesPage() {
               description="Agrupa os resultados por familia para registar a sessao de forma rapida e consistente."
             >
               <form onSubmit={handleSubmit} className="flex flex-col gap-6">
-                <div className="rounded-[24px] border border-white/35 bg-white/72 p-4 shadow-card backdrop-blur-md dark:border-white/10 dark:bg-navy-950/42">
+                <div className="rounded-2xl border border-white/35 bg-white/72 p-4 shadow-card backdrop-blur-md dark:border-white/10 dark:bg-navy-950/42">
                   <div className="mb-3 flex items-center justify-between gap-3">
                     <div>
-                      <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-muted-foreground">
+                      <p className="text-tiny font-semibold uppercase tracking-[0.22em] text-muted-foreground">
                         Selecao de aluno
                       </p>
                       <p className="mt-1 text-sm text-muted-foreground">
                         Escolhe o contexto antes de introduzir resultados.
                       </p>
                     </div>
-                    <span className="hidden rounded-full border border-gold-400/25 bg-gold-400/10 px-2.5 py-1 text-[11px] font-semibold text-gold-700 dark:text-gold-200 sm:inline-flex">
+                    <span className="hidden rounded-full border border-gold-400/25 bg-gold-400/10 px-2.5 py-1 text-tiny font-semibold text-gold-700 dark:text-gold-200 sm:inline-flex">
                       {students.length} alunos
                     </span>
                   </div>
@@ -564,7 +590,9 @@ export default function TestesPage() {
                     <CategoryCard key={section.id} section={section}>
                       <div
                         className={`grid gap-4 ${
-                          section.fields.length > 1 ? "md:grid-cols-2" : "grid-cols-1"
+                          section.fields.length > 1
+                            ? "md:grid-cols-2"
+                            : "grid-cols-1"
                         }`}
                       >
                         {section.fields.map((field) => (
@@ -617,14 +645,15 @@ export default function TestesPage() {
                   </CategoryCard>
                 </div>
 
-                <div className="rounded-[24px] border border-gold-400/18 bg-gradient-to-r from-gold-400/10 via-white/70 to-white/55 p-4 shadow-card dark:from-gold-400/10 dark:via-navy-950/60 dark:to-navy-950/50">
+                <div className="rounded-2xl border border-gold-400/18 bg-gradient-to-r from-gold-400/10 via-white/70 to-white/55 p-4 shadow-card dark:from-gold-400/10 dark:via-navy-950/60 dark:to-navy-950/50">
                   <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                     <div className="space-y-2">
-                      <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-muted-foreground">
+                      <p className="text-tiny font-semibold uppercase tracking-[0.22em] text-muted-foreground">
                         Fecho da sessao
                       </p>
                       <p className="text-sm text-muted-foreground">
-                        Guarda todos os testes preenchidos de uma vez e inclui biometria apenas se altura e peso estiverem completos.
+                        Guarda todos os testes preenchidos de uma vez e inclui
+                        biometria apenas se altura e peso estiverem completos.
                       </p>
                     </div>
 
@@ -653,18 +682,20 @@ export default function TestesPage() {
               >
                 {!selectedStudent ? (
                   <EmptyPanelMessage>
-                    Seleciona um aluno para ativar a leitura de zonas por idade e sexo.
+                    Seleciona um aluno para ativar a leitura de zonas por idade
+                    e sexo.
                   </EmptyPanelMessage>
                 ) : previewResults.length === 0 ? (
                   <EmptyPanelMessage>
-                    Introduz pelo menos um resultado para ver a classificacao esperada.
+                    Introduz pelo menos um resultado para ver a classificacao
+                    esperada.
                   </EmptyPanelMessage>
                 ) : (
                   <div className="grid gap-3">
                     {previewResults.map((result) => (
                       <div
                         key={result.id}
-                        className="rounded-[18px] border border-border/60 bg-background/45 p-4"
+                        className="rounded-2xl border border-border/60 bg-background/45 p-4"
                       >
                         <div className="flex items-start justify-between gap-3">
                           <div>
@@ -698,7 +729,10 @@ export default function TestesPage() {
               >
                 {selectedStudent ? (
                   <div className="grid gap-3">
-                    <MetaRow label="Turma" value={selectedStudent.className ?? "-"} />
+                    <MetaRow
+                      label="Turma"
+                      value={selectedStudent.className ?? "-"}
+                    />
                     <MetaRow
                       label="Idade"
                       value={
@@ -709,7 +743,9 @@ export default function TestesPage() {
                     />
                     <MetaRow
                       label="Sexo"
-                      value={selectedStudent.sex === "F" ? "Feminino" : "Masculino"}
+                      value={
+                        selectedStudent.sex === "F" ? "Feminino" : "Masculino"
+                      }
                     />
                     <MetaRow
                       label="Biometria de apoio"
@@ -730,10 +766,17 @@ export default function TestesPage() {
                 title="Estado atual"
                 description="Resumo do que esta pronto para ser guardado."
               >
-                <MetaRow label="Testes com valor" value={String(completedTestsCount)} />
+                <MetaRow
+                  label="Testes com valor"
+                  value={String(completedTestsCount)}
+                />
                 <MetaRow
                   label="Biometria base"
-                  value={biometricsPreview ? `${biometricsPreview.bmi} IMC` : "Nao pronta"}
+                  value={
+                    biometricsPreview
+                      ? `${biometricsPreview.bmi} IMC`
+                      : "Nao pronta"
+                  }
                 />
                 <MetaRow
                   label="Ultimo envio"
@@ -781,22 +824,22 @@ function TestsLoadingState() {
     <>
       <div className="grid gap-4 md:grid-cols-3">
         {[1, 2, 3].map((item) => (
-          <Skeleton key={item} className="h-28 rounded-[24px]" />
+          <Skeleton key={item} className="h-28 rounded-2xl" />
         ))}
       </div>
 
       <div className="grid grid-cols-1 items-start gap-6 xl:grid-cols-[minmax(0,1fr)_360px]">
         <PageSection tone="primary" layout="form" contentClassName="gap-6">
-          <Skeleton className="h-24 rounded-[24px]" />
+          <Skeleton className="h-24 rounded-2xl" />
           {[1, 2, 3].map((item) => (
-            <Skeleton key={item} className="h-48 rounded-[24px]" />
+            <Skeleton key={item} className="h-48 rounded-2xl" />
           ))}
         </PageSection>
 
         <div className="flex flex-col gap-6">
-          <Skeleton className="h-64 rounded-[24px]" />
-          <Skeleton className="h-52 rounded-[24px]" />
-          <Skeleton className="h-48 rounded-[24px]" />
+          <Skeleton className="h-64 rounded-2xl" />
+          <Skeleton className="h-52 rounded-2xl" />
+          <Skeleton className="h-48 rounded-2xl" />
         </div>
       </div>
     </>
@@ -813,7 +856,7 @@ function CategoryCard({
   const Icon = section.icon;
 
   return (
-    <div className="rounded-[24px] border border-white/30 bg-white/72 p-5 shadow-card backdrop-blur-md dark:border-white/10 dark:bg-navy-950/46">
+    <div className="rounded-2xl border border-white/30 bg-white/72 p-5 shadow-card backdrop-blur-md dark:border-white/10 dark:bg-navy-950/46">
       <div className="mb-4 flex items-start gap-3">
         <span className="flex size-11 items-center justify-center rounded-2xl bg-navy-100 text-navy-800 dark:bg-white/10 dark:text-gold-200">
           <Icon className="size-5" />
@@ -854,10 +897,10 @@ function OverviewCard({
         : "bg-navy-100 text-navy-800 dark:bg-white/10 dark:text-navy-100";
 
   return (
-    <div className="rounded-[24px] border border-white/30 bg-white/72 p-5 shadow-card backdrop-blur-md dark:border-white/10 dark:bg-navy-950/58">
+    <div className="rounded-2xl border border-white/30 bg-white/72 p-5 shadow-card backdrop-blur-md dark:border-white/10 dark:bg-navy-950/58">
       <div className="flex items-start justify-between gap-4">
         <div className="space-y-2">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-muted-foreground">
+          <p className="text-tiny font-semibold uppercase tracking-[0.22em] text-muted-foreground">
             {label}
           </p>
           <p className="text-2xl font-black tracking-[-0.04em] text-foreground">
@@ -879,8 +922,8 @@ function OverviewCard({
 
 function MetaRow({ label, value }: { label: string; value: string }) {
   return (
-    <div className="flex items-center justify-between gap-3 rounded-[18px] border border-border/60 bg-background/45 px-4 py-3">
-      <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+    <div className="flex items-center justify-between gap-3 rounded-2xl border border-border/60 bg-background/45 px-4 py-3">
+      <span className="text-tiny font-semibold uppercase tracking-[0.18em] text-muted-foreground">
         {label}
       </span>
       <span className="text-sm font-semibold text-foreground">{value}</span>
@@ -890,7 +933,7 @@ function MetaRow({ label, value }: { label: string; value: string }) {
 
 function EmptyPanelMessage({ children }: { children: React.ReactNode }) {
   return (
-    <div className="rounded-[24px] border border-dashed border-border/70 bg-background/40 px-4 py-8 text-center">
+    <div className="rounded-2xl border border-dashed border-border/70 bg-background/40 px-4 py-8 text-center">
       <Timer className="mx-auto size-8 text-muted-foreground/35" />
       <p className="mt-3 text-sm text-muted-foreground">{children}</p>
     </div>
@@ -906,11 +949,10 @@ function ReferenceRow({
   description: string;
   tone: "success" | "warning";
 }) {
-  const toneClass =
-    tone === "success" ? "bg-emerald-500" : "bg-amber-500";
+  const toneClass = tone === "success" ? "bg-emerald-500" : "bg-amber-500";
 
   return (
-    <div className="rounded-[18px] border border-border/60 bg-background/45 p-4">
+    <div className="rounded-2xl border border-border/60 bg-background/45 p-4">
       <div className="flex items-center gap-3">
         <span className={`size-2.5 rounded-full ${toneClass}`} />
         <p className="text-sm font-semibold text-foreground">{title}</p>

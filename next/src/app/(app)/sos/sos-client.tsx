@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   CheckCircle2,
@@ -13,7 +14,7 @@ import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { PageScaffold } from "@/components/ui/page-scaffold";
 import { PageSection } from "@/components/ui/page-section";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Input } from "@/components/ui/input";
@@ -71,7 +72,9 @@ export default function SosClient() {
   const isStudent = role === "ALUNO";
   const isStaff = !isStudent;
   const [alerts, setAlerts] = useState<SosAlert[]>([]);
-  const [statusFilter, setStatusFilter] = useState<"all" | "pending" | "resolved">("all");
+  const [statusFilter, setStatusFilter] = useState<
+    "all" | "pending" | "resolved"
+  >("all");
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [resolvingIds, setResolvingIds] = useState<Set<string>>(new Set());
@@ -99,7 +102,8 @@ export default function SosClient() {
       );
       setAlerts(data);
     } catch (error) {
-      const message = error instanceof Error ? error.message : "Erro a carregar SOS";
+      const message =
+        error instanceof Error ? error.message : "Erro a carregar SOS";
       setLoadError(message);
       toast.error(message);
     } finally {
@@ -121,8 +125,7 @@ export default function SosClient() {
       );
       setStudentAlerts(data);
     } catch (error) {
-      const message =
-        error instanceof Error ? error.message : t("loadError");
+      const message = error instanceof Error ? error.message : t("loadError");
       setStudentAlerts([]);
       setStudentLoadError(message);
       toast.error(message);
@@ -151,7 +154,8 @@ export default function SosClient() {
         toast.success(t("resolvedSuccess"));
         await fetchAlerts();
       } catch (error) {
-        const message = error instanceof Error ? error.message : "Erro ao resolver alerta";
+        const message =
+          error instanceof Error ? error.message : "Erro ao resolver alerta";
         toast.error(message);
       } finally {
         setResolvingIds((current) => {
@@ -230,7 +234,9 @@ export default function SosClient() {
           <div className="flex flex-col gap-1">
             <span>{alert.psych}</span>
             {alert.psychEmail ? (
-              <span className="text-[11px] text-slate-500">{alert.psychEmail}</span>
+              <span className="text-tiny text-slate-500">
+                {alert.psychEmail}
+              </span>
             ) : null}
           </div>
         ),
@@ -242,7 +248,9 @@ export default function SosClient() {
           <div className="flex flex-col gap-1">
             <span>{alert.teacher}</span>
             {alert.teacherEmail ? (
-              <span className="text-[11px] text-slate-500">{alert.teacherEmail}</span>
+              <span className="text-tiny text-slate-500">
+                {alert.teacherEmail}
+              </span>
             ) : null}
           </div>
         ),
@@ -265,28 +273,48 @@ export default function SosClient() {
         key: "resolvedBy",
         header: t("resolvedBy"),
         render: (alert) =>
-          alert.resolvedBy ? alert.resolvedBy.name ?? alert.resolvedBy.email : "-",
+          alert.resolvedBy
+            ? (alert.resolvedBy.name ?? alert.resolvedBy.email)
+            : "-",
       },
       {
         key: "actions",
         header: "",
-        render: (alert) =>
-          !alert.resolved ? (
-            <Button
-              variant="secondary"
-              size="sm"
-              onClick={() => void resolveAlert(alert.id)}
-              loading={resolvingIds.has(alert.id)}
-              icon={<CheckCircle2 className="size-4" />}
-            >
-              {t("resolve")}
-            </Button>
-          ) : (
-            <span className="text-[13px] text-slate-500">{formatDate(alert.resolvedAt)}</span>
-          ),
+        render: (alert) => {
+          const studentHref =
+            role === "PSICOLOGO"
+              ? `/acompanhamento/${alert.student.id}`
+              : `/alunos/${alert.student.id}`;
+
+          return (
+            <div className="flex flex-wrap items-center justify-end gap-2">
+              <Link
+                href={studentHref}
+                className={buttonVariants({ variant: "outline", size: "sm" })}
+              >
+                {t("openStudentProfile")}
+              </Link>
+              {!alert.resolved ? (
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => void resolveAlert(alert.id)}
+                  loading={resolvingIds.has(alert.id)}
+                  icon={<CheckCircle2 className="size-4" />}
+                >
+                  {t("resolve")}
+                </Button>
+              ) : (
+                <span className="text-sm text-slate-500">
+                  {formatDate(alert.resolvedAt)}
+                </span>
+              )}
+            </div>
+          );
+        },
       },
     ],
-    [resolveAlert, resolvingIds, t],
+    [resolveAlert, resolvingIds, role, t],
   );
 
   if (isStudent) {
@@ -311,7 +339,9 @@ export default function SosClient() {
                     value={psych}
                     onChange={(event) => setPsych(event.target.value)}
                     placeholder={t("psych")}
-                    disabled={studentLoading || triggeringSos || hasOpenStudentAlert}
+                    disabled={
+                      studentLoading || triggeringSos || hasOpenStudentAlert
+                    }
                   />
                 </FieldShell>
                 <FieldShell label={t("teacher")}>
@@ -319,34 +349,46 @@ export default function SosClient() {
                     value={teacher}
                     onChange={(event) => setTeacher(event.target.value)}
                     placeholder={t("teacher")}
-                    disabled={studentLoading || triggeringSos || hasOpenStudentAlert}
+                    disabled={
+                      studentLoading || triggeringSos || hasOpenStudentAlert
+                    }
                   />
                 </FieldShell>
               </div>
 
               <div className="grid gap-4 lg:grid-cols-2">
-                <FieldShell label={t("psychEmailLabel")} hint={t("emailOptional")}>
+                <FieldShell
+                  label={t("psychEmailLabel")}
+                  hint={t("emailOptional")}
+                >
                   <Input
                     type="email"
                     value={psychEmail}
                     onChange={(event) => setPsychEmail(event.target.value)}
                     placeholder="nome@escola.pt"
-                    disabled={studentLoading || triggeringSos || hasOpenStudentAlert}
+                    disabled={
+                      studentLoading || triggeringSos || hasOpenStudentAlert
+                    }
                   />
                 </FieldShell>
-                <FieldShell label={t("teacherEmailLabel")} hint={t("emailOptional")}>
+                <FieldShell
+                  label={t("teacherEmailLabel")}
+                  hint={t("emailOptional")}
+                >
                   <Input
                     type="email"
                     value={teacherEmail}
                     onChange={(event) => setTeacherEmail(event.target.value)}
                     placeholder="nome@escola.pt"
-                    disabled={studentLoading || triggeringSos || hasOpenStudentAlert}
+                    disabled={
+                      studentLoading || triggeringSos || hasOpenStudentAlert
+                    }
                   />
                 </FieldShell>
               </div>
 
               {activeStudentAlert ? (
-                <div className="rounded-3xl border border-warning-200 bg-warning-50 p-4 text-sm text-warning-900">
+                <div className="rounded-2xl border border-warning-200 bg-warning-50 p-4 text-sm text-warning-900">
                   <p className="font-semibold">{t("alreadyOpen")}</p>
                   <p>{t("alreadyOpenHint")}</p>
                 </div>
@@ -363,7 +405,9 @@ export default function SosClient() {
                   {hasOpenStudentAlert ? t("alreadyOpenButton") : t("trigger")}
                 </Button>
                 {studentLoading ? (
-                  <p className="text-sm text-muted-foreground">{t("loading")}</p>
+                  <p className="text-sm text-muted-foreground">
+                    {t("loading")}
+                  </p>
                 ) : null}
               </div>
 
@@ -384,8 +428,8 @@ export default function SosClient() {
           >
             {studentLoading ? (
               <div className="grid gap-3">
-                <div className="h-24 rounded-3xl bg-muted/70" />
-                <div className="h-24 rounded-3xl bg-muted/70" />
+                <div className="h-24 rounded-2xl bg-muted/70" />
+                <div className="h-24 rounded-2xl bg-muted/70" />
               </div>
             ) : studentLoadError ? (
               <EmptyState
@@ -404,7 +448,7 @@ export default function SosClient() {
                 {studentAlerts.map((alert) => (
                   <div
                     key={alert.id}
-                    className="rounded-3xl border border-white/20 bg-white/60 p-4 shadow-sm"
+                    className="rounded-2xl border border-white/20 bg-white/60 p-4 shadow-sm"
                   >
                     <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                       <div>
@@ -428,19 +472,23 @@ export default function SosClient() {
 
                     <div className="mt-4 grid gap-3 sm:grid-cols-2">
                       <div className="rounded-2xl bg-navy-950/5 p-3">
-                        <p className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
+                        <p className="text-tiny uppercase tracking-[0.18em] text-muted-foreground">
                           {t("psychLabel")}
                         </p>
-                        <p className="mt-2 font-medium text-foreground">{alert.psych}</p>
+                        <p className="mt-2 font-medium text-foreground">
+                          {alert.psych}
+                        </p>
                         <p className="mt-1 text-sm text-muted-foreground">
                           {alert.psychEmail ?? "-"}
                         </p>
                       </div>
                       <div className="rounded-2xl bg-navy-950/5 p-3">
-                        <p className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
+                        <p className="text-tiny uppercase tracking-[0.18em] text-muted-foreground">
                           {t("teacherLabel")}
                         </p>
-                        <p className="mt-2 font-medium text-foreground">{alert.teacher}</p>
+                        <p className="mt-2 font-medium text-foreground">
+                          {alert.teacher}
+                        </p>
                         <p className="mt-1 text-sm text-muted-foreground">
                           {alert.teacherEmail ?? "-"}
                         </p>

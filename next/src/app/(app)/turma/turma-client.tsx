@@ -1,31 +1,32 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
-import { Download, FileUp, ShieldOff, Users } from "lucide-react";
 import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  Legend,
-} from "recharts";
+  AlertTriangle,
+  Download,
+  FileUp,
+  Sparkles,
+  Target,
+  Users,
+} from "lucide-react";
+import { Bar, BarChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { PageScaffold } from "@/components/ui/page-scaffold";
 import { PageSection } from "@/components/ui/page-section";
 import { ClassPicker } from "@/components/ui/class-picker";
 import { DataTable, type Column } from "@/components/ui/data-table";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { ZoneBadge } from "@/components/ui/zone-badge";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useUser } from "@/components/user-context";
+import { KpiCard } from "@/components/ui/kpi-card";
 import { ChartFrame } from "@/components/ui/chart-frame";
 import { ChartTooltip } from "@/components/ui/chart-tooltip";
+import { useUser } from "@/components/user-context";
 import { useClasses } from "@/hooks/use-queries";
 import { readApiResponse } from "@/lib/api-client";
 import { getInitials, getStudentSwatch } from "@/components/ui/student-picker";
@@ -40,6 +41,7 @@ interface StudentRow {
 }
 
 export default function TurmaPage() {
+  const router = useRouter();
   const t = useTranslations("turma");
   const common = useTranslations("common");
   const { role } = useUser();
@@ -50,27 +52,34 @@ export default function TurmaPage() {
     error: classesError,
     refetch: refetchClasses,
   } = useClasses({ enabled: canViewClassReports });
-  const [classId, setClassId] = useState<string>("");
+  const [classId, setClassId] = useState("");
   const [students, setStudents] = useState<StudentRow[]>([]);
   const [loading, setLoading] = useState(false);
   const [isImportingCsv, setIsImportingCsv] = useState(false);
   const importInputRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
-    if (classesError) toast.error(t("loadError"));
+    if (classesError) {
+      toast.error(t("loadError"));
+    }
   }, [classesError, t]);
 
   useEffect(() => {
-    if (!canViewClassReports || !classId) return;
+    if (!canViewClassReports || !classId) {
+      return;
+    }
 
     let active = true;
+    setLoading(true);
 
     (async () => {
       const res = await fetch(
         `/api/classes/report?classId=${encodeURIComponent(classId)}`,
       );
       const body = await readApiResponse<StudentRow[]>(res);
-      if (!active) return;
+      if (!active) {
+        return;
+      }
       setStudents(body);
     })()
       .catch(() => {
@@ -80,7 +89,9 @@ export default function TurmaPage() {
         }
       })
       .finally(() => {
-        if (active) setLoading(false);
+        if (active) {
+          setLoading(false);
+        }
       });
 
     return () => {
@@ -89,13 +100,19 @@ export default function TurmaPage() {
   }, [canViewClassReports, classId, t]);
 
   const exportCsv = () => {
-    if (!students.length) return;
-    const escapeCsv = (v: string | number) => {
-      const s = String(v);
-      return s.includes(",") || s.includes('"') || s.includes("\n")
-        ? `"${s.replace(/"/g, '""')}"`
-        : s;
+    if (!students.length) {
+      return;
+    }
+
+    const escapeCsv = (value: string | number) => {
+      const nextValue = String(value);
+      return nextValue.includes(",") ||
+        nextValue.includes('"') ||
+        nextValue.includes("\n")
+        ? `"${nextValue.replace(/"/g, '""')}"`
+        : nextValue;
     };
+
     const headers = [
       t("colName"),
       t("colSex"),
@@ -114,6 +131,7 @@ export default function TurmaPage() {
         student.testCount,
       ].join(","),
     );
+
     const csv = [headers.join(","), ...rows].join("\n");
     const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
     const url = URL.createObjectURL(blob);
@@ -169,16 +187,24 @@ export default function TurmaPage() {
   };
 
   const stats = useMemo(() => {
-    if (!students.length) return { total: 0, healthyPct: 0, pending: 0 };
+    if (!students.length) {
+      return { total: 0, healthyPct: 0, pending: 0 };
+    }
+
     const total = students.length;
     let healthyCount = 0;
     let pendingCount = 0;
+
     for (const student of students) {
       const zone = student.latestBiometric?.imcZone ?? "";
-      if (zone.toLowerCase().includes("saud") || zone === "ZSAF")
-        healthyCount++;
-      if (!student.latestBiometric) pendingCount++;
+      if (zone.toLowerCase().includes("saud") || zone === "ZSAF") {
+        healthyCount += 1;
+      }
+      if (!student.latestBiometric) {
+        pendingCount += 1;
+      }
     }
+
     return {
       total,
       healthyPct: Math.round((healthyCount / total) * 100),
@@ -187,25 +213,134 @@ export default function TurmaPage() {
   }, [students]);
 
   const zoneChartData = useMemo(() => {
-    if (!students.length) return [];
-    let zsaf = 0;
-    let zmf = 0;
+    if (!students.length) {
+      return [];
+    }
+
+    let healthy = 0;
+    let improvement = 0;
     let noData = 0;
+
     for (const student of students) {
       const zone = student.latestBiometric?.imcZone ?? "";
-      if (zone.toLowerCase().includes("saud") || zone === "ZSAF") zsaf++;
-      else if (zone) zmf++;
-      else noData++;
+      if (zone.toLowerCase().includes("saud") || zone === "ZSAF") {
+        healthy += 1;
+      } else if (zone) {
+        improvement += 1;
+      } else {
+        noData += 1;
+      }
     }
+
     return [
       {
         name: t("className"),
-        [t("healthyZone")]: zsaf,
-        [t("improvementZone")]: zmf,
+        [t("healthyZone")]: healthy,
+        [t("improvementZone")]: improvement,
         [t("noDataLabel")]: noData,
       },
     ];
   }, [students, t]);
+
+  const classInsight = useMemo(() => {
+    if (!students.length) {
+      return "Selecione uma turma com registos para gerar a leitura rapida.";
+    }
+
+    if (stats.pending === stats.total) {
+      return "A turma ainda nao tem medicoes biometricas registadas.";
+    }
+
+    if (stats.pending > 0) {
+      return `${stats.pending} aluno${stats.pending === 1 ? "" : "s"} continuam pendentes de avaliacao, o que pode distorcer a leitura agregada.`;
+    }
+
+    if (stats.healthyPct >= 70) {
+      return `${stats.healthyPct}% da turma esta em zona saudavel, com uma base consistente para acompanhamento preventivo.`;
+    }
+
+    if (stats.healthyPct >= 50) {
+      return `${stats.healthyPct}% da turma esta em zona saudavel; vale a pena reforcar acompanhamento nos alunos em melhoria.`;
+    }
+
+    return `A maioria da turma esta fora da zona saudavel; recomenda-se priorizar intervencao e nova medicao de seguimento.`;
+  }, [stats, students.length]);
+
+  const columns = useMemo<Column<StudentRow>[]>(
+    () => [
+      {
+        key: "name",
+        header: t("colName"),
+        sortable: true,
+        className: "min-w-[260px]",
+        render: (student) => (
+          <div className="flex items-center gap-3">
+            <Avatar className="size-11 rounded-2xl ring-1 ring-border/70">
+              <AvatarFallback
+                className="rounded-2xl text-xs font-semibold"
+                style={getStudentSwatch(student)}
+              >
+                {getInitials(student.name)}
+              </AvatarFallback>
+            </Avatar>
+            <div className="min-w-0">
+              <p className="truncate text-sm font-semibold text-foreground">
+                {student.name}
+              </p>
+              <p className="truncate text-xs text-muted-foreground">
+                {student.className ?? t("className")}
+              </p>
+            </div>
+          </div>
+        ),
+      },
+      {
+        key: "sex",
+        header: t("colSex"),
+        sortable: true,
+        render: (student) => (
+          <span className="text-sm font-medium text-foreground">
+            {student.sex}
+          </span>
+        ),
+      },
+      {
+        key: "latestBiometric",
+        header: t("colBmi"),
+        sortable: true,
+        render: (student) => (
+          <span className="text-sm font-semibold text-foreground">
+            {student.latestBiometric
+              ? Number(student.latestBiometric.imc).toFixed(1)
+              : "—"}
+          </span>
+        ),
+      },
+      {
+        key: "zone",
+        header: t("colZone"),
+        render: (student) =>
+          student.latestBiometric ? (
+            <ZoneBadge zone={student.latestBiometric.imcZone} size="sm" />
+          ) : (
+            <Badge variant="warning" size="sm">
+              {t("noDataLabel")}
+            </Badge>
+          ),
+      },
+      {
+        key: "testCount",
+        header: t("colTests"),
+        sortable: true,
+        render: (student) => (
+          <span className="text-sm font-semibold text-foreground">
+            {student.testCount}
+          </span>
+        ),
+      },
+    ],
+    [t],
+  );
 
   if (!canViewClassReports) {
     return (
@@ -213,13 +348,13 @@ export default function TurmaPage() {
         headerProps={{
           title: t("title"),
           description: t("description"),
-          eyebrow: "GESTÃO · TURMA",
+          eyebrow: "GESTAO · TURMA",
         }}
       >
         <EmptyState
-          icon={ShieldOff}
-          title="Sem acesso a relatórios de turma"
-          description="Esta área está reservada a professores e administradores."
+          icon={AlertTriangle}
+          title="Sem acesso a relatorios de turma"
+          description="Esta area esta reservada a professores e administradores."
         />
       </PageScaffold>
     );
@@ -227,13 +362,14 @@ export default function TurmaPage() {
 
   return (
     <PageScaffold
+      className="gap-5"
       headerProps={{
         title: t("title"),
         description: t("description"),
-        eyebrow: "GESTÃO · TURMA",
+        eyebrow: "GESTAO · TURMA",
       }}
       headerActions={
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <input
             ref={importInputRef}
             type="file"
@@ -243,29 +379,30 @@ export default function TurmaPage() {
           />
           <Button
             size="sm"
-            variant="ghost"
+            variant="outline"
             icon={<FileUp className="size-4" />}
             loading={isImportingCsv}
             onClick={() => importInputRef.current?.click()}
-            className="rounded-full"
           >
             {common("importCsv")}
           </Button>
           <Button
             size="sm"
-            variant="ghost"
+            variant="outline"
             icon={<Download className="size-4" />}
             onClick={exportCsv}
             disabled={!students.length}
-            className="rounded-full"
           >
             {common("exportCsv")}
           </Button>
         </div>
       }
     >
-      {/* Class Selection */}
-      <div className="mb-8">
+      <PageSection
+        tone="utility"
+        title="Selecao da turma"
+        description="Escolha uma turma para carregar os indicadores e a lista de alunos."
+      >
         {loadingClasses ? (
           <Skeleton className="h-14 w-full max-w-[320px] rounded-2xl" />
         ) : classesError ? (
@@ -284,12 +421,11 @@ export default function TurmaPage() {
             }
           />
         ) : classes.length > 0 ? (
-          <div className="w-full max-w-[320px] animate-fade-in-up">
+          <div className="w-full max-w-[320px]">
             <ClassPicker
               classes={classes}
               value={classId}
               onChange={(value) => {
-                setLoading(true);
                 setClassId(value);
                 setStudents([]);
               }}
@@ -300,187 +436,89 @@ export default function TurmaPage() {
           <EmptyState
             icon={Users}
             title="Sem turmas"
-            description="Ainda não existem turmas criadas."
+            description="Ainda nao existem turmas criadas."
           />
         )}
-      </div>
+      </PageSection>
 
       {!classId ? (
         <EmptyState
           icon={Users}
-          title="Selecione uma Turma"
-          description="Escolha uma turma acima para carregar o dashboard estratégico."
+          title={t("noClassSelected")}
+          description={t("noClassSelectedDesc")}
         />
       ) : loading ? (
-        <div className="space-y-8 animate-fade-in">
-          <div className="flex gap-4 overflow-x-auto pb-4 no-scrollbar">
-            {[1, 2, 3].map((i) => (
-              <Skeleton key={i} className="h-40 min-w-[200px] rounded-3xl" />
-            ))}
+        <div className="grid gap-4 xl:grid-cols-[minmax(0,1.15fr)_340px]">
+          <div className="grid gap-4">
+            <div className="grid gap-4 md:grid-cols-3">
+              {Array.from({ length: 3 }, (_, index) => (
+                <Skeleton key={index} className="h-44 rounded-xl" />
+              ))}
+            </div>
+            <Skeleton className="h-[420px] rounded-xl" />
           </div>
-          <Skeleton className="h-96 w-full rounded-[2.5rem]" />
+          <div className="grid gap-4">
+            <Skeleton className="h-[320px] rounded-xl" />
+            <Skeleton className="h-[220px] rounded-xl" />
+          </div>
         </div>
       ) : (
-        <div className="space-y-10">
-          {/* Dashboard Summary Cards */}
-          <section className="flex gap-4 overflow-x-auto pb-4 no-scrollbar animate-fade-in-up">
-            {/* Total Alunos */}
-            <div className="glass shadow-xl min-w-[180px] p-6 rounded-[2rem] flex flex-col gap-4 border border-white/5 relative overflow-hidden group">
-              <div className="absolute -right-6 -top-6 w-20 h-20 bg-primary/5 rounded-full blur-2xl group-hover:bg-primary/10 transition-colors" />
-              <div className="w-10 h-10 rounded-2xl bg-primary/10 flex items-center justify-center text-primary">
-                <span className="material-symbols-outlined text-2xl">
-                  groups
-                </span>
-              </div>
-              <div>
-                <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60 mb-1">
-                  Total Alunos
-                </p>
-                <h2 className="text-3xl font-black text-foreground italic">
-                  {stats.total}
-                </h2>
-              </div>
-            </div>
+        <>
+          <div className="grid gap-4 md:grid-cols-3">
+            <KpiCard
+              icon={Users}
+              title="Total de alunos"
+              value={stats.total}
+              description={t("studentsUnit")}
+              accent="blue"
+            />
+            <KpiCard
+              icon={Target}
+              title={t("healthyZone")}
+              value={stats.healthyPct}
+              description="%"
+              accent="gold"
+            />
+            <KpiCard
+              icon={AlertTriangle}
+              title="Pendentes"
+              value={stats.pending}
+              description="por avaliar"
+              accent="red"
+            />
+          </div>
 
-            {/* ZAF Saudável */}
-            <div className="glass shadow-xl min-w-[240px] p-6 rounded-[2rem] flex flex-col gap-4 border border-white/5 relative overflow-hidden group">
-              <div className="absolute -right-6 -top-6 w-24 h-24 bg-secondary/5 rounded-full blur-2xl group-hover:bg-secondary/10 transition-colors" />
-              <div className="flex items-center justify-between">
-                <div className="w-10 h-10 rounded-2xl bg-secondary/10 flex items-center justify-center text-secondary">
-                  <span className="material-symbols-outlined text-2xl">
-                    verified_user
-                  </span>
-                </div>
-                <span className="text-secondary font-black text-lg italic">
-                  {stats.healthyPct}%
-                </span>
-              </div>
-              <div className="space-y-3">
-                <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">
-                  ZAF Saudável
-                </p>
-                <div className="w-full bg-white/5 rounded-full h-2 overflow-hidden">
-                  <div
-                    className="h-full bg-gradient-to-r from-[#eec147] to-[#f59e0b] shadow-[0_0_15px_rgba(238,193,71,0.3)] transition-all duration-1000"
-                    style={{ width: `${stats.healthyPct}%` }}
-                  />
-                </div>
-              </div>
-            </div>
+          <div className="grid gap-5 xl:grid-cols-[minmax(0,1.2fr)_340px]">
+            <PageSection
+              tone="secondary"
+              layout="list"
+              title="Alunos da turma"
+              description={`${students.length} ${t("studentsUnit")} com resumo biometrico e de testes.`}
+            >
+              <DataTable
+                columns={columns}
+                data={students}
+                rowKey={(student) => student.id}
+                onRowClick={(student) => router.push(`/alunos/${student.id}`)}
+                emptyMessage={t("noStudents")}
+                toolbarTitle={t("title")}
+                toolbarSummary={`${students.length} ${t("studentsUnit")}`}
+              />
+            </PageSection>
 
-            {/* Pendente */}
-            <div className="glass shadow-xl min-w-[180px] p-6 rounded-[2rem] flex flex-col gap-4 border border-white/5 relative overflow-hidden group">
-              <div className="absolute -right-6 -top-6 w-20 h-20 bg-danger-500/5 rounded-full blur-2xl" />
-              <div className="w-10 h-10 rounded-2xl bg-danger-500/10 flex items-center justify-center text-danger-400">
-                <span className="material-symbols-outlined text-2xl">
-                  report_problem
-                </span>
-              </div>
-              <div>
-                <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60 mb-1">
-                  Pendente
-                </p>
-                <h2 className="text-3xl font-black text-danger-400 italic">
-                  {stats.pending.toString().padStart(2, "0")}
-                </h2>
-              </div>
-            </div>
-          </section>
-
-          <div className="grid grid-cols-1 lg:grid-cols-[1fr_400px] gap-10 items-start">
-            {/* Main Student List */}
-            <div className="space-y-6 animate-fade-in-up">
-              <div className="flex justify-between items-center px-4">
-                <h3 className="text-xs font-black uppercase tracking-widest text-muted-foreground/70 italic">
-                  Lista Escolar
-                </h3>
-                <span className="text-[10px] font-bold text-muted-foreground/40 bg-white/5 px-3 py-1 rounded-full">
-                  {students.length} RESULTADOS
-                </span>
-              </div>
-
-              <div className="grid grid-cols-1 gap-3">
-                {students.map((student, idx) => {
-                  const isHealthy =
-                    student.latestBiometric?.imcZone
-                      .toLowerCase()
-                      .includes("saud") ||
-                    student.latestBiometric?.imcZone === "ZSAF";
-                  const isPending = !student.latestBiometric;
-
-                  return (
-                    <div
-                      key={student.id}
-                      className="glass p-5 rounded-[1.5rem] flex items-center justify-between border border-white/5 transition-all hover:scale-[1.01] hover:bg-white/[0.03] group animate-fade-in-up"
-                      style={{ animationDelay: `${idx * 50}ms` }}
-                    >
-                      <div className="flex items-center gap-5">
-                        <Avatar className="size-14 rounded-2xl ring-2 ring-white/5 transition-transform group-hover:scale-110">
-                          <AvatarFallback
-                            className="rounded-2xl text-xs font-black shadow-inner italic"
-                            style={getStudentSwatch(student)}
-                          >
-                            {getInitials(student.name)}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div className="flex flex-col gap-1">
-                          <h4 className="font-black text-foreground tracking-tight group-hover:text-primary transition-colors">
-                            {student.name}
-                          </h4>
-                          <p className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-widest">
-                            {isPending
-                              ? "Pendente de Avaliação"
-                              : "Última Biometria: 12 Out"}
-                          </p>
-                        </div>
-                      </div>
-                      <div className="flex flex-col items-end gap-2">
-                        {isPending ? (
-                          <span className="px-4 py-1.5 bg-danger-500/10 text-danger-400 text-[10px] font-black uppercase tracking-wider rounded-full border border-danger-500/20 shadow-sm shadow-danger-500/20 italic">
-                            Pendente
-                          </span>
-                        ) : isHealthy ? (
-                          <span className="px-4 py-1.5 bg-emerald-500/10 text-emerald-400 text-[10px] font-black uppercase tracking-wider rounded-full border border-emerald-500/20 shadow-sm shadow-emerald-500/20 italic">
-                            Saudável
-                          </span>
-                        ) : (
-                          <span className="px-4 py-1.5 bg-secondary/10 text-secondary text-[10px] font-black uppercase tracking-wider rounded-full border border-secondary/20 shadow-sm shadow-secondary/20 italic">
-                            Em Risco
-                          </span>
-                        )}
-                        <span className="text-[9px] font-bold text-muted-foreground/30 uppercase tracking-tighter">
-                          Clique para ver perfil
-                        </span>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* Analytics Sidebar */}
-            <aside className="space-y-6 lg:sticky lg:top-28">
+            <div className="grid gap-5">
               <PageSection
                 tone="secondary"
                 layout="analytics"
-                title={
-                  <div className="flex items-center gap-2">
-                    <span className="material-symbols-outlined text-secondary text-2xl">
-                      analytics
-                    </span>
-                    <span className="text-xs font-black uppercase tracking-widest text-muted-foreground/70">
-                      Distribuição ZAF
-                    </span>
-                  </div>
-                }
-                className="animate-fade-in-up delay-200"
+                title={t("zafDistribution")}
+                description="Distribuicao atual da turma entre zona saudavel, zona de melhoria e alunos sem dados."
               >
-                <div className="h-[300px] w-full mt-4">
+                <ChartFrame className="h-[280px]">
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart
                       data={zoneChartData}
                       layout="vertical"
-                      margin={{ left: -20 }}
+                      margin={{ top: 12, right: 8, bottom: 12, left: 0 }}
                     >
                       <XAxis type="number" hide />
                       <YAxis type="category" dataKey="name" hide />
@@ -490,72 +528,76 @@ export default function TurmaPage() {
                       />
                       <Bar
                         dataKey={t("healthyZone")}
-                        fill="#10b981"
-                        stackId="a"
-                        radius={[20, 0, 0, 20]}
+                        fill="var(--color-success-500)"
+                        stackId="zone"
+                        radius={[18, 0, 0, 18]}
                       />
                       <Bar
                         dataKey={t("improvementZone")}
-                        fill="#fbbf24"
-                        stackId="a"
+                        fill="var(--color-warning-500)"
+                        stackId="zone"
                       />
                       <Bar
                         dataKey={t("noDataLabel")}
-                        fill="#4b5563"
-                        stackId="a"
-                        radius={[0, 20, 20, 0]}
+                        fill="var(--color-navy-400)"
+                        stackId="zone"
+                        radius={[0, 18, 18, 0]}
                       />
                     </BarChart>
                   </ResponsiveContainer>
-                </div>
-                <div className="flex justify-between items-center mt-6 pt-6 border-t border-white/5 px-2">
-                  <div className="flex flex-col items-center gap-1">
-                    <span className="text-emerald-400 font-black text-xl italic">
+                </ChartFrame>
+
+                <div className="grid grid-cols-3 gap-3">
+                  <div className="rounded-2xl border border-border/60 bg-background/45 px-3 py-3 text-center">
+                    <p className="text-tiny font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+                      {t("healthyZone")}
+                    </p>
+                    <p className="mt-1 text-lg font-semibold text-success-600">
                       {stats.healthyPct}%
-                    </span>
-                    <span className="text-[9px] font-bold text-muted-foreground/50 uppercase tracking-widest italic">
-                      Saudável
-                    </span>
+                    </p>
                   </div>
-                  <div className="flex flex-col items-center gap-1">
-                    <span className="text-amber-400 font-black text-xl italic">
-                      {100 - stats.healthyPct}%
-                    </span>
-                    <span className="text-[9px] font-bold text-muted-foreground/50 uppercase tracking-widest italic">
-                      Intervenção
-                    </span>
+                  <div className="rounded-2xl border border-border/60 bg-background/45 px-3 py-3 text-center">
+                    <p className="text-tiny font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+                      {t("improvementZone")}
+                    </p>
+                    <p className="mt-1 text-lg font-semibold text-warning-600">
+                      {Math.max(0, 100 - stats.healthyPct - Math.round((stats.pending / Math.max(stats.total, 1)) * 100))}%
+                    </p>
+                  </div>
+                  <div className="rounded-2xl border border-border/60 bg-background/45 px-3 py-3 text-center">
+                    <p className="text-tiny font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+                      {t("noDataLabel")}
+                    </p>
+                    <p className="mt-1 text-lg font-semibold text-navy-700 dark:text-navy-200">
+                      {stats.pending}
+                    </p>
                   </div>
                 </div>
               </PageSection>
 
-              <div className="rounded-[2rem] p-[1px] bg-gradient-to-br from-white/10 to-transparent">
-                <div className="bg-navy-950/40 backdrop-blur-xl rounded-[2rem] p-8 border border-white/5 space-y-4">
-                  <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-2xl bg-secondary/10 flex items-center justify-center text-secondary">
-                      <span className="material-symbols-outlined text-3xl">
-                        insights
-                      </span>
-                    </div>
+              <PageSection
+                tone="utility"
+                layout="list"
+                title="Leitura rapida"
+                description="Resumo imediato para decidir o proximo acompanhamento."
+              >
+                <div className="flex items-start gap-3 rounded-2xl border border-border/60 bg-background/45 p-4">
+                  <div className="flex size-10 shrink-0 items-center justify-center rounded-2xl bg-gold-400/18 text-gold-700 dark:text-gold-300">
+                    <Sparkles className="size-5" />
                   </div>
-                  <h3 className="text-lg font-black text-foreground italic">
-                    Insight da Turma
-                  </h3>
-                  <p className="text-sm font-medium text-muted-foreground leading-relaxed">
-                    Baseado nos últimos testes, a turma apresenta um bom
-                    desenvolvimento aeróbio, mas necessita de foco em
-                    flexibilidade.
-                  </p>
-                  <Button
-                    variant="sanctuary"
-                    className="w-full h-14 rounded-3xl font-black italic uppercase tracking-widest text-xs"
-                  >
-                    Ver Relatório IA
-                  </Button>
+                  <div className="space-y-2">
+                    <p className="text-sm font-semibold text-foreground">
+                      Insight da turma
+                    </p>
+                    <p className="text-sm leading-relaxed text-muted-foreground">
+                      {classInsight}
+                    </p>
+                  </div>
                 </div>
-              </div>
-            </aside>
+              </PageSection>
+            </div>
           </div>
-        </div>
+        </>
       )}
     </PageScaffold>
   );

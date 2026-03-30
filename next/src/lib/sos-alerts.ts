@@ -72,7 +72,10 @@ function resolveDisplayName({
   return "-";
 }
 
-function resolveDisplayEmail(rawEmail: string | null | undefined, rawName: string) {
+function resolveDisplayEmail(
+  rawEmail: string | null | undefined,
+  rawName: string,
+) {
   if (rawEmail) {
     return rawEmail;
   }
@@ -80,7 +83,9 @@ function resolveDisplayEmail(rawEmail: string | null | undefined, rawName: strin
   return looksLikeEmail(rawName) ? rawName : null;
 }
 
-export async function normalizeSosAlerts<T extends SosAlertLike>(alerts: T[]): Promise<T[]> {
+export async function normalizeSosAlerts<T extends SosAlertLike>(
+  alerts: T[],
+): Promise<T[]> {
   const candidateEmails = new Set<string>();
 
   for (const alert of alerts) {

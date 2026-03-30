@@ -39,7 +39,11 @@ export function ChartFrame({
 
   return (
     <div ref={containerRef} className={cn("w-full", className)} {...props}>
-      {ready ? children : fallback ?? <div className="h-full w-full animate-pulse rounded-2xl bg-muted/30" />}
+      {ready
+        ? children
+        : (fallback ?? (
+            <div className="h-full w-full animate-pulse rounded-2xl bg-muted/30" />
+          ))}
     </div>
   );
 }

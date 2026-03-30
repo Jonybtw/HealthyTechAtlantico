@@ -286,7 +286,7 @@ export function AcompanhamentoClient({
           description={t("studentContextDescription")}
         >
           <div className="grid gap-3 sm:grid-cols-2">
-            <div className="rounded-[20px] border border-white/20 dark:border-white/10 bg-white/50 dark:bg-navy-950/40 backdrop-blur-sm p-4">
+            <div className="rounded-2xl border border-white/20 dark:border-white/10 bg-white/50 dark:bg-navy-950/40 backdrop-blur-sm p-4">
               <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
                 {t("studentLabel")}
               </p>
@@ -307,13 +307,13 @@ export function AcompanhamentoClient({
               </div>
             </div>
 
-            <div className="rounded-[20px] border border-white/20 dark:border-white/10 bg-white/50 dark:bg-navy-950/40 backdrop-blur-sm p-4">
+            <div className="rounded-2xl border border-white/20 dark:border-white/10 bg-white/50 dark:bg-navy-950/40 backdrop-blur-sm p-4">
               <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
                 {t("contextSummary")}
               </p>
               <div className="mt-3 grid gap-3 sm:grid-cols-2">
                 <div>
-                  <p className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
+                  <p className="text-tiny uppercase tracking-[0.18em] text-muted-foreground">
                     {t("ageLabel")}
                   </p>
                   <p className="mt-1 text-sm font-semibold text-foreground">
@@ -321,7 +321,7 @@ export function AcompanhamentoClient({
                   </p>
                 </div>
                 <div>
-                  <p className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
+                  <p className="text-tiny uppercase tracking-[0.18em] text-muted-foreground">
                     {t("lastQuestionnaire")}
                   </p>
                   <p className="mt-1 text-sm font-semibold text-foreground">
@@ -340,7 +340,7 @@ export function AcompanhamentoClient({
           description={t("signalsDescription")}
         >
           <div className="grid gap-3 sm:grid-cols-2">
-            <div className="rounded-[18px] border border-danger-300/50 bg-danger-50/50 p-4 dark:border-danger-900/30 dark:bg-danger-950/20">
+            <div className="rounded-2xl border border-danger-300/50 bg-danger-50/50 p-4 dark:border-danger-900/30 dark:bg-danger-950/20">
               <p className="text-xs uppercase tracking-[0.18em] text-danger-700 dark:text-danger-300">
                 {t("pendingSos")}
               </p>
@@ -351,7 +351,7 @@ export function AcompanhamentoClient({
                 {t("pendingSosDescription")}
               </p>
             </div>
-            <div className="rounded-[18px] border border-gold-300/50 bg-gold-50/50 p-4 dark:border-gold-900/30 dark:bg-gold-950/20">
+            <div className="rounded-2xl border border-gold-300/50 bg-gold-50/50 p-4 dark:border-gold-900/30 dark:bg-gold-950/20">
               <p className="text-xs uppercase tracking-[0.18em] text-gold-700 dark:text-gold-300">
                 {t("questionnairesAvailable")}
               </p>
@@ -405,7 +405,7 @@ export function AcompanhamentoClient({
               {sosAlerts.map((alert) => (
                 <StaggerItem
                   key={alert.id}
-                  className="surface-secondary rounded-[18px] border border-white/20 dark:border-white/10 p-4"
+                  className="surface-secondary rounded-2xl border border-white/20 dark:border-white/10 p-4"
                 >
                   <div className="flex flex-wrap items-start justify-between gap-3">
                     <div>
@@ -515,7 +515,7 @@ export function AcompanhamentoClient({
                 return (
                   <StaggerItem
                     key={questionnaire.id}
-                    className="surface-secondary rounded-[18px] border border-white/20 dark:border-white/10 p-4"
+                    className="surface-secondary rounded-2xl border border-white/20 dark:border-white/10 p-4"
                   >
                     <div className="flex flex-wrap items-start justify-between gap-3">
                       <div>

@@ -203,7 +203,10 @@ export default function RelatorioPage() {
         ),
       ]);
 
-      if ((!Array.isArray(bio) || bio.length === 0) && (!Array.isArray(tests) || tests.length === 0)) {
+      if (
+        (!Array.isArray(bio) || bio.length === 0) &&
+        (!Array.isArray(tests) || tests.length === 0)
+      ) {
         toast.error(t("noData"));
         return;
       }
@@ -438,14 +441,14 @@ export default function RelatorioPage() {
         cooper: "Cooper",
         milha: "Milha 1609m",
         velocidade: "Velocidade 40m",
-          agilidade: "Agilidade 4×10m",
-          abd: "Abdominais",
-          abdominais: "Abdominais",
-          bracos: "Extensões de braços",
-          extensoes: "Extensões de braços",
-          senta: "Senta e alcança",
-          senta_alcanca: "Senta e alcança",
-          vaivem: "Vai e Vem",
+        agilidade: "Agilidade 4×10m",
+        abd: "Abdominais",
+        abdominais: "Abdominais",
+        bracos: "Extensões de braços",
+        extensoes: "Extensões de braços",
+        senta: "Senta e alcança",
+        senta_alcanca: "Senta e alcança",
+        vaivem: "Vai e Vem",
       };
 
       if (Array.isArray(tests) && tests.length) {
@@ -669,7 +672,7 @@ export default function RelatorioPage() {
       }}
     >
       {/* Document preview card */}
-      <div className="surface-secondary rounded-[20px] border border-white/20 dark:border-white/10 shadow-card overflow-hidden">
+      <div className="surface-secondary rounded-2xl border border-white/20 dark:border-white/10 shadow-card overflow-hidden">
         {/* Student selector */}
         <div className="px-6 py-4 border-b border-white/20 dark:border-white/10 bg-white/60 dark:bg-navy-950/40 backdrop-blur-md/60">
           {role !== "ALUNO" ? (
@@ -680,11 +683,11 @@ export default function RelatorioPage() {
               loading={loadingStudents}
             />
           ) : (
-            <div className="flex h-[46px] w-full items-center justify-between rounded-[18px] border border-input px-4 text-left shadow-sm bg-background">
+            <div className="flex h-[46px] w-full items-center justify-between rounded-2xl border border-input px-4 text-left shadow-sm bg-background">
               <div className="flex w-full items-center gap-2.5">
                 {selectedStudent ? (
                   <span
-                    className="flex size-7 shrink-0 items-center justify-center rounded-full text-[11px] font-semibold shadow-[inset_0_1px_0_rgba(255,255,255,0.18)]"
+                    className="flex size-7 shrink-0 items-center justify-center rounded-full text-tiny font-semibold shadow-[inset_0_1px_0_rgba(255,255,255,0.18)]"
                     style={getStudentSwatch({
                       id: selectedStudent.id,
                       name: selectedStudent.name,
@@ -698,10 +701,10 @@ export default function RelatorioPage() {
                   </div>
                 )}
                 <span className="min-w-0 flex-1 flex flex-col justify-center">
-                  <span className="truncate text-[13px] font-semibold leading-tight text-foreground">
+                  <span className="truncate text-sm font-semibold leading-tight text-foreground">
                     {selectedStudent?.name ?? "A carregar..."}
                   </span>
-                  <span className="truncate text-[10px] leading-none text-muted-foreground mt-0.5">
+                  <span className="truncate text-micro leading-none text-muted-foreground mt-0.5">
                     {selectedStudent?.className ?? "Sem turma atribuída"}
                   </span>
                 </span>
@@ -746,7 +749,7 @@ export default function RelatorioPage() {
                       value: bio0.imc ? `${bio0.imc}` : "—",
                       extra: classification ? (
                         <span
-                          className={`text-[10px] font-medium ${classification.color}`}
+                          className={`text-micro font-medium ${classification.color}`}
                         >
                           {classification.text}
                         </span>
@@ -764,7 +767,7 @@ export default function RelatorioPage() {
                     >
                       <div className="flex items-center gap-1.5 text-muted-foreground">
                         {m.icon}
-                        <span className="text-[10px] uppercase tracking-wider font-medium">
+                        <span className="text-micro uppercase tracking-wider font-medium">
                           {m.label}
                         </span>
                       </div>
@@ -845,7 +848,7 @@ export default function RelatorioPage() {
         className={`grid gap-4 ${canSendEmail ? "sm:grid-cols-2" : "sm:grid-cols-1"}`}
       >
         {/* PDF download */}
-        <div className="surface-secondary rounded-[20px] border border-white/20 dark:border-white/10 p-5 flex flex-col gap-4 shadow-card transition-all duration-300 hover:scale-[1.01] hover:-translate-y-0.5 hover:shadow-card">
+        <div className="surface-secondary rounded-2xl border border-white/20 dark:border-white/10 p-5 flex flex-col gap-4 shadow-card transition-all duration-300 hover:scale-[1.01] hover:-translate-y-0.5 hover:shadow-card">
           <div className="flex items-center gap-3">
             <div className="h-10 w-10 rounded-xl bg-navy-50 dark:bg-navy-900 flex items-center justify-center">
               <Download className="size-5 text-navy-700 dark:text-navy-300" />
@@ -876,7 +879,7 @@ export default function RelatorioPage() {
 
         {/* Email */}
         {canSendEmail && (
-          <div className="surface-secondary rounded-[20px] border border-white/20 dark:border-white/10 p-5 flex flex-col gap-4 shadow-card transition-all duration-300 hover:scale-[1.01] hover:-translate-y-0.5 hover:shadow-card">
+          <div className="surface-secondary rounded-2xl border border-white/20 dark:border-white/10 p-5 flex flex-col gap-4 shadow-card transition-all duration-300 hover:scale-[1.01] hover:-translate-y-0.5 hover:shadow-card">
             <div className="flex items-center gap-3">
               <div className="h-10 w-10 rounded-xl bg-navy-50 dark:bg-navy-900 flex items-center justify-center">
                 <Mail className="size-5 text-navy-700 dark:text-navy-300" />
@@ -900,7 +903,7 @@ export default function RelatorioPage() {
                     >
                       <SelectTrigger
                         aria-label={t("emailRecipientLabel")}
-                        className="h-14 rounded-full px-4 pt-[1.45rem] pb-[0.45rem] text-left shadow-[inset_0_1px_0_rgba(255,255,255,0.3)] focus:ring-4 focus:ring-gold-400/15"
+                        className="h-14 rounded-full px-4 pt-5 pb-2 text-left shadow-[inset_0_1px_0_rgba(255,255,255,0.3)] focus:ring-4 focus:ring-gold-400/15"
                       >
                         <SelectValue placeholder={t("selectGuardianError")} />
                       </SelectTrigger>

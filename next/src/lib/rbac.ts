@@ -29,7 +29,7 @@ export type Permission = (typeof PERMISSIONS)[keyof typeof PERMISSIONS];
 // ── Role → Permission Map ────────────────────────────────────────────────────
 
 const ALL_PERMISSIONS = new Set<Permission>(
-  Object.values(PERMISSIONS) as Permission[]
+  Object.values(PERMISSIONS) as Permission[],
 );
 
 const ROLE_PERMISSIONS: Record<Role, Set<Permission>> = {
@@ -60,10 +60,7 @@ const ROLE_PERMISSIONS: Record<Role, Set<Permission>> = {
     PERMISSIONS.READ_CLASS_REPORTS,
     PERMISSIONS.MANAGE_GUARDIANS,
   ]),
-  PSICOLOGO: new Set([
-    PERMISSIONS.READ_SOS,
-    PERMISSIONS.READ_QUESTIONNAIRES,
-  ]),
+  PSICOLOGO: new Set([PERMISSIONS.READ_SOS, PERMISSIONS.READ_QUESTIONNAIRES]),
   PAIS: new Set([
     PERMISSIONS.LIST_STUDENTS,
     PERMISSIONS.READ_BIOMETRICS,
@@ -83,7 +80,6 @@ export function canRole(role: Role, permission: Permission): boolean {
 export function getRolePermissions(role: Role): Permission[] {
   return Array.from(ROLE_PERMISSIONS[role] ?? []);
 }
-
 
 export function isStaffRole(role: Role): boolean {
   return role === "ADMIN" || role === "PROFESSOR";

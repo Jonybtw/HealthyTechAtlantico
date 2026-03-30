@@ -6,10 +6,7 @@ import type { Role } from "@prisma/client";
 import { auditLog } from "@/lib/audit";
 import { AUDIT_ACTIONS } from "@/lib/audit-actions";
 import { prisma } from "@/lib/prisma";
-import {
-  getRolePermissions,
-  type Permission,
-} from "@/lib/rbac";
+import { getRolePermissions, type Permission } from "@/lib/rbac";
 
 class InvalidCredentialsError extends CredentialsSignin {
   code = "invalid_credentials";
@@ -136,10 +133,7 @@ function getAuditActorId(message: unknown): string | null {
 
 export function applyUserToToken(
   token: SessionToken,
-  user: Pick<
-    AuthUser,
-    "id" | "name" | "role" | "consentRgpd" | "consentShare"
-  >
+  user: Pick<AuthUser, "id" | "name" | "role" | "consentRgpd" | "consentShare">,
 ): SessionToken {
   return {
     ...token,
@@ -154,7 +148,7 @@ export function applyUserToToken(
 
 function applySessionUpdateToToken(
   token: SessionToken,
-  session: SessionUpdate
+  session: SessionUpdate,
 ): SessionToken {
   return {
     ...token,
@@ -246,7 +240,7 @@ export const { handlers, auth } = NextAuth({
       if (trigger === "update" && session && typeof session === "object") {
         sessionToken = applySessionUpdateToToken(
           sessionToken,
-          session as SessionUpdate
+          session as SessionUpdate,
         );
       }
 

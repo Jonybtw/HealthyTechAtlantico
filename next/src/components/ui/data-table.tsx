@@ -7,9 +7,11 @@ import {
   ChevronRight,
   ChevronUp,
   Search,
-  SlidersHorizontal,
   type LucideIcon,
 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { EmptyState } from "@/components/ui/empty-state";
+import { cn } from "@/lib/utils";
 
 export interface Column<T> {
   key: string;
@@ -67,7 +69,7 @@ export function DataTable<T extends object>({
           value !== undefined &&
           String(value).toLowerCase().includes(query)
         );
-      })
+      }),
     );
   }, [columns, data, search]);
 
@@ -110,40 +112,29 @@ export function DataTable<T extends object>({
   }
 
   return (
-    <div className="animate-fade-in-up flex flex-col gap-6">
-      {/* Glass Table Container */}
-      <div
-        className="overflow-hidden rounded-[24px] shadow-xl shadow-blue-900/5"
-        style={{
-          background: "rgba(255, 255, 255, 0.72)",
-          backdropFilter: "blur(12px)",
-          WebkitBackdropFilter: "blur(12px)",
-          border: "1px solid rgba(255, 255, 255, 0.5)",
-        }}
-      >
-        {/* Toolbar */}
-        {(searchable || toolbarTitle || toolbarSummary || toolbarActions) ? (
-          <div
-            className="flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:justify-between"
-            style={{ borderBottom: "1px solid rgba(255,255,255,0.3)" }}
-          >
-            {/* Left: title + summary */}
+    <div className="animate-fade-in-up flex flex-col gap-4">
+      <div className="overflow-hidden rounded-xl border border-white/20 bg-white/72 shadow-card backdrop-blur-xl dark:border-white/10 dark:bg-navy-950/60">
+        {searchable || toolbarTitle || toolbarSummary || toolbarActions ? (
+          <div className="flex flex-col gap-4 border-b border-border/60 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
             <div className="space-y-0.5">
-              <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400">
+              <p className="text-tiny font-semibold uppercase tracking-[0.18em] text-muted-foreground">
                 {toolbarTitle}
               </p>
-              <p className="text-sm font-semibold text-[#00236f]">
+              <p className="text-sm font-semibold text-foreground">
                 {toolbarSummary ?? (
                   <>
-                    {filtered.length} resultado{filtered.length === 1 ? "" : "s"}
+                    {filtered.length} resultado
+                    {filtered.length === 1 ? "" : "s"}
                   </>
                 )}
               </p>
             </div>
-            {/* Right: search + actions */}
-            <div className="flex w-full items-center gap-2 sm:max-w-sm">
+
+            <div className="flex w-full flex-col gap-2 sm:max-w-md sm:flex-row sm:items-center sm:justify-end">
               {toolbarActions ? (
-                <div className="flex flex-wrap items-center gap-2">{toolbarActions}</div>
+                <div className="flex flex-wrap items-center gap-2">
+                  {toolbarActions}
+                </div>
               ) : null}
               {searchable ? (
                 <div className="relative flex-1">
@@ -155,32 +146,27 @@ export function DataTable<T extends object>({
                       setPage(1);
                     }}
                     placeholder={searchPlaceholder}
-                    className="h-10 w-full rounded-2xl border border-blue-100/50 bg-white/80 py-2 pl-9 pr-4 text-sm text-[#141d21] placeholder:text-slate-400 outline-none transition-all focus:border-blue-300/60 focus:ring-2 focus:ring-blue-200/30 shadow-sm"
+                    className="h-10 w-full rounded-full border border-input bg-background/75 py-2 pl-9 pr-4 text-sm text-foreground outline-none transition-all placeholder:text-muted-foreground focus:border-gold-400 focus:ring-4 focus:ring-gold-400/15"
                   />
                 </div>
               ) : null}
-              <button
-                type="button"
-                className="flex size-10 shrink-0 items-center justify-center rounded-xl border border-blue-100/70 bg-white/80 text-slate-400 shadow-sm transition-all hover:text-[#00236f]"
-              >
-                <SlidersHorizontal className="size-4" />
-              </button>
             </div>
           </div>
         ) : null}
 
-        {/* Table */}
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm">
             <thead>
-              <tr style={{ background: "rgba(236, 245, 251, 0.55)" }}>
+              <tr className="bg-muted/50">
                 {columns.map((column) => (
                   <th
                     key={column.key}
-                    onClick={column.sortable ? () => toggleSort(column.key) : undefined}
-                    className={`px-6 py-4 text-[10px] font-bold uppercase tracking-[0.18em] text-slate-400 ${
+                    onClick={
+                      column.sortable ? () => toggleSort(column.key) : undefined
+                    }
+                    className={`px-5 py-3.5 text-tiny font-semibold uppercase tracking-[0.18em] text-muted-foreground ${
                       column.sortable
-                        ? "cursor-pointer transition-colors hover:text-[#00236f]"
+                        ? "cursor-pointer transition-colors hover:text-foreground"
                         : ""
                     } ${column.className ?? ""}`}
                   >
@@ -202,25 +188,16 @@ export function DataTable<T extends object>({
                 ))}
               </tr>
             </thead>
-            <tbody style={{ borderTop: "1px solid rgba(255,255,255,0.3)" }}>
+            <tbody className="border-t border-border/60">
               {paged.length === 0 ? (
                 <tr>
                   <td colSpan={columns.length}>
-                    <div className="flex min-h-[360px] w-full items-center justify-center p-8">
-                      <div className="flex max-w-[400px] flex-col items-center justify-center space-y-4 text-center">
-                        <div className="relative flex size-20 items-center justify-center rounded-3xl border border-blue-100 bg-[#ecf5fb] shadow-inner">
-                          <div className="absolute inset-0 animate-pulse-ring rounded-3xl border-2 border-[#1e3a8a]/20" />
-                          <EmptyIcon className="relative z-10 size-8 text-[#1e3a8a]" />
-                        </div>
-                        <div className="space-y-1">
-                          <h3 className="text-lg font-bold tracking-tight text-[#00236f]">
-                            Sem Resultados
-                          </h3>
-                          <p className="text-sm font-medium text-slate-400">
-                            {emptyMessage}
-                          </p>
-                        </div>
-                      </div>
+                    <div className="p-6">
+                      <EmptyState
+                        icon={EmptyIcon}
+                        title="Sem resultados"
+                        description={emptyMessage}
+                      />
                     </div>
                   </td>
                 </tr>
@@ -229,14 +206,16 @@ export function DataTable<T extends object>({
                   <tr
                     key={rowKey(row)}
                     onClick={onRowClick ? () => onRowClick(row) : undefined}
-                    className={`group border-b border-blue-50/60 transition-colors last:border-0 ${
-                      onRowClick ? "cursor-pointer hover:bg-white/50" : ""
-                    }`}
+                    className={cn(
+                      "group border-b border-border/50 transition-colors last:border-0",
+                      onRowClick &&
+                        "cursor-pointer hover:bg-accent/8 focus-within:bg-accent/8",
+                    )}
                   >
                     {columns.map((column) => (
                       <td
                         key={column.key}
-                        className={`px-6 py-4 align-middle text-[#141d21] ${column.className ?? ""}`}
+                        className={`px-5 py-4 align-middle text-foreground ${column.className ?? ""}`}
                       >
                         {column.render
                           ? column.render(row)
@@ -250,58 +229,53 @@ export function DataTable<T extends object>({
           </table>
         </div>
 
-        {/* Pagination Footer */}
         {totalPages > 1 ? (
-          <div
-            className="flex items-center justify-between px-6 py-4"
-            style={{
-              borderTop: "1px solid rgba(255,255,255,0.4)",
-              background: "rgba(255, 255, 255, 0.5)",
-            }}
-          >
-            <p className="text-xs font-medium text-slate-500">
+          <div className="flex flex-col gap-3 border-t border-border/60 bg-background/30 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
+            <p className="text-xs font-medium text-muted-foreground">
               Exibindo{" "}
-              <span className="font-bold text-[#00236f]">
+              <span className="font-bold text-foreground">
                 {Math.min(sorted.length, safePage * pageSize)}
               </span>{" "}
               de{" "}
-              <span className="font-bold text-[#00236f]">{sorted.length}</span>{" "}
+              <span className="font-bold text-foreground">{sorted.length}</span>{" "}
               resultados
             </p>
             <div className="flex items-center gap-1.5">
-              <button
+              <Button
                 type="button"
+                variant="outline"
+                size="icon"
                 disabled={safePage <= 1}
                 onClick={() => setPage((current) => current - 1)}
-                className="flex size-8 items-center justify-center rounded-lg border border-blue-100 bg-white/80 text-slate-400 transition-colors hover:bg-white disabled:opacity-40"
+                className="size-8"
               >
                 <ChevronLeft className="size-4" />
-              </button>
+              </Button>
               {Array.from({ length: Math.min(totalPages, 5) }).map((_, i) => {
                 const p = i + 1;
                 return (
-                  <button
+                  <Button
                     key={p}
                     type="button"
                     onClick={() => setPage(p)}
-                    className={`flex size-8 items-center justify-center rounded-lg text-xs font-bold transition-colors ${
-                      safePage === p
-                        ? "bg-[#00236f] text-white shadow-md"
-                        : "border border-blue-100 bg-white/80 text-[#00236f] hover:bg-white"
-                    }`}
+                    variant={safePage === p ? "primary" : "outline"}
+                    size="icon"
+                    className="size-8 text-xs"
                   >
                     {p}
-                  </button>
+                  </Button>
                 );
               })}
-              <button
+              <Button
                 type="button"
+                variant="outline"
+                size="icon"
                 disabled={safePage >= totalPages}
                 onClick={() => setPage((current) => current + 1)}
-                className="flex size-8 items-center justify-center rounded-lg border border-blue-100 bg-white/80 text-slate-400 transition-colors hover:bg-white disabled:opacity-40"
+                className="size-8"
               >
                 <ChevronRight className="size-4" />
-              </button>
+              </Button>
             </div>
           </div>
         ) : null}
