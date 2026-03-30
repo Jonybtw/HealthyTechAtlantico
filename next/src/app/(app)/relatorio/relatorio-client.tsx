@@ -203,6 +203,11 @@ export default function RelatorioPage() {
         ),
       ]);
 
+      if ((!Array.isArray(bio) || bio.length === 0) && (!Array.isArray(tests) || tests.length === 0)) {
+        toast.error(t("noData"));
+        return;
+      }
+
       const { jsPDF } = await import("jspdf");
       const doc = new jsPDF({
         orientation: "portrait",
@@ -260,12 +265,12 @@ export default function RelatorioPage() {
       text(fgMuted);
       doc.setFontSize(8);
       doc.setFont("helvetica", "bold");
-      doc.text("HEALTHYTECH ATLÃ‚NTICO", headerTextX, 17);
+      doc.text("HEALTHYTECH ATLÂNTICO", headerTextX, 17);
 
       text(fgFull);
       doc.setFontSize(16);
       doc.setFont("helvetica", "bold");
-      doc.text("RelatÃ³rio Individual", headerTextX, 24);
+      doc.text("Relatório Individual", headerTextX, 24);
 
       const today = new Date().toLocaleDateString("pt-PT", {
         day: "2-digit",
@@ -303,7 +308,7 @@ export default function RelatorioPage() {
       text(fgFull);
       doc.setFontSize(12);
       doc.setFont("helvetica", "bold");
-      doc.text(selectedStudent?.name ?? "â€”", 30, y + 2);
+      doc.text(selectedStudent?.name ?? "—", 30, y + 2);
 
       text(fgMuted);
       doc.setFontSize(8);
@@ -315,7 +320,7 @@ export default function RelatorioPage() {
             : null,
         ]
           .filter(Boolean)
-          .join("  Â·  ") || "Aluno";
+          .join("  ·  ") || "Aluno";
       doc.text(studentMeta, 30, y + 6);
 
       y = 60;
@@ -337,7 +342,7 @@ export default function RelatorioPage() {
       };
 
       // â”€â”€ Biometria â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-      section("MÃ©tricas Corporais", "Registos gerais mais recentes.");
+      section("Métricas Corporais", "Registos gerais mais recentes.");
 
       if (Array.isArray(bio) && bio.length) {
         const b = bio[0] as BiometricEntry;
@@ -359,22 +364,22 @@ export default function RelatorioPage() {
         const metrics = [
           {
             label: "Altura",
-            value: b.heightM ? `${b.heightM} m` : "â€”",
+            value: b.heightM ? `${b.heightM} m` : "—",
             badge: null,
           },
           {
             label: "Peso",
-            value: b.weightKg ? `${b.weightKg} kg` : "â€”",
+            value: b.weightKg ? `${b.weightKg} kg` : "—",
             badge: null,
           },
           {
             label: "IMC",
-            value: b.imc ? String(b.imc) : "â€”",
+            value: b.imc ? String(b.imc) : "—",
             badge: { label: imcZoneLabel, color: imcZoneColor },
           },
           {
             label: "Cintura",
-            value: b.waistCm ? `${b.waistCm} cm` : "â€”",
+            value: b.waistCm ? `${b.waistCm} cm` : "—",
             badge: null,
           },
         ];
@@ -426,21 +431,21 @@ export default function RelatorioPage() {
 
       // â”€â”€ Testes FÃ­sicos â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
       y += 2;
-      section("AptidÃ£o FÃ­sica", "Resultados atualizados por categoria.");
+      section("Aptidão Física", "Resultados atualizados por categoria.");
 
       const TEST_LABELS: Record<string, string> = {
         vai: "Vai e Vem",
         cooper: "Cooper",
         milha: "Milha 1609m",
         velocidade: "Velocidade 40m",
-        agilidade: "Agilidade 4Ã—10m",
-        abd: "Abdominais",
-        abdominais: "Abdominais",
-        bracos: "ExtensÃµes de braÃ§os",
-        extensoes: "ExtensÃµes de braÃ§os",
-        senta: "Senta e alcanÃ§a",
-        senta_alcanca: "Senta e alcanÃ§a",
-        vaivem: "Vai e Vem",
+          agilidade: "Agilidade 4×10m",
+          abd: "Abdominais",
+          abdominais: "Abdominais",
+          bracos: "Extensões de braços",
+          extensoes: "Extensões de braços",
+          senta: "Senta e alcança",
+          senta_alcanca: "Senta e alcança",
+          vaivem: "Vai e Vem",
       };
 
       if (Array.isArray(tests) && tests.length) {
@@ -462,16 +467,16 @@ export default function RelatorioPage() {
         y += rowH;
 
         const CATEGORIES: Record<string, string> = {
-          vai: "Capacidade AerÃ³bia",
-          cooper: "Capacidade AerÃ³bia",
-          milha: "Capacidade AerÃ³bia",
-          vaivem: "Capacidade AerÃ³bia",
+          vai: "Capacidade Aeróbia",
+          cooper: "Capacidade Aeróbia",
+          milha: "Capacidade Aeróbia",
+          vaivem: "Capacidade Aeróbia",
           velocidade: "Velocidade",
           agilidade: "Agilidade",
-          abd: "ForÃ§a",
-          abdominais: "ForÃ§a",
-          bracos: "ForÃ§a",
-          extensoes: "ForÃ§a",
+          abd: "Força",
+          abdominais: "Força",
+          bracos: "Força",
+          extensoes: "Força",
           senta: "Flexibilidade",
           senta_alcanca: "Flexibilidade",
         };
@@ -482,7 +487,7 @@ export default function RelatorioPage() {
           doc.rect(14, y, W - 28, rowH, "F");
 
           const label = TEST_LABELS[test.testId] ?? test.testId;
-          const cat = CATEGORIES[test.testId] ?? "â€”";
+          const cat = CATEGORIES[test.testId] ?? "—";
 
           text(fgFull);
           doc.setFontSize(8);
@@ -537,7 +542,7 @@ export default function RelatorioPage() {
       doc.setFontSize(6.5);
       doc.setFont("helvetica", "normal");
       doc.text(
-        "HealthyTech AtlÃ¢ntico  Â·  Documento gerado automaticamente",
+        "HealthyTech Atlântico  ·  Documento gerado automaticamente",
         W / 2,
         H - 7.5,
         { align: "center" },
@@ -545,7 +550,7 @@ export default function RelatorioPage() {
       text(brand);
       doc.setFontSize(6);
       doc.setFont("helvetica", "bold");
-      doc.text("CONFIDENCIAL â€” USO INTERNO", W / 2, H - 3.5, {
+      doc.text("CONFIDENCIAL — USO INTERNO", W / 2, H - 3.5, {
         align: "center",
       });
 
@@ -568,8 +573,10 @@ export default function RelatorioPage() {
       setTimeout(() => URL.revokeObjectURL(url), 60000);
 
       toast.success(t("success"));
-    } catch {
-      toast.error(t("noData"));
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : t("connectionError");
+      toast.error(message);
     } finally {
       setGeneratingPdf(false);
     }
@@ -695,7 +702,7 @@ export default function RelatorioPage() {
                     {selectedStudent?.name ?? "A carregar..."}
                   </span>
                   <span className="truncate text-[10px] leading-none text-muted-foreground mt-0.5">
-                    {selectedStudent?.className ?? "Sem turma atribuÃ­da"}
+                    {selectedStudent?.className ?? "Sem turma atribuída"}
                   </span>
                 </span>
               </div>
@@ -726,17 +733,17 @@ export default function RelatorioPage() {
                     {
                       icon: <Ruler className="size-3.5" />,
                       label: t("heightLabel"),
-                      value: bio0.heightM ? `${bio0.heightM} m` : "â€”",
+                      value: bio0.heightM ? `${bio0.heightM} m` : "—",
                     },
                     {
                       icon: <Weight className="size-3.5" />,
                       label: t("weightLabel"),
-                      value: bio0.weightKg ? `${bio0.weightKg} kg` : "â€”",
+                      value: bio0.weightKg ? `${bio0.weightKg} kg` : "—",
                     },
                     {
                       icon: <Activity className="size-3.5" />,
                       label: t("imcLabel"),
-                      value: bio0.imc ? `${bio0.imc}` : "â€”",
+                      value: bio0.imc ? `${bio0.imc}` : "—",
                       extra: classification ? (
                         <span
                           className={`text-[10px] font-medium ${classification.color}`}
@@ -748,7 +755,7 @@ export default function RelatorioPage() {
                     {
                       icon: <ChevronRight className="size-3.5" />,
                       label: t("waistLabel"),
-                      value: bio0.waistCm ? `${bio0.waistCm} cm` : "â€”",
+                      value: bio0.waistCm ? `${bio0.waistCm} cm` : "—",
                     },
                   ].map((m) => (
                     <div
