@@ -612,7 +612,8 @@
     "healthyZone": "Healthy Zone",
     "improvementZone": "Improvement Zone",
     "noDataLabel": "No data",
-    "className": "Class"
+    "className": "Class",
+    "studentsUnit": "students"
   },
   "dispensas": {
     "title": "Exemptions",

@@ -1,5 +1,6 @@
 "use client";
 
+import { interactiveControlClasses } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 interface PillSelectProps<T extends string> {
@@ -28,7 +29,7 @@ export function PillSelect<T extends string>({
         role="radiogroup"
         aria-label={label}
         className={cn(
-          "grid min-w-0 gap-1 rounded-full border border-navy-200/80 bg-white/75 p-1 shadow-[inset_0_1px_0_rgba(255,255,255,0.85)] backdrop-blur-sm dark:border-white/10 dark:bg-white/5 dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]",
+          interactiveControlClasses.segmentedGroup,
           size === "lg" ? "min-h-[52px] items-center" : "min-h-10",
         )}
         style={{
@@ -46,13 +47,13 @@ export function PillSelect<T extends string>({
               aria-checked={active}
               onClick={() => onChange(option.value)}
               className={cn(
-                "inline-flex min-w-0 items-center justify-center gap-2 whitespace-nowrap rounded-full border font-medium transition-all duration-300",
+                "inline-flex min-w-0 items-center justify-center gap-2 whitespace-nowrap rounded-full border font-semibold tracking-tight transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400/65 focus-visible:ring-offset-2",
                 size === "lg"
                   ? "min-h-[42px] px-4 py-2 text-sm sm:px-5"
                   : "min-h-8 px-4 py-1 text-tiny",
                 active
-                  ? "border-navy-800/10 bg-gradient-to-r from-navy-900 via-navy-800 to-navy-700 text-white shadow-card dark:border-gold-300/20 dark:from-gold-400 dark:via-gold-300 dark:to-gold-200 dark:text-navy-950"
-                  : "border-transparent text-navy-400 hover:bg-navy-100/80 hover:text-navy-800 dark:text-navy-200 dark:hover:bg-white/8 dark:hover:text-white",
+                  ? interactiveControlClasses.segmentedActive
+                  : interactiveControlClasses.segmentedInactive,
               )}
             >
               {option.icon}

@@ -28,7 +28,11 @@ import { PageSection } from "@/components/ui/page-section";
 import { RangeSlider } from "@/components/ui/range-slider";
 import { NumericStepper } from "@/components/ui/numeric-stepper";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Button, buttonVariants } from "@/components/ui/button";
+import {
+  Button,
+  buttonVariants,
+  interactiveControlClasses,
+} from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
 import { useUser } from "@/components/user-context";
 import { readApiResponse } from "@/lib/api-client";
@@ -753,10 +757,14 @@ export default function QuestionariosPage() {
                     aria-checked={active}
                     onClick={() => setQType(type)}
                     className={cn(
-                      "group rounded-2xl border p-4 text-left transition-all duration-300",
+                      interactiveControlClasses.choiceBase,
+                      "rounded-2xl p-4",
                       active
-                        ? "border-navy-900/75 bg-[radial-gradient(circle_at_top,rgba(245,158,11,0.16),transparent_48%),linear-gradient(180deg,rgba(2,6,23,0.96),rgba(15,23,42,0.92))] text-white shadow-[0_22px_44px_rgba(15,23,42,0.26)]"
-                        : "border-white/20 dark:border-white/10/70 bg-white/60 dark:bg-navy-950/40 backdrop-blur-md/70 hover:-translate-y-1 hover:border-gold-400/45 hover:shadow-card-hover",
+                        ? cn(
+                            interactiveControlClasses.choiceActive,
+                            "bg-[radial-gradient(circle_at_top,rgba(245,158,11,0.16),transparent_48%),linear-gradient(180deg,rgba(2,6,23,0.96),rgba(15,23,42,0.92))] shadow-[0_22px_44px_rgba(15,23,42,0.26)]",
+                          )
+                        : interactiveControlClasses.choiceInactive,
                     )}
                   >
                     <div className="flex h-full flex-col gap-4">
@@ -766,7 +774,7 @@ export default function QuestionariosPage() {
                             className={cn(
                               "inline-flex rounded-full px-2.5 py-1 text-micro font-semibold uppercase tracking-[0.18em]",
                               active
-                                ? "bg-white/12 text-gold-200"
+                                ? "border border-white/12 bg-white/12 text-gold-200"
                                 : "bg-muted text-muted-foreground",
                             )}
                           >
@@ -797,7 +805,7 @@ export default function QuestionariosPage() {
                           className={cn(
                             "rounded-full px-2.5 py-1 text-tiny font-semibold uppercase tracking-[0.18em]",
                             active
-                              ? "bg-white/12 text-gold-200"
+                              ? "border border-white/12 bg-white/12 text-gold-200"
                               : "bg-muted text-muted-foreground",
                           )}
                         >
@@ -1538,26 +1546,34 @@ function BinaryRow({
       label: yesLabel,
       icon: <CheckCircle2 className="size-5" />,
       onSelect: () => onChange(true),
-      activeClass:
-        "border-emerald-500/45 bg-[linear-gradient(140deg,rgba(16,185,129,0.22),rgba(15,23,42,0.96))] text-white shadow-[0_18px_38px_rgba(16,185,129,0.24)]",
-      inactiveClass:
-        "border-white/20 dark:border-white/10/70 bg-white/50 dark:bg-navy-950/40 backdrop-blur-sm text-foreground hover:-translate-y-0.5 hover:border-emerald-300/55 hover:shadow-card-hover",
+      activeClass: cn(
+        interactiveControlClasses.choiceActive,
+        "shadow-[0_18px_38px_rgba(16,185,129,0.2)] before:absolute before:inset-x-5 before:top-0 before:h-px before:bg-gradient-to-r before:from-transparent before:via-emerald-300/70 before:to-transparent before:content-['']",
+      ),
+      inactiveClass: cn(
+        interactiveControlClasses.choiceInactive,
+        "hover:border-emerald-300/55",
+      ),
       iconClass: value
-        ? "bg-white/18 text-white"
-        : "bg-emerald-100 text-emerald-700",
+        ? "border-white/15 bg-white/12 text-emerald-100"
+        : "border-emerald-200/60 bg-emerald-100 text-emerald-700 dark:border-emerald-400/20 dark:bg-emerald-500/12 dark:text-emerald-200",
     },
     {
       selected: !value,
       label: noLabel,
       icon: <XCircle className="size-5" />,
       onSelect: () => onChange(false),
-      activeClass:
-        "border-navy-400/45 bg-[linear-gradient(140deg,rgba(15,23,42,0.98),rgba(30,41,59,0.96))] text-white shadow-[0_18px_38px_rgba(15,23,42,0.26)]",
-      inactiveClass:
-        "border-white/20 dark:border-white/10/70 bg-white/50 dark:bg-navy-950/40 backdrop-blur-sm text-foreground hover:-translate-y-0.5 hover:border-navy-300/50 hover:shadow-card-hover",
+      activeClass: cn(
+        interactiveControlClasses.choiceActive,
+        "shadow-[0_18px_38px_rgba(15,23,42,0.28)] before:absolute before:inset-x-5 before:top-0 before:h-px before:bg-gradient-to-r before:from-transparent before:via-slate-200/65 before:to-transparent before:content-['']",
+      ),
+      inactiveClass: cn(
+        interactiveControlClasses.choiceInactive,
+        "hover:border-navy-300/50",
+      ),
       iconClass: !value
-        ? "bg-white/16 text-white"
-        : "bg-slate-100 text-slate-700",
+        ? "border-white/15 bg-white/12 text-slate-100"
+        : "border-slate-200/70 bg-slate-100 text-slate-700 dark:border-slate-300/20 dark:bg-slate-400/12 dark:text-slate-200",
     },
   ] as const;
 
@@ -1566,23 +1582,29 @@ function BinaryRow({
       <legend className="px-1 text-sm font-semibold leading-relaxed text-foreground">
         {label}
       </legend>
-      <div className="mt-3 grid gap-3 sm:grid-cols-2">
+      <div
+        role="radiogroup"
+        aria-label={label}
+        className="mt-3 grid gap-3 sm:grid-cols-2"
+      >
         {options.map((option) => (
           <button
             key={option.label}
             type="button"
-            aria-pressed={option.selected}
+            role="radio"
+            aria-checked={option.selected}
             aria-label={`${label} - ${option.label}`}
             onClick={option.onSelect}
             className={cn(
-              "group min-h-[92px] rounded-2xl border p-4 text-left transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400/60 focus-visible:ring-offset-2",
+              interactiveControlClasses.choiceBase,
+              "relative min-h-[92px] rounded-2xl p-4",
               option.selected ? option.activeClass : option.inactiveClass,
             )}
           >
             <div className="flex items-start justify-between gap-3">
               <span
                 className={cn(
-                  "flex size-11 items-center justify-center rounded-2xl transition-all duration-300",
+                  "flex size-11 items-center justify-center rounded-2xl border transition-all duration-300",
                   option.iconClass,
                 )}
               >
@@ -1594,13 +1616,21 @@ function BinaryRow({
                   "mt-1 size-3 rounded-full border transition-all duration-300",
                   option.selected
                     ? "border-white bg-white shadow-[0_0_0_4px_rgba(255,255,255,0.12)]"
-                    : "border-white/20 dark:border-white/10/70 bg-transparent",
+                    : "border-white/25 dark:border-white/10 bg-transparent",
                 )}
               />
             </div>
             <div className="mt-4">
               <p className="text-base font-semibold tracking-tight">
                 {option.label}
+              </p>
+              <p
+                className={cn(
+                  "mt-1 text-tiny font-semibold uppercase tracking-[0.18em]",
+                  option.selected ? "text-white/72" : "text-muted-foreground",
+                )}
+              >
+                {label}
               </p>
             </div>
           </button>

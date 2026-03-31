@@ -280,7 +280,19 @@ describe("QuestionariosPage", () => {
       expect(screen.getByText("baselineProfileTitle")).toBeInTheDocument();
     });
 
-    expect(screen.getByRole("button", { name: /sportsPracticeLabel - yes/i })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /sportsPracticeLabel - no/i })).toBeInTheDocument();
+    const yesOption = screen.getByRole("radio", {
+      name: /sportsPracticeLabel - yes/i,
+    });
+    const noOption = screen.getByRole("radio", {
+      name: /sportsPracticeLabel - no/i,
+    });
+
+    expect(yesOption).toHaveAttribute("aria-checked", "false");
+    expect(noOption).toHaveAttribute("aria-checked", "true");
+
+    await user.click(yesOption);
+
+    expect(yesOption).toHaveAttribute("aria-checked", "true");
+    expect(noOption).toHaveAttribute("aria-checked", "false");
   });
 });

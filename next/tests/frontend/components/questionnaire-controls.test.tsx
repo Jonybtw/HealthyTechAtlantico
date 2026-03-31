@@ -3,6 +3,7 @@ import userEvent from "@testing-library/user-event";
 import { useState } from "react";
 import { describe, expect, it } from "vitest";
 import { NumericStepper } from "@/components/ui/numeric-stepper";
+import { PillSelect } from "@/components/ui/pill-select";
 import { RangeSlider } from "@/components/ui/range-slider";
 
 function NumericStepperHarness() {
@@ -64,6 +65,25 @@ function RangeSliderHarness() {
   );
 }
 
+function PillSelectHarness() {
+  const [value, setValue] = useState<"week" | "month">("week");
+
+  return (
+    <div>
+      <PillSelect
+        label="Period"
+        value={value}
+        onChange={setValue}
+        options={[
+          { value: "week", label: "Week" },
+          { value: "month", label: "Month" },
+        ]}
+      />
+      <output data-testid="pill-value">{value}</output>
+    </div>
+  );
+}
+
 describe("questionnaire controls", () => {
   it("syncs numeric presets with fine adjustment buttons", async () => {
     const user = userEvent.setup();
@@ -93,5 +113,22 @@ describe("questionnaire controls", () => {
 
     await user.click(screen.getByRole("button", { name: "Burst" }));
     expect(screen.getByTestId("range-value")).toHaveTextContent("10");
+  });
+
+  it("keeps segmented pills accessible and in sync", async () => {
+    const user = userEvent.setup();
+    render(<PillSelectHarness />);
+
+    const week = screen.getByRole("radio", { name: "Week" });
+    const month = screen.getByRole("radio", { name: "Month" });
+
+    expect(week).toHaveAttribute("aria-checked", "true");
+    expect(month).toHaveAttribute("aria-checked", "false");
+
+    await user.click(month);
+
+    expect(screen.getByTestId("pill-value")).toHaveTextContent("month");
+    expect(week).toHaveAttribute("aria-checked", "false");
+    expect(month).toHaveAttribute("aria-checked", "true");
   });
 });

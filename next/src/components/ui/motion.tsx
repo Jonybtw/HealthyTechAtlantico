@@ -27,7 +27,7 @@ export function PageTransition({
   return (
     <motion.div
       variants={reducedMotion ? undefined : pageVariants}
-      initial={reducedMotion ? undefined : "hidden"}
+      initial={false}
       animate={reducedMotion ? undefined : "visible"}
       exit={reducedMotion ? undefined : "exit"}
       className={className}
@@ -53,7 +53,7 @@ export function FadeIn({
 
   return (
     <motion.div
-      initial={reducedMotion ? undefined : { opacity: 0, y: 16 }}
+      initial={false}
       animate={reducedMotion ? undefined : { opacity: 1, y: 0 }}
       transition={
         reducedMotion
@@ -100,7 +100,7 @@ export function StaggerList({
   return (
     <motion.div
       variants={reducedMotion ? undefined : containerVariants}
-      initial={reducedMotion ? undefined : "hidden"}
+      initial={false}
       animate={reducedMotion ? undefined : "visible"}
       className={className}
     >
@@ -142,7 +142,7 @@ export function ScaleIn({
 
   return (
     <motion.div
-      initial={reducedMotion ? undefined : { opacity: 0, scale: 0.95 }}
+      initial={false}
       animate={reducedMotion ? undefined : { opacity: 1, scale: 1 }}
       transition={
         reducedMotion
@@ -169,7 +169,7 @@ export function AnimatedNumber({
   return (
     <motion.span
       key={value}
-      initial={reducedMotion ? undefined : { opacity: 0, y: 8 }}
+      initial={false}
       animate={reducedMotion ? undefined : { opacity: 1, y: 0 }}
       transition={reducedMotion ? undefined : { duration: 0.3 }}
       className={className}

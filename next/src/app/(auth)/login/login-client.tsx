@@ -22,7 +22,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import type { z } from "zod";
 import { loginSchema, registerFormSchema } from "@/lib/validations";
 import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
+import { Button, interactiveControlClasses } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Form, FormField, FormItem, FormControl } from "@/components/ui/form";
 import { readApiResponse } from "@/lib/api-client";
@@ -30,7 +30,11 @@ import { readApiResponse } from "@/lib/api-client";
 type RegisterValues = z.infer<typeof registerFormSchema>;
 
 const expandVariants = {
-  hidden: { opacity: 0, height: 0 },
+  hidden: {
+    opacity: 0,
+    height: 0,
+    overflow: "hidden" as const,
+  },
   visible: {
     opacity: 1,
     height: "auto",
@@ -38,10 +42,14 @@ const expandVariants = {
       duration: 0.32,
       ease: [0.25, 0.46, 0.45, 0.94] as [number, number, number, number],
     },
+    transitionEnd: {
+      overflow: "visible" as const,
+    },
   },
   exit: {
     opacity: 0,
     height: 0,
+    overflow: "hidden" as const,
     transition: {
       duration: 0.22,
       ease: [0.55, 0, 1, 0.45] as [number, number, number, number],
@@ -347,7 +355,6 @@ export default function LoginClient() {
                 initial="hidden"
                 animate="visible"
                 exit="exit"
-                className="overflow-hidden"
               >
                 <FormField
                   control={form.control}
@@ -471,7 +478,6 @@ export default function LoginClient() {
                 initial="hidden"
                 animate="visible"
                 exit="exit"
-                className="overflow-hidden"
               >
                 <div className="space-y-4 sm:space-y-5">
                   <FormField
@@ -530,10 +536,11 @@ export default function LoginClient() {
                               )
                             }
                             className={cn(
-                              "flex min-h-[72px] items-center gap-3 rounded-2xl border px-4 py-3 text-left transition-all duration-300",
+                              interactiveControlClasses.choiceBase,
+                              "flex min-h-[72px] items-center gap-3 rounded-2xl px-4 py-3",
                               active
-                                ? "border-navy-800/10 bg-gradient-to-r from-navy-900 via-navy-800 to-navy-700 text-white shadow-card"
-                                : "border-white/20 bg-white/55 text-navy-900 shadow-inner backdrop-blur-sm hover:border-gold-300/40 hover:bg-white/80 dark:border-white/10 dark:bg-navy-950/40 dark:text-white dark:hover:bg-navy-900/60",
+                                ? interactiveControlClasses.choiceActive
+                                : interactiveControlClasses.choiceInactive,
                             )}
                             aria-pressed={active}
                           >
@@ -541,8 +548,8 @@ export default function LoginClient() {
                               className={cn(
                                 "flex size-10 shrink-0 items-center justify-center rounded-2xl border",
                                 active
-                                  ? "border-white/15 bg-white/10 text-gold-300"
-                                  : "border-gold-400/20 bg-gold-400/10 text-gold-600 dark:text-gold-300",
+                                  ? interactiveControlClasses.choiceIconActive
+                                  : interactiveControlClasses.choiceIconInactive,
                               )}
                             >
                               <Icon className="size-4" />

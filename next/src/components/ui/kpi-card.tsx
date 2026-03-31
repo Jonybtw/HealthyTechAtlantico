@@ -14,13 +14,12 @@ function useAnimatedNumber(
   const previousTarget = useRef(target);
 
   useEffect(() => {
-    if (disabled) {
-      previousTarget.current = target;
-      setDisplay(target);
+    if (previousTarget.current === target) {
       return;
     }
 
-    if (previousTarget.current === target) {
+    if (disabled) {
+      previousTarget.current = target;
       return;
     }
 
@@ -29,19 +28,20 @@ function useAnimatedNumber(
     const tick = (now: number) => {
       const elapsed = now - start;
       const progress = Math.min(elapsed / duration, 1);
-      // ease-out cubic
       const eased = 1 - Math.pow(1 - progress, 3);
       setDisplay(Math.round(from + (target - from) * eased));
       if (progress < 1) raf.current = requestAnimationFrame(tick);
     };
+
     previousTarget.current = target;
     raf.current = requestAnimationFrame(tick);
+
     return () => {
       if (raf.current) cancelAnimationFrame(raf.current);
     };
   }, [target, duration, disabled]);
 
-  return display;
+  return disabled ? target : display;
 }
 
 interface KpiCardProps {
@@ -98,15 +98,17 @@ export function KpiCard({
   return (
     <Card
       className={cn(
-        "group relative overflow-hidden rounded-xl border border-white/25 bg-white/78 shadow-float backdrop-blur-xl transition-all duration-300 hover:-translate-y-1.5 hover:shadow-card-hover dark:border-white/10 dark:bg-navy-950/72",
+        "group relative overflow-hidden rounded-2xl transition-all duration-300 hover:-translate-y-1 hover:shadow-card-hover",
+        heroCard
+          ? "border border-white/16 bg-gradient-to-br from-navy-950 via-navy-900 to-navy-800 text-white shadow-float"
+          : "surface-primary",
         reducedEffects && "transition-none hover:translate-y-0 hover:shadow-float",
-        heroCard &&
-          "bg-gradient-to-br from-navy-800 via-navy-700 to-navy-600 text-white dark:from-navy-900 dark:via-navy-800 dark:to-navy-700",
       )}
     >
+      <div className="absolute inset-x-8 top-0 h-px bg-gradient-to-r from-transparent via-gold-400/70 to-transparent" />
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(216,173,52,0.14),transparent_24%),radial-gradient(circle_at_bottom_left,rgba(255,255,255,0.08),transparent_32%)]" />
-      <CardContent className="relative p-6 sm:p-7">
-        <div className="mb-6 flex items-start justify-between">
+      <CardContent className="relative p-5 sm:p-6">
+        <div className="mb-5 flex items-start justify-between">
           <div
             className={cn(
               "rounded-2xl p-3 transition-transform duration-300 group-hover:scale-110",
@@ -119,35 +121,35 @@ export function KpiCard({
 
         <h3
           className={cn(
-            "mb-1 text-sm font-semibold tracking-wide",
-            heroCard ? "text-white/72" : "text-muted-foreground",
+            "mb-2 text-tiny font-semibold uppercase tracking-[0.22em]",
+            heroCard ? "text-gold-200" : "text-muted-foreground",
           )}
         >
           {title}
         </h3>
+
         <p
           className={cn(
-            "mb-4 text-3xl font-extrabold tabular-nums tracking-tight",
-            heroCard ? "text-white" : "text-navy-950 dark:text-white",
+            "text-3xl font-extrabold tabular-nums tracking-tight",
+            heroCard ? "text-white" : "text-foreground",
           )}
         >
           {isNumeric ? animatedValue : value}
-          {description ? (
-            <span
-              className={cn(
-                "ml-2 mt-1 block text-sm font-medium sm:mt-0 sm:inline",
-                heroCard
-                  ? "text-white/74"
-                  : "text-navy-900/60 dark:text-navy-200/60",
-              )}
-            >
-              {description}
-            </span>
-          ) : null}
         </p>
 
+        {description ? (
+          <p
+            className={cn(
+              "mt-2 text-sm leading-relaxed",
+              heroCard ? "text-white/74" : "text-muted-foreground",
+            )}
+          >
+            {description}
+          </p>
+        ) : null}
+
         {!heroCard ? (
-          <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-navy-100 dark:bg-navy-900">
+          <div className="mt-5 h-1.5 w-full overflow-hidden rounded-full bg-navy-100 dark:bg-navy-900">
             <div
               className={`h-full ${styles.barFill} rounded-full opacity-70 transition-all duration-1000 group-hover:opacity-100`}
               style={{ width: "100%" }}
@@ -158,7 +160,7 @@ export function KpiCard({
         {footer ? (
           <div
             className={cn(
-              "mt-4 border-t pt-3",
+              "mt-5 border-t pt-4",
               heroCard
                 ? "border-white/12"
                 : "border-navy-200 dark:border-navy-800",

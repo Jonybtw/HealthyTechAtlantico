@@ -7,15 +7,11 @@ import {
   Activity,
   AlertTriangle,
   ArrowRight,
-  BarChart3,
   BookOpen,
   ClipboardList,
   FileText,
-  Heart,
   Link2,
-  Ruler,
   School,
-  Sparkles,
   Users,
 } from "lucide-react";
 import { PieChart, Pie, Cell, Tooltip } from "recharts";
@@ -25,7 +21,6 @@ import { PageScaffold } from "@/components/ui/page-scaffold";
 import { PageSection } from "@/components/ui/page-section";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import { FadeIn, StaggerItem, StaggerList } from "@/components/ui/motion";
 import type { DashboardCardData, DashboardSummary } from "@/lib/dashboard";
 import { getQuestionnaireTypeLabelKey } from "@/lib/questionnaires";
@@ -44,21 +39,6 @@ const ICONS: Record<DashboardCardData["icon"], typeof Users> = {
   file: FileText,
   book: BookOpen,
 };
-
-const ACCENT_STYLES = {
-  blue: {
-    icon: "bg-white/14 text-white dark:bg-gold-300/15 dark:text-gold-200",
-  },
-  gold: {
-    icon: "bg-gold-300 text-navy-950",
-  },
-  green: {
-    icon: "bg-success-600 text-white",
-  },
-  danger: {
-    icon: "bg-danger-600 text-white",
-  },
-} as const;
 
 function formatDisplayDate(value: string | null, locale: string) {
   if (!value) {
@@ -108,17 +88,23 @@ export function DashboardClient({ username, summary }: Props) {
     },
   ).format(new Date());
 
+  const scaffoldClassName = "gap-5 sm:gap-6";
+  const buildHeaderProps = (title: string, description: string) => ({
+    title,
+    description,
+    eyebrow: t("title"),
+    meta: todayLabel,
+  });
+
   if (summary.variant === "student") {
     if (!summary.studentSummary) {
       return (
         <PageScaffold
-          className="gap-6"
-          headerProps={{
-            title: `${greeting}, ${username}!`,
-            description: t("unlinkedDescription"),
-            eyebrow: t("title"),
-            meta: todayLabel,
-          }}
+          className={scaffoldClassName}
+          headerProps={buildHeaderProps(
+            `${greeting}, ${username}!`,
+            t("unlinkedDescription"),
+          )}
         >
           <EmptyState
             icon={Link2}
@@ -142,15 +128,13 @@ export function DashboardClient({ username, summary }: Props) {
 
     return (
       <PageScaffold
-        className="gap-6"
-        headerProps={{
-          title: `${greeting}, ${firstName}!`,
-          description: t("activitySummary"),
-          eyebrow: t("title"),
-          meta: todayLabel,
-        }}
+        className={scaffoldClassName}
+        headerProps={buildHeaderProps(
+          `${greeting}, ${firstName}!`,
+          t("activitySummary"),
+        )}
       >
-        <div className="grid gap-4 xl:grid-cols-[1.3fr_0.9fr]">
+        <div className="grid gap-4 xl:grid-cols-[minmax(0,1.15fr)_minmax(280px,0.85fr)]">
           <KpiCard
             icon={Activity}
             title={t("lastBiometric")}
@@ -162,7 +146,7 @@ export function DashboardClient({ username, summary }: Props) {
             accent="blue"
             emphasis="hero"
             footer={
-              <p className="text-sm text-muted-foreground">
+              <p className="text-sm text-white/74">
                 {summary.studentSummary.lastBiometric
                   ? t("activitySummary")
                   : t("unlinkedDescription")}
@@ -191,13 +175,8 @@ export function DashboardClient({ username, summary }: Props) {
   if (summary.variant === "psychologist") {
     return (
       <PageScaffold
-        className="gap-6"
-        headerProps={{
-          title: `${greeting}, ${username}!`,
-          description,
-          eyebrow: t("title"),
-          meta: todayLabel,
-        }}
+        className={scaffoldClassName}
+        headerProps={buildHeaderProps(`${greeting}, ${username}!`, description)}
       >
         <StaggerList className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
           {summary.cards.map((card) => (
@@ -223,10 +202,9 @@ export function DashboardClient({ username, summary }: Props) {
             {summary.openAlerts.length > 0 ? (
               <div className="grid gap-3">
                 {summary.openAlerts.map((alert) => (
-                  <Link
+                  <DashboardPanel
                     key={alert.id}
                     href={`/acompanhamento/${alert.studentId}`}
-                    className="group rounded-2xl border border-border/60 bg-background/35 p-4 transition-all duration-300 hover:-translate-y-0.5 hover:border-danger-300/40 hover:shadow-card-hover"
                   >
                     <div className="flex items-start justify-between gap-3">
                       <div className="space-y-1">
@@ -237,10 +215,11 @@ export function DashboardClient({ username, summary }: Props) {
                           {alert.className ?? t("classPending")}
                         </p>
                       </div>
-                      <span className="rounded-full bg-danger-50 px-2.5 py-1 text-tiny font-semibold uppercase tracking-[0.18em] text-danger-700 dark:bg-danger-950/30 dark:text-danger-300">
+                      <Badge variant="danger" size="sm">
                         {t("pendingSos")}
-                      </span>
+                      </Badge>
                     </div>
+
                     <div className="mt-4 flex items-center justify-between gap-3">
                       <span className="text-sm text-muted-foreground">
                         {t("alertOpenedOn", {
@@ -252,7 +231,7 @@ export function DashboardClient({ username, summary }: Props) {
                         <ArrowRight className="size-4 transition-transform duration-300 group-hover:translate-x-1" />
                       </span>
                     </div>
-                  </Link>
+                  </DashboardPanel>
                 ))}
               </div>
             ) : (
@@ -274,10 +253,7 @@ export function DashboardClient({ username, summary }: Props) {
               {summary.recentQuestionnaires.length > 0 ? (
                 <div className="grid gap-3">
                   {summary.recentQuestionnaires.map((questionnaire) => (
-                    <div
-                      key={questionnaire.id}
-                      className="rounded-2xl border border-border/60 bg-background/45 p-4"
-                    >
+                    <DashboardPanel key={questionnaire.id}>
                       <div className="flex items-start justify-between gap-3">
                         <div>
                           <p className="text-sm font-semibold text-foreground">
@@ -294,11 +270,15 @@ export function DashboardClient({ username, summary }: Props) {
                             )}
                           </p>
                         </div>
-                        <span className="rounded-full border border-border/60 bg-background/70 px-2.5 py-1 text-tiny font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+                        <Badge
+                          variant="default"
+                          size="sm"
+                          className="bg-white/70 dark:bg-white/6"
+                        >
                           {formatCompactDate(questionnaire.submittedAt, locale)}
-                        </span>
+                        </Badge>
                       </div>
-                    </div>
+                    </DashboardPanel>
                   ))}
                 </div>
               ) : (
@@ -318,13 +298,8 @@ export function DashboardClient({ username, summary }: Props) {
   if (summary.variant === "parent") {
     return (
       <PageScaffold
-        className="gap-6"
-        headerProps={{
-          title: `${greeting}, ${username}!`,
-          description,
-          eyebrow: t("title"),
-          meta: todayLabel,
-        }}
+        className={scaffoldClassName}
+        headerProps={buildHeaderProps(`${greeting}, ${username}!`, description)}
       >
         <StaggerList className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
           {summary.cards.map((card) => (
@@ -350,10 +325,7 @@ export function DashboardClient({ username, summary }: Props) {
             {summary.linkedStudents.length > 0 ? (
               <div className="grid gap-3 lg:grid-cols-2">
                 {summary.linkedStudents.map((student) => (
-                  <div
-                    key={student.id}
-                    className="rounded-2xl border border-border/60 bg-background/35 p-4"
-                  >
+                  <DashboardPanel key={student.id}>
                     <div className="flex items-start justify-between gap-3">
                       <div className="space-y-1">
                         <p className="text-sm font-semibold text-foreground">
@@ -365,10 +337,11 @@ export function DashboardClient({ username, summary }: Props) {
                             .join(" - ") || t("studentRecord")}
                         </p>
                       </div>
-                      <span className="rounded-full bg-navy-50 px-2.5 py-1 text-tiny font-semibold uppercase tracking-[0.18em] text-navy-700 dark:bg-navy-950/30 dark:text-navy-200">
+                      <Badge variant="info" size="sm">
                         {t("linkedStudents")}
-                      </span>
+                      </Badge>
                     </div>
+
                     <div className="mt-4 grid gap-3 sm:grid-cols-2">
                       <DashboardMetaPill
                         label={t("lastReport")}
@@ -382,7 +355,7 @@ export function DashboardClient({ username, summary }: Props) {
                         )}
                       />
                     </div>
-                  </div>
+                  </DashboardPanel>
                 ))}
               </div>
             ) : (
@@ -404,10 +377,7 @@ export function DashboardClient({ username, summary }: Props) {
               {summary.recentReports.length > 0 ? (
                 <div className="grid gap-3">
                   {summary.recentReports.map((report) => (
-                    <div
-                      key={report.id}
-                      className="rounded-2xl border border-border/60 bg-background/45 p-4"
-                    >
+                    <DashboardPanel key={report.id}>
                       <p className="text-sm font-semibold text-foreground">
                         {report.title}
                       </p>
@@ -419,7 +389,7 @@ export function DashboardClient({ username, summary }: Props) {
                           date: formatDisplayDate(report.createdAt, locale),
                         })}
                       </p>
-                    </div>
+                    </DashboardPanel>
                   ))}
                 </div>
               ) : (
@@ -438,27 +408,8 @@ export function DashboardClient({ username, summary }: Props) {
 
   return (
     <PageScaffold
-      className="gap-6"
-      header={
-        summary.variant === "staff" ? (
-          <DashboardHero
-            eyebrow={t("title")}
-            meta={todayLabel}
-            title={`${greeting}, ${username}!`}
-            description={description}
-          />
-        ) : undefined
-      }
-      headerProps={
-        summary.variant === "staff"
-          ? undefined
-          : {
-              title: `${greeting}, ${username}!`,
-              description,
-              eyebrow: t("title"),
-              meta: todayLabel,
-            }
-      }
+      className={scaffoldClassName}
+      headerProps={buildHeaderProps(`${greeting}, ${username}!`, description)}
     >
       {summary.cards.length > 0 ? (
         <StaggerList className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -476,251 +427,260 @@ export function DashboardClient({ username, summary }: Props) {
         </StaggerList>
       ) : null}
 
-      {summary.variant === "staff" && summary.zafByYear.length > 0 ? (
+      {summary.zafByYear.length > 0 ? (
         <FadeIn delay={0.2}>
-          {(() => {
-            const totalZsaf = summary.zafByYear.reduce(
-              (sum, year) => sum + year.zsaf,
-              0,
-            );
-            const totalZmf = summary.zafByYear.reduce(
-              (sum, year) => sum + year.zmf,
-              0,
-            );
-            const totalWithBio = totalZsaf + totalZmf;
-            const overallPct =
-              totalWithBio > 0
-                ? Math.round((totalZsaf / totalWithBio) * 100)
-                : 0;
-            const donutData = [
-              {
-                name: t("zsaf"),
-                value: totalZsaf,
-                color: "var(--color-success-500)",
-              },
-              {
-                name: t("zmf"),
-                value: totalZmf,
-                color: "var(--color-warning-500)",
-              },
-            ];
-
-            return (
-              <PageSection
-                title={t("zafDistribution")}
-                description={t("zafDistributionSummary")}
-                tone="secondary"
-                layout="analytics"
-              >
-                <div className="mb-12 grid gap-8 lg:grid-cols-12">
-                  <div className="col-span-12 flex flex-col items-center gap-12 rounded-xl border border-white/30 bg-white/80 p-8 shadow-float backdrop-blur-xl dark:border-white/10 dark:bg-navy-950/72 md:flex-row lg:col-span-7">
-                    <div className="relative w-48 h-48 flex-shrink-0">
-                      {chartsReady ? (
-                        <PieChart width={192} height={192}>
-                          <defs>
-                            <filter
-                              id="dropShadow"
-                              x="-20%"
-                              y="-20%"
-                              width="140%"
-                              height="140%"
-                            >
-                              <feDropShadow
-                                dx="0"
-                                dy="4"
-                                stdDeviation="6"
-                                floodColor="#000000"
-                                floodOpacity="0.15"
-                              />
-                            </filter>
-                          </defs>
-                          <Pie
-                            data={donutData}
-                            cx="50%"
-                            cy="50%"
-                            innerRadius={70}
-                            outerRadius={90}
-                            paddingAngle={3}
-                            dataKey="value"
-                            strokeWidth={0}
-                            cornerRadius={8}
-                          >
-                            <Cell
-                              key="zsaf"
-                              fill="var(--color-navy-900)"
-                              className="dark:fill-gold-400"
-                              filter="url(#dropShadow)"
-                            />
-                            <Cell
-                              key="zmf"
-                              fill="var(--color-gold-400)"
-                              className="dark:fill-danger-500"
-                              filter="url(#dropShadow)"
-                            />
-                          </Pie>
-                          <Tooltip
-                            contentStyle={{
-                              borderRadius: "12px",
-                              border: "1px solid var(--color-border)",
-                              background: "var(--color-card)",
-                              fontSize: "13px",
-                            }}
-                          />
-                        </PieChart>
-                      ) : (
-                        <div className="w-full h-full rounded-full border-[16px] border-muted animate-pulse" />
-                      )}
-                      <div className="absolute inset-0 flex flex-col items-center justify-center">
-                        <span className="text-3xl font-black text-foreground leading-none">
-                          {chartsReady ? `${overallPct}%` : "-"}
-                        </span>
-                        <span className="text-micro uppercase font-bold text-muted-foreground mt-1">
-                          Ótimo ZAF
-                        </span>
-                      </div>
-                    </div>
-                    <div className="flex-1 w-full">
-                      <div className="mb-6">
-                        <h4 className="text-xl font-bold text-foreground mb-1">
-                          Distribuição ZAF
-                        </h4>
-                        <p className="text-sm text-muted-foreground">
-                          Comportamento de saúde acumulado no mês.
-                        </p>
-                      </div>
-                      <div className="space-y-4">
-                        <div className="flex items-center gap-4">
-                          <span className="w-3 h-3 rounded-full bg-navy-900 dark:bg-gold-400"></span>
-                          <span className="text-xs font-semibold text-muted-foreground flex-1">
-                            {t("zsaf")}
-                          </span>
-                          <span className="text-xs font-bold text-foreground">
-                            {totalZsaf}
-                          </span>
-                        </div>
-                        <div className="flex items-center gap-4">
-                          <span className="w-3 h-3 rounded-full bg-gold-400 dark:bg-danger-500"></span>
-                          <span className="text-xs font-semibold text-muted-foreground flex-1">
-                            {t("zmf")}
-                          </span>
-                          <span className="text-xs font-bold text-foreground">
-                            {totalZmf}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="group relative col-span-12 overflow-hidden rounded-xl bg-gradient-to-br from-navy-800 via-navy-700 to-navy-600 p-8 shadow-float lg:col-span-5">
-                    <div className="absolute inset-0 opacity-10 pointer-events-none">
-                      <div className="absolute top-0 right-0 w-64 h-64 bg-white rounded-full -mr-20 -mt-20 blur-3xl"></div>
-                      <div className="absolute bottom-0 left-0 w-48 h-48 bg-gold-400 rounded-full -ml-20 -mb-20 blur-3xl"></div>
-                    </div>
-                    <div className="relative z-10 flex flex-col h-full">
-                      <div className="flex justify-between items-center mb-8">
-                        <h4 className="text-xl font-bold text-white">
-                          Progresso Acadêmico
-                        </h4>
-                        <span className="text-micro font-bold px-2 py-1 bg-white/10 text-white rounded-lg">
-                          Total
-                        </span>
-                      </div>
-                      <div className="space-y-6 flex-1">
-                        {summary.zafByYear.map((academicYear) => {
-                          const pct =
-                            academicYear.withBio > 0
-                              ? Math.round(
-                                  (academicYear.zsaf / academicYear.withBio) *
-                                    100,
-                                )
-                              : 0;
-                          return (
-                            <div key={academicYear.year}>
-                              <div className="flex justify-between items-end mb-2">
-                                <span className="text-xs font-medium text-navy-200">
-                                  {academicYear.year}
-                                </span>
-                                <span className="text-sm font-bold text-white">
-                                  {pct}% ZSAF
-                                </span>
-                              </div>
-                              <div className="h-2 w-full bg-white/10 rounded-full overflow-hidden">
-                                <div
-                                  className="h-full bg-gold-400 rounded-full shadow-[0_0_10px_rgba(254,166,25,0.4)]"
-                                  style={{ width: `${pct}%` }}
-                                ></div>
-                              </div>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </PageSection>
-            );
-          })()}
+          <DashboardAnalytics
+            chartsReady={chartsReady}
+            locale={locale}
+            summary={summary}
+            t={t}
+          />
         </FadeIn>
       ) : null}
     </PageScaffold>
   );
 }
 
-function DashboardHero({
-  eyebrow,
-  meta,
-  title,
-  description,
+function DashboardAnalytics({
+  chartsReady,
+  locale,
+  summary,
+  t,
 }: {
-  eyebrow: string;
-  meta: string;
-  title: string;
-  description: string;
+  chartsReady: boolean;
+  locale: string;
+  summary: Extract<DashboardSummary, { variant: "staff" }>;
+  t: (key: string) => string;
 }) {
-  return (
-    <Card className="relative overflow-hidden rounded-xl border border-navy-700/20 bg-gradient-to-br from-navy-800 via-navy-700 to-navy-600 text-white shadow-[0_28px_80px_-36px_rgba(9,21,35,0.82)] dark:border-navy-800">
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.18),transparent_34%),radial-gradient(circle_at_85%_15%,rgba(216,173,52,0.18),transparent_22%)]" />
-      <CardContent className="relative p-6 lg:p-8">
-        <div className="space-y-6">
-          <div className="flex flex-wrap items-center gap-2">
-            <Badge
-              variant="gold"
-              size="sm"
-              className="border-white/10 bg-white/10 text-gold-200"
-            >
-              <Sparkles className="size-3" />
-              {eyebrow}
-            </Badge>
-            <Badge
-              variant="info"
-              size="sm"
-              className="border-white/10 bg-white/10 text-white/82"
-            >
-              {meta}
-            </Badge>
-          </div>
+  const totalZsaf = summary.zafByYear.reduce((sum, year) => sum + year.zsaf, 0);
+  const totalZmf = summary.zafByYear.reduce((sum, year) => sum + year.zmf, 0);
+  const totalWithBio = totalZsaf + totalZmf;
+  const overallPct =
+    totalWithBio > 0 ? Math.round((totalZsaf / totalWithBio) * 100) : 0;
+  const donutData = [
+    { name: t("zsaf"), value: totalZsaf },
+    { name: t("zmf"), value: totalZmf },
+  ];
 
-          <div className="space-y-3">
-            <h1 className="max-w-3xl text-3xl font-black tracking-[-0.05em] text-white sm:text-[2.5rem]">
-              {title}
-            </h1>
-            <p className="max-w-2xl text-sm leading-relaxed text-white/78 sm:text-base">
-              {description}
-            </p>
+  return (
+    <PageSection
+      title={t("zafDistribution")}
+      description={t("zafDistributionSummary")}
+      tone="secondary"
+      layout="analytics"
+    >
+      <div className="grid gap-4 xl:grid-cols-[minmax(0,1.15fr)_minmax(280px,0.85fr)]">
+        <div className="surface-secondary rounded-[1.5rem] p-5 sm:p-6">
+          <div className="flex flex-col gap-6 md:flex-row md:items-center">
+            <div className="relative h-48 w-48 flex-shrink-0 self-center">
+              {chartsReady ? (
+                <PieChart width={192} height={192}>
+                  <Pie
+                    data={donutData}
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={70}
+                    outerRadius={90}
+                    paddingAngle={3}
+                    dataKey="value"
+                    strokeWidth={0}
+                    cornerRadius={8}
+                  >
+                    <Cell
+                      key="zsaf"
+                      fill="var(--color-navy-900)"
+                      className="dark:fill-gold-400"
+                    />
+                    <Cell
+                      key="zmf"
+                      fill="var(--color-gold-400)"
+                      className="dark:fill-warning-500"
+                    />
+                  </Pie>
+                  <Tooltip
+                    contentStyle={{
+                      borderRadius: "16px",
+                      border: "1px solid var(--color-border)",
+                      background: "var(--color-card)",
+                      fontSize: "13px",
+                    }}
+                  />
+                </PieChart>
+              ) : (
+                <div className="h-full w-full rounded-full border-[16px] border-muted animate-pulse" />
+              )}
+
+              <div className="absolute inset-0 flex flex-col items-center justify-center">
+                <span className="text-3xl font-black leading-none text-foreground">
+                  {chartsReady ? `${overallPct}%` : "-"}
+                </span>
+                <span className="mt-1 text-micro font-bold uppercase text-muted-foreground">
+                  {t("zsaf")}
+                </span>
+              </div>
+            </div>
+
+            <div className="flex-1">
+              <div className="mb-5 space-y-1">
+                <h4 className="font-display text-lg font-semibold tracking-tight text-foreground sm:text-xl">
+                  {t("zafDistribution")}
+                </h4>
+                <p className="text-sm leading-relaxed text-muted-foreground">
+                  {t("zafDistributionSummary")}
+                </p>
+              </div>
+
+              <div className="grid gap-3 sm:grid-cols-2">
+                <DashboardMetaPill label={t("zsaf")} value={totalZsaf.toString()} />
+                <DashboardMetaPill label={t("zmf")} value={totalZmf.toString()} />
+              </div>
+
+              <div className="mt-4 space-y-3">
+                <DashboardLegendItem
+                  colorClassName="bg-navy-900 dark:bg-gold-400"
+                  label={t("zsaf")}
+                  value={totalZsaf}
+                />
+                <DashboardLegendItem
+                  colorClassName="bg-gold-400 dark:bg-warning-500"
+                  label={t("zmf")}
+                  value={totalZmf}
+                />
+              </div>
+            </div>
           </div>
         </div>
-      </CardContent>
-    </Card>
+
+        <div className="relative overflow-hidden rounded-[1.5rem] border border-navy-900/10 bg-[linear-gradient(160deg,rgba(16,36,58,0.97),rgba(20,48,76,0.92))] p-5 text-white shadow-float dark:border-white/10 sm:p-6">
+          <div className="absolute inset-x-8 top-0 h-px bg-gradient-to-r from-transparent via-gold-300/55 to-transparent" />
+          <div className="absolute right-0 top-0 h-32 w-32 rounded-full bg-white/10 blur-3xl" />
+          <div className="absolute bottom-0 left-0 h-32 w-32 rounded-full bg-gold-400/16 blur-3xl" />
+
+          <div className="relative">
+            <div className="mb-6 flex items-center justify-between gap-3">
+              <div>
+                <p className="text-micro font-semibold uppercase tracking-[0.22em] text-gold-200">
+                  {t("title")}
+                </p>
+                <h4 className="mt-1 font-display text-lg font-semibold tracking-tight text-white">
+                  {t("zafDistributionSummary")}
+                </h4>
+              </div>
+              <Badge
+                variant="gold"
+                size="sm"
+                className="border-white/10 bg-white/10 text-gold-200"
+              >
+                {summary.zafByYear.length}
+              </Badge>
+            </div>
+
+            <div className="space-y-4">
+              {summary.zafByYear.map((academicYear) => {
+                const pct =
+                  academicYear.withBio > 0
+                    ? Math.round((academicYear.zsaf / academicYear.withBio) * 100)
+                    : 0;
+
+                return (
+                  <div
+                    key={academicYear.year}
+                    className="rounded-[1.15rem] border border-white/10 bg-white/6 p-3.5 backdrop-blur-sm"
+                  >
+                    <div className="mb-2 flex items-end justify-between gap-3">
+                      <div>
+                        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-white/58">
+                          {academicYear.year}
+                        </p>
+                        <p className="mt-1 text-sm text-white/82">
+                          {academicYear.withBio.toLocaleString(
+                            locale === "en" ? "en-GB" : "pt-PT",
+                          )}{" "}
+                          {t("studentsUnit")}
+                        </p>
+                      </div>
+                      <span className="text-sm font-bold text-gold-200">
+                        {pct}%
+                      </span>
+                    </div>
+
+                    <div className="h-2.5 overflow-hidden rounded-full bg-white/10">
+                      <div
+                        className="h-full rounded-full bg-gold-400 shadow-[0_0_18px_rgba(216,173,52,0.45)] transition-all duration-700"
+                        style={{ width: `${pct}%` }}
+                      />
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      </div>
+    </PageSection>
   );
 }
 
 function DashboardMetaPill({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-2xl border border-border/60 bg-background/55 px-3 py-2.5">
+    <div className="rounded-[1.1rem] border border-white/28 bg-white/70 px-3 py-2.5 shadow-sm backdrop-blur-md dark:border-white/10 dark:bg-white/6">
       <p className="text-tiny font-semibold uppercase tracking-[0.18em] text-muted-foreground">
         {label}
       </p>
       <p className="mt-1 text-sm font-semibold text-foreground">{value}</p>
+    </div>
+  );
+}
+
+function DashboardPanel({
+  children,
+  className,
+  href,
+}: {
+  children: React.ReactNode;
+  className?: string;
+  href?: string;
+}) {
+  const panelClassName = cn(
+    "relative overflow-hidden rounded-[1.35rem] border border-white/22 bg-white/66 p-4 shadow-[0_18px_40px_-28px_rgba(9,21,35,0.4)] backdrop-blur-md transition-all duration-300 dark:border-white/10 dark:bg-navy-950/48",
+    href &&
+      "group hover:-translate-y-0.5 hover:border-gold-300/35 hover:shadow-card-hover",
+    className,
+  );
+
+  if (href) {
+    return (
+      <Link href={href} className={panelClassName}>
+        <div className="absolute inset-x-6 top-0 h-px bg-gradient-to-r from-transparent via-gold-400/40 to-transparent" />
+        {children}
+      </Link>
+    );
+  }
+
+  return (
+    <div className={panelClassName}>
+      <div className="absolute inset-x-6 top-0 h-px bg-gradient-to-r from-transparent via-gold-400/40 to-transparent" />
+      {children}
+    </div>
+  );
+}
+
+function DashboardLegendItem({
+  colorClassName,
+  label,
+  value,
+}: {
+  colorClassName: string;
+  label: string;
+  value: number;
+}) {
+  return (
+    <div className="flex items-center gap-3 rounded-[1.1rem] border border-white/22 bg-white/52 px-3 py-2.5 dark:border-white/8 dark:bg-white/5">
+      <span className={cn("h-3 w-3 rounded-full", colorClassName)} />
+      <span className="flex-1 text-sm font-semibold text-foreground">
+        {label}
+      </span>
+      <span className="text-sm font-bold text-foreground">{value}</span>
     </div>
   );
 }

@@ -267,7 +267,7 @@ export function AppShell({ user, children }: AppShellProps) {
 
   return (
     <TooltipProvider delayDuration={300}>
-      <div className="relative min-h-screen bg-navy-50 text-navy-900 dark:bg-background dark:text-foreground transition-colors duration-300">
+      <div className="relative min-h-screen overflow-x-hidden bg-background text-foreground transition-colors duration-300">
         <a
           href="#main-content"
           className="fixed left-4 top-4 z-50 -translate-y-16 rounded-xl bg-gold-500 px-4 py-2.5 text-sm font-semibold text-navy-950 shadow-float transition-transform focus:translate-y-0 focus:outline-none focus:ring-2 focus:ring-gold-400/40"
@@ -332,9 +332,9 @@ export function AppShell({ user, children }: AppShellProps) {
         <div className="relative flex min-h-screen flex-col lg:ml-72">
           <header
             aria-label={t("nav.topBar")}
-            className="sticky top-0 z-20 border-b border-navy-200/50 bg-white/72  transition-colors duration-300 dark:border-navy-800 dark:bg-navy-950/68"
+            className="sticky top-0 z-20 border-b border-white/45 bg-white/62 shadow-[0_16px_34px_-30px_rgba(9,21,35,0.42)] backdrop-blur-2xl transition-colors duration-300 dark:border-white/10 dark:bg-navy-950/66"
           >
-            <div className="mx-auto flex w-full max-w-[1600px] items-center justify-between gap-3 px-4 py-2 sm:px-6 lg:px-8">
+            <div className="mx-auto flex w-full max-w-[1680px] items-center justify-between gap-3 px-4 py-2.5 sm:px-6 lg:px-8">
               <div className="flex min-w-0 items-center gap-3">
                 <Button
                   variant="ghost"
@@ -659,12 +659,12 @@ export function AppShell({ user, children }: AppShellProps) {
 
           <main
             id="main-content"
-            className="mx-auto flex w-full max-w-[1600px] flex-1 flex-col gap-4 px-4 py-3 pb-24 sm:px-6 lg:px-8 lg:py-4 lg:pb-6"
+            className="relative mx-auto flex w-full max-w-[1680px] flex-1 flex-col gap-5 px-4 py-5 pb-24 sm:px-6 lg:px-8 lg:py-6 lg:pb-8"
           >
             {children}
           </main>
 
-          <nav className="fixed inset-x-0 bottom-0 z-20 border-t border-navy-200/50 bg-white/80 px-3 py-2  dark:border-white/10 dark:bg-navy-950/80 lg:hidden transition-colors duration-300">
+          <nav className="fixed inset-x-0 bottom-0 z-20 border-t border-white/45 bg-white/74 px-3 py-2 backdrop-blur-2xl transition-colors duration-300 dark:border-white/10 dark:bg-navy-950/78 lg:hidden">
             <div className="mx-auto grid max-w-xl grid-cols-5 gap-1.5">
               {mobileItems.map((item) => {
                 const Icon = item.icon;

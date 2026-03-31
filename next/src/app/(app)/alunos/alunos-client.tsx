@@ -198,38 +198,33 @@ export function AlunosClient({ initialStudents }: AlunosClientProps) {
                 onChange={handleCsvImport}
               />
               {/* Ghost import button */}
-              <button
+              <Button
                 type="button"
-                disabled={isImportingCsv}
+                variant="secondary"
+                size="lg"
+                loading={isImportingCsv}
+                icon={<FileUp className="size-4" />}
                 onClick={() => importInputRef.current?.click()}
-                className="flex items-center gap-2 rounded-xl border border-white/60 bg-white/50 px-5 py-2.5 text-sm font-bold text-navy-800 shadow-sm backdrop-blur-md transition-all hover:-translate-y-0.5 hover:bg-white/70 active:scale-95 disabled:opacity-60"
               >
-                <FileUp className="size-4" />
                 {common("importCsv")}
-              </button>
+              </Button>
 
               {/* Primary gradient button */}
-              <button
+              <Button
                 type="button"
+                variant={showCreate ? "outline" : "primary"}
+                size="lg"
                 onClick={() => setShowCreate((v) => !v)}
-                className="flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-bold text-white shadow-md transition-all hover:-translate-y-0.5 hover:shadow-lg hover:shadow-blue-900/20 active:scale-95"
-                style={{
-                  background:
-                    "linear-gradient(135deg, #1e3a8a 0%, #00236f 100%)",
-                }}
-              >
-                {showCreate ? (
-                  <>
+                icon={
+                  showCreate ? (
                     <X className="size-4" />
-                    {t("cancel")}
-                  </>
-                ) : (
-                  <>
+                  ) : (
                     <UserPlus className="size-4" />
-                    {t("new")}
-                  </>
-                )}
-              </button>
+                  )
+                }
+              >
+                {showCreate ? t("cancel") : t("new")}
+              </Button>
             </div>
           }
         >

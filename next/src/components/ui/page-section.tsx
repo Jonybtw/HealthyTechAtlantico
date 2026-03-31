@@ -13,12 +13,9 @@ interface PageSectionProps {
 }
 
 const toneClasses: Record<NonNullable<PageSectionProps["tone"]>, string> = {
-  primary:
-    "rounded-xl border border-white/25 bg-white/78 p-5 shadow-float backdrop-blur-xl dark:border-white/10 dark:bg-navy-950/70 sm:p-6",
-  secondary:
-    "rounded-lg border border-white/20 bg-white/65 p-5 shadow-card backdrop-blur-xl dark:border-navy-800 dark:bg-navy-950/58",
-  utility:
-    "rounded-2xl border border-white/18 bg-white/55 p-4 shadow-card backdrop-blur-md dark:border-navy-800 dark:bg-navy-950/48",
+  primary: "surface-primary rounded-2xl p-5 sm:p-6",
+  secondary: "surface-secondary rounded-2xl p-5 sm:p-6",
+  utility: "surface-utility rounded-2xl p-4 sm:p-5",
 };
 
 const layoutClasses: Record<NonNullable<PageSectionProps["layout"]>, string> = {
@@ -42,7 +39,7 @@ export function PageSection({
   return (
     <section className={cn(toneClasses[tone], className)}>
       {eyebrow || title || description || actions ? (
-        <div className="mb-3 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+        <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
           <div className="max-w-3xl space-y-1.5">
             {eyebrow ? <p className="section-kicker">{eyebrow}</p> : null}
             {title ? <h2 className="section-title">{title}</h2> : null}
