@@ -3,10 +3,11 @@
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
+  ExternalLink,
   CheckCircle2,
   ShieldAlert,
-  Mail,
-  User,
+  RefreshCw,
+  ListFilter,
   Clock3,
   XCircle,
 } from "lucide-react";
@@ -76,6 +77,8 @@ export default function SosClient() {
     "all" | "pending" | "resolved"
   >("all");
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [lastUpdatedAt, setLastUpdatedAt] = useState<string | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [resolvingIds, setResolvingIds] = useState<Set<string>>(new Set());
 
@@ -88,12 +91,16 @@ export default function SosClient() {
   const [psychEmail, setPsychEmail] = useState("");
   const [teacherEmail, setTeacherEmail] = useState("");
 
-  const fetchAlerts = useCallback(async () => {
+  const fetchAlerts = useCallback(async (mode: "initial" | "refresh" = "initial") => {
     if (!isStaff) {
       return;
     }
 
-    setLoading(true);
+    if (mode === "initial") {
+      setLoading(true);
+    } else {
+      setRefreshing(true);
+    }
     setLoadError(null);
 
     try {
@@ -101,18 +108,23 @@ export default function SosClient() {
         await fetch("/api/stats/sos-alerts"),
       );
       setAlerts(data);
+      setLastUpdatedAt(new Date().toISOString());
     } catch (error) {
       const message =
         error instanceof Error ? error.message : "Erro a carregar SOS";
       setLoadError(message);
       toast.error(message);
     } finally {
-      setLoading(false);
+      if (mode === "initial") {
+        setLoading(false);
+      } else {
+        setRefreshing(false);
+      }
     }
   }, [isStaff]);
 
   useEffect(() => {
-    void fetchAlerts();
+    void fetchAlerts("initial");
   }, [fetchAlerts]);
 
   const fetchStudentAlerts = useCallback(async () => {
@@ -152,7 +164,7 @@ export default function SosClient() {
         );
 
         toast.success(t("resolvedSuccess"));
-        await fetchAlerts();
+        await fetchAlerts("refresh");
       } catch (error) {
         const message =
           error instanceof Error ? error.message : "Erro ao resolver alerta";
@@ -290,13 +302,14 @@ export default function SosClient() {
             <div className="flex flex-wrap items-center justify-end gap-2">
               <Link
                 href={studentHref}
-                className={buttonVariants({ variant: "outline", size: "sm" })}
+                className={buttonVariants({ variant: "secondary", size: "sm" })}
               >
+                <ExternalLink className="size-4" />
                 {t("openStudentProfile")}
               </Link>
               {!alert.resolved ? (
                 <Button
-                  variant="secondary"
+                  variant="primary"
                   size="sm"
                   onClick={() => void resolveAlert(alert.id)}
                   loading={resolvingIds.has(alert.id)}
@@ -523,53 +536,13 @@ export default function SosClient() {
         description={t("staffDescription")}
         tone="secondary"
       >
-        <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div className="space-y-1">
-            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
-              {t("title")}
-            </p>
-            <p className="text-sm text-slate-600">
-              {visibleAlerts.length === 0
-                ? t("noActiveDescription")
-                : `${visibleAlerts.length} alertas exibidos`}
-            </p>
+        {loading ? (
+          <div className="grid gap-3">
+            <div className="h-16 rounded-2xl bg-muted/70" />
+            <div className="h-16 rounded-2xl bg-muted/70" />
+            <div className="h-16 rounded-2xl bg-muted/70" />
           </div>
-
-          <div className="flex flex-wrap items-center gap-2">
-            <Button
-              variant={statusFilter === "all" ? "gold" : "outline"}
-              size="sm"
-              onClick={() => setStatusFilter("all")}
-            >
-              Todos
-            </Button>
-            <Button
-              variant={statusFilter === "pending" ? "gold" : "outline"}
-              size="sm"
-              onClick={() => setStatusFilter("pending")}
-            >
-              {t("pending")}
-            </Button>
-            <Button
-              variant={statusFilter === "resolved" ? "gold" : "outline"}
-              size="sm"
-              onClick={() => setStatusFilter("resolved")}
-            >
-              {t("resolved")}
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => void fetchAlerts()}
-              loading={loading}
-              icon={<Clock3 className="size-4" />}
-            >
-              {t("refresh")}
-            </Button>
-          </div>
-        </div>
-
-        {loadError ? (
+        ) : loadError ? (
           <EmptyState
             icon={XCircle}
             title={t("loadError")}
@@ -582,7 +555,59 @@ export default function SosClient() {
             pageSize={10}
             searchable
             toolbarTitle={t("staffTitle")}
-            toolbarSummary={`${visibleAlerts.length} alerta${visibleAlerts.length === 1 ? "" : "s"}`}
+            toolbarSummary={
+              <>
+                <span className="block">
+                  {visibleAlerts.length} alerta
+                  {visibleAlerts.length === 1 ? "" : "s"}
+                </span>
+                <span className="mt-0.5 block text-xs font-medium text-muted-foreground">
+                  {refreshing
+                    ? t("refreshing")
+                    : lastUpdatedAt
+                      ? t("lastUpdated", { time: formatDate(lastUpdatedAt) })
+                      : t("neverUpdated")}
+                </span>
+              </>
+            }
+            toolbarActions={
+              <>
+                <Button
+                  variant={statusFilter === "all" ? "primary" : "outline"}
+                  size="sm"
+                  onClick={() => setStatusFilter("all")}
+                  icon={<ListFilter className="size-4" />}
+                >
+                  {t("filterAll")}
+                </Button>
+                <Button
+                  variant={statusFilter === "pending" ? "primary" : "outline"}
+                  size="sm"
+                  onClick={() => setStatusFilter("pending")}
+                  icon={<Clock3 className="size-4" />}
+                >
+                  {t("pending")}
+                </Button>
+                <Button
+                  variant={statusFilter === "resolved" ? "primary" : "outline"}
+                  size="sm"
+                  onClick={() => setStatusFilter("resolved")}
+                  icon={<CheckCircle2 className="size-4" />}
+                >
+                  {t("resolved")}
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => void fetchAlerts("refresh")}
+                  loading={refreshing}
+                  disabled={loading || refreshing}
+                  icon={<RefreshCw className="size-4" />}
+                >
+                  {refreshing ? t("refreshing") : t("refresh")}
+                </Button>
+              </>
+            }
             emptyMessage={t("noHistoryDescription")}
             rowKey={(alert) => alert.id}
           />

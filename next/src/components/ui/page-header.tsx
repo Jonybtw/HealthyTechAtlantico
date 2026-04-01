@@ -1,3 +1,5 @@
+import { cn } from "@/lib/utils";
+
 export interface PageHeaderProps {
   title: string;
   description?: React.ReactNode;
@@ -5,6 +7,7 @@ export interface PageHeaderProps {
   meta?: React.ReactNode;
   status?: React.ReactNode;
   children?: React.ReactNode;
+  actionsClassName?: string;
 }
 
 export function PageHeader({
@@ -14,6 +17,7 @@ export function PageHeader({
   meta,
   status,
   children,
+  actionsClassName,
 }: PageHeaderProps) {
   return (
     <div className="relative overflow-hidden rounded-2xl border border-white/18 bg-gradient-to-br from-navy-950 via-navy-900 to-navy-800 px-5 py-5 text-white shadow-float sm:px-7 sm:py-7">
@@ -53,7 +57,12 @@ export function PageHeader({
         </div>
 
         {children ? (
-          <div className="flex flex-wrap gap-2 lg:max-w-md lg:justify-end">
+          <div
+            className={cn(
+              "flex flex-wrap gap-2 lg:max-w-md lg:justify-end",
+              actionsClassName,
+            )}
+          >
             {children}
           </div>
         ) : null}

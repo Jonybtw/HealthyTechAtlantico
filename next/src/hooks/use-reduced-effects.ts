@@ -27,6 +27,10 @@ function readReducedEffectsPreference() {
     return false;
   }
 
+  const firefoxBrowser =
+    typeof navigator !== "undefined" &&
+    /firefox|fxios/i.test(navigator.userAgent);
+
   const prefersReducedMotion = window.matchMedia(
     "(prefers-reduced-motion: reduce)",
   ).matches;
@@ -38,13 +42,19 @@ function readReducedEffectsPreference() {
     navigator.hardwareConcurrency > 0 &&
     navigator.hardwareConcurrency <= 4;
 
-  return prefersReducedMotion || compactViewport || saveData || lowConcurrency;
+  return (
+    prefersReducedMotion ||
+    compactViewport ||
+    saveData ||
+    lowConcurrency ||
+    firefoxBrowser
+  );
 }
 
 export function useReducedEffects() {
-  const [reducedEffects, setReducedEffects] = useState(
-    readReducedEffectsPreference,
-  );
+  // Keep the first client render identical to SSR output to avoid hydration
+  // mismatches in decorative UI like mesh backgrounds and motion wrappers.
+  const [reducedEffects, setReducedEffects] = useState(false);
 
   useEffect(() => {
     if (
@@ -62,6 +72,8 @@ export function useReducedEffects() {
     const update = () => {
       setReducedEffects(readReducedEffectsPreference());
     };
+
+    update();
 
     const addMediaListener = (
       media: MediaQueryList,

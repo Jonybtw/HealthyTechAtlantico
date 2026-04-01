@@ -123,7 +123,14 @@ describe("DashboardClient", () => {
       zafByYear: null,
     };
 
-    render(<DashboardClient username="JoÃ£o" summary={summary} />);
+    render(
+      <DashboardClient
+        greeting="Bom dia"
+        todayLabel="quarta-feira, 1 de abril de 2026"
+        username="JoÃ£o"
+        summary={summary}
+      />,
+    );
 
     expect(
       screen.getByRole("heading", { name: /JoÃ£o/i }),
@@ -146,7 +153,14 @@ describe("DashboardClient", () => {
       zafByYear: null,
     };
 
-    render(<DashboardClient username="Maria Silva" summary={summary} />);
+    render(
+      <DashboardClient
+        greeting="Bom dia"
+        todayLabel="quarta-feira, 1 de abril de 2026"
+        username="Maria Silva"
+        summary={summary}
+      />,
+    );
 
     expect(
       screen.getByRole("heading", { name: /Maria/i }),
@@ -190,7 +204,14 @@ describe("DashboardClient", () => {
       ],
     };
 
-    render(<DashboardClient username="PsicÃ³loga" summary={summary} />);
+    render(
+      <DashboardClient
+        greeting="Bom dia"
+        todayLabel="quarta-feira, 1 de abril de 2026"
+        username="PsicÃ³loga"
+        summary={summary}
+      />,
+    );
 
     expect(
       screen.getByText("Fila prioritÃ¡ria de acompanhamento"),
@@ -236,7 +257,14 @@ describe("DashboardClient", () => {
       ],
     };
 
-    render(<DashboardClient username="Encarregado" summary={summary} />);
+    render(
+      <DashboardClient
+        greeting="Bom dia"
+        todayLabel="quarta-feira, 1 de abril de 2026"
+        username="Encarregado"
+        summary={summary}
+      />,
+    );
 
     expect(
       screen.getByText("Acompanhamento dos alunos"),
@@ -286,7 +314,14 @@ describe("DashboardClient", () => {
       ],
     };
 
-    render(<DashboardClient username="DireÃ§Ã£o" summary={summary} />);
+    render(
+      <DashboardClient
+        greeting="Bom dia"
+        todayLabel="quarta-feira, 1 de abril de 2026"
+        username="DireÃ§Ã£o"
+        summary={summary}
+      />,
+    );
 
     expect(
       screen.getAllByText("DistribuiÃ§Ã£o ZAF por Ano Letivo").length,

@@ -86,7 +86,7 @@ export function AlunosClient({ initialStudents }: AlunosClientProps) {
             </AvatarFallback>
           </Avatar>
           <div>
-            <p className="font-bold text-sm text-navy-800 group-hover:text-amber-600 transition-colors leading-tight">
+            <p className="font-bold text-sm text-navy-800 transition-colors leading-tight group-hover:text-gold-600 dark:group-hover:text-gold-300">
               {row.name}
             </p>
           </div>
@@ -200,7 +200,7 @@ export function AlunosClient({ initialStudents }: AlunosClientProps) {
               {/* Ghost import button */}
               <Button
                 type="button"
-                variant="secondary"
+                variant="primary"
                 size="lg"
                 loading={isImportingCsv}
                 icon={<FileUp className="size-4" />}

@@ -614,16 +614,29 @@ export default function RelatorioPage() {
   };
 
   /* â”€â”€ IMC classification helper â”€â”€ */
-  const imcLabel = (imc?: number) => {
-    if (!imc) return null;
-    if (imc < 18.5) return { text: t("lowWeight"), color: "text-gold-500" };
-    if (imc < 25) return { text: t("normal"), color: "text-success-600" };
-    if (imc < 30) return { text: t("overweight"), color: "text-gold-500" };
-    return { text: t("obesity"), color: "text-danger-500" };
-  };
+  const biometricsStatus = loadingPreview
+    ? "A validar biometria..."
+    : bioData.length > 0
+      ? "Disponivel"
+      : "Sem registos";
+
+  const testsStatus = loadingPreview
+    ? "A validar testes..."
+    : testData.length > 0
+      ? `${testData.length} testes encontrados`
+      : "Sem registos";
 
   const bio0 = bioData[0] as BiometricEntry | undefined;
-  const classification = imcLabel(bio0?.imc);
+  const classification =
+    !bio0?.imc
+      ? null
+      : bio0.imc < 18.5
+        ? { text: t("lowWeight"), color: "text-gold-500" }
+        : bio0.imc < 25
+          ? { text: t("normal"), color: "text-success-600" }
+          : bio0.imc < 30
+            ? { text: t("overweight"), color: "text-gold-500" }
+            : { text: t("obesity"), color: "text-danger-500" };
 
   if (!canViewReports) {
     return (
@@ -646,7 +659,6 @@ export default function RelatorioPage() {
   if (role === "ALUNO" && !loadingStudents && students.length === 0) {
     return (
       <PageScaffold
-        className="max-w-4xl"
         headerProps={{
           title: t("title"),
           description: t("description"),
@@ -664,17 +676,17 @@ export default function RelatorioPage() {
 
   return (
     <PageScaffold
-      className="max-w-4xl"
       headerProps={{
         title: t("title"),
         description: t("description"),
         eyebrow: "ALUNOS · RELATÓRIOS",
       }}
     >
+      <div className="grid items-start gap-5 xl:grid-cols-[minmax(0,1fr)_340px]">
       {/* Document preview card */}
       <div className="surface-secondary rounded-2xl border border-white/20 dark:border-white/10 shadow-card overflow-hidden">
-        {/* Student selector */}
-        <div className="px-6 py-4 border-b border-white/20 dark:border-white/10 bg-white/60 dark:bg-navy-950/40 backdrop-blur-md/60">
+        {false && (
+          <div className="hidden">
           {role !== "ALUNO" ? (
             <StudentPicker
               students={students}
@@ -689,11 +701,11 @@ export default function RelatorioPage() {
                   <span
                     className="flex size-7 shrink-0 items-center justify-center rounded-full text-tiny font-semibold shadow-[inset_0_1px_0_rgba(255,255,255,0.18)]"
                     style={getStudentSwatch({
-                      id: selectedStudent.id,
-                      name: selectedStudent.name,
+                      id: selectedStudent?.id ?? "",
+                      name: selectedStudent?.name ?? "",
                     })}
                   >
-                    {getInitials(selectedStudent.name)}
+                    {getInitials(selectedStudent?.name ?? "")}
                   </span>
                 ) : (
                   <div className="size-7 rounded-full bg-navy-100 dark:bg-navy-800 flex items-center justify-center shrink-0">
@@ -711,11 +723,12 @@ export default function RelatorioPage() {
               </div>
             </div>
           )}
-        </div>
+          </div>
+        )}
 
         {/* Preview sections */}
         {studentId ? (
-          <div className="divide-y divide-border">
+          <div className="hidden divide-y divide-border">
             {/* Biometrics preview */}
             <div className="px-6 py-5">
               <div className="flex items-center gap-2 mb-4">
@@ -837,16 +850,80 @@ export default function RelatorioPage() {
           <div className="px-6 py-8 flex flex-col items-center gap-2 text-center">
             <FileText className="size-8 text-muted-foreground/40" />
             <p className="text-sm text-muted-foreground">
-              {role !== "ALUNO" ? t("previewInstruction") : t("loadingData")}
+              {studentId
+                ? "Biometria e testes ja estao incluidos automaticamente no relatorio gerado."
+                : role !== "ALUNO"
+                  ? t("previewInstruction")
+                  : t("loadingData")}
             </p>
           </div>
         )}
+        {studentId ? (
+          <div className="border-t border-white/20 px-6 py-7 dark:border-white/10">
+            <div className="flex items-start gap-3">
+              <div className="flex size-10 shrink-0 items-center justify-center rounded-xl border border-border/70 bg-background/70">
+                <FileText className="size-5 text-muted-foreground" />
+              </div>
+              <div className="space-y-1">
+                <h3 className="text-base font-semibold text-foreground">
+                  Relatorio pronto para gerar
+                </h3>
+                <p className="text-sm text-muted-foreground">
+                  Biometria e testes ja estao incluidos automaticamente no PDF.
+                </p>
+              </div>
+            </div>
+
+            <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              <div className="rounded-xl border border-border/70 bg-background/65 p-3">
+                <p className="text-tiny font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+                  Biometria
+                </p>
+                <p className="mt-1 text-sm font-semibold text-foreground">
+                  {biometricsStatus}
+                </p>
+              </div>
+              <div className="rounded-xl border border-border/70 bg-background/65 p-3">
+                <p className="text-tiny font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+                  Testes
+                </p>
+                <p className="mt-1 text-sm font-semibold text-foreground">
+                  {testsStatus}
+                </p>
+              </div>
+              <div className="rounded-xl border border-border/70 bg-background/65 p-3">
+                <p className="text-tiny font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+                  E-mail
+                </p>
+                <p className="mt-1 text-sm font-semibold text-foreground">
+                  {canSendEmail
+                    ? guardians.length > 0
+                      ? `${guardians.length} encarregado(s) disponiveis`
+                      : "Sem encarregados associados"
+                    : "Envio indisponivel no teu perfil"}
+                </p>
+              </div>
+            </div>
+          </div>
+        ) : null}
       </div>
 
-      {/* Actions row */}
-      <div
-        className={`grid gap-4 ${canSendEmail ? "sm:grid-cols-2" : "sm:grid-cols-1"}`}
-      >
+      {/* Actions rail */}
+      <aside className="xl:sticky xl:top-24">
+        <div className="surface-secondary rounded-2xl border border-white/20 dark:border-white/10 p-4 shadow-card">
+          <p className="mb-2 text-tiny font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+            Aluno em foco
+          </p>
+          <StudentPicker
+            students={students}
+            value={studentId}
+            onChange={setStudentId}
+            loading={loadingStudents}
+          />
+        </div>
+        <div
+          className={`mt-4 grid gap-4 ${canSendEmail ? "sm:grid-cols-2 xl:grid-cols-1" : "sm:grid-cols-1"}`}
+        >
         {/* PDF download */}
         <div className="surface-secondary rounded-2xl border border-white/20 dark:border-white/10 p-5 flex flex-col gap-4 shadow-card transition-all duration-300 hover:scale-[1.01] hover:-translate-y-0.5 hover:shadow-card">
           <div className="flex items-center gap-3">
@@ -866,12 +943,7 @@ export default function RelatorioPage() {
             onClick={handleGeneratePdf}
             loading={generatingPdf}
             icon={<Download className="size-4" />}
-            className="w-full justify-center rounded-full font-semibold shadow-lg transition-all hover:scale-[1.02]"
-            style={{
-              background: "linear-gradient(135deg, #1E3A8A, #10243a)",
-              color: "#fff",
-              border: "none",
-            }}
+            className="h-12 w-full justify-center text-base"
           >
             {t("generate")}
           </Button>
@@ -923,8 +995,8 @@ export default function RelatorioPage() {
                     onClick={handleSendEmail}
                     loading={sendingEmail}
                     icon={<Send className="size-4" />}
-                    variant="secondary"
-                    className="w-full justify-center"
+                    variant="primary"
+                    className="h-12 w-full justify-center text-base"
                   >
                     {t("emailButton")}
                   </Button>
@@ -937,6 +1009,8 @@ export default function RelatorioPage() {
             </div>
           </div>
         )}
+        </div>
+      </aside>
       </div>
     </PageScaffold>
   );

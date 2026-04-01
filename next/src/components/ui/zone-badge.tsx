@@ -33,11 +33,11 @@ export function ZoneBadge({ zone, size = "md" }: ZoneBadgeProps) {
       className={`inline-flex items-center rounded-full border font-semibold tracking-tight shadow-sm ${sizeClasses} ${
         isPositive
           ? "border-success-500/25 bg-success-100/80 text-success-700 dark:border-success-500/20 dark:bg-success-500/10 dark:text-success-300"
-          : "border-warning-500/25 bg-warning-100/80 text-warning-700 dark:border-warning-500/20 dark:bg-warning-500/10 dark:text-warning-300"
+          : "border-danger-500/25 bg-danger-100/80 text-danger-700 dark:border-danger-500/20 dark:bg-danger-500/10 dark:text-danger-300"
       }`}
     >
       <span
-        className={`size-1.5 rounded-full ${isPositive ? "bg-success-500" : "bg-warning-500"}`}
+        className={`size-1.5 rounded-full ${isPositive ? "bg-success-500" : "bg-danger-500"}`}
       />
       {zone}
     </span>

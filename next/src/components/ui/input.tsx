@@ -55,7 +55,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
                 error ? `${uid}-error` : hint ? `${uid}-hint` : undefined
               }
               className={cn(
-                "peer flex h-14 w-full rounded-2xl border border-white/20 dark:border-white/10 bg-white/50 dark:bg-navy-950/40 px-4 pt-5 pb-2 text-sm text-navy-950 dark:text-white shadow-inner backdrop-blur-md",
+                "peer flex h-14 w-full rounded-2xl border border-white/20 dark:border-white/10 bg-white/50 dark:bg-navy-950/40 px-4 pt-5 pb-2 text-sm text-navy-950 dark:text-white shadow-inner",
                 "transition-all duration-300",
                 "focus:border-gold-400 focus:bg-white/80 dark:focus:bg-navy-900/60 focus:outline-none focus:ring-4 focus:ring-gold-400/20",
                 "hover:border-navy-300/60 dark:hover:border-navy-400/50 hover:bg-white/70 dark:hover:bg-navy-900/40",
@@ -150,7 +150,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
               error ? `${uid}-error` : hint ? `${uid}-hint` : undefined
             }
             className={cn(
-              "flex h-12 w-full rounded-2xl border border-white/20 dark:border-white/10 bg-white/50 dark:bg-navy-950/40 px-4 py-2 text-sm text-navy-950 dark:text-white shadow-inner backdrop-blur-md",
+              "flex h-12 w-full rounded-2xl border border-white/20 dark:border-white/10 bg-white/50 dark:bg-navy-950/40 px-4 py-2 text-sm text-navy-950 dark:text-white shadow-inner",
               "placeholder:text-navy-950/40 dark:placeholder:text-white/30 transition-all duration-300",
               "focus:border-gold-400 focus:bg-white/80 dark:focus:bg-navy-900/60 focus:outline-none focus:ring-4 focus:ring-gold-400/20",
               "hover:border-navy-300/60 dark:hover:border-navy-400/50 hover:bg-white/70 dark:hover:bg-navy-900/40",

@@ -319,12 +319,7 @@ export default function PerfilPage() {
                   type="submit"
                   loading={pwForm.formState.isSubmitting}
                   icon={<Save className="size-4" />}
-                  className="rounded-full px-6 font-semibold shadow-lg transition-all hover:scale-[1.03]"
-                  style={{
-                    background: "linear-gradient(135deg, #1E3A8A, #10243a)",
-                    color: "#fff",
-                    border: "none",
-                  }}
+                  className="h-12 justify-center text-base"
                 >
                   {t("savePassword")}
                 </Button>

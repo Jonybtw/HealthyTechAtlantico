@@ -153,7 +153,7 @@ export default function DispensasPage() {
       }}
       headerActions={
         <Button
-          variant="sanctuary"
+          variant="primary"
           size="sm"
           icon={showForm ? undefined : <Plus className="size-4" />}
           onClick={() => setShowForm((v) => !v)}
@@ -222,7 +222,7 @@ export default function DispensasPage() {
                   <div className="md:col-span-2 flex justify-end mt-2">
                     <Button
                       type="submit"
-                      variant="sanctuary"
+                      variant="primary"
                       loading={createMutation.isPending}
                       className="min-w-[160px]"
                     >
@@ -304,7 +304,7 @@ export default function DispensasPage() {
                 canManageDispensas ? (
                   <Button
                     size="sm"
-                    variant="sanctuary"
+                    variant="primary"
                     icon={<Plus className="size-4" />}
                     onClick={() => setShowForm(true)}
                   >

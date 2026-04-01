@@ -311,10 +311,12 @@ export function AppShell({ user, children }: AppShellProps) {
           </ScrollArea>
 
           <div className="relative border-t border-white/10 p-3">
-            <div className="rounded-2xl border border-white/10 bg-white/6 p-3 text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] ">
+            <div className="rounded-3xl border border-white/10 bg-white/6 p-3 text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] ">
               <div className="flex items-center gap-3">
-                <Avatar className="size-8 shadow-[0_10px_20px_rgba(217,166,28,0.25)]">
-                  <AvatarFallback>{initials}</AvatarFallback>
+                <Avatar className="size-8 rounded-2xl shadow-[0_10px_20px_rgba(217,166,28,0.25)]">
+                  <AvatarFallback className="rounded-2xl">
+                    {initials}
+                  </AvatarFallback>
                 </Avatar>
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-xs font-semibold">
@@ -332,7 +334,7 @@ export function AppShell({ user, children }: AppShellProps) {
         <div className="relative flex min-h-screen flex-col lg:ml-72">
           <header
             aria-label={t("nav.topBar")}
-            className="sticky top-0 z-20 border-b border-white/45 bg-white/62 shadow-[0_16px_34px_-30px_rgba(9,21,35,0.42)] backdrop-blur-2xl transition-colors duration-300 dark:border-white/10 dark:bg-navy-950/66"
+            className="sticky top-0 z-20 border-b border-white/45 bg-white/62 shadow-[0_16px_34px_-30px_rgba(9,21,35,0.42)] backdrop-blur-md transition-colors duration-300 dark:border-white/10 dark:bg-navy-950/66"
           >
             <div className="mx-auto flex w-full max-w-[1680px] items-center justify-between gap-3 px-4 py-2.5 sm:px-6 lg:px-8">
               <div className="flex min-w-0 items-center gap-3">
@@ -635,10 +637,10 @@ export function AppShell({ user, children }: AppShellProps) {
                   </nav>
                 </ScrollArea>
                 <div className="border-t border-navy-200/50 dark:border-white/10 p-3">
-                  <div className="rounded-2xl border border-white/40 bg-white/50 p-3 text-navy-900 shadow-sm  dark:border-white/10 dark:bg-white/5 dark:text-white dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]">
+                  <div className="rounded-3xl border border-white/40 bg-white/50 p-3 text-navy-900 shadow-sm  dark:border-white/10 dark:bg-white/5 dark:text-white dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]">
                     <div className="flex items-center gap-3">
-                      <Avatar className="size-8 shadow-sm dark:shadow-[0_10px_20px_rgba(217,166,28,0.25)]">
-                        <AvatarFallback className="text-micro">
+                      <Avatar className="size-8 rounded-2xl shadow-sm dark:shadow-[0_10px_20px_rgba(217,166,28,0.25)]">
+                        <AvatarFallback className="rounded-2xl text-micro">
                           {initials}
                         </AvatarFallback>
                       </Avatar>
@@ -664,7 +666,7 @@ export function AppShell({ user, children }: AppShellProps) {
             {children}
           </main>
 
-          <nav className="fixed inset-x-0 bottom-0 z-20 border-t border-white/45 bg-white/74 px-3 py-2 backdrop-blur-2xl transition-colors duration-300 dark:border-white/10 dark:bg-navy-950/78 lg:hidden">
+          <nav className="fixed inset-x-0 bottom-0 z-20 border-t border-white/45 bg-white/74 px-3 py-2 backdrop-blur-md transition-colors duration-300 dark:border-white/10 dark:bg-navy-950/78 lg:hidden">
             <div className="mx-auto grid max-w-xl grid-cols-5 gap-1.5">
               {mobileItems.map((item) => {
                 const Icon = item.icon;

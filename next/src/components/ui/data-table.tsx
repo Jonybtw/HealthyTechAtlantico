@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useDeferredValue, useMemo, useState } from "react";
 import {
   ChevronDown,
   ChevronLeft,
@@ -51,16 +51,17 @@ export function DataTable<T extends object>({
   rowKey,
 }: DataTableProps<T>) {
   const [search, setSearch] = useState("");
+  const deferredSearch = useDeferredValue(search);
   const [sortKey, setSortKey] = useState<string | null>(null);
   const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
   const [page, setPage] = useState(1);
 
   const filtered = useMemo(() => {
-    if (!search.trim()) {
+    if (!deferredSearch.trim()) {
       return data;
     }
 
-    const query = search.toLowerCase();
+    const query = deferredSearch.toLowerCase();
     return data.filter((row) =>
       columns.some((column) => {
         const value = Reflect.get(row, column.key);
@@ -71,7 +72,7 @@ export function DataTable<T extends object>({
         );
       }),
     );
-  }, [columns, data, search]);
+  }, [columns, data, deferredSearch]);
 
   const sorted = useMemo(() => {
     if (!sortKey) {
@@ -113,31 +114,33 @@ export function DataTable<T extends object>({
 
   return (
     <div className="animate-fade-in-up flex flex-col gap-4">
-      <div className="overflow-hidden rounded-xl border border-white/20 bg-white/72 shadow-card backdrop-blur-xl dark:border-white/10 dark:bg-navy-950/60">
+      <div className="overflow-hidden rounded-xl border border-white/20 bg-white/72 shadow-card dark:border-white/10 dark:bg-navy-950/60">
         {searchable || toolbarTitle || toolbarSummary || toolbarActions ? (
           <div className="flex flex-col gap-4 border-b border-border/60 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
             <div className="space-y-0.5">
               <p className="text-tiny font-semibold uppercase tracking-[0.18em] text-muted-foreground">
                 {toolbarTitle}
               </p>
-              <p className="text-sm font-semibold text-foreground">
-                {toolbarSummary ?? (
-                  <>
-                    {filtered.length} resultado
-                    {filtered.length === 1 ? "" : "s"}
-                  </>
-                )}
-              </p>
+              {toolbarSummary ? (
+                <div className="text-sm font-semibold text-foreground">
+                  {toolbarSummary}
+                </div>
+              ) : (
+                <p className="text-sm font-semibold text-foreground">
+                  {filtered.length} resultado
+                  {filtered.length === 1 ? "" : "s"}
+                </p>
+              )}
             </div>
 
-            <div className="flex w-full flex-col gap-2 sm:max-w-md sm:flex-row sm:items-center sm:justify-end">
+            <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center sm:justify-end">
               {toolbarActions ? (
                 <div className="flex flex-wrap items-center gap-2">
                   {toolbarActions}
                 </div>
               ) : null}
               {searchable ? (
-                <div className="relative flex-1">
+                <div className="relative w-full sm:w-56 lg:w-64">
                   <Search className="pointer-events-none absolute left-3 top-1/2 z-10 size-4 -translate-y-1/2 text-slate-400" />
                   <input
                     value={search}

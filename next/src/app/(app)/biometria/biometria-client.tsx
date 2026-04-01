@@ -410,11 +410,9 @@ export default function BiometriaPage() {
 
                     <Button
                       type="submit"
-                      variant="gold"
-                      size="xl"
                       loading={saving}
                       icon={<Save className="size-4" />}
-                      className="w-full md:w-auto"
+                      className="h-12 w-full justify-center text-base md:w-auto"
                     >
                       {t("save")}
                     </Button>
@@ -474,7 +472,7 @@ export default function BiometriaPage() {
               </PageSection>
 
               <PageSection
-                tone="utility"
+                tone="secondary"
                 layout="list"
                 eyebrow={t("studentContextTitle")}
                 title={selectedStudent?.name ?? t("selectedStudentEmpty")}
@@ -519,7 +517,7 @@ export default function BiometriaPage() {
               </PageSection>
 
               <PageSection
-                tone="utility"
+                tone="secondary"
                 layout="list"
                 eyebrow={t("referenceTitle")}
                 title={t("referenceTitle")}
@@ -650,7 +648,7 @@ function SummaryStat({
 
 function MetaRow({ label, value }: { label: string; value: string }) {
   return (
-    <div className="flex items-center justify-between gap-3 rounded-2xl border border-border/60 bg-background/45 px-4 py-3">
+    <div className="flex items-center justify-between gap-3 rounded-2xl border border-border/70 bg-background/65 px-4 py-3 shadow-sm">
       <span className="text-tiny font-semibold uppercase tracking-[0.18em] text-muted-foreground">
         {label}
       </span>
@@ -676,7 +674,7 @@ function ReferenceRow({
         : "bg-red-500";
 
   return (
-    <div className="rounded-2xl border border-border/60 bg-background/45 p-4">
+    <div className="rounded-2xl border border-border/70 bg-background/65 p-4 shadow-sm">
       <div className="flex items-center gap-3">
         <span className={`size-2.5 rounded-full ${toneClass}`} />
         <p className="text-sm font-semibold text-foreground">{title}</p>

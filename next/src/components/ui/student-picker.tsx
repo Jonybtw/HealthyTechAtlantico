@@ -184,7 +184,7 @@ export function StudentPicker({
       ? createPortal(
           <div
             ref={menuRef}
-            className="animate-scale-in fixed z-[140] overflow-hidden rounded-2xl border border-border/70 bg-card/98 shadow-float backdrop-blur-xl"
+            className="animate-scale-in fixed z-[180] overflow-hidden rounded-2xl border border-border/80 bg-white/96 shadow-float dark:bg-navy-950/96"
             style={menuStyle}
           >
             <div className="max-h-72 overflow-y-auto p-2">
@@ -205,7 +205,7 @@ export function StudentPicker({
                         setOpen(false);
                         setSearch("");
                       }}
-                      className="flex w-full items-center gap-3 rounded-xl px-3 py-2 text-left transition-colors hover:bg-muted/45"
+                      className="flex w-full items-center gap-3 rounded-xl px-3 py-2 text-left transition-colors hover:bg-muted/70"
                     >
                       <span
                         className="flex size-9 shrink-0 items-center justify-center rounded-full text-xs font-semibold shadow-[inset_0_1px_0_rgba(255,255,255,0.18)]"

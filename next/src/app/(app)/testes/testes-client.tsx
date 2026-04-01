@@ -496,7 +496,7 @@ export default function TestesPage() {
           />
           <Button
             size="sm"
-            variant="secondary"
+            variant="primary"
             icon={<FileUp className="size-4" />}
             loading={isImportingCsv}
             onClick={() => importInputRef.current?.click()}
@@ -659,11 +659,9 @@ export default function TestesPage() {
 
                     <Button
                       type="submit"
-                      variant="gold"
-                      size="xl"
                       loading={saving}
                       icon={<Save className="size-4" />}
-                      className="w-full md:w-auto"
+                      className="h-12 w-full justify-center text-base md:w-auto"
                     >
                       Gravar sessao de testes
                     </Button>
@@ -721,7 +719,7 @@ export default function TestesPage() {
               </PageSection>
 
               <PageSection
-                tone="utility"
+                tone="secondary"
                 layout="list"
                 eyebrow="Contexto"
                 title={selectedStudent?.name ?? "Sem aluno selecionado"}
@@ -760,7 +758,7 @@ export default function TestesPage() {
               </PageSection>
 
               <PageSection
-                tone="utility"
+                tone="secondary"
                 layout="list"
                 eyebrow="Sessao"
                 title="Estado atual"
@@ -794,7 +792,7 @@ export default function TestesPage() {
               </PageSection>
 
               <PageSection
-                tone="utility"
+                tone="secondary"
                 layout="list"
                 eyebrow="Referencia ZAF"
                 title="Leitura rapida"
@@ -922,7 +920,7 @@ function OverviewCard({
 
 function MetaRow({ label, value }: { label: string; value: string }) {
   return (
-    <div className="flex items-center justify-between gap-3 rounded-2xl border border-border/60 bg-background/45 px-4 py-3">
+    <div className="flex items-center justify-between gap-3 rounded-2xl border border-border/70 bg-background/65 px-4 py-3 shadow-sm">
       <span className="text-tiny font-semibold uppercase tracking-[0.18em] text-muted-foreground">
         {label}
       </span>
@@ -952,7 +950,7 @@ function ReferenceRow({
   const toneClass = tone === "success" ? "bg-emerald-500" : "bg-amber-500";
 
   return (
-    <div className="rounded-2xl border border-border/60 bg-background/45 p-4">
+    <div className="rounded-2xl border border-border/70 bg-background/65 p-4 shadow-sm">
       <div className="flex items-center gap-3">
         <span className={`size-2.5 rounded-full ${toneClass}`} />
         <p className="text-sm font-semibold text-foreground">{title}</p>

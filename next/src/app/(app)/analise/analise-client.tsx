@@ -584,7 +584,7 @@ export default function AnalisePage() {
                     <Bar
                       dataKey="ZMF"
                       name={t("improvementZone")}
-                      fill="#d8ad34"
+                      fill="#ef4444"
                       stackId="a"
                       radius={[0, 0, 0, 0]}
                       animationDuration={1000}

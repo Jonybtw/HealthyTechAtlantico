@@ -879,7 +879,7 @@ export default function QuestionariosPage() {
                   </div>
                   <Button
                     type="button"
-                    variant="progress"
+                    variant="primary"
                     size="xl"
                     onClick={openQuestions}
                     disabled={!canOpenQuestions}
@@ -1161,7 +1161,7 @@ export default function QuestionariosPage() {
               </Button>
               <Button
                 type="button"
-                variant="progress"
+                variant="primary"
                 size="xl"
                 onClick={handleAnswerPrimaryAction}
                 icon={<ArrowRight className="size-4" />}
@@ -1298,7 +1298,7 @@ export default function QuestionariosPage() {
                     ) : null}
                     <Button
                       type="button"
-                      variant="progress"
+                      variant="primary"
                       size="xl"
                       loading={saving}
                       icon={<ClipboardList className="size-4" />}

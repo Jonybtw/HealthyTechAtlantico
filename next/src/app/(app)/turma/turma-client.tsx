@@ -379,7 +379,7 @@ export default function TurmaPage() {
           />
           <Button
             size="sm"
-            variant="secondary"
+            variant="primary"
             icon={<FileUp className="size-4" />}
             loading={isImportingCsv}
             onClick={() => importInputRef.current?.click()}
@@ -388,7 +388,7 @@ export default function TurmaPage() {
           </Button>
           <Button
             size="sm"
-            variant="gold"
+            variant="primary"
             icon={<Download className="size-4" />}
             onClick={exportCsv}
             disabled={!students.length}
@@ -534,7 +534,7 @@ export default function TurmaPage() {
                       />
                       <Bar
                         dataKey={t("improvementZone")}
-                        fill="var(--color-warning-500)"
+                        fill="var(--color-danger-500)"
                         stackId="zone"
                       />
                       <Bar
@@ -560,7 +560,7 @@ export default function TurmaPage() {
                     <p className="text-tiny font-semibold uppercase tracking-[0.18em] text-muted-foreground">
                       {t("improvementZone")}
                     </p>
-                    <p className="mt-1 text-lg font-semibold text-warning-600">
+                    <p className="mt-1 text-lg font-semibold text-danger-600">
                       {Math.max(0, 100 - stats.healthyPct - Math.round((stats.pending / Math.max(stats.total, 1)) * 100))}%
                     </p>
                   </div>

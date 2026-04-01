@@ -27,7 +27,6 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useUser } from "@/components/user-context";
 import { readApiResponse } from "@/lib/api-client";
 import { MeshGlow } from "@/components/ui/mesh-glow";
-import { cn } from "@/lib/utils";
 import {
   FadeIn,
   StaggerList,
@@ -226,27 +225,27 @@ export default function GuardioesPage() {
         <MeshGlow className="top-0 right-0 opacity-20" />
         <MeshGlow className="bottom-0 left-0 opacity-10" />
 
-        <PageSection layout="list" className="bg-transparent mb-8">
-          <div className="w-full max-w-sm">
-            <StudentPicker
-              students={students}
-              value={selectedStudentId}
-              onChange={setSelectedStudentId}
-              placeholder={t("selectStudent")}
-              loading={loadingStudents}
-            />
-          </div>
-        </PageSection>
+        <div className="grid items-start gap-6 xl:grid-cols-[320px_minmax(0,1fr)]">
+          <aside className="flex flex-col gap-6 xl:sticky xl:top-24">
+            <PageSection layout="list" className="bg-transparent">
+              <StudentPicker
+                students={students}
+                value={selectedStudentId}
+                onChange={setSelectedStudentId}
+                placeholder={t("selectStudent")}
+                loading={loadingStudents}
+              />
+            </PageSection>
 
-        <AnimatePresence>
-          {showAddForm && selectedStudentId && (
-            <FadeIn key="add-guardian-form" className="mb-8">
-              <PageSection className="max-w-2xl border-primary-500/20">
+            <AnimatePresence>
+              {showAddForm && selectedStudentId && (
+                <FadeIn key="add-guardian-form">
+                  <PageSection className="border-primary-500/20">
                 <div className="flex items-center gap-3 mb-6">
                   <div className="size-8 rounded-full bg-primary-500/10 flex items-center justify-center">
                     <UserPlus className="size-4 text-primary-400" />
                   </div>
-                  <h3 className="text-lg font-bold text-white uppercase tracking-wider">
+                  <h3 className="text-lg font-bold uppercase tracking-wider text-foreground">
                     {t("addTitle")}
                   </h3>
                 </div>
@@ -261,7 +260,7 @@ export default function GuardioesPage() {
                     required
                   />
                   <div>
-                    <label className="block text-tiny font-bold uppercase tracking-widest text-slate-400 mb-3">
+                    <label className="mb-3 block text-tiny font-bold uppercase tracking-widest text-muted-foreground">
                       {t("relationship")}
                     </label>
                     <PillSelect
@@ -284,12 +283,13 @@ export default function GuardioesPage() {
                     </Button>
                   </div>
                 </form>
-              </PageSection>
-            </FadeIn>
-          )}
-        </AnimatePresence>
+                  </PageSection>
+                </FadeIn>
+              )}
+            </AnimatePresence>
+          </aside>
 
-        <PageSection layout="list" className="bg-transparent">
+          <PageSection layout="list" className="bg-transparent">
           {studentsLoadError ? (
             <EmptyState
               icon={ShieldOff}
@@ -379,7 +379,7 @@ export default function GuardioesPage() {
                             ).toUpperCase()}
                           </div>
                           <div>
-                            <h4 className="text-white font-bold text-base leading-tight group-hover:text-gold-400 transition-colors">
+                            <h4 className="text-foreground font-bold text-base leading-tight group-hover:text-gold-600 transition-colors">
                               {g.guardian.name || "Pendente"}
                             </h4>
                             <Badge
@@ -402,7 +402,7 @@ export default function GuardioesPage() {
                               studentId: selectedStudentId!,
                             })
                           }
-                          className="size-8 text-slate-500 hover:border-danger-500/20 hover:bg-danger-500/10 hover:text-danger-500"
+                          className="size-8 text-muted-foreground hover:border-danger-500/20 hover:bg-danger-500/10 hover:text-danger-600"
                           title={t("removeBtn")}
                         >
                           <Trash2 size={14} />
@@ -410,13 +410,13 @@ export default function GuardioesPage() {
                       </div>
 
                       <div className="mt-auto space-y-3">
-                        <div className="flex items-center gap-3 text-sm text-slate-400">
+                        <div className="flex items-center gap-3 text-sm text-muted-foreground">
                           <Mail className="size-3 text-primary-400" />
                           <span className="truncate">{g.guardian.email}</span>
                         </div>
-                        <div className="flex items-center gap-3 text-sm text-slate-400">
+                        <div className="flex items-center gap-3 text-sm text-muted-foreground">
                           <CheckCircle2 className="size-3 text-green-500" />
-                          <span className="text-tiny font-bold uppercase tracking-[0.18em] text-slate-500">
+                          <span className="text-tiny font-bold uppercase tracking-[0.18em] text-success-600 dark:text-success-400">
                             Acesso Ativo
                           </span>
                         </div>
@@ -433,7 +433,8 @@ export default function GuardioesPage() {
               })}
             </StaggerList>
           )}
-        </PageSection>
+          </PageSection>
+        </div>
       </div>
 
       <ConfirmModal

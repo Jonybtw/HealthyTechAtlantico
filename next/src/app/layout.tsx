@@ -80,7 +80,7 @@ export default async function RootLayout({
             position="top-right"
             toastOptions={{
               className:
-                "border border-white/20 dark:border-white/10/70 bg-white/60 dark:bg-navy-950/40 backdrop-blur-md/95 text-foreground shadow-float backdrop-blur-xl",
+                "border border-white/20 dark:border-white/10/70 bg-white/75 dark:bg-navy-950/65 text-foreground shadow-float",
               style: {
                 fontFamily: "var(--font-sans)",
               },

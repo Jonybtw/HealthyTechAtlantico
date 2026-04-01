@@ -8,6 +8,7 @@ import {
   AlertTriangle,
   ArrowRight,
   BookOpen,
+  CalendarDays,
   ClipboardList,
   FileText,
   Link2,
@@ -17,6 +18,7 @@ import {
 import { PieChart, Pie, Cell, Tooltip } from "recharts";
 import { EmptyState } from "@/components/ui/empty-state";
 import { KpiCard } from "@/components/ui/kpi-card";
+import { PageHeader } from "@/components/ui/page-header";
 import { PageScaffold } from "@/components/ui/page-scaffold";
 import { PageSection } from "@/components/ui/page-section";
 import { Badge } from "@/components/ui/badge";
@@ -27,8 +29,10 @@ import { getQuestionnaireTypeLabelKey } from "@/lib/questionnaires";
 import { cn } from "@/lib/utils";
 
 interface Props {
+  greeting: string;
   username: string;
   summary: DashboardSummary;
+  todayLabel: string;
 }
 
 const ICONS: Record<DashboardCardData["icon"], typeof Users> = {
@@ -59,7 +63,20 @@ function formatCompactDate(value: string, locale: string) {
   });
 }
 
-export function DashboardClient({ username, summary }: Props) {
+function formatNumberValue(value: string | number, locale: string) {
+  if (typeof value === "number") {
+    return value.toLocaleString(locale === "en" ? "en-GB" : "pt-PT");
+  }
+
+  return value;
+}
+
+export function DashboardClient({
+  greeting,
+  summary,
+  todayLabel,
+  username,
+}: Props) {
   const t = useTranslations("dashboard");
   const nav = useTranslations("nav");
   const questionnaires = useTranslations("questionarios");
@@ -73,20 +90,6 @@ export function DashboardClient({ username, summary }: Props) {
 
     return () => window.cancelAnimationFrame(frame);
   }, []);
-
-  const hour = new Date().getHours();
-  const greeting =
-    hour < 12
-      ? t("greetingMorning")
-      : hour < 19
-        ? t("greetingAfternoon")
-        : t("greetingEvening");
-  const todayLabel = new Intl.DateTimeFormat(
-    locale === "en" ? "en-GB" : "pt-PT",
-    {
-      dateStyle: "full",
-    },
-  ).format(new Date());
 
   const scaffoldClassName = "gap-5 sm:gap-6";
   const buildHeaderProps = (title: string, description: string) => ({
@@ -409,22 +412,20 @@ export function DashboardClient({ username, summary }: Props) {
   return (
     <PageScaffold
       className={scaffoldClassName}
-      headerProps={buildHeaderProps(`${greeting}, ${username}!`, description)}
+      header={
+        <StaffDashboardHeader
+          description={description}
+          greeting={greeting}
+          t={t}
+          todayLabel={todayLabel}
+          username={username}
+        />
+      }
     >
       {summary.cards.length > 0 ? (
-        <StaggerList className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {summary.cards.map((card) => (
-            <StaggerItem key={card.id}>
-              <KpiCard
-                icon={ICONS[card.icon]}
-                title={t(card.titleKey)}
-                value={card.value}
-                description={t(card.descriptionKey)}
-                accent={card.accent}
-              />
-            </StaggerItem>
-          ))}
-        </StaggerList>
+        <FadeIn delay={0.05}>
+          <StaffOverview locale={locale} summary={summary} t={t} />
+        </FadeIn>
       ) : null}
 
       {summary.zafByYear.length > 0 ? (
@@ -438,6 +439,183 @@ export function DashboardClient({ username, summary }: Props) {
         </FadeIn>
       ) : null}
     </PageScaffold>
+  );
+}
+
+function StaffDashboardHeader({
+  description,
+  greeting,
+  t,
+  todayLabel,
+  username,
+}: {
+  description: string;
+  greeting: string;
+  t: (key: string) => string;
+  todayLabel: string;
+  username: string;
+}) {
+  return (
+    <PageHeader
+      title={`${greeting}, ${username}`}
+      description={description}
+      eyebrow={t("title")}
+      actionsClassName="items-start lg:items-center"
+    >
+      <span className="inline-flex items-center gap-2 rounded-full border border-white/18 bg-white/10 px-3 py-1.5 text-sm text-white/82 backdrop-blur-md">
+        <CalendarDays className="size-4 text-gold-300" />
+        {todayLabel}
+      </span>
+      <span className="inline-flex items-center rounded-full border border-gold-300/30 bg-gold-300/16 px-3 py-1.5 text-sm font-medium text-gold-100 backdrop-blur-md">
+        {t("dashboardStatus")}
+      </span>
+    </PageHeader>
+  );
+}
+
+function StaffOverview({
+  locale,
+  summary,
+  t,
+}: {
+  locale: string;
+  summary: Extract<DashboardSummary, { variant: "staff" }>;
+  t: (key: string) => string;
+}) {
+  const cardMap = Object.fromEntries(
+    summary.cards.map((card) => [card.id, card]),
+  ) as Record<string, DashboardCardData | undefined>;
+  const studentsCard = cardMap["students"];
+  const sessionsCard = cardMap["sessions"];
+  const classesCard = cardMap["classes"];
+  const pendingSosCard = cardMap["pending-sos"];
+  const latestYear = summary.zafByYear[0] ?? null;
+  const coveragePct =
+    latestYear && latestYear.total > 0
+      ? Math.round((latestYear.withBio / latestYear.total) * 100)
+      : 0;
+
+  return (
+    <div className="grid gap-4 xl:grid-cols-[minmax(0,1.35fr)_minmax(320px,0.72fr)]">
+      <section className="surface-secondary rounded-2xl p-6">
+        <div className="flex flex-col gap-6">
+          <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
+            <div>
+              <p className="text-sm font-medium text-muted-foreground">
+                {t("overviewEyebrow")}
+              </p>
+              <h2 className="mt-1 font-display text-[1.65rem] font-semibold tracking-[-0.04em] text-foreground sm:text-[1.9rem]">
+                {t("overviewTitle")}
+              </h2>
+            </div>
+            <p className="max-w-xl text-sm leading-relaxed text-muted-foreground">
+              {t("overviewDescription")}
+            </p>
+          </div>
+
+          <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(260px,0.72fr)]">
+            <div className="grid gap-4 sm:grid-cols-2">
+              {studentsCard ? (
+                <StaffFeatureStat
+                  icon={Users}
+                  title={t(studentsCard.titleKey)}
+                  value={formatNumberValue(studentsCard.value, locale)}
+                  description={t(studentsCard.descriptionKey)}
+                  accent={studentsCard.accent}
+                />
+              ) : null}
+              {sessionsCard ? (
+                <StaffFeatureStat
+                  icon={Activity}
+                  title={t(sessionsCard.titleKey)}
+                  value={formatNumberValue(sessionsCard.value, locale)}
+                  description={t(sessionsCard.descriptionKey)}
+                  accent={sessionsCard.accent}
+                />
+              ) : null}
+            </div>
+
+            <div className="grid gap-3">
+              {classesCard ? (
+                <StaffCompactStat
+                  icon={School}
+                  title={t(classesCard.titleKey)}
+                  value={formatNumberValue(classesCard.value, locale)}
+                  description={t(classesCard.descriptionKey)}
+                  accent={classesCard.accent}
+                />
+              ) : null}
+              {pendingSosCard ? (
+                <StaffCompactStat
+                  icon={AlertTriangle}
+                  title={t(pendingSosCard.titleKey)}
+                  value={formatNumberValue(pendingSosCard.value, locale)}
+                  description={t(pendingSosCard.descriptionKey)}
+                  accent={pendingSosCard.accent}
+                  emphasis="danger"
+                />
+              ) : null}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="rounded-2xl border border-border/70 bg-[linear-gradient(180deg,rgba(255,255,255,0.92),rgba(248,250,252,0.96))] p-6 shadow-[0_18px_38px_-32px_rgba(9,21,35,0.35)] dark:border-white/10 dark:bg-[linear-gradient(180deg,rgba(19,31,49,0.96),rgba(16,27,43,0.98))]">
+        <div>
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <p className="text-sm font-medium text-muted-foreground dark:text-white/62">
+                {t("latestAcademicYear")}
+              </p>
+              <h3 className="mt-1 font-display text-[1.65rem] font-semibold tracking-[-0.04em] text-foreground dark:text-white">
+                {latestYear?.year ?? "-"}
+              </h3>
+            </div>
+
+            <div className="rounded-full border border-success-500/18 bg-success-500/10 px-3 py-1.5 text-sm font-semibold text-success-700 dark:text-success-200">
+              {coveragePct}%
+            </div>
+          </div>
+
+          <p className="mt-4 max-w-sm text-sm leading-relaxed text-muted-foreground dark:text-white/70">
+            {t("latestAcademicYearDescription")}
+          </p>
+
+          <div className="mt-8">
+            <p className="text-[3.25rem] font-black leading-none tracking-tight text-foreground dark:text-white sm:text-[3.5rem]">
+              {coveragePct}%
+            </p>
+            <p className="mt-2 text-sm font-medium text-muted-foreground dark:text-white/76">
+              {t("coverageLabel")}
+            </p>
+            <p className="mt-1 text-sm text-muted-foreground dark:text-white/58">
+              {formatNumberValue(latestYear?.withBio ?? 0, locale)} /{" "}
+              {formatNumberValue(latestYear?.total ?? 0, locale)} {t("studentsUnit")}
+            </p>
+          </div>
+
+          <div className="mt-6 h-3 overflow-hidden rounded-full bg-navy-100 dark:bg-white/10">
+            <div
+              className="h-full rounded-full bg-success-500 transition-all duration-700"
+              style={{ width: `${coveragePct}%` }}
+            />
+          </div>
+
+          <div className="mt-6 grid gap-3 sm:grid-cols-2">
+            <StaffSpotlightMetric
+              label={t("healthyStudentsLabel")}
+              value={formatNumberValue(latestYear?.zsaf ?? 0, locale)}
+              tone="success"
+            />
+            <StaffSpotlightMetric
+              label={t("improvementStudentsLabel")}
+              value={formatNumberValue(latestYear?.zmf ?? 0, locale)}
+              tone="danger"
+            />
+          </div>
+        </div>
+      </section>
+    </div>
   );
 }
 
@@ -461,6 +639,7 @@ function DashboardAnalytics({
     { name: t("zsaf"), value: totalZsaf },
     { name: t("zmf"), value: totalZmf },
   ];
+  const latestYear = summary.zafByYear[0] ?? null;
 
   return (
     <PageSection
@@ -469,9 +648,18 @@ function DashboardAnalytics({
       tone="secondary"
       layout="analytics"
     >
-      <div className="grid gap-4 xl:grid-cols-[minmax(0,1.15fr)_minmax(280px,0.85fr)]">
-        <div className="surface-secondary rounded-[1.5rem] p-5 sm:p-6">
-          <div className="flex flex-col gap-6 md:flex-row md:items-center">
+      <div className="grid gap-4 xl:grid-cols-[minmax(0,1.08fr)_minmax(320px,0.92fr)]">
+        <div className="surface-secondary rounded-2xl p-5 sm:p-6">
+          <div className="mb-6 flex flex-wrap items-center gap-2 border-b border-border/70 pb-5">
+            <div className="rounded-full border border-border/70 bg-background/80 px-3 py-1.5 text-sm font-semibold text-foreground">
+              {formatNumberValue(totalWithBio, locale)} {t("studentsUnit")}
+            </div>
+            <div className="rounded-full border border-border/70 bg-background/80 px-3 py-1.5 text-sm text-muted-foreground">
+              {t("analysisAllYears")}
+            </div>
+          </div>
+
+          <div className="grid gap-6 lg:grid-cols-[220px_minmax(0,1fr)] lg:items-center">
             <div className="relative h-48 w-48 flex-shrink-0 self-center">
               {chartsReady ? (
                 <PieChart width={192} height={192}>
@@ -488,13 +676,13 @@ function DashboardAnalytics({
                   >
                     <Cell
                       key="zsaf"
-                      fill="var(--color-navy-900)"
-                      className="dark:fill-gold-400"
+                      fill="var(--color-success-500)"
+                      className="dark:fill-success-400"
                     />
                     <Cell
                       key="zmf"
-                      fill="var(--color-gold-400)"
-                      className="dark:fill-warning-500"
+                      fill="var(--color-danger-500)"
+                      className="dark:fill-danger-400"
                     />
                   </Pie>
                   <Tooltip
@@ -521,55 +709,77 @@ function DashboardAnalytics({
             </div>
 
             <div className="flex-1">
-              <div className="mb-5 space-y-1">
-                <h4 className="font-display text-lg font-semibold tracking-tight text-foreground sm:text-xl">
-                  {t("zafDistribution")}
-                </h4>
-                <p className="text-sm leading-relaxed text-muted-foreground">
-                  {t("zafDistributionSummary")}
-                </p>
-              </div>
-
               <div className="grid gap-3 sm:grid-cols-2">
-                <DashboardMetaPill label={t("zsaf")} value={totalZsaf.toString()} />
-                <DashboardMetaPill label={t("zmf")} value={totalZmf.toString()} />
+                <DashboardMetaPill
+                  label={t("studentsWithBiometrics")}
+                  value={`${formatNumberValue(totalWithBio, locale)} ${t("studentsUnit")}`}
+                />
+                <DashboardMetaPill
+                  label={t("healthyZoneRate")}
+                  value={`${overallPct}%`}
+                />
               </div>
 
               <div className="mt-4 space-y-3">
                 <DashboardLegendItem
-                  colorClassName="bg-navy-900 dark:bg-gold-400"
+                  colorClassName="bg-success-500 dark:bg-success-400"
                   label={t("zsaf")}
                   value={totalZsaf}
+                  meta={totalWithBio > 0 ? `${overallPct}%` : "0%"}
                 />
                 <DashboardLegendItem
-                  colorClassName="bg-gold-400 dark:bg-warning-500"
+                  colorClassName="bg-danger-500 dark:bg-danger-400"
                   label={t("zmf")}
                   value={totalZmf}
+                  meta={
+                    totalWithBio > 0 ? `${Math.max(0, 100 - overallPct)}%` : "0%"
+                  }
                 />
               </div>
+
+              {latestYear ? (
+                <div className="mt-5 rounded-[1.15rem] border border-border/70 bg-background/72 px-4 py-3">
+                  <div className="flex items-center justify-between gap-3">
+                    <div>
+                      <p className="text-tiny font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+                        {t("referenceYear")}
+                      </p>
+                      <p className="mt-1 text-sm font-semibold text-foreground">
+                        {latestYear.year}
+                      </p>
+                    </div>
+                    <span className="text-sm font-bold text-foreground">
+                      {latestYear.withBio > 0
+                        ? `${Math.round(
+                            (latestYear.zsaf / latestYear.withBio) * 100,
+                          )}%`
+                        : "0%"}
+                    </span>
+                  </div>
+                </div>
+              ) : null}
             </div>
           </div>
         </div>
 
-        <div className="relative overflow-hidden rounded-[1.5rem] border border-navy-900/10 bg-[linear-gradient(160deg,rgba(16,36,58,0.97),rgba(20,48,76,0.92))] p-5 text-white shadow-float dark:border-white/10 sm:p-6">
-          <div className="absolute inset-x-8 top-0 h-px bg-gradient-to-r from-transparent via-gold-300/55 to-transparent" />
-          <div className="absolute right-0 top-0 h-32 w-32 rounded-full bg-white/10 blur-3xl" />
-          <div className="absolute bottom-0 left-0 h-32 w-32 rounded-full bg-gold-400/16 blur-3xl" />
-
-          <div className="relative">
-            <div className="mb-6 flex items-center justify-between gap-3">
+        <div className="surface-primary rounded-2xl p-5 sm:p-6">
+          <div>
+            <div className="mb-6 flex items-start justify-between gap-3">
               <div>
-                <p className="text-micro font-semibold uppercase tracking-[0.22em] text-gold-200">
-                  {t("title")}
+                <p className="text-sm font-medium text-muted-foreground">
+                  {t("annualSeries")}
                 </p>
-                <h4 className="mt-1 font-display text-lg font-semibold tracking-tight text-white">
-                  {t("zafDistributionSummary")}
+                <h4 className="mt-1 font-display text-[1.35rem] font-semibold tracking-[-0.035em] text-foreground">
+                  {t("comparisonPanelTitle")}
                 </h4>
+                <p className="mt-2 max-w-sm text-sm leading-relaxed text-muted-foreground">
+                  {t("annualSeriesDescription")}
+                </p>
               </div>
               <Badge
-                variant="gold"
+                variant="default"
                 size="sm"
-                className="border-white/10 bg-white/10 text-gold-200"
+                className="bg-background/90"
               >
                 {summary.zafByYear.length}
               </Badge>
@@ -585,30 +795,41 @@ function DashboardAnalytics({
                 return (
                   <div
                     key={academicYear.year}
-                    className="rounded-[1.15rem] border border-white/10 bg-white/6 p-3.5 backdrop-blur-sm"
+                    className="rounded-[1.2rem] border border-border/70 bg-background/80 p-4"
                   >
-                    <div className="mb-2 flex items-end justify-between gap-3">
+                    <div className="flex items-start justify-between gap-3">
                       <div>
-                        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-white/58">
+                        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
                           {academicYear.year}
                         </p>
-                        <p className="mt-1 text-sm text-white/82">
-                          {academicYear.withBio.toLocaleString(
-                            locale === "en" ? "en-GB" : "pt-PT",
-                          )}{" "}
+                        <p className="mt-1 text-sm font-semibold text-foreground">
+                          {formatNumberValue(academicYear.withBio, locale)} /{" "}
+                          {formatNumberValue(academicYear.total, locale)}{" "}
                           {t("studentsUnit")}
                         </p>
                       </div>
-                      <span className="text-sm font-bold text-gold-200">
-                        {pct}%
-                      </span>
+                      <div className="text-right">
+                        <p className="text-lg font-bold text-success-700 dark:text-success-300">{pct}%</p>
+                        <p className="text-xs uppercase tracking-[0.14em] text-muted-foreground">
+                          {t("zsaf")}
+                        </p>
+                      </div>
                     </div>
 
-                    <div className="h-2.5 overflow-hidden rounded-full bg-white/10">
+                    <div className="mt-3 h-2.5 overflow-hidden rounded-full bg-navy-100 dark:bg-white/10">
                       <div
-                        className="h-full rounded-full bg-gold-400 shadow-[0_0_18px_rgba(216,173,52,0.45)] transition-all duration-700"
+                        className="h-full rounded-full bg-success-500 transition-all duration-700"
                         style={{ width: `${pct}%` }}
                       />
+                    </div>
+
+                    <div className="mt-3 flex items-center justify-between gap-3 text-xs text-muted-foreground">
+                      <span>
+                        {t("zsaf")} {formatNumberValue(academicYear.zsaf, locale)}
+                      </span>
+                      <span>
+                        {t("zmf")} {formatNumberValue(academicYear.zmf, locale)}
+                      </span>
                     </div>
                   </div>
                 );
@@ -618,6 +839,148 @@ function DashboardAnalytics({
         </div>
       </div>
     </PageSection>
+  );
+}
+
+function StaffFeatureStat({
+  accent,
+  description,
+  icon: Icon,
+  title,
+  value,
+}: {
+  accent: NonNullable<DashboardCardData["accent"]>;
+  description: string;
+  icon: typeof Users;
+  title: string;
+  value: string | number;
+}) {
+  const accentClassName = {
+    blue: {
+      icon: "border-navy-200 bg-navy-100 text-navy-900 dark:border-navy-700 dark:bg-navy-900 dark:text-white",
+      line: "from-navy-500/65 to-navy-300/15",
+    },
+    green: {
+      icon: "border-success-200 bg-success-50 text-success-700 dark:border-success-700/60 dark:bg-success-950/50 dark:text-success-200",
+      line: "from-success-500/65 to-success-300/15",
+    },
+    gold: {
+      icon: "border-gold-200 bg-gold-50 text-gold-800 dark:border-gold-500/40 dark:bg-gold-950/40 dark:text-gold-200",
+      line: "from-gold-500/75 to-gold-300/15",
+    },
+    red: {
+      icon: "border-danger-200 bg-danger-50 text-danger-700 dark:border-danger-700/50 dark:bg-danger-950/40 dark:text-danger-200",
+      line: "from-danger-500/65 to-danger-300/15",
+    },
+  }[accent];
+
+  return (
+    <div className="rounded-[1.35rem] border border-border/70 bg-background/88 p-5">
+      <div className="flex items-start justify-between gap-4">
+        <div className="min-w-0">
+          <p className="text-sm font-medium text-muted-foreground">
+            {title}
+          </p>
+          <p className="mt-3 text-3xl font-black leading-none tracking-tight text-foreground sm:text-[2.5rem]">
+            {value}
+          </p>
+          <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+            {description}
+          </p>
+        </div>
+
+        <span
+          className={cn(
+            "flex size-11 flex-shrink-0 items-center justify-center rounded-2xl border",
+            accentClassName.icon,
+          )}
+        >
+          <Icon className="size-5" />
+        </span>
+      </div>
+    </div>
+  );
+}
+
+function StaffCompactStat({
+  accent,
+  description,
+  emphasis,
+  icon: Icon,
+  title,
+  value,
+}: {
+  accent: NonNullable<DashboardCardData["accent"]>;
+  description: string;
+  emphasis?: "default" | "danger";
+  icon: typeof Users;
+  title: string;
+  value: string | number;
+}) {
+  const accentClassName = {
+    blue: "border-navy-200 bg-navy-100 text-navy-900 dark:border-navy-700 dark:bg-navy-900 dark:text-white",
+    green:
+      "border-success-200 bg-success-50 text-success-700 dark:border-success-700/60 dark:bg-success-950/50 dark:text-success-200",
+    gold: "border-gold-200 bg-gold-50 text-gold-800 dark:border-gold-500/40 dark:bg-gold-950/40 dark:text-gold-200",
+    red: "border-danger-200 bg-danger-50 text-danger-700 dark:border-danger-700/50 dark:bg-danger-950/40 dark:text-danger-200",
+  }[accent];
+
+  return (
+    <div
+      className={cn(
+        "rounded-[1.25rem] border border-border/70 bg-background/82 px-4 py-4",
+        emphasis === "danger" && "border-danger-200/70 dark:border-danger-800/50",
+      )}
+    >
+      <div className="flex items-start gap-3">
+        <span
+          className={cn(
+            "mt-0.5 flex size-10 flex-shrink-0 items-center justify-center rounded-2xl border",
+            accentClassName,
+          )}
+        >
+          <Icon className="size-4" />
+        </span>
+
+        <div className="min-w-0 flex-1">
+          <p className="text-sm font-medium text-muted-foreground">{title}</p>
+          <p className="mt-1 text-2xl font-bold tracking-tight text-foreground">
+            {value}
+          </p>
+          <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">
+            {description}
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function StaffSpotlightMetric({
+  label,
+  tone,
+  value,
+}: {
+  label: string;
+  tone: "success" | "danger";
+  value: string | number;
+}) {
+  return (
+    <div
+      className={cn(
+        "rounded-[1.1rem] border px-3.5 py-3",
+        tone === "success"
+          ? "border-success-400/18 bg-success-500/10"
+          : "border-danger-400/18 bg-danger-500/10",
+      )}
+      >
+      <p className="text-xs font-medium text-muted-foreground dark:text-white/62">
+        {label}
+      </p>
+      <p className="mt-1 text-lg font-bold text-foreground dark:text-white">
+        {value}
+      </p>
+    </div>
   );
 }
 
@@ -668,10 +1031,12 @@ function DashboardPanel({
 function DashboardLegendItem({
   colorClassName,
   label,
+  meta,
   value,
 }: {
   colorClassName: string;
   label: string;
+  meta?: string;
   value: number;
 }) {
   return (
@@ -680,6 +1045,11 @@ function DashboardLegendItem({
       <span className="flex-1 text-sm font-semibold text-foreground">
         {label}
       </span>
+      {meta ? (
+        <span className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+          {meta}
+        </span>
+      ) : null}
       <span className="text-sm font-bold text-foreground">{value}</span>
     </div>
   );
