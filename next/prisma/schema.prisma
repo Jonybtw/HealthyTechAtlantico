@@ -6,6 +6,9 @@ datasource db {
   provider = "postgresql"
 }
 
+//enums garantem a consisitencia dos dados
+
+//define os niveis de acesso ao sistema (ADMIN, ALUNO, PROF, PSI, PAIS)
 enum Role {
   ADMIN
   ALUNO
@@ -14,23 +17,31 @@ enum Role {
   PAIS
 }
 
+//genero biologico para calculos de percentis (M, F)
 enum Sex {
   M
   F
 }
 
+//tipos de questionarios suportados
 enum QuestionnaireType {
   AUTOCONCEITO
   AUTOESTIMA
   KIDMED
 }
 
+//classificacao dos resultados
 enum QuestionnaireClassification {
   OPTIMAL
   AVERAGE
   VERY_LOW
 }
 
+//representa qualquer pessoa com acesso à plataforma
+//armazena o passwordhasg em vez da palavra-passe em texto limpo
+//inclui campos de consentimento(consentRgpd, consentShare) para conformidade legal
+//um utilizador pode ser criador de varios registos(alunos, sessoes, auditorias)
+//ou estar diretamente ligado a um perfil de aluno
 model User {
   id           String   @id @default(cuid())
   email        String   @unique
@@ -56,6 +67,11 @@ model User {
   @@map("users")
 }
 
+
+//nucleo da aplicacao. Contem a informacao demografica e eescolar
+//O campo opcional linkedUserId permite que um aluno tenha as suas próprias credenciais de acesso
+//Consentimento Kidmed:Rastreia quem registou o consentimento para o questionário de dieta mediterrânica
+//Armazena o ano e a turma atual para facilitar a filtragem
 model Student {
   id           String    @id @default(cuid())
   linkedUserId String?   @unique @map("linked_user_id")
@@ -110,6 +126,9 @@ model SchoolClass {
   @@map("school_classes")
 }
 
+
+//Agrupa um conjunto de testes realizados num determinado momento (ex: "1º Período"). 
+//Serve como contentor para biometria e testes físicos.
 model EvaluationSession {
   id          String   @id @default(cuid())
   studentId   String   @map("student_id")
@@ -126,6 +145,9 @@ model EvaluationSession {
   @@map("evaluation_sessions")
 }
 
+//Armazena medições físicas como altura, peso, gordura e perímetro abdominal.
+//Inclui o campo imc e as respetivas zonas de saúde (imcZone, fatZone, waistZone)
+// para análise imediata.
 model Biometric {
   id         String   @id @default(cuid())
   studentId  String   @map("student_id")
@@ -148,6 +170,8 @@ model Biometric {
   @@map("biometrics")
 }
 
+//Regista os resultados de provas específicas (ex: Vai-vem, Cooper).
+//Utiliza valueNum para valores numéricos e valueText para formatos específicos (como tempos mm:ss).
 model Test {
   id         String   @id @default(cuid())
   studentId  String   @map("student_id")
@@ -167,6 +191,9 @@ model Test {
   @@map("tests")
 }
 
+
+//Armazena respostas a instrumentos de avaliação psicológica ou nutricional.
+//Utiliza um campo JSON (payload) para permitir diferentes estruturas de perguntas sem alterar o esquema da base de dados.
 model Questionnaire {
   id            String            @id @default(cuid())
   studentId     String            @map("student_id")
@@ -187,6 +214,9 @@ model Questionnaire {
   @@map("questionnaires")
 }
 
+
+//Mecanismo de sinalização para alunos que necessitem de intervenção. Liga o aluno 
+//ao psicólogo e ao professor, permitindo o rastreio da resolução do caso.
 model SosAlert {
   id           String    @id @default(cuid())
   studentId    String    @map("student_id")
@@ -222,6 +252,8 @@ model Report {
   @@map("reports")
 }
 
+//Regista períodos em que o aluno está isento de atividade física, com 
+//controlo de datas e existência de atestado médico.
 model Dispensa {
   id                 String   @id @default(cuid())
   studentId          String   @map("student_id")
@@ -238,6 +270,9 @@ model Dispensa {
   @@map("dispensas")
 }
 
+
+//Tabela de ligação (Many-to-Many) que associa utilizadores com o perfil 
+//de PAIS aos seus respetivos educandos.
 model StudentGuardian {
   id             String   @id @default(cuid())
   studentId      String   @map("student_id")
@@ -256,6 +291,8 @@ model StudentGuardian {
   @@map("student_guardians")
 }
 
+//Regista ações críticas no sistema (quem fez o quê, quando e a partir de que IP), 
+//essencial para segurança e depuração.
 model AuditLog {
   id        String   @id @default(cuid())
   userId    String?  @map("user_id")
