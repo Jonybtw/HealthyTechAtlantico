@@ -48,7 +48,7 @@ async function main() {
   console.log("Cleaning existing data...");
   await prisma.auditLog.deleteMany();
   await prisma.studentGuardian.deleteMany();
-  await prisma.dispensa.deleteMany();
+  await prisma.exemption.deleteMany();
   await prisma.report.deleteMany();
   await prisma.sosAlert.deleteMany();
   await prisma.questionnaire.deleteMany();

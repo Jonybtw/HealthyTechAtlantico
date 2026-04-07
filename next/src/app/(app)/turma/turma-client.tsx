@@ -6,13 +6,13 @@ import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import {
   AlertTriangle,
+  ArrowRight,
   Download,
   FileUp,
-  Sparkles,
+  LineChart as ChartIcon,
   Target,
   Users,
 } from "lucide-react";
-import { Bar, BarChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { PageScaffold } from "@/components/ui/page-scaffold";
 import { PageSection } from "@/components/ui/page-section";
 import { ClassPicker } from "@/components/ui/class-picker";
@@ -21,15 +21,12 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ZoneBadge } from "@/components/ui/zone-badge";
 import { EmptyState } from "@/components/ui/empty-state";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { KpiCard } from "@/components/ui/kpi-card";
-import { ChartFrame } from "@/components/ui/chart-frame";
-import { ChartTooltip } from "@/components/ui/chart-tooltip";
+import { StudentIdentity } from "@/components/ui/student-identity";
 import { useUser } from "@/components/user-context";
 import { useClasses } from "@/hooks/use-queries";
 import { readApiResponse } from "@/lib/api-client";
-import { getInitials, getStudentSwatch } from "@/components/ui/student-picker";
 
 interface StudentRow {
   id: string;
@@ -38,6 +35,19 @@ interface StudentRow {
   className: string | null;
   latestBiometric: { imc: number | string; imcZone: string } | null;
   testCount: number;
+}
+
+function isHealthyZone(zone: string | null | undefined) {
+  if (!zone) {
+    return false;
+  }
+
+  const normalized = zone
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase();
+
+  return normalized.includes("saudavel") || normalized.includes("healthy") || normalized.includes("zsaf");
 }
 
 export default function TurmaPage() {
@@ -52,6 +62,7 @@ export default function TurmaPage() {
     error: classesError,
     refetch: refetchClasses,
   } = useClasses({ enabled: canViewClassReports });
+
   const [classId, setClassId] = useState("");
   const [students, setStudents] = useState<StudentRow[]>([]);
   const [loading, setLoading] = useState(false);
@@ -73,20 +84,24 @@ export default function TurmaPage() {
     setLoading(true);
 
     (async () => {
-      const res = await fetch(
+      const response = await fetch(
         `/api/classes/report?classId=${encodeURIComponent(classId)}`,
       );
-      const body = await readApiResponse<StudentRow[]>(res);
+      const body = await readApiResponse<StudentRow[]>(response);
+
       if (!active) {
         return;
       }
+
       setStudents(body);
     })()
       .catch(() => {
-        if (active) {
-          setStudents([]);
-          toast.error(t("loadError"));
+        if (!active) {
+          return;
         }
+
+        setStudents([]);
+        toast.error(t("loadError"));
       })
       .finally(() => {
         if (active) {
@@ -120,6 +135,7 @@ export default function TurmaPage() {
       t("colZone"),
       t("colTests"),
     ];
+
     const rows = students.map((student) =>
       [
         escapeCsv(student.name),
@@ -154,6 +170,7 @@ export default function TurmaPage() {
     }
 
     setIsImportingCsv(true);
+
     try {
       const formData = new FormData();
       formData.append("file", file);
@@ -162,6 +179,7 @@ export default function TurmaPage() {
         method: "POST",
         body: formData,
       });
+
       const result = await readApiResponse<{
         createdAcademicYears: number;
         createdClasses: number;
@@ -171,6 +189,7 @@ export default function TurmaPage() {
       toast.success(
         `Importadas ${result.createdClasses} turmas (${result.createdAcademicYears} anos letivos novos)`,
       );
+
       if (result.failed > 0) {
         toast.warning(`${result.failed} linhas falharam validacao`);
       }
@@ -186,113 +205,94 @@ export default function TurmaPage() {
     }
   };
 
+  const selectedClass = classes.find((item) => item.id === classId) ?? null;
+
   const stats = useMemo(() => {
-    if (!students.length) {
-      return { total: 0, healthyPct: 0, pending: 0 };
-    }
-
     const total = students.length;
-    let healthyCount = 0;
-    let pendingCount = 0;
-
-    for (const student of students) {
-      const zone = student.latestBiometric?.imcZone ?? "";
-      if (zone.toLowerCase().includes("saud") || zone === "ZSAF") {
-        healthyCount += 1;
-      }
-      if (!student.latestBiometric) {
-        pendingCount += 1;
-      }
-    }
-
-    return {
-      total,
-      healthyPct: Math.round((healthyCount / total) * 100),
-      pending: pendingCount,
-    };
-  }, [students]);
-
-  const zoneChartData = useMemo(() => {
-    if (!students.length) {
-      return [];
-    }
-
     let healthy = 0;
     let improvement = 0;
     let noData = 0;
 
     for (const student of students) {
-      const zone = student.latestBiometric?.imcZone ?? "";
-      if (zone.toLowerCase().includes("saud") || zone === "ZSAF") {
-        healthy += 1;
-      } else if (zone) {
-        improvement += 1;
-      } else {
+      if (!student.latestBiometric) {
         noData += 1;
+        continue;
+      }
+
+      if (isHealthyZone(student.latestBiometric.imcZone)) {
+        healthy += 1;
+      } else {
+        improvement += 1;
       }
     }
 
-    return [
-      {
-        name: t("className"),
-        [t("healthyZone")]: healthy,
-        [t("improvementZone")]: improvement,
-        [t("noDataLabel")]: noData,
-      },
-    ];
-  }, [students, t]);
+    const withData = total - noData;
+
+    return {
+      total,
+      healthy,
+      improvement,
+      noData,
+      withData,
+      attention: improvement + noData,
+      healthyPct: total > 0 ? Math.round((healthy / total) * 100) : 0,
+      coveragePct: total > 0 ? Math.round((withData / total) * 100) : 0,
+    };
+  }, [students]);
 
   const classInsight = useMemo(() => {
     if (!students.length) {
-      return "Selecione uma turma com registos para gerar a leitura rapida.";
+      return t("insightSelectClass");
     }
 
-    if (stats.pending === stats.total) {
-      return "A turma ainda nao tem medicoes biometricas registadas.";
+    if (stats.noData === stats.total) {
+      return t("insightNoCoverage");
     }
 
-    if (stats.pending > 0) {
-      return `${stats.pending} aluno${stats.pending === 1 ? "" : "s"} continuam pendentes de avaliacao, o que pode distorcer a leitura agregada.`;
+    if (stats.noData > 0) {
+      return t("insightPendingCoverage", { count: stats.noData });
     }
 
     if (stats.healthyPct >= 70) {
-      return `${stats.healthyPct}% da turma esta em zona saudavel, com uma base consistente para acompanhamento preventivo.`;
+      return t("insightHealthyHigh", { percent: stats.healthyPct });
     }
 
     if (stats.healthyPct >= 50) {
-      return `${stats.healthyPct}% da turma esta em zona saudavel; vale a pena reforcar acompanhamento nos alunos em melhoria.`;
+      return t("insightHealthyMid", { percent: stats.healthyPct });
     }
 
-    return `A maioria da turma esta fora da zona saudavel; recomenda-se priorizar intervencao e nova medicao de seguimento.`;
-  }, [stats, students.length]);
+    return t("insightHealthyLow");
+  }, [stats.healthyPct, stats.noData, stats.total, students.length, t]);
 
-  const columns = useMemo<Column<StudentRow>[]>(
-    () => [
+  const attentionStudents = useMemo(() => {
+    return [...students]
+      .filter((student) => {
+        if (!student.latestBiometric) {
+          return true;
+        }
+
+        return !isHealthyZone(student.latestBiometric.imcZone);
+      })
+      .sort((left, right) => {
+        const leftMissing = left.latestBiometric ? 1 : 0;
+        const rightMissing = right.latestBiometric ? 1 : 0;
+
+        if (leftMissing !== rightMissing) {
+          return leftMissing - rightMissing;
+        }
+
+        return left.name.localeCompare(right.name, "pt");
+      });
+  }, [students]);
+
+  const columns = useMemo<Column<StudentRow>[]>(() => {
+    return [
       {
         key: "name",
         header: t("colName"),
         sortable: true,
         className: "min-w-[260px]",
-        render: (student) => (
-          <div className="flex items-center gap-3">
-            <Avatar className="size-11 rounded-2xl ring-1 ring-border/70">
-              <AvatarFallback
-                className="rounded-2xl text-xs font-semibold"
-                style={getStudentSwatch(student)}
-              >
-                {getInitials(student.name)}
-              </AvatarFallback>
-            </Avatar>
-            <div className="min-w-0">
-              <p className="truncate text-sm font-semibold text-foreground">
-                {student.name}
-              </p>
-              <p className="truncate text-xs text-muted-foreground">
-                {student.className ?? t("className")}
-              </p>
-            </div>
-          </div>
-        ),
+        render: (student) => <StudentIdentity student={student} />,
       },
       {
         key: "sex",
@@ -324,7 +324,7 @@ export default function TurmaPage() {
             <ZoneBadge zone={student.latestBiometric.imcZone} size="sm" />
           ) : (
             <Badge variant="warning" size="sm">
-              {t("noDataLabel")}
+              {t("attentionReasonNoData")}
             </Badge>
           ),
       },
@@ -338,9 +338,8 @@ export default function TurmaPage() {
           </span>
         ),
       },
-    ],
-    [t],
-  );
+    ];
+  }, [t]);
 
   if (!canViewClassReports) {
     return (
@@ -399,44 +398,76 @@ export default function TurmaPage() {
       }
     >
       <PageSection
-        tone="utility"
-        title="Selecao da turma"
-        description="Escolha uma turma para carregar os indicadores e a lista de alunos."
+        tone="primary"
+        layout="analytics"
+        eyebrow={t("workspaceEyebrow")}
+        title={t("workspaceTitle")}
+        description={t("workspaceDescription")}
       >
         {loadingClasses ? (
-          <Skeleton className="h-14 w-full max-w-[320px] rounded-2xl" />
+          <Skeleton className="h-28 rounded-2xl" />
         ) : classesError ? (
           <EmptyState
             icon={Users}
-            title="Erro ao carregar turmas"
-            description="Tente novamente para selecionar uma turma."
+            title={t("loadClassesFailedTitle")}
+            description={t("loadClassesFailedDescription")}
             action={
               <Button
                 size="sm"
                 variant="secondary"
                 onClick={() => void refetchClasses()}
               >
-                Recarregar
+                {common("refresh")}
               </Button>
             }
           />
         ) : classes.length > 0 ? (
-          <div className="w-full max-w-[320px]">
-            <ClassPicker
-              classes={classes}
-              value={classId}
-              onChange={(value) => {
-                setClassId(value);
-                setStudents([]);
-              }}
-              placeholder={t("className")}
-            />
+          <div className="grid gap-4 lg:grid-cols-[340px_minmax(0,1fr)]">
+            <div className="space-y-2">
+              <p className="text-tiny font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+                {t("className")}
+              </p>
+              <ClassPicker
+                classes={classes}
+                value={classId}
+                onChange={(value) => {
+                  setClassId(value);
+                  setStudents([]);
+                }}
+                placeholder={t("className")}
+                className="w-full"
+              />
+            </div>
+
+            <div className="rounded-[28px] border border-border/70 bg-background/68 p-5">
+              <p className="text-tiny font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+                {t("classSummaryTitle")}
+              </p>
+              <div className="mt-3 flex flex-wrap items-start justify-between gap-4">
+                <div>
+                  <h3 className="text-2xl font-semibold tracking-[-0.04em] text-foreground">
+                    {selectedClass?.name ?? t("noClassSelected")}
+                  </h3>
+                  <p className="mt-1 text-sm text-muted-foreground">
+                    {selectedClass?.year ?? t("classSummaryEmpty")}
+                  </p>
+                </div>
+                {classId ? (
+                  <Badge variant="info" size="md">
+                    {stats.coveragePct}% {t("coverageShort")}
+                  </Badge>
+                ) : null}
+              </div>
+              <p className="mt-4 max-w-3xl text-sm leading-relaxed text-muted-foreground">
+                {classInsight}
+              </p>
+            </div>
           </div>
         ) : (
           <EmptyState
             icon={Users}
-            title="Sem turmas"
-            description="Ainda nao existem turmas criadas."
+            title={t("noClassesTitle")}
+            description={t("noClassesDescription")}
           />
         )}
       </PageSection>
@@ -448,52 +479,59 @@ export default function TurmaPage() {
           description={t("noClassSelectedDesc")}
         />
       ) : loading ? (
-        <div className="grid gap-4 xl:grid-cols-[minmax(0,1.15fr)_340px]">
-          <div className="grid gap-4">
-            <div className="grid gap-4 md:grid-cols-3">
-              {Array.from({ length: 3 }, (_, index) => (
-                <Skeleton key={index} className="h-44 rounded-xl" />
-              ))}
-            </div>
-            <Skeleton className="h-[420px] rounded-xl" />
+        <div className="space-y-5">
+          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+            {Array.from({ length: 4 }, (_, index) => (
+              <Skeleton key={index} className="h-40 rounded-2xl" />
+            ))}
           </div>
-          <div className="grid gap-4">
-            <Skeleton className="h-[320px] rounded-xl" />
-            <Skeleton className="h-[220px] rounded-xl" />
+          <div className="grid gap-5 xl:grid-cols-[minmax(0,1.18fr)_360px]">
+            <Skeleton className="h-[560px] rounded-2xl" />
+            <div className="grid gap-5">
+              <Skeleton className="h-[260px] rounded-2xl" />
+              <Skeleton className="h-[320px] rounded-2xl" />
+            </div>
           </div>
         </div>
       ) : (
         <>
-          <div className="grid gap-4 md:grid-cols-3">
+          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
             <KpiCard
               icon={Users}
-              title="Total de alunos"
+              title={t("totalStudentsTitle")}
               value={stats.total}
               description={t("studentsUnit")}
               accent="blue"
             />
             <KpiCard
+              icon={ChartIcon}
+              title={t("biometricCoverageTitle")}
+              value={`${stats.withData}/${stats.total}`}
+              description={`${stats.coveragePct}% ${t("withDataLabel")}`}
+              accent="green"
+            />
+            <KpiCard
               icon={Target}
-              title={t("healthyZone")}
-              value={stats.healthyPct}
-              description="%"
+              title={t("healthyZoneTitle")}
+              value={`${stats.healthyPct}%`}
+              description={`${stats.healthy} ${t("healthyZone")}`}
               accent="gold"
             />
             <KpiCard
               icon={AlertTriangle}
-              title="Pendentes"
-              value={stats.pending}
-              description="por avaliar"
+              title={t("attentionQueueTitle")}
+              value={stats.attention}
+              description={t("attentionQueueCompact")}
               accent="red"
             />
           </div>
 
-          <div className="grid gap-5 xl:grid-cols-[minmax(0,1.2fr)_340px]">
+          <div className="grid gap-5 xl:grid-cols-[minmax(0,1.18fr)_360px]">
             <PageSection
               tone="secondary"
               layout="list"
-              title="Alunos da turma"
-              description={`${students.length} ${t("studentsUnit")} com resumo biometrico e de testes.`}
+              title={t("rosterTitle")}
+              description={t("rosterDescription", { count: students.length })}
             >
               <DataTable
                 columns={columns}
@@ -501,8 +539,9 @@ export default function TurmaPage() {
                 rowKey={(student) => student.id}
                 onRowClick={(student) => router.push(`/alunos/${student.id}`)}
                 emptyMessage={t("noStudents")}
-                toolbarTitle={t("title")}
+                toolbarTitle={t("rosterToolbarTitle")}
                 toolbarSummary={`${students.length} ${t("studentsUnit")}`}
+                searchPlaceholder={t("searchStudents")}
               />
             </PageSection>
 
@@ -510,95 +549,192 @@ export default function TurmaPage() {
               <PageSection
                 tone="secondary"
                 layout="analytics"
-                title={t("zafDistribution")}
-                description="Distribuicao atual da turma entre zona saudavel, zona de melhoria e alunos sem dados."
+                title={t("coverageTitle")}
+                description={t("coverageDescription")}
               >
-                <ChartFrame className="h-[280px]">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart
-                      data={zoneChartData}
-                      layout="vertical"
-                      margin={{ top: 12, right: 8, bottom: 12, left: 0 }}
-                    >
-                      <XAxis type="number" hide />
-                      <YAxis type="category" dataKey="name" hide />
-                      <Tooltip
-                        content={<ChartTooltip />}
-                        cursor={{ fill: "transparent" }}
-                      />
-                      <Bar
-                        dataKey={t("healthyZone")}
-                        fill="var(--color-success-500)"
-                        stackId="zone"
-                        radius={[18, 0, 0, 18]}
-                      />
-                      <Bar
-                        dataKey={t("improvementZone")}
-                        fill="var(--color-danger-500)"
-                        stackId="zone"
-                      />
-                      <Bar
-                        dataKey={t("noDataLabel")}
-                        fill="var(--color-navy-400)"
-                        stackId="zone"
-                        radius={[0, 18, 18, 0]}
-                      />
-                    </BarChart>
-                  </ResponsiveContainer>
-                </ChartFrame>
-
-                <div className="grid grid-cols-3 gap-3">
-                  <div className="rounded-2xl border border-border/60 bg-background/45 px-3 py-3 text-center">
-                    <p className="text-tiny font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-                      {t("healthyZone")}
-                    </p>
-                    <p className="mt-1 text-lg font-semibold text-success-600">
-                      {stats.healthyPct}%
-                    </p>
-                  </div>
-                  <div className="rounded-2xl border border-border/60 bg-background/45 px-3 py-3 text-center">
-                    <p className="text-tiny font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-                      {t("improvementZone")}
-                    </p>
-                    <p className="mt-1 text-lg font-semibold text-danger-600">
-                      {Math.max(0, 100 - stats.healthyPct - Math.round((stats.pending / Math.max(stats.total, 1)) * 100))}%
-                    </p>
-                  </div>
-                  <div className="rounded-2xl border border-border/60 bg-background/45 px-3 py-3 text-center">
-                    <p className="text-tiny font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-                      {t("noDataLabel")}
-                    </p>
-                    <p className="mt-1 text-lg font-semibold text-navy-700 dark:text-navy-200">
-                      {stats.pending}
-                    </p>
-                  </div>
-                </div>
+                <ClassCoveragePanel
+                  healthy={stats.healthy}
+                  improvement={stats.improvement}
+                  noData={stats.noData}
+                  total={stats.total}
+                  coveragePct={stats.coveragePct}
+                  healthyLabel={t("healthyZone")}
+                  improvementLabel={t("improvementZone")}
+                  noDataLabel={t("noDataLabel")}
+                  coverageLabel={t("biometricCoverageTitle")}
+                />
               </PageSection>
 
               <PageSection
                 tone="utility"
                 layout="list"
-                title="Leitura rapida"
-                description="Resumo imediato para decidir o proximo acompanhamento."
+                title={t("attentionQueueTitle")}
+                description={t("attentionQueueDescription")}
+                actions={
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="secondary"
+                    icon={<ChartIcon className="size-4" />}
+                    onClick={() => router.push("/analise")}
+                  >
+                    {t("openAnalysis")}
+                  </Button>
+                }
               >
-                <div className="flex items-start gap-3 rounded-2xl border border-border/60 bg-background/45 p-4">
-                  <div className="flex size-10 shrink-0 items-center justify-center rounded-2xl bg-gold-400/18 text-gold-700 dark:text-gold-300">
-                    <Sparkles className="size-5" />
+                {attentionStudents.length > 0 ? (
+                  <div className="space-y-3">
+                    {attentionStudents.slice(0, 5).map((student) => {
+                      const needsBiometrics = !student.latestBiometric;
+                      const badgeVariant = needsBiometrics ? "warning" : "danger";
+                      const badgeLabel = needsBiometrics
+                        ? t("attentionReasonNoData")
+                        : t("attentionReasonImprovement");
+
+                      return (
+                        <button
+                          key={student.id}
+                          type="button"
+                          onClick={() => router.push(`/alunos/${student.id}`)}
+                          className="flex w-full items-center gap-3 rounded-2xl border border-border/70 bg-background/72 px-4 py-3 text-left transition-all duration-200 hover:-translate-y-0.5 hover:border-gold-300/40 hover:shadow-card"
+                        >
+                          <div className="min-w-0 flex-1">
+                            <StudentIdentity
+                              student={student}
+                              subtitle={
+                                <span>
+                                  {student.testCount} {t("testsRecordedLabel")}
+                                </span>
+                              }
+                            />
+                            <div className="mt-1 flex flex-wrap items-center gap-2">
+                              <Badge variant={badgeVariant} size="sm">
+                                {badgeLabel}
+                              </Badge>
+                            </div>
+                          </div>
+
+                          <ArrowRight className="size-4 shrink-0 text-muted-foreground" />
+                        </button>
+                      );
+                    })}
                   </div>
-                  <div className="space-y-2">
+                ) : (
+                  <div className="rounded-2xl border border-success-500/18 bg-success-500/6 px-4 py-4">
                     <p className="text-sm font-semibold text-foreground">
-                      Insight da turma
+                      {t("attentionNoneTitle")}
                     </p>
-                    <p className="text-sm leading-relaxed text-muted-foreground">
-                      {classInsight}
+                    <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
+                      {t("attentionNoneDescription")}
                     </p>
                   </div>
-                </div>
+                )}
               </PageSection>
             </div>
           </div>
         </>
       )}
     </PageScaffold>
+  );
+}
+
+function ClassCoveragePanel({
+  total,
+  healthy,
+  improvement,
+  noData,
+  coveragePct,
+  healthyLabel,
+  improvementLabel,
+  noDataLabel,
+  coverageLabel,
+}: {
+  total: number;
+  healthy: number;
+  improvement: number;
+  noData: number;
+  coveragePct: number;
+  healthyLabel: string;
+  improvementLabel: string;
+  noDataLabel: string;
+  coverageLabel: string;
+}) {
+  const safeTotal = total || 1;
+  const healthyWidth = (healthy / safeTotal) * 100;
+  const improvementWidth = (improvement / safeTotal) * 100;
+  const noDataWidth = (noData / safeTotal) * 100;
+
+  return (
+    <div className="space-y-4 rounded-[28px] border border-border/70 bg-background/70 p-5">
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <p className="text-tiny font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+            {coverageLabel}
+          </p>
+          <p className="mt-2 text-3xl font-semibold tracking-[-0.05em] text-foreground">
+            {coveragePct}%
+          </p>
+        </div>
+        <Badge variant="info" size="md">
+          {total} alunos
+        </Badge>
+      </div>
+
+      <div className="overflow-hidden rounded-full bg-muted/80">
+        <div className="flex h-4 w-full">
+          <div
+            className="h-full bg-success-500"
+            style={{ width: `${healthyWidth}%` }}
+          />
+          <div
+            className="h-full bg-danger-500"
+            style={{ width: `${improvementWidth}%` }}
+          />
+          <div
+            className="h-full bg-navy-400"
+            style={{ width: `${noDataWidth}%` }}
+          />
+        </div>
+      </div>
+
+      <div className="grid gap-3">
+        <CoverageStatRow label={healthyLabel} value={healthy} tone="success" />
+        <CoverageStatRow
+          label={improvementLabel}
+          value={improvement}
+          tone="danger"
+        />
+        <CoverageStatRow label={noDataLabel} value={noData} tone="default" />
+      </div>
+    </div>
+  );
+}
+
+function CoverageStatRow({
+  label,
+  value,
+  tone,
+}: {
+  label: string;
+  value: number;
+  tone: "success" | "danger" | "default";
+}) {
+  const dotClassName =
+    tone === "success"
+      ? "bg-success-500"
+      : tone === "danger"
+        ? "bg-danger-500"
+        : "bg-navy-400";
+
+  return (
+    <div className="flex items-center justify-between gap-3 rounded-2xl border border-border/70 bg-background/60 px-4 py-3">
+      <div className="flex items-center gap-2">
+        <span className={`size-2.5 rounded-full ${dotClassName}`} />
+        <span className="text-sm text-muted-foreground">{label}</span>
+      </div>
+      <span className="text-lg font-semibold tracking-[-0.03em] text-foreground">
+        {value}
+      </span>
+    </div>
   );
 }

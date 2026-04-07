@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { useLocale, useTranslations } from "next-intl";
 import {
   Activity,
   AlertTriangle,
@@ -24,15 +23,135 @@ import { PageSection } from "@/components/ui/page-section";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
 import { FadeIn, StaggerItem, StaggerList } from "@/components/ui/motion";
-import type { DashboardCardData, DashboardSummary } from "@/lib/dashboard";
+import type {
+  DashboardCardData,
+  DashboardSummary,
+  ZafYearStat,
+} from "@/lib/dashboard";
 import { getQuestionnaireTypeLabelKey } from "@/lib/questionnaires";
 import { cn } from "@/lib/utils";
 
 interface Props {
   greeting: string;
+  locale?: string;
+  messages?: {
+    dashboard: Record<string, string>;
+    nav: Record<string, string>;
+    questionarios: Record<string, string>;
+  };
   username: string;
   summary: DashboardSummary;
   todayLabel: string;
+}
+
+const FALLBACK_MESSAGES: {
+  dashboard: Record<string, string>;
+  nav: Record<string, string>;
+  questionarios: Record<string, string>;
+} = {
+  dashboard: {
+    title: "Painel",
+    unlinkedTitle: "Perfil não associado",
+    unlinkedDescription: "Conta ainda não associada a um perfil de aluno.",
+    activitySummary: "Resumo da tua atividade",
+    lastBiometric: "Última biometria",
+    lastTests: "Últimos testes",
+    lastMeasurement: "Data da última medição",
+    lastTestDate: "Data do último teste físico",
+    platformOverview: "Visão geral da plataforma HealthyTech Atlântico",
+    psychologistOverview: "Visão geral da fila de acompanhamento dos alunos",
+    parentOverview: "Visão geral dos alunos associados à tua conta",
+    students: "Alunos",
+    classes: "Turmas",
+    sessions: "Sessões",
+    pendingSos: "SOS Pendentes",
+    totalRegistered: "Total registados",
+    activeClasses: "Turmas ativas",
+    evaluationsDone: "Avaliações realizadas",
+    alertsPending: "Alertas por resolver",
+    zafDistribution: "Distribuição ZAF por Ano Letivo",
+    zsaf: "Z. Saudável",
+    zmf: "Z. Melhoria",
+    psychologistQueueTitle: "Fila prioritária de acompanhamento",
+    psychologistQueueDescription:
+      "Casos pendentes que devem ser revistos primeiro pelo psicólogo.",
+    psychologistRecentTitle: "Questionários recentes",
+    psychologistRecentDescription: "Últimos instrumentos submetidos.",
+    classPending: "Turma por confirmar",
+    alertOpenedOn: "Aberto em {date}",
+    openStudentFollowUp: "Abrir acompanhamento",
+    noPendingCasesTitle: "Sem casos pendentes",
+    noPendingCasesDescription: "A fila SOS está limpa neste momento.",
+    noRecentQuestionnairesTitle: "Sem questionários recentes",
+    noRecentQuestionnairesDescription:
+      "Quando houver novas submissões, aparecem aqui para leitura rápida.",
+    parentStudentsTitle: "Acompanhamento dos alunos",
+    parentStudentsDescription:
+      "Visão rápida do estado recente dos alunos associados à tua conta.",
+    parentReportsTitle: "Relatórios recentes",
+    parentReportsDescription:
+      "Últimos relatórios gerados para consulta familiar.",
+    studentRecord: "Registo do aluno",
+    lastReport: "Último relatório",
+    lastQuestionnaire: "Último questionário",
+    linkedStudents: "Alunos associados",
+    historyGeneratedOn: "Gerado em {date}",
+    noLinkedStudentsDashboardTitle: "Sem alunos associados",
+    noLinkedStudentsDashboardDescription:
+      "Quando a escola concluir a associação, os dados surgem aqui.",
+    noReportsDashboardTitle: "Sem relatórios recentes",
+    noReportsDashboardDescription:
+      "Os relatórios disponibilizados pela escola aparecem nesta área.",
+    studentsUnit: "alunos",
+    overviewEyebrow: "Resumo operacional",
+    overviewTitle: "Panorama da atividade",
+    overviewDescription:
+      "Leitura rápida dos números-chave da plataforma e dos sinais que pedem atenção no dia a dia.",
+    dashboardStatus: "Visão institucional",
+    yearInFocus: "Ano em foco",
+    coverageRecent: "Cobertura biométrica do ano letivo mais recente.",
+    studentsWithBiometrics: "Com biometria",
+    coverageLabel: "Cobertura registada",
+    healthyStudentsLabel: "Em Z. Saudável",
+    improvementStudentsLabel: "Em Z. Melhoria",
+    annualSeries: "Série anual",
+    annualSeriesDescription:
+      "Comparação do peso da Zona Saudável em cada ano letivo com registos.",
+    comparisonPanelTitle: "Evolução por ano letivo",
+    comparisonPanelDescription:
+      "Percentagem de Zona Saudável entre os alunos com biometria registada.",
+    annualSeriesPendingTitle: "Ainda não existe série histórica comparável.",
+    annualSeriesPendingDescription:
+      "A evolução anual aparece quando houver mais do que um ano letivo com biometria registada.",
+    noBioData: "Sem dados biométricos",
+    greetingMorning: "Bom dia",
+    greetingAfternoon: "Boa tarde",
+    greetingEvening: "Boa noite",
+  },
+  nav: {
+    perfil: "Perfil",
+  },
+  questionarios: {
+    autoconceito: "Autoconceito",
+    autoestima: "Autoestima",
+    kidmed: "KIDMED",
+  },
+};
+
+function formatMessage(
+  template: string,
+  values?: Record<string, string | number>,
+) {
+  if (!values) {
+    return template;
+  }
+
+  let result = template;
+  for (const [token, replacement] of Object.entries(values)) {
+    result = result.replaceAll(`{${token}}`, String(replacement));
+  }
+
+  return result;
 }
 
 const ICONS: Record<DashboardCardData["icon"], typeof Users> = {
@@ -71,16 +190,47 @@ function formatNumberValue(value: string | number, locale: string) {
   return value;
 }
 
+function getCoveragePct(year: Pick<ZafYearStat, "total" | "withBio"> | null) {
+  if (!year || year.total <= 0) {
+    return 0;
+  }
+
+  return Math.round((year.withBio / year.total) * 100);
+}
+
+function getHealthyPct(year: Pick<ZafYearStat, "withBio" | "zsaf"> | null) {
+  if (!year || year.withBio <= 0) {
+    return 0;
+  }
+
+  return Math.round((year.zsaf / year.withBio) * 100);
+}
+
 export function DashboardClient({
   greeting,
+  locale = "pt-PT",
+  messages = FALLBACK_MESSAGES,
   summary,
   todayLabel,
   username,
 }: Props) {
-  const t = useTranslations("dashboard");
-  const nav = useTranslations("nav");
-  const questionnaires = useTranslations("questionarios");
-  const locale = useLocale();
+  const t = (key: string, values?: Record<string, string | number>) =>
+    formatMessage(
+      messages.dashboard[key] ?? FALLBACK_MESSAGES.dashboard[key] ?? key,
+      values,
+    );
+  const nav = (key: string, values?: Record<string, string | number>) =>
+    formatMessage(messages.nav[key] ?? FALLBACK_MESSAGES.nav[key] ?? key, values);
+  const questionnaires = (
+    key: string,
+    values?: Record<string, string | number>,
+  ) =>
+    formatMessage(
+      messages.questionarios[key] ??
+        FALLBACK_MESSAGES.questionarios[key] ??
+        key,
+      values,
+    );
   const [chartsReady, setChartsReady] = useState(false);
 
   useEffect(() => {
@@ -489,133 +639,92 @@ function StaffOverview({
   const sessionsCard = cardMap["sessions"];
   const classesCard = cardMap["classes"];
   const pendingSosCard = cardMap["pending-sos"];
-  const latestYear = summary.zafByYear[0] ?? null;
-  const coveragePct =
-    latestYear && latestYear.total > 0
-      ? Math.round((latestYear.withBio / latestYear.total) * 100)
-      : 0;
+  const metrics = [
+    studentsCard
+      ? {
+          id: studentsCard.id,
+          icon: Users,
+          title: t(studentsCard.titleKey),
+          value: formatNumberValue(studentsCard.value, locale),
+          description: t(studentsCard.descriptionKey),
+          accent: studentsCard.accent,
+        }
+      : null,
+    sessionsCard
+      ? {
+          id: sessionsCard.id,
+          icon: Activity,
+          title: t(sessionsCard.titleKey),
+          value: formatNumberValue(sessionsCard.value, locale),
+          description: t(sessionsCard.descriptionKey),
+          accent: sessionsCard.accent,
+        }
+      : null,
+    classesCard
+      ? {
+          id: classesCard.id,
+          icon: School,
+          title: t(classesCard.titleKey),
+          value: formatNumberValue(classesCard.value, locale),
+          description: t(classesCard.descriptionKey),
+          accent: classesCard.accent,
+        }
+      : null,
+    pendingSosCard
+      ? {
+          id: pendingSosCard.id,
+          icon: AlertTriangle,
+          title: t(pendingSosCard.titleKey),
+          value: formatNumberValue(pendingSosCard.value, locale),
+          description: t(pendingSosCard.descriptionKey),
+          accent: pendingSosCard.accent,
+          emphasis: "danger" as const,
+        }
+      : null,
+  ].filter(Boolean) as Array<{
+    id: string;
+    icon: typeof Users;
+    title: string;
+    value: string | number;
+    description: string;
+    accent: NonNullable<DashboardCardData["accent"]>;
+    emphasis?: "danger";
+  }>;
 
   return (
-    <div className="grid gap-4 xl:grid-cols-[minmax(0,1.35fr)_minmax(320px,0.72fr)]">
-      <section className="surface-secondary rounded-2xl p-6">
-        <div className="flex flex-col gap-6">
-          <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
-            <div>
-              <p className="text-sm font-medium text-muted-foreground">
-                {t("overviewEyebrow")}
-              </p>
-              <h2 className="mt-1 font-display text-[1.65rem] font-semibold tracking-[-0.04em] text-foreground sm:text-[1.9rem]">
-                {t("overviewTitle")}
-              </h2>
-            </div>
-            <p className="max-w-xl text-sm leading-relaxed text-muted-foreground">
-              {t("overviewDescription")}
+    <section className="surface-secondary rounded-2xl p-6 sm:p-7">
+      <div className="flex flex-col gap-6">
+        <div className="grid gap-3 xl:grid-cols-[minmax(0,0.82fr)_minmax(0,1.18fr)] xl:items-end">
+          <div>
+            <p className="text-sm font-medium text-muted-foreground">
+              {t("overviewEyebrow")}
             </p>
+            <h2 className="mt-1 font-display text-[1.8rem] font-semibold tracking-[-0.045em] text-foreground sm:text-[2.1rem]">
+              {t("overviewTitle")}
+            </h2>
           </div>
-
-          <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(260px,0.72fr)]">
-            <div className="grid gap-4 sm:grid-cols-2">
-              {studentsCard ? (
-                <StaffFeatureStat
-                  icon={Users}
-                  title={t(studentsCard.titleKey)}
-                  value={formatNumberValue(studentsCard.value, locale)}
-                  description={t(studentsCard.descriptionKey)}
-                  accent={studentsCard.accent}
-                />
-              ) : null}
-              {sessionsCard ? (
-                <StaffFeatureStat
-                  icon={Activity}
-                  title={t(sessionsCard.titleKey)}
-                  value={formatNumberValue(sessionsCard.value, locale)}
-                  description={t(sessionsCard.descriptionKey)}
-                  accent={sessionsCard.accent}
-                />
-              ) : null}
-            </div>
-
-            <div className="grid gap-3">
-              {classesCard ? (
-                <StaffCompactStat
-                  icon={School}
-                  title={t(classesCard.titleKey)}
-                  value={formatNumberValue(classesCard.value, locale)}
-                  description={t(classesCard.descriptionKey)}
-                  accent={classesCard.accent}
-                />
-              ) : null}
-              {pendingSosCard ? (
-                <StaffCompactStat
-                  icon={AlertTriangle}
-                  title={t(pendingSosCard.titleKey)}
-                  value={formatNumberValue(pendingSosCard.value, locale)}
-                  description={t(pendingSosCard.descriptionKey)}
-                  accent={pendingSosCard.accent}
-                  emphasis="danger"
-                />
-              ) : null}
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section className="rounded-2xl border border-border/70 bg-[linear-gradient(180deg,rgba(255,255,255,0.92),rgba(248,250,252,0.96))] p-6 shadow-[0_18px_38px_-32px_rgba(9,21,35,0.35)] dark:border-white/10 dark:bg-[linear-gradient(180deg,rgba(19,31,49,0.96),rgba(16,27,43,0.98))]">
-        <div>
-          <div className="flex items-start justify-between gap-4">
-            <div>
-              <p className="text-sm font-medium text-muted-foreground dark:text-white/62">
-                {t("latestAcademicYear")}
-              </p>
-              <h3 className="mt-1 font-display text-[1.65rem] font-semibold tracking-[-0.04em] text-foreground dark:text-white">
-                {latestYear?.year ?? "-"}
-              </h3>
-            </div>
-
-            <div className="rounded-full border border-success-500/18 bg-success-500/10 px-3 py-1.5 text-sm font-semibold text-success-700 dark:text-success-200">
-              {coveragePct}%
-            </div>
-          </div>
-
-          <p className="mt-4 max-w-sm text-sm leading-relaxed text-muted-foreground dark:text-white/70">
-            {t("latestAcademicYearDescription")}
+          <p className="max-w-2xl text-sm leading-relaxed text-muted-foreground">
+            {t("overviewDescription")}
           </p>
+        </div>
 
-          <div className="mt-8">
-            <p className="text-[3.25rem] font-black leading-none tracking-tight text-foreground dark:text-white sm:text-[3.5rem]">
-              {coveragePct}%
-            </p>
-            <p className="mt-2 text-sm font-medium text-muted-foreground dark:text-white/76">
-              {t("coverageLabel")}
-            </p>
-            <p className="mt-1 text-sm text-muted-foreground dark:text-white/58">
-              {formatNumberValue(latestYear?.withBio ?? 0, locale)} /{" "}
-              {formatNumberValue(latestYear?.total ?? 0, locale)} {t("studentsUnit")}
-            </p>
-          </div>
-
-          <div className="mt-6 h-3 overflow-hidden rounded-full bg-navy-100 dark:bg-white/10">
-            <div
-              className="h-full rounded-full bg-success-500 transition-all duration-700"
-              style={{ width: `${coveragePct}%` }}
-            />
-          </div>
-
-          <div className="mt-6 grid gap-3 sm:grid-cols-2">
-            <StaffSpotlightMetric
-              label={t("healthyStudentsLabel")}
-              value={formatNumberValue(latestYear?.zsaf ?? 0, locale)}
-              tone="success"
-            />
-            <StaffSpotlightMetric
-              label={t("improvementStudentsLabel")}
-              value={formatNumberValue(latestYear?.zmf ?? 0, locale)}
-              tone="danger"
-            />
+        <div className="overflow-hidden rounded-[1.65rem] border border-border/70 shadow-[0_18px_38px_-30px_rgba(9,21,35,0.24)]">
+          <div className="grid gap-px bg-border/60 md:grid-cols-2 xl:grid-cols-4">
+            {metrics.map((metric) => (
+              <StaffMetricRailCell
+                key={metric.id}
+                accent={metric.accent}
+                description={metric.description}
+                emphasis={metric.emphasis}
+                icon={metric.icon}
+                title={metric.title}
+                value={metric.value}
+              />
+            ))}
           </div>
         </div>
-      </section>
-    </div>
+      </div>
+    </section>
   );
 }
 
@@ -630,37 +739,45 @@ function DashboardAnalytics({
   summary: Extract<DashboardSummary, { variant: "staff" }>;
   t: (key: string) => string;
 }) {
-  const totalZsaf = summary.zafByYear.reduce((sum, year) => sum + year.zsaf, 0);
-  const totalZmf = summary.zafByYear.reduce((sum, year) => sum + year.zmf, 0);
-  const totalWithBio = totalZsaf + totalZmf;
-  const overallPct =
-    totalWithBio > 0 ? Math.round((totalZsaf / totalWithBio) * 100) : 0;
-  const donutData = [
-    { name: t("zsaf"), value: totalZsaf },
-    { name: t("zmf"), value: totalZmf },
-  ];
-  const latestYear = summary.zafByYear[0] ?? null;
+  const timelineYears = summary.zafByYear.filter(
+    (academicYear) => academicYear.withBio > 0,
+  );
+  const latestYear = timelineYears[0] ?? summary.zafByYear[0] ?? null;
+  const focusCoveragePct = getCoveragePct(latestYear);
+  const focusHealthyPct = getHealthyPct(latestYear);
+  const focusWithBio = latestYear?.withBio ?? 0;
+  const donutData = latestYear
+    ? [
+        { name: t("zsaf"), value: latestYear.zsaf },
+        { name: t("zmf"), value: latestYear.zmf },
+      ]
+    : [];
 
   return (
     <PageSection
       title={t("zafDistribution")}
-      description={t("zafDistributionSummary")}
+      description={t("comparisonPanelDescription")}
       tone="secondary"
       layout="analytics"
     >
-      <div className="grid gap-4 xl:grid-cols-[minmax(0,1.08fr)_minmax(320px,0.92fr)]">
-        <div className="surface-secondary rounded-2xl p-5 sm:p-6">
-          <div className="mb-6 flex flex-wrap items-center gap-2 border-b border-border/70 pb-5">
-            <div className="rounded-full border border-border/70 bg-background/80 px-3 py-1.5 text-sm font-semibold text-foreground">
-              {formatNumberValue(totalWithBio, locale)} {t("studentsUnit")}
-            </div>
-            <div className="rounded-full border border-border/70 bg-background/80 px-3 py-1.5 text-sm text-muted-foreground">
-              {t("analysisAllYears")}
+      <div className="grid gap-4 xl:grid-cols-[minmax(0,1.02fr)_minmax(320px,0.98fr)]">
+        <section className="rounded-[1.65rem] border border-border/70 bg-[linear-gradient(180deg,rgba(255,255,255,0.96),rgba(248,250,252,0.94))] p-5 shadow-[0_18px_38px_-30px_rgba(9,21,35,0.22)] dark:border-white/10 dark:bg-[linear-gradient(180deg,rgba(19,31,49,0.96),rgba(14,24,38,0.98))] sm:p-6">
+          <div className="flex items-start gap-4">
+            <div>
+              <p className="text-sm font-medium text-muted-foreground dark:text-white/62">
+                {t("yearInFocus")}
+              </p>
+              <h3 className="mt-1 font-display text-[1.55rem] font-semibold tracking-[-0.04em] text-foreground dark:text-white sm:text-[1.8rem]">
+                {latestYear?.year ?? "-"}
+              </h3>
+              <p className="mt-3 max-w-sm text-sm leading-relaxed text-muted-foreground dark:text-white/68">
+                {t("coverageRecent")}
+              </p>
             </div>
           </div>
 
-          <div className="grid gap-6 lg:grid-cols-[220px_minmax(0,1fr)] lg:items-center">
-            <div className="relative h-48 w-48 flex-shrink-0 self-center">
+          <div className="mt-8 grid gap-6 lg:grid-cols-[220px_minmax(0,1fr)] lg:items-center">
+            <div className="relative mx-auto h-48 w-48 flex-shrink-0 lg:mx-0">
               {chartsReady ? (
                 <PieChart width={192} height={192}>
                   <Pie
@@ -695,107 +812,75 @@ function DashboardAnalytics({
                   />
                 </PieChart>
               ) : (
-                <div className="h-full w-full rounded-full border-[16px] border-muted animate-pulse" />
+                <div className="h-full w-full animate-pulse rounded-full border-[16px] border-muted" />
               )}
 
               <div className="absolute inset-0 flex flex-col items-center justify-center">
-                <span className="text-3xl font-black leading-none text-foreground">
-                  {chartsReady ? `${overallPct}%` : "-"}
+                <span className="text-3xl font-black leading-none text-foreground dark:text-white">
+                  {chartsReady ? `${focusHealthyPct}%` : "-"}
                 </span>
-                <span className="mt-1 text-micro font-bold uppercase text-muted-foreground">
+                <span className="mt-1 text-micro font-bold uppercase text-muted-foreground dark:text-white/58">
                   {t("zsaf")}
                 </span>
               </div>
             </div>
 
-            <div className="flex-1">
+            <div className="flex flex-col gap-3">
+              <DashboardMetaPill
+                label={t("studentsWithBiometrics")}
+                value={`${formatNumberValue(focusWithBio, locale)} / ${formatNumberValue(latestYear?.total ?? 0, locale)} ${t("studentsUnit")}`}
+              />
+
+              <DashboardCoverageBar
+                label={t("coverageLabel")}
+                value={focusCoveragePct}
+              />
+
               <div className="grid gap-3 sm:grid-cols-2">
-                <DashboardMetaPill
-                  label={t("studentsWithBiometrics")}
-                  value={`${formatNumberValue(totalWithBio, locale)} ${t("studentsUnit")}`}
+                <StaffSpotlightMetric
+                  label={t("healthyStudentsLabel")}
+                  value={formatNumberValue(latestYear?.zsaf ?? 0, locale)}
+                  tone="success"
                 />
-                <DashboardMetaPill
-                  label={t("healthyZoneRate")}
-                  value={`${overallPct}%`}
-                />
-              </div>
-
-              <div className="mt-4 space-y-3">
-                <DashboardLegendItem
-                  colorClassName="bg-success-500 dark:bg-success-400"
-                  label={t("zsaf")}
-                  value={totalZsaf}
-                  meta={totalWithBio > 0 ? `${overallPct}%` : "0%"}
-                />
-                <DashboardLegendItem
-                  colorClassName="bg-danger-500 dark:bg-danger-400"
-                  label={t("zmf")}
-                  value={totalZmf}
-                  meta={
-                    totalWithBio > 0 ? `${Math.max(0, 100 - overallPct)}%` : "0%"
-                  }
+                <StaffSpotlightMetric
+                  label={t("improvementStudentsLabel")}
+                  value={formatNumberValue(latestYear?.zmf ?? 0, locale)}
+                  tone="danger"
                 />
               </div>
-
-              {latestYear ? (
-                <div className="mt-5 rounded-[1.15rem] border border-border/70 bg-background/72 px-4 py-3">
-                  <div className="flex items-center justify-between gap-3">
-                    <div>
-                      <p className="text-tiny font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-                        {t("referenceYear")}
-                      </p>
-                      <p className="mt-1 text-sm font-semibold text-foreground">
-                        {latestYear.year}
-                      </p>
-                    </div>
-                    <span className="text-sm font-bold text-foreground">
-                      {latestYear.withBio > 0
-                        ? `${Math.round(
-                            (latestYear.zsaf / latestYear.withBio) * 100,
-                          )}%`
-                        : "0%"}
-                    </span>
-                  </div>
-                </div>
-              ) : null}
             </div>
           </div>
-        </div>
+        </section>
 
-        <div className="surface-primary rounded-2xl p-5 sm:p-6">
-          <div>
-            <div className="mb-6 flex items-start justify-between gap-3">
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">
-                  {t("annualSeries")}
-                </p>
-                <h4 className="mt-1 font-display text-[1.35rem] font-semibold tracking-[-0.035em] text-foreground">
-                  {t("comparisonPanelTitle")}
-                </h4>
-                <p className="mt-2 max-w-sm text-sm leading-relaxed text-muted-foreground">
-                  {t("annualSeriesDescription")}
-                </p>
-              </div>
-              <Badge
-                variant="default"
-                size="sm"
-                className="bg-background/90"
-              >
-                {summary.zafByYear.length}
-              </Badge>
+        <div className="surface-primary rounded-[1.65rem] p-5 sm:p-6">
+          <div className="mb-6 flex items-start justify-between gap-3">
+            <div>
+              <p className="text-sm font-medium text-muted-foreground">
+                {t("annualSeries")}
+              </p>
+              <h4 className="mt-1 font-display text-[1.35rem] font-semibold tracking-[-0.035em] text-foreground">
+                {t("comparisonPanelTitle")}
+              </h4>
+              <p className="mt-2 max-w-sm text-sm leading-relaxed text-muted-foreground">
+                {t("annualSeriesDescription")}
+              </p>
             </div>
+            {timelineYears.length > 1 ? (
+              <Badge variant="default" size="sm" className="bg-background/90">
+                {timelineYears.length}
+              </Badge>
+            ) : null}
+          </div>
 
+          {timelineYears.length > 1 ? (
             <div className="space-y-4">
-              {summary.zafByYear.map((academicYear) => {
-                const pct =
-                  academicYear.withBio > 0
-                    ? Math.round((academicYear.zsaf / academicYear.withBio) * 100)
-                    : 0;
+              {timelineYears.map((academicYear) => {
+                const healthyPct = getHealthyPct(academicYear);
 
                 return (
                   <div
                     key={academicYear.year}
-                    className="rounded-[1.2rem] border border-border/70 bg-background/80 p-4"
+                    className="rounded-[1.2rem] border border-border/70 bg-background/82 p-4"
                   >
                     <div className="flex items-start justify-between gap-3">
                       <div>
@@ -803,23 +888,24 @@ function DashboardAnalytics({
                           {academicYear.year}
                         </p>
                         <p className="mt-1 text-sm font-semibold text-foreground">
-                          {formatNumberValue(academicYear.withBio, locale)} /{" "}
-                          {formatNumberValue(academicYear.total, locale)}{" "}
-                          {t("studentsUnit")}
+                          {formatNumberValue(academicYear.withBio, locale)}{" "}
+                          {t("studentsWithBiometrics").toLowerCase()}
                         </p>
                       </div>
                       <div className="text-right">
-                        <p className="text-lg font-bold text-success-700 dark:text-success-300">{pct}%</p>
+                        <p className="text-lg font-bold text-success-700 dark:text-success-300">
+                          {healthyPct}%
+                        </p>
                         <p className="text-xs uppercase tracking-[0.14em] text-muted-foreground">
                           {t("zsaf")}
                         </p>
                       </div>
                     </div>
 
-                    <div className="mt-3 h-2.5 overflow-hidden rounded-full bg-navy-100 dark:bg-white/10">
+                    <div className="mt-4 h-2.5 overflow-hidden rounded-full bg-danger-100 dark:bg-danger-950/35">
                       <div
-                        className="h-full rounded-full bg-success-500 transition-all duration-700"
-                        style={{ width: `${pct}%` }}
+                        className="h-full rounded-full bg-success-500 transition-all duration-700 dark:bg-success-400"
+                        style={{ width: `${healthyPct}%` }}
                       />
                     </div>
 
@@ -835,74 +921,20 @@ function DashboardAnalytics({
                 );
               })}
             </div>
-          </div>
+          ) : latestYear ? (
+            <DashboardSeriesEmptyState year={latestYear.year} t={t} />
+          ) : (
+            <div className="rounded-[1.2rem] border border-dashed border-border/70 bg-background/60 px-4 py-6 text-sm text-muted-foreground">
+              {t("noBioData")}
+            </div>
+          )}
         </div>
       </div>
     </PageSection>
   );
 }
 
-function StaffFeatureStat({
-  accent,
-  description,
-  icon: Icon,
-  title,
-  value,
-}: {
-  accent: NonNullable<DashboardCardData["accent"]>;
-  description: string;
-  icon: typeof Users;
-  title: string;
-  value: string | number;
-}) {
-  const accentClassName = {
-    blue: {
-      icon: "border-navy-200 bg-navy-100 text-navy-900 dark:border-navy-700 dark:bg-navy-900 dark:text-white",
-      line: "from-navy-500/65 to-navy-300/15",
-    },
-    green: {
-      icon: "border-success-200 bg-success-50 text-success-700 dark:border-success-700/60 dark:bg-success-950/50 dark:text-success-200",
-      line: "from-success-500/65 to-success-300/15",
-    },
-    gold: {
-      icon: "border-gold-200 bg-gold-50 text-gold-800 dark:border-gold-500/40 dark:bg-gold-950/40 dark:text-gold-200",
-      line: "from-gold-500/75 to-gold-300/15",
-    },
-    red: {
-      icon: "border-danger-200 bg-danger-50 text-danger-700 dark:border-danger-700/50 dark:bg-danger-950/40 dark:text-danger-200",
-      line: "from-danger-500/65 to-danger-300/15",
-    },
-  }[accent];
-
-  return (
-    <div className="rounded-[1.35rem] border border-border/70 bg-background/88 p-5">
-      <div className="flex items-start justify-between gap-4">
-        <div className="min-w-0">
-          <p className="text-sm font-medium text-muted-foreground">
-            {title}
-          </p>
-          <p className="mt-3 text-3xl font-black leading-none tracking-tight text-foreground sm:text-[2.5rem]">
-            {value}
-          </p>
-          <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-            {description}
-          </p>
-        </div>
-
-        <span
-          className={cn(
-            "flex size-11 flex-shrink-0 items-center justify-center rounded-2xl border",
-            accentClassName.icon,
-          )}
-        >
-          <Icon className="size-5" />
-        </span>
-      </div>
-    </div>
-  );
-}
-
-function StaffCompactStat({
+function StaffMetricRailCell({
   accent,
   description,
   emphasis,
@@ -912,45 +944,75 @@ function StaffCompactStat({
 }: {
   accent: NonNullable<DashboardCardData["accent"]>;
   description: string;
-  emphasis?: "default" | "danger";
+  emphasis?: "danger";
   icon: typeof Users;
   title: string;
   value: string | number;
 }) {
   const accentClassName = {
-    blue: "border-navy-200 bg-navy-100 text-navy-900 dark:border-navy-700 dark:bg-navy-900 dark:text-white",
+    blue:
+      "border-navy-200 bg-navy-100 text-navy-900 dark:border-navy-700 dark:bg-navy-900 dark:text-white",
     green:
       "border-success-200 bg-success-50 text-success-700 dark:border-success-700/60 dark:bg-success-950/50 dark:text-success-200",
-    gold: "border-gold-200 bg-gold-50 text-gold-800 dark:border-gold-500/40 dark:bg-gold-950/40 dark:text-gold-200",
+    gold:
+      "border-gold-200 bg-gold-50 text-gold-800 dark:border-gold-500/40 dark:bg-gold-950/40 dark:text-gold-200",
     red: "border-danger-200 bg-danger-50 text-danger-700 dark:border-danger-700/50 dark:bg-danger-950/40 dark:text-danger-200",
   }[accent];
 
   return (
     <div
       className={cn(
-        "rounded-[1.25rem] border border-border/70 bg-background/82 px-4 py-4",
-        emphasis === "danger" && "border-danger-200/70 dark:border-danger-800/50",
+        "relative min-h-[144px] bg-background/92 px-5 py-5 dark:bg-navy-950/56",
+        emphasis === "danger" &&
+          "bg-danger-500/[0.035] dark:bg-danger-500/[0.08]",
       )}
     >
-      <div className="flex items-start gap-3">
-        <span
-          className={cn(
-            "mt-0.5 flex size-10 flex-shrink-0 items-center justify-center rounded-2xl border",
-            accentClassName,
-          )}
-        >
-          <Icon className="size-4" />
-        </span>
-
-        <div className="min-w-0 flex-1">
-          <p className="text-sm font-medium text-muted-foreground">{title}</p>
-          <p className="mt-1 text-2xl font-bold tracking-tight text-foreground">
+      <div className="flex items-start justify-between gap-4">
+        <div className="min-w-0">
+          <p className="text-sm font-medium text-muted-foreground">
+            {title}
+          </p>
+          <p className="mt-4 text-4xl font-black leading-none tracking-tight text-foreground">
             {value}
           </p>
-          <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">
+          <p className="mt-2 max-w-[18ch] text-sm leading-relaxed text-muted-foreground">
             {description}
           </p>
         </div>
+
+        <span
+          className={cn(
+            "flex size-11 flex-shrink-0 items-center justify-center rounded-2xl border",
+            accentClassName,
+          )}
+        >
+          <Icon className="size-5" />
+        </span>
+      </div>
+    </div>
+  );
+}
+
+function DashboardSeriesEmptyState({
+  year,
+  t,
+}: {
+  year: string;
+  t: (key: string) => string;
+}) {
+  return (
+    <div className="rounded-[1.25rem] border border-dashed border-border/70 bg-background/68 p-5">
+      <div className="max-w-sm">
+        <p className="text-sm font-semibold text-foreground">
+          {t("annualSeriesPendingTitle")}
+        </p>
+        <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+          {t("annualSeriesPendingDescription")}
+        </p>
+      </div>
+
+      <div className="mt-5 inline-flex items-center rounded-full border border-border/70 bg-background/90 px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+        {year}
       </div>
     </div>
   );
@@ -986,11 +1048,36 @@ function StaffSpotlightMetric({
 
 function DashboardMetaPill({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-[1.1rem] border border-white/28 bg-white/70 px-3 py-2.5 shadow-sm backdrop-blur-md dark:border-white/10 dark:bg-white/6">
+    <div className="rounded-[1.1rem] border border-white/28 bg-white/70 px-4 py-3 shadow-sm backdrop-blur-md dark:border-white/10 dark:bg-white/6">
       <p className="text-tiny font-semibold uppercase tracking-[0.18em] text-muted-foreground">
         {label}
       </p>
-      <p className="mt-1 text-sm font-semibold text-foreground">{value}</p>
+      <p className="mt-1.5 text-base font-semibold text-foreground">{value}</p>
+    </div>
+  );
+}
+
+function DashboardCoverageBar({
+  label,
+  value,
+}: {
+  label: string;
+  value: number;
+}) {
+  return (
+    <div className="rounded-[1.1rem] border border-white/28 bg-white/70 px-3.5 py-3 shadow-sm backdrop-blur-md dark:border-white/10 dark:bg-white/6">
+      <div className="flex items-center justify-between gap-3">
+        <p className="text-tiny font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+          {label}
+        </p>
+        <span className="text-sm font-semibold text-foreground">{value}%</span>
+      </div>
+      <div className="mt-3 h-2.5 overflow-hidden rounded-full bg-navy-100 dark:bg-white/10">
+        <div
+          className="h-full rounded-full bg-navy-900 transition-all duration-700 dark:bg-gold-300"
+          style={{ width: `${value}%` }}
+        />
+      </div>
     </div>
   );
 }

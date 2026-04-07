@@ -22,3 +22,19 @@ Thumbs.db
 
 # TypeScript
 **/*.tsbuildinfo
+
+# Playwright & Testing
+test-results/
+playwright-report/
+blob-report/
+playwright/.cache/
+/.playwright*/
+
+# Agents, Skills, Tools & Logs
+.agents/
+temp-skills/
+skills-lock.json
+tools/
+client_log.txt
+page_log*.txt
+temp_restore.*

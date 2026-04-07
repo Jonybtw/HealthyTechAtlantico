@@ -16,7 +16,7 @@ export const PERMISSIONS = {
   READ_SOS: "read_sos",
   SEND_REPORTS: "send_reports",
   READ_REPORTS: "read_reports",
-  MANAGE_DISPENSAS: "manage_dispensas",
+  MANAGE_EXEMPTIONS: "manage_exemptions",
   READ_CLASS_REPORTS: "read_class_reports",
   MANAGE_GUARDIANS: "manage_guardians",
   READ_LINKED_STUDENTS: "read_linked_students",
@@ -56,11 +56,18 @@ const ROLE_PERMISSIONS: Record<Role, Set<Permission>> = {
     PERMISSIONS.READ_SOS,
     PERMISSIONS.SEND_REPORTS,
     PERMISSIONS.READ_REPORTS,
-    PERMISSIONS.MANAGE_DISPENSAS,
+    PERMISSIONS.MANAGE_EXEMPTIONS,
     PERMISSIONS.READ_CLASS_REPORTS,
     PERMISSIONS.MANAGE_GUARDIANS,
   ]),
-  PSICOLOGO: new Set([PERMISSIONS.READ_SOS, PERMISSIONS.READ_QUESTIONNAIRES]),
+  PSICOLOGO: new Set([
+    PERMISSIONS.READ_SOS,
+    PERMISSIONS.READ_QUESTIONNAIRES,
+    PERMISSIONS.READ_STUDENT_PROFILE,
+    PERMISSIONS.READ_BIOMETRICS,
+    PERMISSIONS.READ_TESTS,
+    PERMISSIONS.LIST_STUDENTS,
+  ]),
   PAIS: new Set([
     PERMISSIONS.LIST_STUDENTS,
     PERMISSIONS.READ_BIOMETRICS,
@@ -82,7 +89,7 @@ export function getRolePermissions(role: Role): Permission[] {
 }
 
 export function isStaffRole(role: Role): boolean {
-  return role === "ADMIN" || role === "PROFESSOR";
+  return role === "ADMIN" || role === "PROFESSOR" || role === "PSICOLOGO";
 }
 
 export function canAccessSosInbox(role: Role): boolean {

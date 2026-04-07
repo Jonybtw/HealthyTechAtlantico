@@ -34,6 +34,12 @@ interface DataTableProps<T> {
   emptyStateIcon?: LucideIcon;
   onRowClick?: (row: T) => void;
   rowKey: (row: T) => string;
+  
+  /* Server pagination optional props */
+  serverTotalItems?: number;
+  serverPage?: number;
+  onServerPageChange?: (page: number) => void;
+  onServerSearch?: (query: string) => void;
 }
 
 export function DataTable<T extends object>({
@@ -49,14 +55,21 @@ export function DataTable<T extends object>({
   emptyStateIcon: EmptyIcon = Search,
   onRowClick,
   rowKey,
+  serverTotalItems,
+  serverPage,
+  onServerPageChange,
+  onServerSearch,
 }: DataTableProps<T>) {
   const [search, setSearch] = useState("");
   const deferredSearch = useDeferredValue(search);
   const [sortKey, setSortKey] = useState<string | null>(null);
   const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
-  const [page, setPage] = useState(1);
+  const [internalPage, setPage] = useState(1);
+
+  const page = serverPage ?? internalPage;
 
   const filtered = useMemo(() => {
+    if (serverTotalItems !== undefined) return data;
     if (!deferredSearch.trim()) {
       return data;
     }
@@ -75,6 +88,7 @@ export function DataTable<T extends object>({
   }, [columns, data, deferredSearch]);
 
   const sorted = useMemo(() => {
+    if (serverTotalItems !== undefined) return filtered;
     if (!sortKey) {
       return filtered;
     }
@@ -98,9 +112,30 @@ export function DataTable<T extends object>({
     return sortedRows;
   }, [filtered, sortDir, sortKey]);
 
-  const totalPages = Math.max(1, Math.ceil(sorted.length / pageSize));
+  const totalItemsCount = serverTotalItems ?? sorted.length;
+  const totalPages = Math.max(1, Math.ceil(totalItemsCount / pageSize));
   const safePage = Math.min(page, totalPages);
-  const paged = sorted.slice((safePage - 1) * pageSize, safePage * pageSize);
+  
+  const paged = serverTotalItems !== undefined 
+    ? data 
+    : sorted.slice((safePage - 1) * pageSize, safePage * pageSize);
+
+  function handlePageChange(newPage: number) {
+    if (onServerPageChange) {
+      onServerPageChange(newPage);
+    } else {
+      setPage(newPage);
+    }
+  }
+
+  function handleSearchChange(val: string) {
+    setSearch(val);
+    if (onServerSearch) {
+      onServerSearch(val);
+    } else {
+      setPage(1);
+    }
+  }
 
   function toggleSort(key: string) {
     if (sortKey === key) {
@@ -109,12 +144,12 @@ export function DataTable<T extends object>({
       setSortKey(key);
       setSortDir("asc");
     }
-    setPage(1);
+    handlePageChange(1);
   }
 
   return (
     <div className="animate-fade-in-up flex flex-col gap-4">
-      <div className="overflow-hidden rounded-xl border border-white/20 bg-white/72 shadow-card dark:border-white/10 dark:bg-navy-950/60">
+      <div className="overflow-hidden rounded-2xl border border-white/20 bg-white/72 shadow-card dark:border-white/10 dark:bg-navy-950/60">
         {searchable || toolbarTitle || toolbarSummary || toolbarActions ? (
           <div className="flex flex-col gap-4 border-b border-border/60 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
             <div className="space-y-0.5">
@@ -144,10 +179,7 @@ export function DataTable<T extends object>({
                   <Search className="pointer-events-none absolute left-3 top-1/2 z-10 size-4 -translate-y-1/2 text-slate-400" />
                   <input
                     value={search}
-                    onChange={(event) => {
-                      setSearch(event.target.value);
-                      setPage(1);
-                    }}
+                    onChange={(event) => handleSearchChange(event.target.value)}
                     placeholder={searchPlaceholder}
                     className="h-10 w-full rounded-full border border-input bg-background/75 py-2 pl-9 pr-4 text-sm text-foreground outline-none transition-all placeholder:text-muted-foreground focus:border-gold-400 focus:ring-4 focus:ring-gold-400/15"
                   />
@@ -237,10 +269,10 @@ export function DataTable<T extends object>({
             <p className="text-xs font-medium text-muted-foreground">
               Exibindo{" "}
               <span className="font-bold text-foreground">
-                {Math.min(sorted.length, safePage * pageSize)}
+                {Math.min(totalItemsCount, safePage * pageSize)}
               </span>{" "}
               de{" "}
-              <span className="font-bold text-foreground">{sorted.length}</span>{" "}
+              <span className="font-bold text-foreground">{totalItemsCount}</span>{" "}
               resultados
             </p>
             <div className="flex items-center gap-1.5">
@@ -249,7 +281,7 @@ export function DataTable<T extends object>({
                 variant="outline"
                 size="icon"
                 disabled={safePage <= 1}
-                onClick={() => setPage((current) => current - 1)}
+                onClick={() => handlePageChange(safePage - 1)}
                 className="size-8"
               >
                 <ChevronLeft className="size-4" />
@@ -260,7 +292,7 @@ export function DataTable<T extends object>({
                   <Button
                     key={p}
                     type="button"
-                    onClick={() => setPage(p)}
+                    onClick={() => handlePageChange(p)}
                     variant={safePage === p ? "primary" : "outline"}
                     size="icon"
                     className="size-8 text-xs"
@@ -274,7 +306,7 @@ export function DataTable<T extends object>({
                 variant="outline"
                 size="icon"
                 disabled={safePage >= totalPages}
-                onClick={() => setPage((current) => current + 1)}
+                onClick={() => handlePageChange(safePage + 1)}
                 className="size-8"
               >
                 <ChevronRight className="size-4" />

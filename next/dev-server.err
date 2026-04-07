@@ -1,7 +1,0 @@
-[Error: Failed to open database
-
-Caused by:
-    0: Loading persistence directory failed
-    1: The process cannot access the file because it is being used by another process. (os error 32)] {
-  code: 'GenericFailure'
-}

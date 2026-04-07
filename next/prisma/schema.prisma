@@ -61,7 +61,7 @@ model User {
   createdSessions  EvaluationSession[]
   resolvedAlerts   SosAlert[]          @relation("Resolver")
   createdReports   Report[]
-  createdDispensas Dispensa[]
+  createdExemptions Exemption[]
   auditLogs        AuditLog[]
 
   @@map("users")
@@ -95,7 +95,7 @@ model Student {
   questionnaires Questionnaire[]
   sosAlerts      SosAlert[]
   reports        Report[]
-  dispensas      Dispensa[]
+  exemptions      Exemption[]
   guardians      StudentGuardian[]
   sessions       EvaluationSession[]
 
@@ -254,7 +254,7 @@ model Report {
 
 //Regista períodos em que o aluno está isento de atividade física, com 
 //controlo de datas e existência de atestado médico.
-model Dispensa {
+model Exemption {
   id                 String   @id @default(cuid())
   studentId          String   @map("student_id")
   reason             String
@@ -267,7 +267,7 @@ model Dispensa {
   student   Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
   createdBy User    @relation(fields: [createdById], references: [id])
 
-  @@map("dispensas")
+  @@map("exemptions")
 }
 
 

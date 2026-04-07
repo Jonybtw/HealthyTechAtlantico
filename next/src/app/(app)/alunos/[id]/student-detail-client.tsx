@@ -109,7 +109,7 @@ interface Props {
       periodKey: string | null;
       submittedAt: string;
     }[];
-    dispensas: {
+    exemptions: {
       id: string;
       reason: string;
       startDate: string;
@@ -775,22 +775,22 @@ export function StudentDetailClient({ student }: Props) {
             title={
               <span className="flex items-center gap-2">
                 <ShieldOff className="size-4 text-gold-600" />
-                {t("dispensas")}
+                {t("exemptions")}
               </span>
             }
           >
-            {student.dispensas.length > 0 ? (
+            {student.exemptions.length > 0 ? (
               <ul className="grid gap-2">
-                {student.dispensas.map((dispensa) => (
+                {student.exemptions.map((exemption) => (
                   <li
-                    key={dispensa.id}
+                    key={exemption.id}
                     className="flex items-start justify-between rounded-xl border border-white/20 bg-white/55 px-4 py-3 backdrop-blur-sm dark:border-white/10 dark:bg-navy-950/35"
                   >
                     <span className="text-sm font-medium text-foreground">
-                      {dispensa.reason}
+                      {exemption.reason}
                     </span>
                     <span className="shrink-0 text-xs text-muted-foreground">
-                      {formatDate(dispensa.startDate)} - {formatDate(dispensa.endDate)}
+                      {formatDate(exemption.startDate)} - {formatDate(exemption.endDate)}
                     </span>
                   </li>
                 ))}

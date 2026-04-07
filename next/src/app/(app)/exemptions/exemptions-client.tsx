@@ -32,18 +32,18 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useUser } from "@/components/user-context";
 import {
   useStudents,
-  useDispensas,
-  useCreateDispensa,
-  useDeleteDispensa,
+  useExemptions,
+  useCreateExemption,
+  useDeleteExemption,
 } from "@/hooks/use-queries";
 import { MeshGlow } from "@/components/ui/mesh-glow";
 import { cn } from "@/lib/utils";
 
-export default function DispensasPage() {
-  const t = useTranslations("dispensas");
+export default function ExemptionsPage() {
+  const t = useTranslations("exemptions");
   const common = useTranslations("common");
   const { role } = useUser();
-  const canManageDispensas = role === "ADMIN" || role === "PROFESSOR";
+  const canManageExemptions = role === "ADMIN" || role === "PROFESSOR";
 
   const {
     data: studentsList = [],
@@ -65,14 +65,14 @@ export default function DispensasPage() {
   const [studentId, setStudentId] = useState<string | null>(null);
 
   const {
-    data: dispensas = [],
+    data: exemptions = [],
     isLoading: loading,
-    isError: dispensasError,
-    refetch: refetchDispensas,
-  } = useDispensas(studentId);
+    isError: exemptionsError,
+    refetch: refetchExemptions,
+  } = useExemptions(studentId);
 
-  const createMutation = useCreateDispensa(studentId);
-  const deleteMutation = useDeleteDispensa(studentId);
+  const createMutation = useCreateExemption(studentId);
+  const deleteMutation = useDeleteExemption(studentId);
   const [showForm, setShowForm] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);
 
@@ -121,23 +121,23 @@ export default function DispensasPage() {
     }
   };
 
-  const isDispensaActive = (endDate?: string | Date | null) => {
+  const isExemptionActive = (endDate?: string | Date | null) => {
     if (!endDate) return true;
     return new Date(endDate) >= new Date();
   };
 
-  if (!canManageDispensas) {
+  if (!canManageExemptions) {
     return (
       <PageScaffold
         headerProps={{
           title: t("title"),
           description: t("description"),
-          eyebrow: "GESTÃO · DISPENSAS",
+          eyebrow: "GESTÃO · exemptionS",
         }}
       >
         <EmptyState
           icon={ShieldOff}
-          title="Sem acesso às dispensas"
+          title="Sem acesso às exemptions"
           description="Esta área está reservada a professores e administradores."
         />
       </PageScaffold>
@@ -149,7 +149,7 @@ export default function DispensasPage() {
       headerProps={{
         title: t("title"),
         description: t("description"),
-        eyebrow: "GESTÃO · DISPENSAS",
+        eyebrow: "GESTÃO · exemptionS",
       }}
       headerActions={
         <Button
@@ -179,7 +179,7 @@ export default function DispensasPage() {
 
         <AnimatePresence>
           {showForm && (
-            <FadeIn key="dispensa-form" className="mb-8">
+            <FadeIn key="exemption-form" className="mb-8">
               <PageSection className="max-w-2xl border-primary-500/20">
                 <div className="flex items-center gap-3 mb-6">
                   <div className="size-8 rounded-full bg-primary-500/10 flex items-center justify-center">
@@ -262,19 +262,19 @@ export default function DispensasPage() {
             <EmptyState
               icon={Activity}
               title="Seleção Necessária"
-              description="Escolhe um aluno para gerir as suas dispensas médicas e protocolos."
+              description="Escolhe um aluno para gerir as suas exemptions médicas e protocolos."
             />
-          ) : dispensasError ? (
+          ) : exemptionsError ? (
             <EmptyState
               icon={ShieldOff}
               title="Erro de Carregamento"
-              description="Houve um problema ao procurar as dispensas."
+              description="Houve um problema ao procurar as exemptions."
               action={
                 <Button
                   size="sm"
                   variant="secondary"
                   icon={<RefreshCw className="size-4" />}
-                  onClick={() => void refetchDispensas()}
+                  onClick={() => void refetchExemptions()}
                 >
                   Tentar novamente
                 </Button>
@@ -295,13 +295,13 @@ export default function DispensasPage() {
                 </Card>
               ))}
             </div>
-          ) : dispensas.length === 0 ? (
+          ) : exemptions.length === 0 ? (
             <EmptyState
               icon={FileText}
-              title={t("noDispensasTitle")}
-              description={t("noDispensas")}
+              title={t("noExemptionsTitle")}
+              description={t("noExemptions")}
               action={
-                canManageDispensas ? (
+                canManageExemptions ? (
                   <Button
                     size="sm"
                     variant="primary"
@@ -315,10 +315,10 @@ export default function DispensasPage() {
             />
           ) : (
             <StaggerList className="grid gap-4">
-              {dispensas.map((dispensa) => {
-                const active = isDispensaActive(dispensa.endDate);
+              {exemptions.map((exemption) => {
+                const active = isExemptionActive(exemption.endDate);
                 return (
-                  <StaggerItem key={dispensa.id}>
+                  <StaggerItem key={exemption.id}>
                     <Card
                       className={cn(
                         "group flex items-center justify-between p-6 transition-all duration-300 hover:-translate-y-0.5",
@@ -346,17 +346,17 @@ export default function DispensasPage() {
 
                         <div className="flex flex-col">
                           <h4 className="text-white font-bold text-base tracking-tight mb-1">
-                            {dispensa.reason}
+                            {exemption.reason}
                           </h4>
                           <div className="flex items-center gap-3">
                             <div className="flex items-center gap-1.5 text-tiny font-bold uppercase tracking-widest text-slate-400">
                               <Calendar className="size-3" />
                               <span>
                                 {new Date(
-                                  dispensa.startDate,
+                                  exemption.startDate,
                                 ).toLocaleDateString("pt-PT")}
-                                {dispensa.endDate &&
-                                  ` — ${new Date(dispensa.endDate).toLocaleDateString("pt-PT")}`}
+                                {exemption.endDate &&
+                                  ` — ${new Date(exemption.endDate).toLocaleDateString("pt-PT")}`}
                               </span>
                             </div>
                             {active ? (
@@ -385,7 +385,7 @@ export default function DispensasPage() {
                         type="button"
                         size="icon"
                         variant="ghost"
-                        onClick={() => setDeleteId(dispensa.id)}
+                        onClick={() => setDeleteId(exemption.id)}
                         className="text-slate-500 hover:border-danger-500/20 hover:bg-danger-500/10 hover:text-danger-500"
                         title={t("deleteBtn")}
                       >

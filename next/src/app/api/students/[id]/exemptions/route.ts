@@ -18,9 +18,9 @@ import { AUDIT_ACTIONS } from "@/lib/audit-actions";
 import { prisma } from "@/lib/prisma";
 import { PERMISSIONS } from "@/lib/rbac";
 import { getStudentAccessContext } from "@/lib/student-access";
-import { dispensaSchema } from "@/lib/validations";
+import { exemptionSchema } from "@/lib/validations";
 
-// GET /api/students/[id]/dispensas
+// GET /api/students/[id]/exemptions
 export async function GET(
   _req: NextRequest,
   { params }: { params: Promise<{ id: string }> },
@@ -36,25 +36,25 @@ export async function GET(
       id,
       session.user.id,
       session.user.role as Role,
-      PERMISSIONS.MANAGE_DISPENSAS,
+      PERMISSIONS.MANAGE_EXEMPTIONS,
     );
     if (!access.ok) {
       return err(access.error, access.status);
     }
 
-    const dispensas = await prisma.dispensa.findMany({
+    const exemptions = await prisma.exemption.findMany({
       where: { studentId: id },
       orderBy: { startDate: "desc" },
     });
 
-    return ok(dispensas);
+    return ok(exemptions);
   } catch (error) {
-    console.error("GET dispensas error:", error);
+    console.error("GET exemptions error:", error);
     return serverError();
   }
 }
 
-// POST /api/students/[id]/dispensas
+// POST /api/students/[id]/exemptions
 export async function POST(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> },
@@ -70,16 +70,16 @@ export async function POST(
       id,
       session.user.id,
       session.user.role as Role,
-      PERMISSIONS.MANAGE_DISPENSAS,
+      PERMISSIONS.MANAGE_EXEMPTIONS,
     );
     if (!access.ok) {
       return err(access.error, access.status);
     }
 
     const body = await req.json();
-    const data = dispensaSchema.parse(body);
+    const data = exemptionSchema.parse(body);
 
-    const dispensa = await prisma.dispensa.create({
+    const exemption = await prisma.exemption.create({
       data: {
         studentId: id,
         reason: data.reason,
@@ -92,22 +92,22 @@ export async function POST(
 
     await auditLog({
       userId: session.user.id,
-      action: AUDIT_ACTIONS.CREATE_DISPENSA,
-      targetId: dispensa.id,
+      action: AUDIT_ACTIONS.CREATE_EXEMPTION,
+      targetId: exemption.id,
     }).catch(console.error);
 
-    return created(dispensa);
+    return created(exemption);
   } catch (error: unknown) {
     if (error instanceof z.ZodError) {
       return validationError(error.issues);
     }
 
-    console.error("POST dispensas error:", error);
+    console.error("POST exemptions error:", error);
     return serverError();
   }
 }
 
-// DELETE /api/students/[id]/dispensas (body: { dispensaId })
+// DELETE /api/students/[id]/exemptions (body: { exemptionId })
 export async function DELETE(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> },
@@ -123,36 +123,36 @@ export async function DELETE(
       id,
       session.user.id,
       session.user.role as Role,
-      PERMISSIONS.MANAGE_DISPENSAS,
+      PERMISSIONS.MANAGE_EXEMPTIONS,
     );
     if (!access.ok) {
       return err(access.error, access.status);
     }
 
     const body = await req.json();
-    const dispensaId = body?.dispensaId as string | undefined;
-    if (!dispensaId) {
-      return badRequest("dispensaId obrigatório");
+    const exemptionId = body?.exemptionId as string | undefined;
+    if (!exemptionId) {
+      return badRequest("exemptionId obrigatório");
     }
 
-    const dispensa = await prisma.dispensa.findUnique({
-      where: { id: dispensaId },
+    const exemption = await prisma.exemption.findUnique({
+      where: { id: exemptionId },
     });
-    if (!dispensa || dispensa.studentId !== id) {
-      return notFound("Dispensa não encontrada");
+    if (!exemption || exemption.studentId !== id) {
+      return notFound("Exemption não encontrada");
     }
 
-    await prisma.dispensa.delete({ where: { id: dispensaId } });
+    await prisma.exemption.delete({ where: { id: exemptionId } });
 
     await auditLog({
       userId: session.user.id,
-      action: AUDIT_ACTIONS.DELETE_DISPENSA,
-      targetId: dispensaId,
+      action: AUDIT_ACTIONS.DELETE_EXEMPTION,
+      targetId: exemptionId,
     }).catch(console.error);
 
     return noContent();
   } catch (error) {
-    console.error("DELETE dispensas error:", error);
+    console.error("DELETE exemptions error:", error);
     return serverError();
   }
 }

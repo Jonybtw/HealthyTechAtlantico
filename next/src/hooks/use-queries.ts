@@ -62,7 +62,7 @@ const queryKeys = {
   student: (id: string) => ["student", id] as const,
   staff: () => ["staff"] as const,
   dashboard: () => ["dashboard"] as const,
-  dispensas: (studentId: string) => ["dispensas", studentId] as const,
+  exemptions: (studentId: string) => ["exemptions", studentId] as const,
   sosAlerts: () => ["sos-alerts"] as const,
   studentSos: (studentId: string) => ["student-sos", studentId] as const,
   classes: () => ["classes"] as const,
@@ -133,9 +133,9 @@ function useDashboard() {
   });
 }
 
-export function useDispensas(studentId: string | null) {
+export function useExemptions(studentId: string | null) {
   return useQuery({
-    queryKey: queryKeys.dispensas(studentId ?? ""),
+    queryKey: queryKeys.exemptions(studentId ?? ""),
     queryFn: () =>
       fetchJson<
         {
@@ -145,7 +145,7 @@ export function useDispensas(studentId: string | null) {
           endDate: string;
           createdAt: string;
         }[]
-      >(`/api/students/${studentId}/dispensas`),
+      >(`/api/students/${studentId}/exemptions`),
     enabled: !!studentId,
     staleTime: 60 * 1000,
   });
@@ -175,35 +175,35 @@ export function useDeleteStaff() {
   });
 }
 
-export function useCreateDispensa(studentId: string | null) {
+export function useCreateExemption(studentId: string | null) {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (data: {
       reason: string;
       startDate: string;
       endDate?: string;
-    }) => mutateJson(`/api/students/${studentId}/dispensas`, "POST", data),
+    }) => mutateJson(`/api/students/${studentId}/exemptions`, "POST", data),
     onSuccess: () => {
       if (studentId) {
         void queryClient.invalidateQueries({
-          queryKey: queryKeys.dispensas(studentId),
+          queryKey: queryKeys.exemptions(studentId),
         });
       }
     },
   });
 }
 
-export function useDeleteDispensa(studentId: string | null) {
+export function useDeleteExemption(studentId: string | null) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (dispensaId: string) =>
-      mutateJson<void>(`/api/students/${studentId}/dispensas`, "DELETE", {
-        dispensaId,
+    mutationFn: (exemptionId: string) =>
+      mutateJson<void>(`/api/students/${studentId}/exemptions`, "DELETE", {
+        exemptionId,
       }),
     onSuccess: () => {
       if (studentId) {
         void queryClient.invalidateQueries({
-          queryKey: queryKeys.dispensas(studentId),
+          queryKey: queryKeys.exemptions(studentId),
         });
       }
     },

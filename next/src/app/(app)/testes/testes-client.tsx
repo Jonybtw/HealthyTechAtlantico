@@ -1,15 +1,16 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { toast } from "sonner";
 import {
+  Activity,
   ArrowUpDown,
+  CalendarDays,
   CheckCircle2,
   Clock3,
   Dumbbell,
   FileUp,
-  Gauge,
   MoveRight,
   Ruler,
   Save,
@@ -34,6 +35,7 @@ import { useUser } from "@/components/user-context";
 import { readApiResponse } from "@/lib/api-client";
 import { classifyTest } from "@/lib/fitness-tests";
 import { calcAgeFromBirthDate, classifyBmi } from "@/lib/zaf";
+import { cn } from "@/lib/utils";
 
 interface StudentOption {
   id: string;
@@ -41,6 +43,7 @@ interface StudentOption {
   sex: Sex;
   birthDate: string | null;
   className?: string | null;
+  schoolYear?: string | null;
 }
 
 type TestFieldId =
@@ -60,35 +63,55 @@ interface TestFieldMeta {
   placeholder: string;
   type?: "number" | "text";
   step?: string;
-  icon: React.ReactNode;
+  Icon: LucideIcon;
 }
 
 interface CategoryMeta {
   id: string;
   title: string;
   description: string;
-  icon: LucideIcon;
+  Icon: LucideIcon;
   fields: TestFieldMeta[];
 }
 
-const HEADER_EYEBROW = "AVALIACAO · TESTES FISICOS";
+interface TestRecordResponse {
+  id: string;
+  testId: string;
+  valueNum: number | string | null;
+  valueText: string;
+  unit: string;
+  zone: string;
+  recordedAt: string;
+}
+
+interface TestRecord {
+  id: string;
+  testId: string;
+  valueNum: number | null;
+  valueText: string;
+  unit: string;
+  zone: string;
+  recordedAt: string;
+}
+
+const HEADER_EYEBROW = "AVALIACAO / TESTES FISICOS";
 
 const TEST_FIELD_MAP: Record<TestFieldId, TestFieldMeta> = {
   vai: {
     id: "vai",
-    label: "Vai-e-vem (20m)",
+    label: "Vai-e-vem 20m",
     unit: "percursos",
     placeholder: "0",
     step: "1",
-    icon: <Wind className="size-4" />,
+    Icon: Wind,
   },
   cooper: {
     id: "cooper",
-    label: "Cooper (12 min)",
+    label: "Cooper 12 min",
     unit: "voltas",
     placeholder: "0",
     step: "1",
-    icon: <Wind className="size-4" />,
+    Icon: Wind,
   },
   milha: {
     id: "milha",
@@ -96,7 +119,7 @@ const TEST_FIELD_MAP: Record<TestFieldId, TestFieldMeta> = {
     unit: "mm:ss",
     placeholder: "08:30",
     type: "text",
-    icon: <Clock3 className="size-4" />,
+    Icon: Clock3,
   },
   velocidade: {
     id: "velocidade",
@@ -104,7 +127,7 @@ const TEST_FIELD_MAP: Record<TestFieldId, TestFieldMeta> = {
     unit: "s",
     placeholder: "6.4",
     step: "0.1",
-    icon: <Zap className="size-4" />,
+    Icon: Zap,
   },
   agilidade: {
     id: "agilidade",
@@ -112,7 +135,7 @@ const TEST_FIELD_MAP: Record<TestFieldId, TestFieldMeta> = {
     unit: "s",
     placeholder: "10.8",
     step: "0.1",
-    icon: <MoveRight className="size-4" />,
+    Icon: MoveRight,
   },
   abd: {
     id: "abd",
@@ -120,7 +143,7 @@ const TEST_FIELD_MAP: Record<TestFieldId, TestFieldMeta> = {
     unit: "reps",
     placeholder: "0",
     step: "1",
-    icon: <Dumbbell className="size-4" />,
+    Icon: Dumbbell,
   },
   bracos: {
     id: "bracos",
@@ -128,7 +151,7 @@ const TEST_FIELD_MAP: Record<TestFieldId, TestFieldMeta> = {
     unit: "reps",
     placeholder: "0",
     step: "1",
-    icon: <Dumbbell className="size-4" />,
+    Icon: Dumbbell,
   },
   senta: {
     id: "senta",
@@ -136,7 +159,7 @@ const TEST_FIELD_MAP: Record<TestFieldId, TestFieldMeta> = {
     unit: "cm",
     placeholder: "0.0",
     step: "0.1",
-    icon: <Ruler className="size-4" />,
+    Icon: Ruler,
   },
 };
 
@@ -144,32 +167,34 @@ const CATEGORY_SECTIONS: CategoryMeta[] = [
   {
     id: "aerobica",
     title: "Capacidade aerobica",
-    description: "Resultados de resistencia e esforco continuo.",
-    icon: Wind,
+    description: "Resistencia e esforco continuo.",
+    Icon: Wind,
     fields: [TEST_FIELD_MAP.vai, TEST_FIELD_MAP.cooper, TEST_FIELD_MAP.milha],
   },
   {
     id: "velocidade",
     title: "Velocidade e agilidade",
     description: "Tempo, explosao e mudanca de direcao.",
-    icon: Zap,
+    Icon: Zap,
     fields: [TEST_FIELD_MAP.velocidade, TEST_FIELD_MAP.agilidade],
   },
   {
     id: "forca",
     title: "Forca muscular",
-    description: "Capacidade de repeticao e suporte do proprio peso.",
-    icon: Dumbbell,
+    description: "Repeticao, suporte e controlo do corpo.",
+    Icon: Dumbbell,
     fields: [TEST_FIELD_MAP.abd, TEST_FIELD_MAP.bracos],
   },
   {
     id: "flexibilidade",
     title: "Flexibilidade",
     description: "Amplitude e alcance do tronco.",
-    icon: Ruler,
+    Icon: Ruler,
     fields: [TEST_FIELD_MAP.senta],
   },
 ];
+
+const FIELD_ORDER = Object.keys(TEST_FIELD_MAP) as TestFieldId[];
 
 const INITIAL_FORM: Record<TestFieldId | "weightKg" | "heightM", string> = {
   vai: "",
@@ -184,9 +209,53 @@ const INITIAL_FORM: Record<TestFieldId | "weightKg" | "heightM", string> = {
   heightM: "",
 };
 
+function toOptionalNumber(value: number | string | null | undefined) {
+  if (value === null || value === undefined || value === "") {
+    return null;
+  }
+
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : null;
+}
+
+function normalizeTestRecord(record: TestRecordResponse): TestRecord {
+  return {
+    id: record.id,
+    testId: record.testId,
+    valueNum: toOptionalNumber(record.valueNum),
+    valueText: record.valueText,
+    unit: record.unit,
+    zone: record.zone,
+    recordedAt: record.recordedAt,
+  };
+}
+
+function getTestSortIndex(testId: string) {
+  const index = FIELD_ORDER.indexOf(testId as TestFieldId);
+  return index === -1 ? FIELD_ORDER.length : index;
+}
+
+function isHealthyZone(zone: string | null | undefined) {
+  if (!zone) {
+    return false;
+  }
+
+  const normalizedZone = zone
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase();
+
+  return (
+    normalizedZone.includes("saudavel") ||
+    normalizedZone.includes("healthy") ||
+    normalizedZone.includes("zsaf")
+  );
+}
+
 export default function TestesPage() {
   const t = useTranslations("testes");
   const common = useTranslations("common");
+  const locale = useLocale();
   const { role } = useUser();
   const canManageTests = role === "ADMIN" || role === "PROFESSOR";
 
@@ -195,6 +264,8 @@ export default function TestesPage() {
   const [studentId, setStudentId] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [isImportingCsv, setIsImportingCsv] = useState(false);
+  const [loadingLatestTests, setLoadingLatestTests] = useState(false);
+  const [latestTests, setLatestTests] = useState<TestRecord[]>([]);
   const [form, setForm] =
     useState<Record<TestFieldId | "weightKg" | "heightM", string>>(
       INITIAL_FORM,
@@ -219,6 +290,14 @@ export default function TestesPage() {
     return calcAgeFromBirthDate(selectedStudent.birthDate);
   }, [selectedStudent]);
 
+  const selectedStudentContext = useMemo(
+    () =>
+      [selectedStudent?.className, selectedStudent?.schoolYear]
+        .filter(Boolean)
+        .join(" / "),
+    [selectedStudent?.className, selectedStudent?.schoolYear],
+  );
+
   const completedTestsCount = useMemo(
     () =>
       Object.entries(form).filter(
@@ -233,7 +312,8 @@ export default function TestesPage() {
       return [];
     }
 
-    return Object.values(TEST_FIELD_MAP).flatMap((field) => {
+    return FIELD_ORDER.flatMap((fieldId) => {
+      const field = TEST_FIELD_MAP[fieldId];
       const value = form[field.id];
       if (!value.trim()) {
         return [];
@@ -241,12 +321,7 @@ export default function TestesPage() {
 
       const zone =
         selectedStudentAge !== null
-          ? classifyTest(
-              field.id,
-              value,
-              selectedStudent.sex,
-              selectedStudentAge,
-            )
+          ? classifyTest(field.id, value, selectedStudent.sex, selectedStudentAge)
           : null;
 
       return [
@@ -261,10 +336,10 @@ export default function TestesPage() {
     });
   }, [form, selectedStudent, selectedStudentAge]);
 
-  const healthyPreviewCount = previewResults.filter(
-    (result) =>
-      result.zone?.includes("Saud") || result.zone?.includes("Healthy"),
+  const healthyPreviewCount = previewResults.filter((result) =>
+    isHealthyZone(result.zone),
   ).length;
+
   const resolvedPreviewCount = previewResults.filter((result) =>
     Boolean(result.zone),
   ).length;
@@ -284,6 +359,7 @@ export default function TestesPage() {
     const bmi = Math.round((weight / (height * height)) * 10) / 10;
     const age = selectedStudentAge ?? 14;
     const imcResult = classifyBmi(bmi, selectedStudent.sex, age);
+
     return {
       bmi,
       zone:
@@ -297,6 +373,29 @@ export default function TestesPage() {
     selectedStudentAge,
     t,
   ]);
+
+  const familyCoverage = useMemo(
+    () =>
+      CATEGORY_SECTIONS.map((section) => {
+        const filled = section.fields.filter(
+          (field) => form[field.id].trim().length > 0,
+        ).length;
+
+        return {
+          id: section.id,
+          title: section.title,
+          filled,
+          total: section.fields.length,
+          percentage:
+            section.fields.length > 0
+              ? Math.round((filled / section.fields.length) * 100)
+              : 0,
+        };
+      }),
+    [form],
+  );
+
+  const sessionReady = completedTestsCount > 0 || biometricsReady;
 
   const loadStudents = useCallback(async () => {
     setLoadingStudents(true);
@@ -314,6 +413,7 @@ export default function TestesPage() {
           sex: Sex | null;
           birthDate: string | null;
           className?: string | null;
+          schoolYear?: string | null;
         }>;
       }>(response);
 
@@ -324,6 +424,7 @@ export default function TestesPage() {
           sex: student.sex ?? "M",
           birthDate: student.birthDate ?? null,
           className: student.className ?? null,
+          schoolYear: student.schoolYear ?? null,
         })),
       );
     } catch {
@@ -333,15 +434,67 @@ export default function TestesPage() {
     }
   }, [common]);
 
+  const loadLatestTests = useCallback(
+    async (targetStudentId: string) => {
+      setLoadingLatestTests(true);
+      try {
+        const response = await fetch(
+          `/api/students/${targetStudentId}/tests?latest=true`,
+        );
+        const records = await readApiResponse<TestRecordResponse[]>(response);
+        setLatestTests(
+          records
+            .map(normalizeTestRecord)
+            .sort((left, right) => {
+              return (
+                getTestSortIndex(left.testId) - getTestSortIndex(right.testId)
+              );
+            }),
+        );
+      } catch {
+        setLatestTests([]);
+        toast.error(t("loadConnectionError"));
+      } finally {
+        setLoadingLatestTests(false);
+      }
+    },
+    [t],
+  );
+
   useEffect(() => {
     void loadStudents();
   }, [loadStudents]);
+
+  useEffect(() => {
+    setForm(INITIAL_FORM);
+    setLastSubmission(null);
+  }, [studentId]);
+
+  useEffect(() => {
+    if (!studentId) {
+      setLatestTests([]);
+      setLoadingLatestTests(false);
+      return;
+    }
+
+    void loadLatestTests(studentId);
+  }, [studentId, loadLatestTests]);
 
   const updateField =
     (field: TestFieldId | "weightKg" | "heightM") => (value: string) => {
       setForm((current) => ({ ...current, [field]: value }));
       setLastSubmission(null);
     };
+
+  const formatDate = useCallback(
+    (value: string) =>
+      new Intl.DateTimeFormat(locale, {
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
+      }).format(new Date(value)),
+    [locale],
+  );
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -351,27 +504,28 @@ export default function TestesPage() {
       return;
     }
 
-    const testsToSave = Object.values(TEST_FIELD_MAP)
-      .filter((field) => form[field.id].trim().length > 0)
-      .map((field) => {
-        const zone =
-          selectedStudentAge !== null
-            ? (classifyTest(
-                field.id,
-                form[field.id],
-                selectedStudent.sex,
-                selectedStudentAge,
-              ) ?? t("improvementZone"))
-            : t("improvementZone");
+    const testsToSave = FIELD_ORDER.filter(
+      (fieldId) => form[fieldId].trim().length > 0,
+    ).map((fieldId) => {
+      const field = TEST_FIELD_MAP[fieldId];
+      const zone =
+        selectedStudentAge !== null
+          ? classifyTest(
+              field.id,
+              form[field.id],
+              selectedStudent.sex,
+              selectedStudentAge,
+            ) ?? t("improvementZone")
+          : t("improvementZone");
 
-        return {
-          testId: field.id,
-          valueNum: field.type === "text" ? null : parseFloat(form[field.id]),
-          valueText: form[field.id],
-          unit: field.unit,
-          zone,
-        };
-      });
+      return {
+        testId: field.id,
+        valueNum: field.type === "text" ? null : parseFloat(form[field.id]),
+        valueText: form[field.id],
+        unit: field.unit,
+        zone,
+      };
+    });
 
     if (testsToSave.length === 0 && !biometricsReady) {
       toast.error(t("fillValue"));
@@ -389,10 +543,12 @@ export default function TestesPage() {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ tests: testsToSave }),
         });
+
         const body = await readApiResponse<{
           count: number;
-          tests: Array<{ zone: string }>;
+          tests: TestRecordResponse[];
         }>(response);
+
         primaryZone = body.tests[0]?.zone ?? null;
       }
 
@@ -407,6 +563,10 @@ export default function TestesPage() {
             imcZone: biometricsPreview.zone,
           }),
         }).then(readApiResponse);
+      }
+
+      if (testsToSave.length > 0) {
+        await loadLatestTests(studentId);
       }
 
       setLastSubmission({
@@ -509,309 +669,322 @@ export default function TestesPage() {
       {loadingStudents ? (
         <TestsLoadingState />
       ) : (
-        <>
-          <div className="grid gap-4 md:grid-cols-3">
-            <OverviewCard
-              icon={UserRound}
-              label="Aluno em foco"
-              value={selectedStudent?.name ?? "Sem aluno selecionado"}
-              description={
-                selectedStudent?.className ??
-                "Seleciona o aluno antes de registar os resultados."
-              }
-            />
-            <OverviewCard
-              icon={Gauge}
-              label="Testes preenchidos"
-              value={`${completedTestsCount}/8`}
-              description={
-                completedTestsCount > 0
-                  ? resolvedPreviewCount > 0
-                    ? `${healthyPreviewCount} em zona saudavel`
-                    : "Sem referencia etaria para classificar."
-                  : "Ainda nao ha resultados introduzidos."
-              }
-              accent={completedTestsCount > 0 ? "gold" : "default"}
-            />
-            <OverviewCard
-              icon={CheckCircle2}
-              label="Estado do registo"
-              value={
-                biometricsReady || completedTestsCount > 0
-                  ? "Pronto"
-                  : "Pendente"
-              }
-              description={
-                biometricsReady || completedTestsCount > 0
-                  ? "Ja ha informacao suficiente para guardar a sessao."
-                  : "Preenche pelo menos um teste ou altura e peso."
-              }
-              accent={
-                biometricsReady || completedTestsCount > 0
-                  ? "success"
-                  : "default"
-              }
-            />
-          </div>
-
-          <div className="grid grid-cols-1 items-start gap-6 xl:grid-cols-[minmax(0,1fr)_360px]">
-            <PageSection
-              tone="primary"
-              layout="form"
-              eyebrow="Sessao guiada"
-              title="Registo de testes"
-              description="Agrupa os resultados por familia para registar a sessao de forma rapida e consistente."
-            >
-              <form onSubmit={handleSubmit} className="flex flex-col gap-6">
-                <div className="rounded-2xl border border-white/35 bg-white/72 p-4 shadow-card backdrop-blur-md dark:border-white/10 dark:bg-navy-950/42">
-                  <div className="mb-3 flex items-center justify-between gap-3">
-                    <div>
-                      <p className="text-tiny font-semibold uppercase tracking-[0.22em] text-muted-foreground">
-                        Selecao de aluno
-                      </p>
-                      <p className="mt-1 text-sm text-muted-foreground">
-                        Escolhe o contexto antes de introduzir resultados.
-                      </p>
+        <div className="grid gap-6">
+          <PageSection
+            tone="primary"
+            layout="form"
+            className="overflow-hidden"
+            eyebrow="Sessao guiada"
+            title="Bateria de testes"
+            description="Regista a sessao por familias de prova e confirma a leitura ZAF em tempo real."
+          >
+            <form onSubmit={handleSubmit} className="grid gap-5">
+              <div className="rounded-[1.5rem] border border-white/35 bg-white/72 p-4 shadow-card backdrop-blur-md dark:border-white/10 dark:bg-navy-950/42 sm:p-5">
+                <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_240px] xl:items-end">
+                  <div className="min-w-0">
+                    <p className="text-tiny font-semibold uppercase tracking-[0.22em] text-muted-foreground">
+                      Selecao de aluno
+                    </p>
+                    <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
+                      Escolhe o aluno antes de montar a bateria da sessao.
+                    </p>
+                    <div className="mt-4">
+                      <StudentPicker
+                        students={students}
+                        value={studentId}
+                        onChange={setStudentId}
+                      />
                     </div>
-                    <span className="hidden rounded-full border border-gold-400/25 bg-gold-400/10 px-2.5 py-1 text-tiny font-semibold text-gold-700 dark:text-gold-200 sm:inline-flex">
-                      {students.length} alunos
-                    </span>
                   </div>
 
-                  <StudentPicker
-                    students={students}
-                    value={studentId}
-                    onChange={setStudentId}
+                  <div className="rounded-[1.3rem] border border-border/60 bg-background/70 px-4 py-4 shadow-sm">
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <p className="text-tiny font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+                          Estado da sessao
+                        </p>
+                        <p className="mt-1 text-xl font-black tracking-[-0.05em] text-foreground">
+                          {sessionReady ? "Pronta para guardar" : "A aguardar resultados"}
+                        </p>
+                      </div>
+                      <span className="inline-flex rounded-full border border-gold-400/25 bg-gold-400/10 px-2.5 py-1 text-tiny font-semibold text-gold-700 dark:text-gold-200">
+                        {completedTestsCount}/8
+                      </span>
+                    </div>
+                    <div className="mt-4 h-2 rounded-full bg-navy-950/10 dark:bg-white/10">
+                      <div
+                        className="h-full rounded-full bg-gradient-to-r from-navy-800 via-navy-700 to-gold-400 transition-all duration-500"
+                        style={{
+                          width: `${Math.round((completedTestsCount / 8) * 100)}%`,
+                        }}
+                      />
+                    </div>
+                    <p className="mt-3 text-sm text-muted-foreground">
+                      {selectedStudent
+                        ? selectedStudentContext || "Contexto escolar por confirmar"
+                        : "Sem aluno selecionado"}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="overflow-hidden rounded-[1.65rem] border border-white/28 bg-white/72 shadow-card backdrop-blur-md dark:border-white/10 dark:bg-navy-950/42">
+                {CATEGORY_SECTIONS.map((section, index) => (
+                  <WorkbenchFamilyRow
+                    key={section.id}
+                    section={section}
+                    bordered={index < CATEGORY_SECTIONS.length - 1}
+                  >
+                    <div
+                      className={cn(
+                        "grid gap-4",
+                        section.fields.length >= 3
+                          ? "md:grid-cols-2 xl:grid-cols-3"
+                          : section.fields.length === 2
+                            ? "md:grid-cols-2"
+                            : "grid-cols-1",
+                      )}
+                    >
+                      {section.fields.map((field) => (
+                        <UnitInput
+                          key={field.id}
+                          label={field.label}
+                          unit={field.unit}
+                          value={form[field.id]}
+                          onChange={updateField(field.id)}
+                          placeholder={field.placeholder}
+                          step={field.step}
+                          type={field.type}
+                          icon={<field.Icon className="size-4" />}
+                        />
+                      ))}
+                    </div>
+                  </WorkbenchFamilyRow>
+                ))}
+
+                <div className="grid gap-4 border-t border-white/18 p-5 dark:border-white/8 xl:grid-cols-[220px_minmax(0,1fr)]">
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2">
+                      <span className="flex size-10 items-center justify-center rounded-2xl bg-navy-100 text-navy-800 dark:bg-white/10 dark:text-gold-200">
+                        <Scale className="size-5" />
+                      </span>
+                      <p className="text-sm font-semibold text-foreground">
+                        Biometria de apoio
+                      </p>
+                    </div>
+                    <p className="text-sm leading-relaxed text-muted-foreground">
+                      Se preencher altura e peso, a sessao grava tambem a biometria base deste aluno.
+                    </p>
+                  </div>
+
+                  <div className="grid gap-4 md:grid-cols-2">
+                    <UnitInput
+                      label="Peso"
+                      unit="kg"
+                      value={form.weightKg}
+                      onChange={updateField("weightKg")}
+                      placeholder="53.4"
+                      step="0.1"
+                      icon={<Scale className="size-4" />}
+                    />
+                    <UnitInput
+                      label="Altura"
+                      unit="m"
+                      value={form.heightM}
+                      onChange={updateField("heightM")}
+                      placeholder="1.62"
+                      step="0.01"
+                      icon={<ArrowUpDown className="size-4" />}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="rounded-[1.5rem] border border-gold-400/18 bg-gradient-to-r from-gold-400/10 via-white/72 to-white/55 p-4 shadow-card dark:from-gold-400/10 dark:via-navy-950/60 dark:to-navy-950/50 sm:p-5">
+                <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center">
+                  <div className="space-y-2">
+                    <p className="text-tiny font-semibold uppercase tracking-[0.22em] text-muted-foreground">
+                      Fecho da sessao
+                    </p>
+                    <p className="text-sm leading-relaxed text-muted-foreground">
+                      Guarda de uma vez todas as provas preenchidas e junta biometria apenas quando altura e peso estiverem completos.
+                    </p>
+                    {lastSubmission ? (
+                      <p className="text-sm font-semibold text-foreground">
+                        Ultimo envio: {lastSubmission.count} testes
+                        {lastSubmission.biometricsSaved ? " + biometria" : ""}
+                      </p>
+                    ) : null}
+                  </div>
+
+                  <Button
+                    type="submit"
+                    loading={saving}
+                    icon={<Save className="size-4" />}
+                    className="h-12 w-full justify-center text-base lg:w-auto"
+                  >
+                    Gravar sessao de testes
+                  </Button>
+                </div>
+              </div>
+            </form>
+          </PageSection>
+
+          <div className="grid items-start gap-6 xl:grid-cols-[360px_minmax(0,1fr)]">
+            <aside className="grid gap-6 xl:sticky xl:top-24 xl:self-start">
+              <PageSection
+                tone="secondary"
+                layout="list"
+                eyebrow="Bateria em curso"
+                title={selectedStudent?.name ?? "Sem aluno selecionado"}
+                description={
+                  selectedStudent
+                    ? "Leitura operacional da sessao atual antes do envio."
+                    : "Escolhe um aluno para ativar a leitura da sessao."
+                }
+              >
+                <div className="grid gap-3">
+                  <MetaRow
+                    label="Turma"
+                    value={selectedStudentContext || common("noData")}
+                  />
+                  <MetaRow
+                    label="Idade"
+                    value={
+                      selectedStudentAge !== null
+                        ? String(selectedStudentAge)
+                        : "Sem referencia"
+                    }
+                  />
+                  <MetaRow
+                    label="Sexo"
+                    value={
+                      selectedStudent
+                        ? selectedStudent.sex === "F"
+                          ? common("female")
+                          : common("male")
+                        : common("noData")
+                    }
                   />
                 </div>
 
-                <div className="grid gap-4">
-                  {CATEGORY_SECTIONS.map((section) => (
-                    <CategoryCard key={section.id} section={section}>
-                      <div
-                        className={`grid gap-4 ${
-                          section.fields.length > 1
-                            ? "md:grid-cols-2"
-                            : "grid-cols-1"
-                        }`}
-                      >
-                        {section.fields.map((field) => (
-                          <UnitInput
-                            key={field.id}
-                            label={field.label}
-                            unit={field.unit}
-                            value={form[field.id]}
-                            onChange={updateField(field.id)}
-                            placeholder={field.placeholder}
-                            step={field.step}
-                            type={field.type}
-                            icon={field.icon}
-                          />
-                        ))}
-                      </div>
-                    </CategoryCard>
-                  ))}
+                <div className="h-px bg-border/60" />
 
-                  <CategoryCard
-                    section={{
-                      id: "biometria",
-                      title: "Composicao corporal de apoio",
-                      description:
-                        "Se preencher altura e peso, a pagina guarda tambem a biometria base desta sessao.",
-                      icon: Scale,
-                      fields: [],
-                    }}
-                  >
-                    <div className="grid gap-4 md:grid-cols-2">
-                      <UnitInput
-                        label="Peso"
-                        unit="kg"
-                        value={form.weightKg}
-                        onChange={updateField("weightKg")}
-                        placeholder="53.4"
-                        step="0.1"
-                        icon={<Scale className="size-4" />}
-                      />
-                      <UnitInput
-                        label="Altura"
-                        unit="m"
-                        value={form.heightM}
-                        onChange={updateField("heightM")}
-                        placeholder="1.62"
-                        step="0.01"
-                        icon={<ArrowUpDown className="size-4" />}
-                      />
-                    </div>
-                  </CategoryCard>
+                <div className="grid gap-3">
+                  <SessionMetric
+                    label="Provas preenchidas"
+                    value={`${completedTestsCount}/8`}
+                  />
+                  <SessionMetric
+                    label="Classificacoes prontas"
+                    value={String(resolvedPreviewCount)}
+                  />
+                  <SessionMetric
+                    label="Em zona saudavel"
+                    value={String(healthyPreviewCount)}
+                    highlight={healthyPreviewCount > 0}
+                  />
+                  <SessionMetric
+                    label="Biometria de apoio"
+                    value={
+                      biometricsPreview
+                        ? `${biometricsPreview.bmi.toFixed(1)} IMC`
+                        : "Opcional"
+                    }
+                    highlight={Boolean(biometricsPreview)}
+                  />
                 </div>
 
-                <div className="rounded-2xl border border-gold-400/18 bg-gradient-to-r from-gold-400/10 via-white/70 to-white/55 p-4 shadow-card dark:from-gold-400/10 dark:via-navy-950/60 dark:to-navy-950/50">
-                  <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-                    <div className="space-y-2">
-                      <p className="text-tiny font-semibold uppercase tracking-[0.22em] text-muted-foreground">
-                        Fecho da sessao
-                      </p>
-                      <p className="text-sm text-muted-foreground">
-                        Guarda todos os testes preenchidos de uma vez e inclui
-                        biometria apenas se altura e peso estiverem completos.
-                      </p>
-                    </div>
+                <div className="h-px bg-border/60" />
 
-                    <Button
-                      type="submit"
-                      loading={saving}
-                      icon={<Save className="size-4" />}
-                      className="h-12 w-full justify-center text-base md:w-auto"
-                    >
-                      Gravar sessao de testes
-                    </Button>
-                  </div>
-                </div>
-              </form>
-            </PageSection>
-
-            <aside className="flex flex-col gap-6 xl:sticky xl:top-24">
-              <PageSection
-                tone="secondary"
-                layout="analytics"
-                eyebrow="Leitura imediata"
-                title="Preview ZAF"
-                description="Resumo em tempo real dos testes preenchidos nesta sessao."
-              >
                 {!selectedStudent ? (
                   <EmptyPanelMessage>
-                    Seleciona um aluno para ativar a leitura de zonas por idade
-                    e sexo.
+                    Seleciona um aluno para ver a leitura das provas desta sessao.
                   </EmptyPanelMessage>
                 ) : previewResults.length === 0 ? (
                   <EmptyPanelMessage>
-                    Introduz pelo menos um resultado para ver a classificacao
-                    esperada.
+                    Introduz pelo menos um resultado para preencher a bateria em curso.
                   </EmptyPanelMessage>
                 ) : (
-                  <div className="grid gap-3">
+                  <div className="grid gap-2.5">
                     {previewResults.map((result) => (
-                      <div
+                      <LiveResultRow
                         key={result.id}
-                        className="rounded-2xl border border-border/60 bg-background/45 p-4"
-                      >
-                        <div className="flex items-start justify-between gap-3">
-                          <div>
-                            <p className="text-sm font-semibold text-foreground">
-                              {result.label}
-                            </p>
-                            <p className="mt-1 text-xs text-muted-foreground">
-                              {result.value} {result.unit}
-                            </p>
-                          </div>
-                          {result.zone ? (
-                            <ZoneBadge zone={result.zone} size="sm" />
-                          ) : (
-                            <span className="text-xs font-semibold text-muted-foreground">
-                              Sem referencia etaria
-                            </span>
-                          )}
-                        </div>
-                      </div>
+                        label={result.label}
+                        value={`${result.value} ${result.unit}`}
+                        zone={result.zone}
+                      />
                     ))}
                   </div>
                 )}
-              </PageSection>
 
-              <PageSection
-                tone="secondary"
-                layout="list"
-                eyebrow="Contexto"
-                title={selectedStudent?.name ?? "Sem aluno selecionado"}
-                description="Confirma rapidamente os dados base antes de gravar."
-              >
-                {selectedStudent ? (
-                  <div className="grid gap-3">
-                    <MetaRow
-                      label="Turma"
-                      value={selectedStudent.className ?? "-"}
-                    />
-                    <MetaRow
-                      label="Idade"
-                      value={
-                        selectedStudentAge !== null
-                          ? String(selectedStudentAge)
-                          : "Sem registo"
-                      }
-                    />
-                    <MetaRow
-                      label="Sexo"
-                      value={
-                        selectedStudent.sex === "F" ? "Feminino" : "Masculino"
-                      }
-                    />
-                    <MetaRow
-                      label="Biometria de apoio"
-                      value={biometricsReady ? "Completa" : "Opcional"}
-                    />
-                  </div>
-                ) : (
-                  <p className="text-sm leading-relaxed text-muted-foreground">
-                    O contexto do aluno aparece aqui assim que o escolheres.
-                  </p>
-                )}
-              </PageSection>
-
-              <PageSection
-                tone="secondary"
-                layout="list"
-                eyebrow="Sessao"
-                title="Estado atual"
-                description="Resumo do que esta pronto para ser guardado."
-              >
-                <MetaRow
-                  label="Testes com valor"
-                  value={String(completedTestsCount)}
-                />
-                <MetaRow
-                  label="Biometria base"
-                  value={
-                    biometricsPreview
-                      ? `${biometricsPreview.bmi} IMC`
-                      : "Nao pronta"
-                  }
-                />
-                <MetaRow
-                  label="Ultimo envio"
-                  value={
-                    lastSubmission
-                      ? `${lastSubmission.count} testes${lastSubmission.biometricsSaved ? " + biometria" : ""}`
-                      : "Ainda sem envio"
-                  }
-                />
                 {lastSubmission?.zone ? (
-                  <div className="pt-1">
-                    <ZoneBadge zone={lastSubmission.zone} />
+                  <div className="rounded-2xl border border-gold-400/18 bg-gold-400/10 px-4 py-3">
+                    <p className="text-tiny font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+                      Zona principal do ultimo envio
+                    </p>
+                    <div className="mt-2">
+                      <ZoneBadge zone={lastSubmission.zone} />
+                    </div>
                   </div>
                 ) : null}
               </PageSection>
 
               <PageSection
-                tone="secondary"
+                tone="utility"
                 layout="list"
-                eyebrow="Referencia ZAF"
-                title="Leitura rapida"
-                description="Guia simples para interpretar os estados antes de gravar."
+                eyebrow="Cobertura"
+                title="Familias da sessao"
+                description="Ajuda a perceber o que ja esta fechado nesta bateria."
               >
-                <ReferenceRow
-                  tone="success"
-                  title="Zona Saudavel"
-                  description="Resultado dentro do patamar esperado para o contexto do aluno."
-                />
-                <ReferenceRow
-                  tone="warning"
-                  title="Zona de Melhoria"
-                  description="Resultado que merece acompanhamento e nova recolha."
-                />
+                {familyCoverage.map((family) => (
+                  <FamilyProgressRow
+                    key={family.id}
+                    title={family.title}
+                    filled={family.filled}
+                    total={family.total}
+                    percentage={family.percentage}
+                  />
+                ))}
               </PageSection>
             </aside>
+
+            <PageSection
+              tone="utility"
+              layout="list"
+              className="self-start"
+              eyebrow="Ultima bateria"
+              title="Resultados recentes"
+              description="Resultado mais recente por prova para o aluno selecionado."
+            >
+              {!selectedStudent ? (
+                <EmptyPanelMessage>
+                  Seleciona um aluno para consultar a ultima bateria conhecida.
+                </EmptyPanelMessage>
+              ) : loadingLatestTests ? (
+                <div className="grid gap-3 md:grid-cols-2">
+                  {Array.from({ length: 6 }).map((_, index) => (
+                    <Skeleton key={index} className="h-28 rounded-2xl" />
+                  ))}
+                </div>
+              ) : latestTests.length > 0 ? (
+                <div className="grid gap-3 md:grid-cols-2">
+                  {latestTests.map((record) => (
+                    <RecentTestCard
+                      key={record.id}
+                      record={record}
+                      dateLabel={formatDate(record.recordedAt)}
+                    />
+                  ))}
+                </div>
+              ) : (
+                <EmptyPanelMessage>
+                  Este aluno ainda nao tem resultados guardados nesta area.
+                </EmptyPanelMessage>
+              )}
+            </PageSection>
           </div>
-        </>
+        </div>
       )}
     </PageScaffold>
   );
@@ -819,101 +992,54 @@ export default function TestesPage() {
 
 function TestsLoadingState() {
   return (
-    <>
-      <div className="grid gap-4 md:grid-cols-3">
-        {[1, 2, 3].map((item) => (
-          <Skeleton key={item} className="h-28 rounded-2xl" />
-        ))}
+    <div className="grid gap-6">
+      <PageSection tone="primary" layout="form" contentClassName="gap-5">
+        <Skeleton className="h-32 rounded-[1.5rem]" />
+        <Skeleton className="h-[460px] rounded-[1.65rem]" />
+        <Skeleton className="h-28 rounded-[1.5rem]" />
+      </PageSection>
+
+      <div className="grid gap-6 xl:grid-cols-[360px_minmax(0,1fr)]">
+        <Skeleton className="h-[540px] rounded-2xl" />
+        <Skeleton className="h-[540px] rounded-2xl" />
       </div>
-
-      <div className="grid grid-cols-1 items-start gap-6 xl:grid-cols-[minmax(0,1fr)_360px]">
-        <PageSection tone="primary" layout="form" contentClassName="gap-6">
-          <Skeleton className="h-24 rounded-2xl" />
-          {[1, 2, 3].map((item) => (
-            <Skeleton key={item} className="h-48 rounded-2xl" />
-          ))}
-        </PageSection>
-
-        <div className="flex flex-col gap-6">
-          <Skeleton className="h-64 rounded-2xl" />
-          <Skeleton className="h-52 rounded-2xl" />
-          <Skeleton className="h-48 rounded-2xl" />
-        </div>
-      </div>
-    </>
-  );
-}
-
-function CategoryCard({
-  section,
-  children,
-}: {
-  section: CategoryMeta;
-  children: React.ReactNode;
-}) {
-  const Icon = section.icon;
-
-  return (
-    <div className="rounded-2xl border border-white/30 bg-white/72 p-5 shadow-card backdrop-blur-md dark:border-white/10 dark:bg-navy-950/46">
-      <div className="mb-4 flex items-start gap-3">
-        <span className="flex size-11 items-center justify-center rounded-2xl bg-navy-100 text-navy-800 dark:bg-white/10 dark:text-gold-200">
-          <Icon className="size-5" />
-        </span>
-        <div>
-          <h3 className="text-base font-semibold tracking-[-0.03em] text-foreground">
-            {section.title}
-          </h3>
-          <p className="mt-1 text-sm text-muted-foreground">
-            {section.description}
-          </p>
-        </div>
-      </div>
-
-      {children}
     </div>
   );
 }
 
-function OverviewCard({
-  icon: Icon,
-  label,
-  value,
-  description,
-  accent = "default",
+function WorkbenchFamilyRow({
+  section,
+  bordered,
+  children,
 }: {
-  icon: LucideIcon;
-  label: string;
-  value: string;
-  description: string;
-  accent?: "default" | "gold" | "success";
+  section: CategoryMeta;
+  bordered: boolean;
+  children: React.ReactNode;
 }) {
-  const accentClass =
-    accent === "gold"
-      ? "bg-gold-400/18 text-gold-700 dark:text-gold-200"
-      : accent === "success"
-        ? "bg-emerald-500/15 text-emerald-700 dark:text-emerald-200"
-        : "bg-navy-100 text-navy-800 dark:bg-white/10 dark:text-navy-100";
+  const Icon = section.Icon;
 
   return (
-    <div className="rounded-2xl border border-white/30 bg-white/72 p-5 shadow-card backdrop-blur-md dark:border-white/10 dark:bg-navy-950/58">
-      <div className="flex items-start justify-between gap-4">
-        <div className="space-y-2">
-          <p className="text-tiny font-semibold uppercase tracking-[0.22em] text-muted-foreground">
-            {label}
-          </p>
-          <p className="text-2xl font-black tracking-[-0.04em] text-foreground">
-            {value}
-          </p>
-          <p className="text-sm leading-relaxed text-muted-foreground">
-            {description}
+    <div
+      className={cn(
+        "grid gap-4 p-5 xl:grid-cols-[220px_minmax(0,1fr)]",
+        bordered ? "border-b border-white/18 dark:border-white/8" : "",
+      )}
+    >
+      <div className="space-y-2">
+        <div className="flex items-center gap-2">
+          <span className="flex size-10 items-center justify-center rounded-2xl bg-navy-100 text-navy-800 dark:bg-white/10 dark:text-gold-200">
+            <Icon className="size-5" />
+          </span>
+          <p className="text-sm font-semibold text-foreground">
+            {section.title}
           </p>
         </div>
-        <span
-          className={`flex size-11 items-center justify-center rounded-2xl ${accentClass}`}
-        >
-          <Icon className="size-5" />
-        </span>
+        <p className="text-sm leading-relaxed text-muted-foreground">
+          {section.description}
+        </p>
       </div>
+
+      {children}
     </div>
   );
 }
@@ -924,7 +1050,35 @@ function MetaRow({ label, value }: { label: string; value: string }) {
       <span className="text-tiny font-semibold uppercase tracking-[0.18em] text-muted-foreground">
         {label}
       </span>
-      <span className="text-sm font-semibold text-foreground">{value}</span>
+      <span className="text-right text-sm font-semibold text-foreground">
+        {value}
+      </span>
+    </div>
+  );
+}
+
+function SessionMetric({
+  label,
+  value,
+  highlight = false,
+}: {
+  label: string;
+  value: string;
+  highlight?: boolean;
+}) {
+  return (
+    <div className="flex items-center justify-between gap-3 rounded-2xl border border-border/70 bg-background/65 px-4 py-3 shadow-sm">
+      <span className="text-tiny font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+        {label}
+      </span>
+      <span
+        className={cn(
+          "text-sm font-semibold",
+          highlight ? "text-gold-700 dark:text-gold-200" : "text-foreground",
+        )}
+      >
+        {value}
+      </span>
     </div>
   );
 }
@@ -933,30 +1087,103 @@ function EmptyPanelMessage({ children }: { children: React.ReactNode }) {
   return (
     <div className="rounded-2xl border border-dashed border-border/70 bg-background/40 px-4 py-8 text-center">
       <Timer className="mx-auto size-8 text-muted-foreground/35" />
-      <p className="mt-3 text-sm text-muted-foreground">{children}</p>
+      <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
+        {children}
+      </p>
     </div>
   );
 }
 
-function ReferenceRow({
+function LiveResultRow({
+  label,
+  value,
+  zone,
+}: {
+  label: string;
+  value: string;
+  zone: string | null;
+}) {
+  return (
+    <div className="flex items-center justify-between gap-3 rounded-2xl border border-border/60 bg-background/55 px-4 py-3">
+      <div className="min-w-0">
+        <p className="truncate text-sm font-semibold text-foreground">{label}</p>
+        <p className="mt-1 truncate text-xs text-muted-foreground">{value}</p>
+      </div>
+      {zone ? (
+        <ZoneBadge zone={zone} size="sm" />
+      ) : (
+        <span className="text-xs font-semibold text-muted-foreground">
+          Sem referencia
+        </span>
+      )}
+    </div>
+  );
+}
+
+function FamilyProgressRow({
   title,
-  description,
-  tone,
+  filled,
+  total,
+  percentage,
 }: {
   title: string;
-  description: string;
-  tone: "success" | "warning";
+  filled: number;
+  total: number;
+  percentage: number;
 }) {
-  const toneClass = tone === "success" ? "bg-emerald-500" : "bg-amber-500";
+  return (
+    <div className="rounded-2xl border border-border/70 bg-background/65 px-4 py-4 shadow-sm">
+      <div className="flex items-center justify-between gap-3">
+        <p className="text-sm font-semibold text-foreground">{title}</p>
+        <span className="text-xs font-semibold text-muted-foreground">
+          {filled}/{total}
+        </span>
+      </div>
+      <div className="mt-3 h-2 rounded-full bg-navy-950/10 dark:bg-white/10">
+        <div
+          className="h-full rounded-full bg-gradient-to-r from-navy-800 via-navy-700 to-gold-400"
+          style={{ width: `${percentage}%` }}
+        />
+      </div>
+    </div>
+  );
+}
+
+function RecentTestCard({
+  record,
+  dateLabel,
+}: {
+  record: TestRecord;
+  dateLabel: string;
+}) {
+  const meta = TEST_FIELD_MAP[record.testId as TestFieldId];
+  const Icon = meta?.Icon ?? Activity;
 
   return (
-    <div className="rounded-2xl border border-border/70 bg-background/65 p-4 shadow-sm">
-      <div className="flex items-center gap-3">
-        <span className={`size-2.5 rounded-full ${toneClass}`} />
-        <p className="text-sm font-semibold text-foreground">{title}</p>
+    <div className="rounded-[1.35rem] border border-border/70 bg-background/65 p-4 shadow-sm">
+      <div className="flex items-start justify-between gap-3">
+        <div className="flex min-w-0 items-center gap-2.5">
+          <span className="flex size-10 shrink-0 items-center justify-center rounded-2xl bg-navy-100 text-navy-800 dark:bg-white/10 dark:text-gold-200">
+            <Icon className="size-5" />
+          </span>
+          <div className="min-w-0">
+            <p className="truncate text-sm font-semibold text-foreground">
+              {meta?.label ?? record.testId}
+            </p>
+            <p className="mt-1 inline-flex items-center gap-1.5 text-xs text-muted-foreground">
+              <CalendarDays className="size-3.5" />
+              {dateLabel}
+            </p>
+          </div>
+        </div>
+        <ZoneBadge zone={record.zone} size="sm" />
       </div>
-      <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-        {description}
+
+      <p className="mt-4 text-[1.9rem] font-black leading-none tracking-[-0.05em] text-foreground">
+        {record.valueText}
+        <span className="ml-1 text-sm font-semibold text-muted-foreground">
+          {record.unit}
+        </span>
       </p>
     </div>
   );

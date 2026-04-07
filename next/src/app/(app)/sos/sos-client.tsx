@@ -3,15 +3,15 @@
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
-  ExternalLink,
   CheckCircle2,
-  ShieldAlert,
-  RefreshCw,
-  ListFilter,
   Clock3,
+  ExternalLink,
+  ListFilter,
+  RefreshCw,
+  ShieldAlert,
   XCircle,
 } from "lucide-react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { PageScaffold } from "@/components/ui/page-scaffold";
 import { PageSection } from "@/components/ui/page-section";
@@ -21,8 +21,11 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { Input } from "@/components/ui/input";
 import { FieldShell } from "@/components/ui/field-shell";
 import { DataTable, type Column } from "@/components/ui/data-table";
+import { Skeleton } from "@/components/ui/skeleton";
+import { StudentIdentity } from "@/components/ui/student-identity";
 import { useUser } from "@/components/user-context";
 import { readApiResponse } from "@/lib/api-client";
+import { cn } from "@/lib/utils";
 
 type SosAlert = {
   id: string;
@@ -47,31 +50,23 @@ type SosAlert = {
   } | null;
 };
 
-function formatDate(value: string | null) {
-  if (!value) {
-    return "-";
-  }
-
-  return new Date(value).toLocaleString("pt-PT", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
+function getStudentHref(role: string, studentId: string) {
+  return role === "PSICOLOGO"
+    ? `/acompanhamento/${studentId}`
+    : `/alunos/${studentId}`;
 }
 
-function formatStudent(student: SosAlert["student"]) {
-  const classLabel = student.className ? ` · ${student.className}` : "";
-  const yearLabel = student.schoolYear ? ` (${student.schoolYear})` : "";
-  return `${student.name}${classLabel}${yearLabel}`;
+function getStudentMeta(student: SosAlert["student"]) {
+  return [student.className, student.schoolYear].filter(Boolean).join(" · ");
 }
 
 export default function SosClient() {
   const t = useTranslations("sos");
+  const locale = useLocale();
   const { role } = useUser();
   const isStudent = role === "ALUNO";
   const isStaff = !isStudent;
+
   const [alerts, setAlerts] = useState<SosAlert[]>([]);
   const [statusFilter, setStatusFilter] = useState<
     "all" | "pending" | "resolved"
@@ -91,37 +86,57 @@ export default function SosClient() {
   const [psychEmail, setPsychEmail] = useState("");
   const [teacherEmail, setTeacherEmail] = useState("");
 
-  const fetchAlerts = useCallback(async (mode: "initial" | "refresh" = "initial") => {
-    if (!isStaff) {
-      return;
-    }
-
-    if (mode === "initial") {
-      setLoading(true);
-    } else {
-      setRefreshing(true);
-    }
-    setLoadError(null);
-
-    try {
-      const data = await readApiResponse<SosAlert[]>(
-        await fetch("/api/stats/sos-alerts"),
-      );
-      setAlerts(data);
-      setLastUpdatedAt(new Date().toISOString());
-    } catch (error) {
-      const message =
-        error instanceof Error ? error.message : "Erro a carregar SOS";
-      setLoadError(message);
-      toast.error(message);
-    } finally {
-      if (mode === "initial") {
-        setLoading(false);
-      } else {
-        setRefreshing(false);
+  const formatDate = useCallback(
+    (value: string | null) => {
+      if (!value) {
+        return "-";
       }
-    }
-  }, [isStaff]);
+
+      return new Intl.DateTimeFormat(locale, {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+      }).format(new Date(value));
+    },
+    [locale],
+  );
+
+  const fetchAlerts = useCallback(
+    async (mode: "initial" | "refresh" = "initial") => {
+      if (!isStaff) {
+        return;
+      }
+
+      if (mode === "initial") {
+        setLoading(true);
+      } else {
+        setRefreshing(true);
+      }
+      setLoadError(null);
+
+      try {
+        const data = await readApiResponse<SosAlert[]>(
+          await fetch("/api/stats/sos-alerts"),
+        );
+        setAlerts(data);
+        setLastUpdatedAt(new Date().toISOString());
+      } catch (error) {
+        const message =
+          error instanceof Error ? error.message : t("loadError");
+        setLoadError(message);
+        toast.error(message);
+      } finally {
+        if (mode === "initial") {
+          setLoading(false);
+        } else {
+          setRefreshing(false);
+        }
+      }
+    },
+    [isStaff, t],
+  );
 
   useEffect(() => {
     void fetchAlerts("initial");
@@ -132,9 +147,7 @@ export default function SosClient() {
     setStudentLoadError(null);
 
     try {
-      const data = await readApiResponse<SosAlert[]>(
-        await fetch("/api/me/sos"),
-      );
+      const data = await readApiResponse<SosAlert[]>(await fetch("/api/me/sos"));
       setStudentAlerts(data);
     } catch (error) {
       const message = error instanceof Error ? error.message : t("loadError");
@@ -152,7 +165,7 @@ export default function SosClient() {
     }
 
     void fetchStudentAlerts();
-  }, [isStudent, fetchStudentAlerts]);
+  }, [fetchStudentAlerts, isStudent]);
 
   const resolveAlert = useCallback(
     async (alertId: string) => {
@@ -167,7 +180,7 @@ export default function SosClient() {
         await fetchAlerts("refresh");
       } catch (error) {
         const message =
-          error instanceof Error ? error.message : "Erro ao resolver alerta";
+          error instanceof Error ? error.message : t("resolveError");
         toast.error(message);
       } finally {
         setResolvingIds((current) => {
@@ -180,17 +193,37 @@ export default function SosClient() {
     [fetchAlerts, t],
   );
 
+  const pendingAlerts = useMemo(
+    () =>
+      alerts
+        .filter((alert) => !alert.resolved)
+        .sort(
+          (left, right) =>
+            new Date(left.createdAt).getTime() -
+            new Date(right.createdAt).getTime(),
+        ),
+    [alerts],
+  );
+
+  const resolvedAlerts = useMemo(
+    () => alerts.filter((alert) => alert.resolved),
+    [alerts],
+  );
+
   const visibleAlerts = useMemo(() => {
     if (statusFilter === "pending") {
-      return alerts.filter((alert) => !alert.resolved);
+      return pendingAlerts;
     }
 
     if (statusFilter === "resolved") {
-      return alerts.filter((alert) => alert.resolved);
+      return resolvedAlerts;
     }
 
     return alerts;
-  }, [alerts, statusFilter]);
+  }, [alerts, pendingAlerts, resolvedAlerts, statusFilter]);
+
+  const priorityAlerts = pendingAlerts.slice(1, 4);
+  const oldestPending = pendingAlerts[0] ?? null;
 
   const hasOpenStudentAlert = studentAlerts.some((alert) => !alert.resolved);
   const activeStudentAlert = studentAlerts.find((alert) => !alert.resolved);
@@ -223,20 +256,24 @@ export default function SosClient() {
       setPsychEmail("");
       setTeacherEmail("");
     } catch (error) {
-      const message =
-        error instanceof Error ? error.message : "Erro ao enviar alerta SOS";
+      const message = error instanceof Error ? error.message : t("sendError");
       toast.error(message);
     } finally {
       setTriggeringSos(false);
     }
-  }, [hasOpenStudentAlert, psych, teacher, psychEmail, teacherEmail, t]);
+  }, [hasOpenStudentAlert, psych, psychEmail, t, teacher, teacherEmail]);
 
   const columns = useMemo<Column<SosAlert>[]>(
     () => [
       {
         key: "student",
         header: t("studentLabel"),
-        render: (alert) => formatStudent(alert.student),
+        render: (alert) => (
+          <StudentIdentity
+            student={alert.student}
+            subtitle={getStudentMeta(alert.student)}
+          />
+        ),
         className: "min-w-[220px]",
       },
       {
@@ -293,10 +330,7 @@ export default function SosClient() {
         key: "actions",
         header: "",
         render: (alert) => {
-          const studentHref =
-            role === "PSICOLOGO"
-              ? `/acompanhamento/${alert.student.id}`
-              : `/alunos/${alert.student.id}`;
+          const studentHref = getStudentHref(role, alert.student.id);
 
           return (
             <div className="flex flex-wrap items-center justify-end gap-2">
@@ -327,7 +361,7 @@ export default function SosClient() {
         },
       },
     ],
-    [resolveAlert, resolvingIds, role, t],
+    [formatDate, resolveAlert, resolvingIds, role, t],
   );
 
   if (isStudent) {
@@ -339,11 +373,12 @@ export default function SosClient() {
           eyebrow: "S.O.S.",
         }}
       >
-        <div className="grid gap-6">
+        <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_360px]">
           <PageSection
             title={t("contactTitle")}
             description={t("contactDescription")}
             tone="secondary"
+            layout="form"
           >
             <div className="grid gap-6">
               <div className="grid gap-4 lg:grid-cols-2">
@@ -418,9 +453,7 @@ export default function SosClient() {
                   {hasOpenStudentAlert ? t("alreadyOpenButton") : t("trigger")}
                 </Button>
                 {studentLoading ? (
-                  <p className="text-sm text-muted-foreground">
-                    {t("loading")}
-                  </p>
+                  <p className="text-sm text-muted-foreground">{t("loading")}</p>
                 ) : null}
               </div>
 
@@ -437,12 +470,13 @@ export default function SosClient() {
           <PageSection
             title={t("historyTitle")}
             description={t("historyDescription")}
-            tone="secondary"
+            tone="utility"
+            layout="list"
           >
             {studentLoading ? (
               <div className="grid gap-3">
-                <div className="h-24 rounded-2xl bg-muted/70" />
-                <div className="h-24 rounded-2xl bg-muted/70" />
+                <Skeleton className="h-24 rounded-2xl" />
+                <Skeleton className="h-24 rounded-2xl" />
               </div>
             ) : studentLoadError ? (
               <EmptyState
@@ -464,23 +498,19 @@ export default function SosClient() {
                     className="rounded-2xl border border-white/20 bg-white/60 p-4 shadow-sm"
                   >
                     <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                      <div>
-                        <p className="text-sm font-semibold text-foreground">
-                          {formatStudent(alert.student)}
-                        </p>
+                      <div className="min-w-0">
+                        <StudentIdentity
+                          student={alert.student}
+                          subtitle={getStudentMeta(alert.student)}
+                          size="sm"
+                        />
                         <p className="text-xs text-muted-foreground">
                           {formatDate(alert.createdAt)}
                         </p>
                       </div>
-                      <span
-                        className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold ${
-                          alert.resolved
-                            ? "bg-success-100 text-success-700"
-                            : "bg-warning-100 text-warning-700"
-                        }`}
-                      >
+                      <Badge variant={alert.resolved ? "success" : "warning"}>
                         {alert.resolved ? t("resolved") : t("pending")}
-                      </span>
+                      </Badge>
                     </div>
 
                     <div className="mt-4 grid gap-3 sm:grid-cols-2">
@@ -523,6 +553,49 @@ export default function SosClient() {
     );
   }
 
+  if (loading && alerts.length === 0 && !loadError) {
+    return (
+      <PageScaffold
+        headerProps={{
+          title: t("staffTitle"),
+          description: t("staffDescription"),
+          eyebrow: "S.O.S.",
+        }}
+      >
+        <SosStaffLoadingState />
+      </PageScaffold>
+    );
+  }
+
+  if (loadError && alerts.length === 0) {
+    return (
+      <PageScaffold
+        headerProps={{
+          title: t("staffTitle"),
+          description: t("staffDescription"),
+          eyebrow: "S.O.S.",
+        }}
+      >
+        <PageSection tone="secondary" layout="list">
+          <EmptyState
+            icon={XCircle}
+            title={t("loadError")}
+            description={loadError}
+            action={
+              <Button
+                variant="outline"
+                onClick={() => void fetchAlerts("refresh")}
+                icon={<RefreshCw className="size-4" />}
+              >
+                {t("refresh")}
+              </Button>
+            }
+          />
+        </PageSection>
+      </PageScaffold>
+    );
+  }
+
   return (
     <PageScaffold
       headerProps={{
@@ -531,36 +604,133 @@ export default function SosClient() {
         eyebrow: "S.O.S.",
       }}
     >
-      <PageSection
-        title={t("staffTitle")}
-        description={t("staffDescription")}
-        tone="secondary"
-      >
-        {loading ? (
-          <div className="grid gap-3">
-            <div className="h-16 rounded-2xl bg-muted/70" />
-            <div className="h-16 rounded-2xl bg-muted/70" />
-            <div className="h-16 rounded-2xl bg-muted/70" />
+      <div className="grid gap-6">
+        <PageSection
+          tone="primary"
+          layout="analytics"
+          eyebrow={t("radarEyebrow")}
+          title={t("radarTitle")}
+          description={t("radarDescription")}
+          actions={
+            <div className="flex flex-col gap-2 sm:items-end">
+              <span className="text-sm text-muted-foreground">
+                {refreshing
+                  ? t("refreshing")
+                  : lastUpdatedAt
+                    ? t("lastUpdated", { time: formatDate(lastUpdatedAt) })
+                    : t("neverUpdated")}
+              </span>
+              <Button
+                variant="outline"
+                onClick={() => void fetchAlerts("refresh")}
+                loading={refreshing}
+                disabled={refreshing}
+                icon={<RefreshCw className="size-4" />}
+              >
+                {t("refresh")}
+              </Button>
+            </div>
+          }
+        >
+          <div className="grid gap-4">
+            <div className="grid gap-4 sm:grid-cols-3">
+              <SosStatCard
+                label={t("totalAlerts")}
+                value={String(alerts.length)}
+                description={t("totalAlertsDescription")}
+              />
+              <SosStatCard
+                label={t("pendingAlerts")}
+                value={String(pendingAlerts.length)}
+                description={t("pendingAlertsDescription")}
+                accent="warning"
+              />
+              <SosStatCard
+                label={t("resolvedAlerts")}
+                value={String(resolvedAlerts.length)}
+                description={t("resolvedAlertsDescription")}
+                accent="success"
+              />
+            </div>
+
+            <SosFocusCard
+              alert={oldestPending}
+              role={role}
+              label={t("oldestPendingLabel")}
+              statusLabel={t("pending")}
+              formatDate={formatDate}
+              openLabel={t("openStudentProfile")}
+              resolveLabel={t("resolve")}
+              psychLabel={t("psychLabel")}
+              teacherLabel={t("teacherLabel")}
+              emptyTitle={t("priorityEmptyTitle")}
+              emptyDescription={t("priorityEmptyDescription")}
+              onResolve={
+                oldestPending ? () => void resolveAlert(oldestPending.id) : undefined
+              }
+              resolving={
+                oldestPending ? resolvingIds.has(oldestPending.id) : false
+              }
+            />
           </div>
-        ) : loadError ? (
-          <EmptyState
-            icon={XCircle}
-            title={t("loadError")}
-            description={loadError}
-          />
-        ) : (
+        </PageSection>
+
+        <PageSection
+          tone="secondary"
+          layout="list"
+          eyebrow={t("priorityEyebrow")}
+          title={t("priorityTitle")}
+          description={t("priorityDescription")}
+        >
+          {priorityAlerts.length === 0 ? (
+            <EmptyState
+              icon={CheckCircle2}
+              title={
+                oldestPending
+                  ? t("priorityOnlyOldestTitle")
+                  : t("priorityEmptyTitle")
+              }
+              description={
+                oldestPending
+                  ? t("priorityOnlyOldestDescription")
+                  : t("priorityEmptyDescription")
+              }
+            />
+          ) : (
+            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+              {priorityAlerts.map((alert) => (
+                <PriorityAlertCard
+                  key={alert.id}
+                  alert={alert}
+                  role={role}
+                  onResolve={() => void resolveAlert(alert.id)}
+                  resolving={resolvingIds.has(alert.id)}
+                  formatDate={formatDate}
+                  openLabel={t("openStudentProfile")}
+                  resolveLabel={t("resolve")}
+                  statusLabel={t("pending")}
+                />
+              ))}
+            </div>
+          )}
+        </PageSection>
+
+        <PageSection
+          tone="utility"
+          layout="list"
+          eyebrow={t("queueEyebrow")}
+          title={t("queueTitle")}
+          description={t("queueDescription")}
+        >
           <DataTable
             columns={columns}
             data={visibleAlerts}
             pageSize={10}
             searchable
-            toolbarTitle={t("staffTitle")}
+            toolbarTitle={t("filterLabel")}
             toolbarSummary={
               <>
-                <span className="block">
-                  {visibleAlerts.length} alerta
-                  {visibleAlerts.length === 1 ? "" : "s"}
-                </span>
+                <span className="block">{t("visibleAlertsCount", { count: visibleAlerts.length })}</span>
                 <span className="mt-0.5 block text-xs font-medium text-muted-foreground">
                   {refreshing
                     ? t("refreshing")
@@ -596,23 +766,256 @@ export default function SosClient() {
                 >
                   {t("resolved")}
                 </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => void fetchAlerts("refresh")}
-                  loading={refreshing}
-                  disabled={loading || refreshing}
-                  icon={<RefreshCw className="size-4" />}
-                >
-                  {refreshing ? t("refreshing") : t("refresh")}
-                </Button>
               </>
             }
-            emptyMessage={t("noHistoryDescription")}
+            emptyMessage={
+              statusFilter === "all"
+                ? t("emptyInboxDescription")
+                : t("noFilteredDescription")
+            }
+            emptyStateIcon={ShieldAlert}
             rowKey={(alert) => alert.id}
           />
-        )}
-      </PageSection>
+        </PageSection>
+      </div>
     </PageScaffold>
+  );
+}
+
+function SosStaffLoadingState() {
+  return (
+    <div className="grid gap-6">
+      <PageSection tone="primary" layout="analytics">
+        <div className="grid gap-4">
+          <div className="grid gap-4 sm:grid-cols-3">
+            {[1, 2, 3].map((item) => (
+              <Skeleton key={item} className="h-28 rounded-2xl" />
+            ))}
+          </div>
+          <Skeleton className="h-36 rounded-[1.35rem]" />
+        </div>
+      </PageSection>
+
+      <PageSection tone="secondary" layout="list">
+        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+          {[1, 2, 3].map((item) => (
+            <Skeleton key={item} className="h-44 rounded-[1.35rem]" />
+          ))}
+        </div>
+      </PageSection>
+
+      <PageSection tone="utility" layout="list">
+        <div className="grid gap-3">
+          {[1, 2, 3, 4].map((item) => (
+            <Skeleton key={item} className="h-16 rounded-2xl" />
+          ))}
+        </div>
+      </PageSection>
+    </div>
+  );
+}
+
+function SosFocusCard({
+  alert,
+  role,
+  label,
+  statusLabel,
+  formatDate,
+  openLabel,
+  resolveLabel,
+  psychLabel,
+  teacherLabel,
+  emptyTitle,
+  emptyDescription,
+  onResolve,
+  resolving,
+}: {
+  alert: SosAlert | null;
+  role: string;
+  label: string;
+  statusLabel: string;
+  formatDate: (value: string | null) => string;
+  openLabel: string;
+  resolveLabel: string;
+  psychLabel: string;
+  teacherLabel: string;
+  emptyTitle: string;
+  emptyDescription: string;
+  onResolve?: () => void;
+  resolving?: boolean;
+}) {
+  if (!alert) {
+    return (
+      <div className="rounded-[1.35rem] border border-emerald-300/25 bg-gradient-to-br from-emerald-100/70 via-white/72 to-white/55 p-4 shadow-card dark:border-emerald-500/20 dark:from-emerald-500/10 dark:via-navy-950/50 dark:to-navy-950/45 sm:p-5">
+        <p className="text-tiny font-semibold uppercase tracking-[0.2em] text-muted-foreground">
+          {label}
+        </p>
+        <div className="mt-4 flex items-start gap-3 rounded-2xl border border-emerald-300/25 bg-white/72 p-4 dark:border-emerald-500/20 dark:bg-white/5">
+          <CheckCircle2 className="mt-0.5 size-5 text-emerald-600 dark:text-emerald-300" />
+          <div>
+            <p className="text-sm font-semibold text-foreground">{emptyTitle}</p>
+            <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
+              {emptyDescription}
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  const studentHref = getStudentHref(role, alert.student.id);
+
+  return (
+    <div className="rounded-[1.35rem] border border-gold-400/18 bg-gradient-to-br from-gold-400/12 via-white/72 to-white/55 p-4 shadow-card dark:border-gold-400/12 dark:from-gold-400/10 dark:via-navy-950/55 dark:to-navy-950/45 sm:p-5">
+      <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
+        <div className="min-w-0">
+          <div className="flex flex-wrap items-center gap-2">
+            <p className="text-tiny font-semibold uppercase tracking-[0.2em] text-muted-foreground">
+              {label}
+            </p>
+            <Badge variant="warning">{statusLabel}</Badge>
+          </div>
+          <StudentIdentity
+            student={alert.student}
+            subtitle={getStudentMeta(alert.student)}
+            className="mt-3"
+            nameClassName="text-lg tracking-[-0.03em]"
+          />
+          <p className="mt-1 text-sm text-muted-foreground">
+            {formatDate(alert.createdAt)}
+          </p>
+        </div>
+
+        <div className="grid gap-3 sm:grid-cols-2 xl:min-w-[340px]">
+          <div className="rounded-2xl border border-white/30 bg-white/75 px-3 py-3 dark:border-white/10 dark:bg-white/5">
+            <p className="text-tiny font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+              {psychLabel}
+            </p>
+            <p className="mt-1 text-sm font-medium text-foreground">{alert.psych}</p>
+          </div>
+          <div className="rounded-2xl border border-white/30 bg-white/75 px-3 py-3 dark:border-white/10 dark:bg-white/5">
+            <p className="text-tiny font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+              {teacherLabel}
+            </p>
+            <p className="mt-1 text-sm font-medium text-foreground">{alert.teacher}</p>
+          </div>
+        </div>
+
+        <div className="flex flex-wrap items-center gap-2 xl:justify-end">
+          <Link
+            href={studentHref}
+            className={buttonVariants({ variant: "secondary", size: "sm" })}
+          >
+            <ExternalLink className="size-4" />
+            {openLabel}
+          </Link>
+          {onResolve ? (
+            <Button
+              variant="primary"
+              size="sm"
+              onClick={onResolve}
+              loading={resolving}
+              icon={<CheckCircle2 className="size-4" />}
+            >
+              {resolveLabel}
+            </Button>
+          ) : null}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function SosStatCard({
+  label,
+  value,
+  description,
+  accent = "default",
+}: {
+  label: string;
+  value: string;
+  description: string;
+  accent?: "default" | "warning" | "success";
+}) {
+  return (
+    <div className="rounded-[1.35rem] border border-white/25 bg-white/72 p-4 shadow-card backdrop-blur-md dark:border-white/10 dark:bg-navy-950/45">
+      <p className="text-tiny font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+        {label}
+      </p>
+      <p
+        className={cn(
+          "mt-2 text-[2rem] font-black leading-none tracking-[-0.05em]",
+          accent === "warning"
+            ? "text-warning-700 dark:text-warning-400"
+            : accent === "success"
+              ? "text-emerald-700 dark:text-emerald-300"
+              : "text-foreground",
+        )}
+      >
+        {value}
+      </p>
+      <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+        {description}
+      </p>
+    </div>
+  );
+}
+
+function PriorityAlertCard({
+  alert,
+  role,
+  onResolve,
+  resolving,
+  formatDate,
+  openLabel,
+  resolveLabel,
+  statusLabel,
+}: {
+  alert: SosAlert;
+  role: string;
+  onResolve: () => void;
+  resolving: boolean;
+  formatDate: (value: string | null) => string;
+  openLabel: string;
+  resolveLabel: string;
+  statusLabel: string;
+}) {
+  const studentHref = getStudentHref(role, alert.student.id);
+
+  return (
+    <div className="rounded-[1.35rem] border border-white/25 bg-white/75 p-4 shadow-card dark:border-white/10 dark:bg-navy-950/45">
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <StudentIdentity
+            student={alert.student}
+            subtitle={getStudentMeta(alert.student)}
+            size="sm"
+          />
+          <p className="mt-1 text-xs text-muted-foreground">
+            {formatDate(alert.createdAt)}
+          </p>
+        </div>
+        <Badge variant="warning">{statusLabel}</Badge>
+      </div>
+
+      <div className="mt-4 flex flex-wrap items-center gap-2">
+        <Link
+          href={studentHref}
+          className={buttonVariants({ variant: "secondary", size: "sm" })}
+        >
+          <ExternalLink className="size-4" />
+          {openLabel}
+        </Link>
+        <Button
+          variant="primary"
+          size="sm"
+          onClick={onResolve}
+          loading={resolving}
+          icon={<CheckCircle2 className="size-4" />}
+        >
+          {resolveLabel}
+        </Button>
+      </div>
+    </div>
   );
 }

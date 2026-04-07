@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { getLocale, getTranslations } from "next-intl/server";
+import { getLocale, getMessages, getTranslations } from "next-intl/server";
 import { requireAuth } from "@/lib/auth-guard";
 import { getDashboardSummaryForUser } from "@/lib/dashboard";
 import { DashboardClient } from "./dashboard-client";
@@ -14,8 +14,11 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export default async function DashboardPage() {
   const user = await requireAuth();
-  const t = await getTranslations("dashboard");
-  const locale = await getLocale();
+  const [locale, messages] = await Promise.all([getLocale(), getMessages()]);
+  const dashboardMessages = (messages.dashboard ?? {}) as Record<string, string>;
+  const navMessages = (messages.nav ?? {}) as Record<string, string>;
+  const questionnaireMessages = (messages.questionarios ??
+    {}) as Record<string, string>;
   const summary = await getDashboardSummaryForUser({
     id: user.id,
     role: user.role,
@@ -23,10 +26,10 @@ export default async function DashboardPage() {
   const now = new Date();
   const greeting =
     now.getHours() < 12
-      ? t("greetingMorning")
+      ? dashboardMessages.greetingMorning ?? "Bom dia"
       : now.getHours() < 19
-        ? t("greetingAfternoon")
-        : t("greetingEvening");
+        ? dashboardMessages.greetingAfternoon ?? "Boa tarde"
+        : dashboardMessages.greetingEvening ?? "Boa noite";
   const todayLabel = new Intl.DateTimeFormat(
     locale === "en" ? "en-GB" : "pt-PT",
     { dateStyle: "full" },
@@ -35,6 +38,12 @@ export default async function DashboardPage() {
   return (
     <DashboardClient
       greeting={greeting}
+      locale={locale}
+      messages={{
+        dashboard: dashboardMessages,
+        nav: navMessages,
+        questionarios: questionnaireMessages,
+      }}
       todayLabel={todayLabel}
       username={user.name ?? user.email.split("@")[0]}
       summary={summary}

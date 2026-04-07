@@ -36,3 +36,32 @@ yarn-error.log*
 /public/workbox-*.js
 /public/workbox-*.js.map
 next-env.d.ts
+
+# Playwright & Testing
+test-results/
+playwright-report/
+blob-report/
+playwright/.cache/
+
+# local diagnostics
+/.dev-*.log
+/audit-dev.log
+/build.log
+/codex-dev.*.log
+/dev-*.log
+/dev-server.log
+/dev-server.err
+/devserver.*.log
+/prod-*.log
+/prod-server.log
+/seed*.log
+/standalone-*.log
+/start-server.log
+/build.err
+/build-error.txt
+/depcheck-report*.txt
+/knip-report*.txt
+/prod-audit.err
+/prod-server.err
+/start-server.err
+/tsc-error.txt

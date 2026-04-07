@@ -12,9 +12,8 @@ import { Button } from "@/components/ui/button";
 import { DateField } from "@/components/ui/date-field";
 import { Input } from "@/components/ui/input";
 import { PillSelect } from "@/components/ui/pill-select";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { readApiResponse } from "@/lib/api-client";
-import { getInitials, getStudentSwatch } from "@/components/ui/student-picker";
+import { StudentIdentity } from "@/components/ui/student-identity";
 import { createStudentAction } from "./actions";
 
 interface StudentRow {
@@ -28,9 +27,11 @@ interface StudentRow {
 
 interface AlunosClientProps {
   initialStudents: StudentRow[];
+  totalStudents: number;
+  currentPage: number;
 }
 
-export function AlunosClient({ initialStudents }: AlunosClientProps) {
+export function AlunosClient({ initialStudents, totalStudents, currentPage }: AlunosClientProps) {
   const t = useTranslations("alunos");
   const common = useTranslations("common");
   const locale = useLocale();
@@ -75,23 +76,7 @@ export function AlunosClient({ initialStudents }: AlunosClientProps) {
       key: "name",
       header: t("colName"),
       sortable: true,
-      render: (row) => (
-        <div className="flex items-center gap-3">
-          <Avatar className="size-9 shrink-0">
-            <AvatarFallback
-              className="text-micro font-bold border-2 border-white shadow-sm"
-              style={getStudentSwatch(row)}
-            >
-              {getInitials(row.name)}
-            </AvatarFallback>
-          </Avatar>
-          <div>
-            <p className="font-bold text-sm text-navy-800 transition-colors leading-tight group-hover:text-gold-600 dark:group-hover:text-gold-300">
-              {row.name}
-            </p>
-          </div>
-        </div>
-      ),
+      render: (row) => <StudentIdentity student={row} />,
     },
     {
       key: "sex",
@@ -315,16 +300,33 @@ export function AlunosClient({ initialStudents }: AlunosClientProps) {
           <DataTable
             columns={columns}
             data={initialStudents}
+            serverTotalItems={totalStudents}
+            serverPage={currentPage}
+            onServerPageChange={(pageNum) => {
+              const url = new URL(window.location.href);
+              url.searchParams.set("page", pageNum.toString());
+              router.push(url.toString());
+            }}
+            onServerSearch={(query) => {
+              const url = new URL(window.location.href);
+              if (query) {
+                url.searchParams.set("search", query);
+              } else {
+                url.searchParams.delete("search");
+              }
+              url.searchParams.set("page", "1");
+              router.push(url.toString());
+            }}
             rowKey={(row) => row.id}
             onRowClick={(row) => router.push(`/alunos/${row.id}`)}
             emptyMessage={t("emptyMessage")}
             toolbarTitle={t("title")}
             toolbarSummary={
               <>
-                <span className="text-navy-800">{initialStudents.length}</span>{" "}
+                <span className="text-navy-800">{totalStudents}</span>{" "}
                 {locale === "en"
-                  ? `result${initialStudents.length === 1 ? "" : "s"}`
-                  : `resultado${initialStudents.length === 1 ? "" : "s"}`}
+                  ? `result${totalStudents === 1 ? "" : "s"}`
+                  : `resultado${totalStudents === 1 ? "" : "s"}`}
               </>
             }
           />

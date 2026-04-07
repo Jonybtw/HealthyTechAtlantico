@@ -200,7 +200,7 @@ export const sosSchema = z.object({
   teacherEmail: optionalInternalEmailSchema,
 });
 
-export const dispensaSchema = z.object({
+export const exemptionSchema = z.object({
   reason: z.string().min(1, "Motivo obrigatorio"),
   startDate: z.string(),
   endDate: z.string(),

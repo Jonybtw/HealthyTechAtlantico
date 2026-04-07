@@ -32,7 +32,7 @@ export default async function StudentDetailPage({ params }: Props) {
       biometrics: { orderBy: { recordedAt: "desc" }, take: 5 },
       tests: { orderBy: { recordedAt: "desc" }, take: 5 },
       questionnaires: { orderBy: { submittedAt: "desc" }, take: 5 },
-      dispensas: { orderBy: { startDate: "desc" } },
+      exemptions: { orderBy: { startDate: "desc" } },
       kidmedConsentRecordedBy: {
         select: { id: true, name: true, email: true },
       },
@@ -74,7 +74,7 @@ export default async function StudentDetailPage({ params }: Props) {
       ...q,
       submittedAt: q.submittedAt.toISOString(),
     })),
-    dispensas: student.dispensas.map((d) => ({
+    exemptions: student.exemptions.map((d) => ({
       ...d,
       startDate: d.startDate.toISOString(),
       endDate: d.endDate.toISOString(),
