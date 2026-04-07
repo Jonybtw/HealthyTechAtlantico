@@ -27,6 +27,7 @@ import { FieldShell } from "@/components/ui/field-shell";
 import { PageScaffold } from "@/components/ui/page-scaffold";
 import { PageSection } from "@/components/ui/page-section";
 import { Skeleton } from "@/components/ui/skeleton";
+import { StudentIdentity } from "@/components/ui/student-identity";
 import {
   StudentPicker,
   getInitials,
@@ -1123,28 +1124,27 @@ export default function RelatorioClient() {
 
 function SelectedStudentCard({ student }: { student: StudentOption | undefined }) {
   return (
-    <div className="flex h-[46px] w-full items-center justify-between rounded-2xl border border-input bg-card px-4 shadow-sm">
-      <div className="flex w-full items-center gap-2.5">
+    <div className="flex min-h-[64px] w-full items-center rounded-2xl border border-input/80 bg-card/95 px-4 py-3 shadow-sm">
+      <div className="flex w-full items-center gap-3">
         {student ? (
-          <span
-            className="flex size-7 shrink-0 items-center justify-center rounded-full text-tiny font-semibold shadow-[inset_0_1px_0_rgba(255,255,255,0.18)]"
-            style={getStudentSwatch(student)}
-          >
-            {getInitials(student.name)}
-          </span>
+          <StudentIdentity
+            student={student}
+            subtitle={student.className ?? "-"}
+            size="sm"
+            className="w-full"
+            subtitleClassName="mt-0.5"
+          />
         ) : (
-          <div className="flex size-7 items-center justify-center rounded-full bg-navy-100 text-navy-600 dark:bg-navy-900 dark:text-navy-300">
-            <User className="size-4" />
-          </div>
+          <>
+            <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-navy-100 text-navy-600 dark:bg-navy-900 dark:text-navy-300">
+              <User className="size-4" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-sm font-semibold text-foreground">-</p>
+              <p className="truncate text-xs text-muted-foreground">-</p>
+            </div>
+          </>
         )}
-        <span className="min-w-0 flex-1">
-          <span className="block truncate text-sm font-semibold text-foreground">
-            {student?.name ?? "-"}
-          </span>
-          <span className="block truncate text-micro text-muted-foreground">
-            {student?.className ?? "-"}
-          </span>
-        </span>
       </div>
     </div>
   );
