@@ -179,6 +179,7 @@ async function main() {
           createdById: admin.id,
           schoolYear: "2025/2026",
           className,
+          processNumber: `P${new Date().getFullYear()}${studentCounter.toString().padStart(4, '0')}`,
         }
       });
       students.push({ student, ageOff });

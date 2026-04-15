@@ -24,6 +24,7 @@ export async function createStudentAction(
       sex: String(formData.get("sex") ?? ""),
       birthDate: String(formData.get("birthDate") ?? ""),
       className: String(formData.get("className") ?? ""),
+      processNumber: String(formData.get("processNumber") ?? ""),
     };
 
     const data = createStudentSchema.parse(payload);
@@ -34,6 +35,7 @@ export async function createStudentAction(
         sex: data.sex,
         birthDate: data.birthDate ? new Date(data.birthDate) : null,
         className: data.className || null,
+        processNumber: data.processNumber || null,
         createdById: user.id,
       },
     });

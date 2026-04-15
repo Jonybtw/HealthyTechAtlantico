@@ -69,6 +69,7 @@ export async function POST(req: Request) {
       age: number | null;
       schoolYear: string | null;
       className: string | null;
+      processNumber: string | null;
       createdById: string;
     }[] = [];
 
@@ -95,6 +96,11 @@ export async function POST(req: Request) {
           "classname",
           "class",
           "turma",
+        ]);
+        const processNumber = pickField(row, headerIndex, [
+          "processnumber",
+          "numeroprocesso",
+          "processo",
         ]);
 
         if (!name) {
@@ -130,6 +136,7 @@ export async function POST(req: Request) {
           age: normalizedAge ?? undefined,
           schoolYear: schoolYear || undefined,
           className: className || undefined,
+          processNumber: processNumber || undefined,
         });
 
         toCreate.push({
@@ -139,6 +146,7 @@ export async function POST(req: Request) {
           age: parsed.age ?? null,
           schoolYear: parsed.schoolYear?.trim() || null,
           className: parsed.className?.trim() || null,
+          processNumber: parsed.processNumber?.trim() || null,
           createdById: session.user.id,
         });
       } catch (error) {

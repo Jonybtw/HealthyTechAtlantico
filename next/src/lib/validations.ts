@@ -105,6 +105,7 @@ export const createStudentSchema = z.object({
   age: z.number().int().min(5).max(25).optional(),
   schoolYear: z.string().optional(),
   className: z.string().optional(),
+  processNumber: z.string().optional(),
 });
 
 export const updateStudentSchema = createStudentSchema.partial().extend({

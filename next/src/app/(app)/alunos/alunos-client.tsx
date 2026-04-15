@@ -23,6 +23,7 @@ interface StudentRow {
   birthDate: Date | null;
   className: string | null;
   schoolYear: string | null;
+  processNumber: string | null;
 }
 
 interface AlunosClientProps {
@@ -44,6 +45,7 @@ export function AlunosClient({ initialStudents, totalStudents, currentPage }: Al
     name: "",
     sex: "M",
     birthDate: "",
+    processNumber: "",
   });
   const [state, formAction, isPending] = useActionState(
     createStudentAction,
@@ -64,7 +66,7 @@ export function AlunosClient({ initialStudents, totalStudents, currentPage }: Al
       toast.success(t("createSuccess"));
       const frame = requestAnimationFrame(() => {
         setShowCreate(false);
-        setForm({ name: "", sex: "M", birthDate: "" });
+        setForm({ name: "", sex: "M", birthDate: "", processNumber: "" });
         router.refresh();
       });
       return () => cancelAnimationFrame(frame);
@@ -77,6 +79,17 @@ export function AlunosClient({ initialStudents, totalStudents, currentPage }: Al
       header: t("colName"),
       sortable: true,
       render: (row) => <StudentIdentity student={row} />,
+    },
+    {
+      key: "processNumber",
+      header: t("colProcessNumber"),
+      sortable: true,
+      render: (row) =>
+        row.processNumber ? (
+          <span className="text-sm font-semibold text-navy-900">{row.processNumber}</span>
+        ) : (
+          <span className="text-slate-400">-</span>
+        ),
     },
     {
       key: "sex",
@@ -225,7 +238,21 @@ export function AlunosClient({ initialStudents, totalStudents, currentPage }: Al
                     Cadastro Rápido
                   </h3>
                   <form action={formAction}>
-                    <div className="grid grid-cols-1 gap-5 md:grid-cols-4">
+                    <div className="grid grid-cols-1 gap-5 md:grid-cols-3 lg:grid-cols-5">
+                      <div className="space-y-1.5">
+                        <label className="ml-1 text-micro font-bold uppercase tracking-widest text-slate-400">
+                          {t("colProcessNumber")}
+                        </label>
+                        <Input
+                          name="processNumber"
+                          value={form.processNumber}
+                          onChange={(e) =>
+                            setForm((c) => ({ ...c, processNumber: e.target.value }))
+                          }
+                          placeholder="Ex: P2026001"
+                        />
+                      </div>
+
                       <div className="space-y-1.5">
                         <label className="ml-1 text-micro font-bold uppercase tracking-widest text-slate-400">
                           {t("colName")}

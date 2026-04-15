@@ -33,7 +33,12 @@ export default async function AlunosPage({ searchParams }: Props) {
   const pageSize = 15;
 
   const whereCondition = search
-    ? { name: { contains: search, mode: "insensitive" as const } }
+    ? {
+        OR: [
+          { name: { contains: search, mode: "insensitive" as const } },
+          { processNumber: { contains: search, mode: "insensitive" as const } },
+        ],
+      }
     : {};
 
   const totalStudents = await prisma.student.count({ where: whereCondition });
@@ -50,6 +55,7 @@ export default async function AlunosPage({ searchParams }: Props) {
       birthDate: true,
       className: true,
       schoolYear: true,
+      processNumber: true,
     },
   });
 
