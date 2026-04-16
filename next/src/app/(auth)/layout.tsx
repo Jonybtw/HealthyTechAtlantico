@@ -25,12 +25,12 @@ const HIGHLIGHTS = [
 ];
 
 const COLEGIO_IMAGES = [
-  "/fotosColegio/1.jpeg",
-  "/fotosColegio/2.jpeg",
-  "/fotosColegio/3.jpeg",
-  "/fotosColegio/4.jpeg",
-  "/fotosColegio/5.jpeg",
-  "/fotosColegio/6.jpeg",
+  "/fotosColegio/1.webp",
+  "/fotosColegio/2.webp",
+  "/fotosColegio/3.webp",
+  "/fotosColegio/4.webp",
+  "/fotosColegio/5.webp",
+  "/fotosColegio/6.webp",
 ];
 
 function LoginHeroCarousel({
