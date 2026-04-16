@@ -1,10 +1,8 @@
 import { type NextRequest } from "next/server";
 import { z } from "zod";
-import type { Role } from "@prisma/client";
 import { auth } from "@/lib/auth";
 import {
   created,
-  err,
   notFound,
   ok,
   serverError,
