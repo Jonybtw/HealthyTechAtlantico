@@ -29,6 +29,7 @@ interface StudentListItem {
   age: number | null;
   className: string | null;
   schoolYear: string | null;
+  processNumber: string | null;
 }
 
 interface StudentsListResponse {

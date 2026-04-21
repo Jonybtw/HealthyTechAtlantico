@@ -348,13 +348,12 @@ export default function TurmaPage() {
         headerProps={{
           title: t("title"),
           description: t("description"),
-          eyebrow: "GESTÃO · TURMA",
         }}
       >
         <EmptyState
           icon={AlertTriangle}
-          title="Sem acesso a relatórios de turma"
-          description="Esta área está reservada a professores e administradores."
+          title={t("accessDeniedTitle")}
+          description={t("accessDeniedDescription")}
         />
       </PageScaffold>
     );
@@ -366,7 +365,6 @@ export default function TurmaPage() {
       headerProps={{
         title: t("title"),
         description: t("description"),
-        eyebrow: "GESTÃO · TURMA",
       }}
       headerActions={
         <div className="flex flex-wrap items-center gap-2">

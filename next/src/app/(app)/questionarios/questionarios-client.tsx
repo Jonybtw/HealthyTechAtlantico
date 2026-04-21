@@ -20,7 +20,6 @@ import {
   Link2,
   ShieldAlert,
   ShieldCheck,
-  Sparkles,
   XCircle,
 } from "lucide-react";
 import { PageScaffold } from "@/components/ui/page-scaffold";
@@ -406,7 +405,6 @@ export default function QuestionariosPage() {
         headerProps={{
           title: t("title"),
           description: t("description"),
-          eyebrow: "ALUNOS · QUESTIONÁRIOS",
         }}
       >
         <EmptyState
@@ -432,7 +430,6 @@ export default function QuestionariosPage() {
         headerProps={{
           title: t("title"),
           description: t("description"),
-          eyebrow: "ALUNOS · QUESTIONÁRIOS",
         }}
       >
         <div className="mx-auto grid w-full max-w-4xl gap-5">
@@ -450,7 +447,6 @@ export default function QuestionariosPage() {
         headerProps={{
           title: t("title"),
           description: t("description"),
-          eyebrow: "ALUNOS · QUESTIONÁRIOS",
         }}
       >
         <EmptyState
@@ -592,7 +588,7 @@ export default function QuestionariosPage() {
             description: t("statusReadyDescription"),
           }
       : {
-          icon: <Sparkles className="size-4 text-navy-600" />,
+          icon: <ClipboardList className="size-4 text-navy-600" />,
           title: t("statusFirstSubmissionTitle"),
           description: t("statusFirstSubmissionDescription"),
         };
@@ -676,7 +672,6 @@ export default function QuestionariosPage() {
       headerProps={{
         title: t("title"),
         description: t("description"),
-        eyebrow: "ALUNOS · QUESTIONÁRIOS",
       }}
     >
       <div className="mx-auto flex w-full max-w-4xl flex-col gap-5 pb-28">
@@ -744,7 +739,7 @@ export default function QuestionariosPage() {
                 </div>
                 <div className="rounded-2xl border border-border bg-surface-utility p-4">
                   <div className="flex items-start gap-3">
-                    <Sparkles className="mt-0.5 size-4 text-gold-600" />
+                    <ClipboardList className="mt-0.5 size-4 text-muted-foreground" />
                     <div className="space-y-1.5">
                       <p className="text-sm font-semibold text-foreground">
                         {t("objectiveLabel")}

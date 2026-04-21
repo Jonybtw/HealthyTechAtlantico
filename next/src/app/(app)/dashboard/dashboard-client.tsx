@@ -22,7 +22,6 @@ import { PageScaffold } from "@/components/ui/page-scaffold";
 import { PageSection } from "@/components/ui/page-section";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
-import { FadeIn, StaggerItem, StaggerList } from "@/components/ui/motion";
 import type {
   DashboardCardData,
   DashboardSummary,
@@ -58,9 +57,9 @@ const FALLBACK_MESSAGES: {
     lastTests: "Últimos testes",
     lastMeasurement: "Data da última medição",
     lastTestDate: "Data do último teste físico",
-    platformOverview: "Visão geral da plataforma HealthyTech Atlântico",
-    psychologistOverview: "Visão geral da fila de acompanhamento dos alunos",
-    parentOverview: "Visão geral dos alunos associados à tua conta",
+    platformOverview: "Indicadores globais da plataforma.",
+    psychologistOverview: "Resumo da fila de acompanhamento.",
+    parentOverview: "Alunos associados à sua conta.",
     students: "Alunos",
     classes: "Turmas",
     sessions: "Sessões",
@@ -74,9 +73,9 @@ const FALLBACK_MESSAGES: {
     zmf: "Z. Melhoria",
     psychologistQueueTitle: "Fila prioritária de acompanhamento",
     psychologistQueueDescription:
-      "Casos pendentes que devem ser revistos primeiro pelo psicólogo.",
+      "Casos SOS por tratar, por ordem de prioridade.",
     psychologistRecentTitle: "Questionários recentes",
-    psychologistRecentDescription: "Últimos instrumentos submetidos.",
+    psychologistRecentDescription: "Últimas submissões de questionários.",
     classPending: "Turma por confirmar",
     alertOpenedOn: "Aberto em {date}",
     openStudentFollowUp: "Abrir acompanhamento",
@@ -86,11 +85,10 @@ const FALLBACK_MESSAGES: {
     noRecentQuestionnairesDescription:
       "Quando houver novas submissões, aparecem aqui para leitura rápida.",
     parentStudentsTitle: "Acompanhamento dos alunos",
-    parentStudentsDescription:
-      "Visão rápida do estado recente dos alunos associados à tua conta.",
+    parentStudentsDescription: "Última informação registada por aluno.",
     parentReportsTitle: "Relatórios recentes",
     parentReportsDescription:
-      "Últimos relatórios gerados para consulta familiar.",
+      "Relatórios recentes disponibilizados pela escola.",
     studentRecord: "Registo do aluno",
     lastReport: "Último relatório",
     lastQuestionnaire: "Último questionário",
@@ -103,11 +101,11 @@ const FALLBACK_MESSAGES: {
     noReportsDashboardDescription:
       "Os relatórios disponibilizados pela escola aparecem nesta área.",
     studentsUnit: "alunos",
-    overviewEyebrow: "Resumo operacional",
-    overviewTitle: "Panorama da atividade",
+    overviewEyebrow: "Resumo",
+    overviewTitle: "Indicadores",
     overviewDescription:
-      "Leitura rápida dos números-chave da plataforma e dos sinais que pedem atenção no dia a dia.",
-    dashboardStatus: "Visão institucional",
+      "Números de alunos, turmas, avaliações e alertas SOS em aberto.",
+    dashboardStatus: "Painel",
     yearInFocus: "Ano em foco",
     coverageRecent: "Cobertura biométrica do ano letivo mais recente.",
     studentsWithBiometrics: "Com biometria",
@@ -119,7 +117,7 @@ const FALLBACK_MESSAGES: {
       "Comparação do peso da Zona Saudável em cada ano letivo com registos.",
     comparisonPanelTitle: "Evolução por ano letivo",
     comparisonPanelDescription:
-      "Percentagem de Zona Saudável entre os alunos com biometria registada.",
+      "Percentagem em zona saudável (alunos com biometria).",
     annualSeriesPendingTitle: "Ainda não existe série histórica comparável.",
     annualSeriesPendingDescription:
       "A evolução anual aparece quando houver mais do que um ano letivo com biometria registada.",
@@ -331,19 +329,18 @@ export function DashboardClient({
         className={scaffoldClassName}
         headerProps={buildHeaderProps(`${greeting}, ${username}!`, description)}
       >
-        <StaggerList className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
           {summary.cards.map((card) => (
-            <StaggerItem key={card.id}>
-              <KpiCard
-                icon={ICONS[card.icon]}
-                title={t(card.titleKey)}
-                value={card.value}
-                description={t(card.descriptionKey)}
-                accent={card.accent}
-              />
-            </StaggerItem>
+            <KpiCard
+              key={card.id}
+              icon={ICONS[card.icon]}
+              title={t(card.titleKey)}
+              value={card.value}
+              description={t(card.descriptionKey)}
+              accent={card.accent}
+            />
           ))}
-        </StaggerList>
+        </div>
 
         <div className="grid gap-5 xl:grid-cols-[minmax(0,1.1fr)_340px]">
           <PageSection
@@ -456,19 +453,18 @@ export function DashboardClient({
         className={scaffoldClassName}
         headerProps={buildHeaderProps(`${greeting}, ${username}!`, description)}
       >
-        <StaggerList className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
           {summary.cards.map((card) => (
-            <StaggerItem key={card.id}>
-              <KpiCard
-                icon={ICONS[card.icon]}
-                title={t(card.titleKey)}
-                value={card.value}
-                description={t(card.descriptionKey)}
-                accent={card.accent}
-              />
-            </StaggerItem>
+            <KpiCard
+              key={card.id}
+              icon={ICONS[card.icon]}
+              title={t(card.titleKey)}
+              value={card.value}
+              description={t(card.descriptionKey)}
+              accent={card.accent}
+            />
           ))}
-        </StaggerList>
+        </div>
 
         <div className="grid gap-5 xl:grid-cols-[minmax(0,1.15fr)_340px]">
           <PageSection
@@ -577,20 +573,16 @@ export function DashboardClient({
       }
     >
       {summary.cards.length > 0 ? (
-        <FadeIn delay={0.05}>
-          <StaffOverview locale={locale} summary={summary} t={t} />
-        </FadeIn>
+        <StaffOverview locale={locale} summary={summary} t={t} />
       ) : null}
 
       {summary.zafByYear.length > 0 ? (
-        <FadeIn delay={0.2}>
-          <DashboardAnalytics
-            chartsReady={chartsReady}
-            locale={locale}
-            summary={summary}
-            t={t}
-          />
-        </FadeIn>
+        <DashboardAnalytics
+          chartsReady={chartsReady}
+          locale={locale}
+          summary={summary}
+          t={t}
+        />
       ) : null}
     </PageScaffold>
   );
@@ -616,11 +608,11 @@ function StaffDashboardHeader({
       eyebrow={t("title")}
       actionsClassName="items-start lg:items-center"
     >
-      <span className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3 py-1.5 text-sm text-white/90 backdrop-blur-md">
-        <CalendarDays className="size-4 text-gold-300" />
+      <span className="inline-flex items-center gap-2 rounded-md border border-border bg-muted/40 px-3 py-1.5 text-sm text-foreground">
+        <CalendarDays className="size-4 text-muted-foreground" />
         {todayLabel}
       </span>
-      <span className="inline-flex items-center rounded-full border border-gold-300/30 bg-gold-300/16 px-3 py-1.5 text-sm font-medium text-gold-100 backdrop-blur-md">
+      <span className="inline-flex items-center rounded-md border border-border bg-muted/30 px-3 py-1.5 text-sm font-medium text-muted-foreground">
         {t("dashboardStatus")}
       </span>
     </PageHeader>
@@ -712,7 +704,7 @@ function StaffOverview({
           </p>
         </div>
 
-        <div className="overflow-hidden rounded-[1.65rem] border border-border/70 shadow-[0_18px_38px_-30px_rgba(9,21,35,0.24)]">
+        <div className="overflow-hidden rounded-xl border border-border/70 shadow-sm">
           <div className="grid gap-px bg-border/60 md:grid-cols-2 xl:grid-cols-4">
             {metrics.map((metric) => (
               <StaffMetricRailCell
@@ -766,7 +758,7 @@ function DashboardAnalytics({
       layout="analytics"
     >
       <div className="grid gap-4 xl:grid-cols-[minmax(0,1.02fr)_minmax(320px,0.98fr)]">
-        <section className="rounded-[1.65rem] border border-border/70 bg-[linear-gradient(180deg,rgba(255,255,255,0.96),rgba(248,250,252,0.94))] p-5 shadow-[0_18px_38px_-30px_rgba(9,21,35,0.22)] dark:border-white/10 dark:bg-[linear-gradient(180deg,rgba(19,31,49,0.96),rgba(14,24,38,0.98))] sm:p-6">
+        <section className="rounded-xl border border-border/70 bg-card p-5 shadow-sm dark:border-white/10 sm:p-6">
           <div className="flex items-start gap-4">
             <div>
               <p className="text-sm font-medium text-muted-foreground dark:text-white/62">

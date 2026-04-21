@@ -92,8 +92,6 @@ interface TestRecord {
   recordedAt: string;
 }
 
-const HEADER_EYEBROW = "AVALIACAO / TESTES FISICOS";
-
 const TEST_FIELD_MAP: Record<TestFieldId, TestFieldMeta> = {
   vai: {
     id: "vai",
@@ -646,7 +644,6 @@ export default function TestesPage() {
         headerProps={{
           title: t("title"),
           description: t("description"),
-          eyebrow: HEADER_EYEBROW,
         }}
       >
         <EmptyState
@@ -664,7 +661,6 @@ export default function TestesPage() {
       headerProps={{
         title: t("title"),
         description: t("description"),
-        eyebrow: HEADER_EYEBROW,
       }}
       headerActions={
         <>

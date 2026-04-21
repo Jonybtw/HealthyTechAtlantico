@@ -1091,6 +1091,7 @@ async function main() {
     }
   >();
 
+  let studentCounter = 1;
   for (const blueprint of STUDENTS) {
     const linkedUser = blueprint.linkedUserEmail
       ? await ensureUser({
@@ -1121,8 +1122,11 @@ async function main() {
         age: computeAge(blueprint.birthDate, blueprint.schoolYear),
         schoolYear: blueprint.schoolYear,
         className: blueprint.className,
+        processNumber: `P${new Date().getFullYear()}${studentCounter.toString().padStart(4, '0')}`,
       },
     });
+
+    studentCounter += 1;
 
     studentRecords.set(blueprint.key, {
       blueprint,
@@ -1411,8 +1415,8 @@ async function main() {
       await prisma.sosAlert.create({
         data: {
           studentId: student.id,
-          psych: psychologist.name,
-          teacher: professor.name,
+          psych: psychologist.name ?? "",
+          teacher: professor.name ?? "",
           psychEmail: psychologist.email,
           teacherEmail: professor.email,
           createdAt: new Date(),
@@ -1427,8 +1431,8 @@ async function main() {
       await prisma.sosAlert.create({
         data: {
           studentId: student.id,
-          psych: psychologist.name,
-          teacher: professor.name,
+          psych: psychologist.name ?? "",
+          teacher: professor.name ?? "",
           psychEmail: psychologist.email,
           teacherEmail: professor.email,
           createdAt: new Date(Date.now() - 100000000),

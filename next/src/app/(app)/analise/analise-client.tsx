@@ -574,7 +574,6 @@ export default function AnaliseClient() {
         headerProps={{
           title: t("title"),
           description: t("description"),
-          eyebrow: "DADOS · ANALISE",
         }}
       >
         <EmptyState
@@ -591,7 +590,6 @@ export default function AnaliseClient() {
       headerProps={{
         title: t("title"),
         description: t("description"),
-        eyebrow: "DADOS · ANALISE",
       }}
     >
       <div className="grid items-start gap-5 xl:grid-cols-[minmax(0,1.08fr)_360px]">

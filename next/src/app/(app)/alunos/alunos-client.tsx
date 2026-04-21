@@ -51,6 +51,7 @@ interface StudentRow {
   birthDate: string | null;
   className: string | null;
   schoolYear: string | null;
+  processNumber: string | null;
 }
 
 interface AlunosClientProps {
@@ -101,6 +102,7 @@ export function AlunosClient({
     birthDate: "",
     className: "",
     schoolYear: "",
+    processNumber: "",
   });
   const [state, formAction, isPending] = useActionState(
     createStudentAction,
@@ -130,6 +132,7 @@ export function AlunosClient({
           birthDate: "",
           className: "",
           schoolYear: "",
+          processNumber: "",
         });
         void queryClient.invalidateQueries({ queryKey: ["students-list"] });
         void queryClient.invalidateQueries({ queryKey: ["students"] });
@@ -176,6 +179,17 @@ export function AlunosClient({
           }
         />
       ),
+    },
+    {
+      key: "processNumber",
+      header: t("colProcessNumber"),
+      sortable: true,
+      render: (row) =>
+        row.processNumber ? (
+          <span className="text-sm font-semibold text-navy-900">{row.processNumber}</span>
+        ) : (
+          <span className="text-slate-400">-</span>
+        ),
     },
     {
       key: "sex",
@@ -562,6 +576,19 @@ export function AlunosClient({
                   setForm((current) => ({ ...current, birthDate: value }))
                 }
                 required
+              />
+
+              <Input
+                name="processNumber"
+                label={t("colProcessNumber")}
+                value={form.processNumber}
+                onChange={(event) =>
+                  setForm((current) => ({
+                    ...current,
+                    processNumber: event.target.value,
+                  }))
+                }
+                placeholder={t("processNumberPlaceholder")}
               />
 
               <div className="grid gap-4 sm:grid-cols-2">

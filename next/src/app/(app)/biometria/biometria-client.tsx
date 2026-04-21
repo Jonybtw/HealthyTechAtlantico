@@ -13,7 +13,6 @@ import {
   Save,
   Scale,
   ShieldAlert,
-  Sparkles,
   UserRound,
 } from "lucide-react";
 import type { Sex } from "@prisma/client";
@@ -69,8 +68,6 @@ interface BiometricRecordResponse {
   waistZone: string | null;
   recordedAt: string;
 }
-
-const HEADER_EYEBROW = "SAUDE / BIOMETRIA";
 
 const EMPTY_FORM = {
   heightM: "",
@@ -429,7 +426,6 @@ export default function BiometriaPage() {
         headerProps={{
           title: t("title"),
           description: t("description"),
-          eyebrow: HEADER_EYEBROW,
         }}
       >
         <EmptyState
@@ -447,7 +443,6 @@ export default function BiometriaPage() {
       headerProps={{
         title: t("title"),
         description: t("description"),
-        eyebrow: HEADER_EYEBROW,
       }}
     >
       {loadingStudents ? (
@@ -544,7 +539,7 @@ export default function BiometriaPage() {
                   </MeasurementPanel>
 
                   <MeasurementPanel
-                    icon={<Sparkles className="size-5" />}
+                    icon={<Activity className="size-5" />}
                     title={t("optionalMeasurementsTitle")}
                     description={t("optionalMeasurementsDescription")}
                   >
@@ -571,7 +566,7 @@ export default function BiometriaPage() {
                   </MeasurementPanel>
                 </div>
 
-                <div className="rounded-[1.5rem] border border-gold-400/18 bg-gradient-to-r from-gold-400/10 via-white/72 to-white/55 p-4 shadow-card dark:from-gold-400/10 dark:via-navy-950/60 dark:to-navy-950/50 sm:p-5">
+                <div className="rounded-xl border border-border bg-card p-4 shadow-sm sm:p-5">
                   <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center">
                     <div className="min-w-0">
                       <p className="section-kicker">

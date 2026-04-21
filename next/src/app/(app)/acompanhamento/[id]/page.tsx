@@ -29,6 +29,7 @@ export default async function AcompanhamentoPage({ params }: Props) {
       className: true,
       schoolYear: true,
       birthDate: true,
+      processNumber: true,
     },
   });
 

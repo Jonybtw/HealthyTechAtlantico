@@ -79,6 +79,7 @@ export async function GET(req: NextRequest) {
           age: true,
           schoolYear: true,
           className: true,
+          processNumber: true,
           kidmedConsentAt: true,
           linkedUserId: true,
         },

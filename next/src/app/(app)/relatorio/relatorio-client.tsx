@@ -791,7 +791,6 @@ export default function RelatorioClient() {
         headerProps={{
           title: t("title"),
           description: t("description"),
-          eyebrow: "ALUNOS · RELATORIOS",
         }}
       >
         <EmptyState
@@ -809,7 +808,6 @@ export default function RelatorioClient() {
         headerProps={{
           title: t("title"),
           description: t("description"),
-          eyebrow: "ALUNOS · RELATORIOS",
         }}
       >
         <EmptyState
@@ -826,7 +824,6 @@ export default function RelatorioClient() {
       headerProps={{
         title: t("title"),
         description: t("description"),
-        eyebrow: "ALUNOS · RELATORIOS",
       }}
     >
       <div className="grid items-start gap-5 xl:grid-cols-[minmax(0,1.08fr)_360px]">

@@ -234,7 +234,6 @@ export default function DispensasClient() {
         headerProps={{
           title: t("title"),
           description: t("description"),
-          eyebrow: "GESTÃO · DISPENSAS",
         }}
       >
         <EmptyState
@@ -248,64 +247,42 @@ export default function DispensasClient() {
 
   return (
     <PageScaffold
-      header={
-        <div className="relative overflow-hidden rounded-2xl border border-white/18 bg-gradient-to-br from-navy-950 via-navy-900 to-navy-800 px-5 py-5 text-white shadow-float sm:px-7 sm:py-6">
-          <div className="absolute inset-x-10 top-0 h-px bg-gradient-to-r from-transparent via-gold-400/80 to-transparent" />
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.18),transparent_32%),radial-gradient(circle_at_86%_18%,rgba(216,173,52,0.16),transparent_22%),radial-gradient(circle_at_bottom_left,rgba(157,180,200,0.12),transparent_28%)]" />
-          <div className="relative flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
-            <div className="space-y-3">
-              <div className="flex flex-wrap items-center gap-2 text-tiny font-semibold uppercase tracking-[0.22em] text-gold-200">
-                <span className="rounded-full border border-border bg-surface-utility px-3 py-1 shadow-sm backdrop-blur-md">
-                  GESTÃO · DISPENSAS
-                </span>
-                {selectedStudent?.className ? (
-                  <span className="rounded-full border border-border bg-surface-utility px-3 py-1 shadow-sm text-white/80 backdrop-blur-md">
-                    {selectedStudent.className}
-                  </span>
-                ) : null}
-              </div>
+      className="gap-4"
+      contentClassName="gap-4"
+      headerProps={{
+        title: t("title"),
+        description: selectedStudent ? selectedSummary : t("description"),
+        meta: selectedStudent?.className ?? undefined,
+      }}
+      headerActions={
+        <div className="flex flex-wrap items-center gap-2">
+          {selectedStudent ? (
+            <>
+              <Badge variant="success" size="md">
+                {stats.active} {t("activeCountLabel")}
+              </Badge>
+              <Badge variant="default" size="md">
+                {stats.expired} {t("expiredCountLabel")}
+              </Badge>
+            </>
+          ) : null}
 
-              <div className="space-y-2">
-                <h1 className="font-display text-[1.9rem] font-extrabold tracking-[-0.05em] text-white sm:text-[2.35rem]">
-                  {t("title")}
-                </h1>
-                <p className="max-w-2xl text-sm font-medium leading-relaxed text-white/76 sm:text-base">
-                  {selectedStudent ? selectedSummary : t("description")}
-                </p>
-              </div>
-            </div>
-
-            <div className="flex flex-wrap items-center gap-2 lg:justify-end">
-              {selectedStudent ? (
-                <>
-                  <Badge variant="success" size="md">
-                    {stats.active} {t("activeCountLabel")}
-                  </Badge>
-                  <Badge variant="default" size="md">
-                    {stats.expired} {t("expiredCountLabel")}
-                  </Badge>
-                </>
-              ) : null}
-
-              <Button
-                variant="primary"
-                size="sm"
-                icon={showForm ? undefined : <Plus className="size-4" />}
-                disabled={!studentId && !showForm}
-                onClick={() => {
-                  if (!studentId && !showForm) {
-                    return;
-                  }
-                  setShowForm((current) => !current);
-                }}
-              >
-                {showForm ? t("cancelBtn") : t("newBtn")}
-              </Button>
-            </div>
-          </div>
+          <Button
+            variant="primary"
+            size="sm"
+            icon={showForm ? undefined : <Plus className="size-4" />}
+            disabled={!studentId && !showForm}
+            onClick={() => {
+              if (!studentId && !showForm) {
+                return;
+              }
+              setShowForm((current) => !current);
+            }}
+          >
+            {showForm ? t("cancelBtn") : t("newBtn")}
+          </Button>
         </div>
       }
-      contentClassName="gap-4"
     >
       <PageSection tone="utility" layout="default" className="overflow-visible">
         <div className="max-w-[420px] space-y-2">
