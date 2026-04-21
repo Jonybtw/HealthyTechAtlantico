@@ -187,10 +187,10 @@ export default function BiometriaPage() {
     return Math.round((classification.imc - latestRecord.imc) * 10) / 10;
   }, [classification, latestRecord]);
 
-  const loadStudents = useCallback(async () => {
+  const loadStudents = useCallback(async (signal?: AbortSignal) => {
     setLoadingStudents(true);
     try {
-      const response = await fetch("/api/students?limit=500");
+      const response = await fetch("/api/students?limit=500", { signal });
       if (!response.ok) {
         toast.error(common("studentListLoadError"));
         return;
@@ -214,16 +214,41 @@ export default function BiometriaPage() {
           schoolYear: student.schoolYear ?? null,
         })),
       );
-    } catch {
+    } catch (error) {
+      if (error instanceof DOMException && error.name === "AbortError") {
+        return;
+      }
+
       toast.error(common("studentListLoadError"));
     } finally {
-      setLoadingStudents(false);
+      if (!signal?.aborted) {
+        setLoadingStudents(false);
+      }
     }
   }, [common]);
 
   useEffect(() => {
-    void loadStudents();
+    const controller = new AbortController();
+    void loadStudents(controller.signal);
+
+    return () => {
+      controller.abort();
+    };
   }, [loadStudents]);
+
+  useEffect(() => {
+    if (loadingStudents || students.length === 0) {
+      return;
+    }
+
+    setStudentId((current) => {
+      if (current && students.some((student) => student.id === current)) {
+        return current;
+      }
+
+      return students[0].id;
+    });
+  }, [loadingStudents, students]);
 
   useEffect(() => {
     setForm(EMPTY_FORM);
@@ -429,7 +454,7 @@ export default function BiometriaPage() {
         <BiometriaLoadingState />
       ) : (
         <div className="grid gap-6">
-          <div className="grid grid-cols-1 items-start gap-6 xl:grid-cols-[minmax(0,1.12fr)_380px]">
+          <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-[minmax(0,1.12fr)_380px]">
             <PageSection
               tone="primary"
               layout="form"
@@ -438,13 +463,13 @@ export default function BiometriaPage() {
               title={t("registerCardTitle")}
               description={t("registerCardDescription")}
             >
-              <div className="rounded-[1.5rem] border border-white/35 bg-white/72 p-4 shadow-card backdrop-blur-md dark:border-white/10 dark:bg-navy-950/42 sm:p-5">
+              <div className="rounded-2xl border border-border bg-surface-secondary p-4 shadow-sm sm:p-5">
                 <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_220px] lg:items-end">
                   <div className="min-w-0">
-                    <p className="text-tiny font-semibold uppercase tracking-[0.22em] text-muted-foreground">
+                    <p className="section-kicker">
                       {t("selectionLabel")}
                     </p>
-                    <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
+                    <p className="mt-1 section-copy">
                       {t("selectionHint")}
                     </p>
                     <div className="mt-4">
@@ -459,7 +484,7 @@ export default function BiometriaPage() {
                   <div className="rounded-[1.3rem] border border-border/60 bg-background/70 px-4 py-4 shadow-sm">
                     <div className="flex items-start justify-between gap-3">
                       <div>
-                        <p className="text-tiny font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+                        <p className="section-kicker">
                           {t("completionLabel")}
                         </p>
                         <p className="mt-1 text-2xl font-black tracking-[-0.05em] text-foreground">
@@ -470,7 +495,7 @@ export default function BiometriaPage() {
                         {t("studentCount", { count: students.length })}
                       </span>
                     </div>
-                    <div className="mt-4 h-2 rounded-full bg-navy-950/10 dark:bg-white/10">
+                    <div className="mt-4 h-2 rounded-full bg-muted">
                       <div
                         className="h-full rounded-full bg-gradient-to-r from-navy-800 via-navy-700 to-gold-400 transition-all duration-500"
                         style={{ width: `${completionPercentage}%` }}
@@ -549,7 +574,7 @@ export default function BiometriaPage() {
                 <div className="rounded-[1.5rem] border border-gold-400/18 bg-gradient-to-r from-gold-400/10 via-white/72 to-white/55 p-4 shadow-card dark:from-gold-400/10 dark:via-navy-950/60 dark:to-navy-950/50 sm:p-5">
                   <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center">
                     <div className="min-w-0">
-                      <p className="text-tiny font-semibold uppercase tracking-[0.22em] text-muted-foreground">
+                      <p className="section-kicker">
                         {t("classificationTitle")}
                       </p>
                       {classification ? (
@@ -601,17 +626,17 @@ export default function BiometriaPage() {
               </form>
             </PageSection>
 
-            <aside className="xl:sticky xl:top-24">
+            <aside className="lg:sticky lg:top-24">
               <div className="surface-secondary rounded-2xl p-5 sm:p-6">
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
-                    <p className="text-tiny font-semibold uppercase tracking-[0.22em] text-muted-foreground">
+                    <p className="section-kicker">
                       {t("selectedStudentLabel")}
                     </p>
-                    <h2 className="mt-1 text-[1.55rem] font-black tracking-[-0.05em] text-foreground">
+                    <h2 className="mt-1 font-display text-[1.55rem] font-black tracking-[-0.05em] text-foreground">
                       {selectedStudent?.name ?? t("selectedStudentEmpty")}
                     </h2>
-                    <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+                    <p className="mt-2 section-copy">
                       {selectedStudent
                         ? t("studentContextDescription")
                         : t("studentContextEmpty")}
@@ -661,10 +686,10 @@ export default function BiometriaPage() {
                   <div className="rounded-[1.35rem] border border-border/60 bg-background/55 p-4">
                     <div className="flex items-start justify-between gap-3">
                       <div>
-                        <p className="text-tiny font-semibold uppercase tracking-[0.22em] text-muted-foreground">
+                        <p className="section-kicker">
                           {t("currentReadTitle")}
                         </p>
-                        <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
+                        <p className="mt-1 section-copy">
                           {t("currentReadDescription")}
                         </p>
                       </div>
@@ -720,7 +745,7 @@ export default function BiometriaPage() {
                   <div className="rounded-[1.35rem] border border-border/60 bg-background/55 p-4">
                     <div className="flex items-start justify-between gap-3">
                       <div>
-                        <p className="text-tiny font-semibold uppercase tracking-[0.22em] text-muted-foreground">
+                        <p className="section-kicker">
                           {t("latestRecordTitle")}
                         </p>
                         {latestRecord ? (
@@ -774,7 +799,7 @@ export default function BiometriaPage() {
             <PageSection
               tone="utility"
               layout="list"
-              eyebrow={t("historyTitle")}
+              eyebrow={t("historyDescription")}
               title={t("historyTitle")}
               description={t("historyDescription")}
               actions={
@@ -819,7 +844,7 @@ export default function BiometriaPage() {
             <PageSection
               tone="utility"
               layout="list"
-              eyebrow={t("referenceTitle")}
+              eyebrow={t("referenceDescription")}
               title={t("referenceTitle")}
               description={t("referenceDescription")}
             >
@@ -882,9 +907,9 @@ function MeasurementPanel({
   children: React.ReactNode;
 }) {
   return (
-    <div className="rounded-[1.5rem] border border-white/30 bg-white/72 p-5 shadow-card backdrop-blur-md dark:border-white/10 dark:bg-navy-950/46">
+    <div className="rounded-2xl border border-border bg-surface-secondary p-5 shadow-sm">
       <div className="mb-4 flex items-start gap-3">
-        <span className="flex size-11 items-center justify-center rounded-2xl bg-navy-100 text-navy-800 dark:bg-white/10 dark:text-gold-200">
+        <span className="flex size-11 items-center justify-center rounded-2xl bg-surface-utility text-foreground shadow-sm">
           {icon}
         </span>
         <div>
@@ -922,8 +947,8 @@ function FocusEmptyState({
   children: React.ReactNode;
 }) {
   return (
-    <div className="mt-4 rounded-2xl border border-dashed border-border/70 bg-background/40 px-4 py-7 text-center">
-      <Icon className="mx-auto size-7 text-muted-foreground/45" />
+    <div className="rounded-2xl border border-dashed border-border/60 bg-background/40 px-4 py-7 text-center">
+      <Icon className="mx-auto size-7 text-muted-foreground/40" />
       <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
         {children}
       </p>
@@ -972,7 +997,8 @@ function HistoryRow({
 
       <div className="min-w-0">
         <p className="text-xl font-black tracking-[-0.04em] text-foreground">
-          {record.imc.toFixed(1)} {bmiLabel}
+          {record.imc.toFixed(1)}
+          <span className="ml-1 text-sm font-semibold text-muted-foreground">{bmiLabel}</span>
         </p>
         <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
           {details}
@@ -998,10 +1024,10 @@ function ReferenceRow({
 }) {
   const toneClass =
     tone === "success"
-      ? "bg-emerald-500"
+      ? "bg-success-500"
       : tone === "warning"
-        ? "bg-amber-500"
-        : "bg-red-500";
+        ? "bg-warning-500"
+        : "bg-danger-500";
 
   return (
     <div className="rounded-2xl border border-border/70 bg-background/65 p-4 shadow-sm">

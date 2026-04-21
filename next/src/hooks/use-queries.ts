@@ -31,24 +31,19 @@ interface StudentListItem {
   schoolYear: string | null;
 }
 
+interface StudentsListResponse {
+  students: StudentListItem[];
+  total: number;
+  page: number;
+  pages: number;
+}
+
 export interface StaffUser {
   id: string;
   name: string | null;
   email: string;
   role: "PROFESSOR" | "PSICOLOGO";
   createdAt: string;
-}
-
-interface DashboardStats {
-  studentCount?: number;
-  openSos?: number;
-  totalBiometrics?: number;
-  totalTests?: number;
-  biometricCount?: number;
-  testCount?: number;
-  questionnaireCount?: number;
-  linkedStudents?: number;
-  [key: string]: unknown;
 }
 
 interface SosAlertSummary {
@@ -59,16 +54,22 @@ interface SosAlertSummary {
 
 const queryKeys = {
   students: (limit?: number) => ["students", { limit }] as const,
-  student: (id: string) => ["student", id] as const,
+  studentsList: (
+    page: number,
+    limit: number,
+    search: string,
+    className: string,
+    schoolYear: string,
+  ) =>
+    ["students-list", { page, limit, search, className, schoolYear }] as const,
   staff: () => ["staff"] as const,
-  dashboard: () => ["dashboard"] as const,
-  exemptions: (studentId: string) => ["exemptions", studentId] as const,
+  dispensas: (studentId: string) => ["dispensas", studentId] as const,
   sosAlerts: () => ["sos-alerts"] as const,
   studentSos: (studentId: string) => ["student-sos", studentId] as const,
   classes: () => ["classes"] as const,
 } as const;
 
-export function useStudents(limit = 100) {
+export function useStudents(limit = 500) {
   return useQuery({
     queryKey: queryKeys.students(limit),
     queryFn: async () =>
@@ -108,15 +109,6 @@ export function useClasses(options?: { enabled?: boolean }) {
   });
 }
 
-function useStudent(id: string) {
-  return useQuery({
-    queryKey: queryKeys.student(id),
-    queryFn: () => fetchJson<Record<string, unknown>>(`/api/students/${id}`),
-    enabled: !!id,
-    staleTime: 2 * 60 * 1000,
-  });
-}
-
 export function useStaff() {
   return useQuery({
     queryKey: queryKeys.staff(),
@@ -125,17 +117,9 @@ export function useStaff() {
   });
 }
 
-function useDashboard() {
+export function useDispensas(studentId: string | null) {
   return useQuery({
-    queryKey: queryKeys.dashboard(),
-    queryFn: () => fetchJson<DashboardStats>("/api/stats/summary"),
-    staleTime: 30 * 1000,
-  });
-}
-
-export function useExemptions(studentId: string | null) {
-  return useQuery({
-    queryKey: queryKeys.exemptions(studentId ?? ""),
+    queryKey: queryKeys.dispensas(studentId ?? ""),
     queryFn: () =>
       fetchJson<
         {
@@ -145,9 +129,53 @@ export function useExemptions(studentId: string | null) {
           endDate: string;
           createdAt: string;
         }[]
-      >(`/api/students/${studentId}/exemptions`),
+      >(`/api/students/${studentId}/dispensas`),
     enabled: !!studentId,
     staleTime: 60 * 1000,
+  });
+}
+
+export const useExemptions = useDispensas;
+
+export function useStudentsList(options: {
+  page: number;
+  limit: number;
+  search?: string;
+  className?: string;
+  schoolYear?: string;
+}) {
+  const search = options.search?.trim() ?? "";
+  const className = options.className?.trim() ?? "";
+  const schoolYear = options.schoolYear?.trim() ?? "";
+  const params = new URLSearchParams({
+    page: String(options.page),
+    limit: String(options.limit),
+  });
+
+  if (search) {
+    params.set("search", search);
+  }
+
+  if (className) {
+    params.set("class_name", className);
+  }
+
+  if (schoolYear) {
+    params.set("school_year", schoolYear);
+  }
+
+  return useQuery({
+    queryKey: queryKeys.studentsList(
+      options.page,
+      options.limit,
+      search,
+      className,
+      schoolYear,
+    ),
+    queryFn: () =>
+      fetchJson<StudentsListResponse>(`/api/students?${params.toString()}`),
+    placeholderData: (previousData) => previousData,
+    staleTime: 30 * 1000,
   });
 }
 
@@ -175,37 +203,41 @@ export function useDeleteStaff() {
   });
 }
 
-export function useCreateExemption(studentId: string | null) {
+export function useCreateDispensa(studentId: string | null) {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (data: {
       reason: string;
       startDate: string;
       endDate?: string;
-    }) => mutateJson(`/api/students/${studentId}/exemptions`, "POST", data),
+    }) => mutateJson(`/api/students/${studentId}/dispensas`, "POST", data),
     onSuccess: () => {
       if (studentId) {
         void queryClient.invalidateQueries({
-          queryKey: queryKeys.exemptions(studentId),
+          queryKey: queryKeys.dispensas(studentId),
         });
       }
     },
   });
 }
 
-export function useDeleteExemption(studentId: string | null) {
+export const useCreateExemption = useCreateDispensa;
+
+export function useDeleteDispensa(studentId: string | null) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (exemptionId: string) =>
-      mutateJson<void>(`/api/students/${studentId}/exemptions`, "DELETE", {
-        exemptionId,
+    mutationFn: (dispensaId: string) =>
+      mutateJson<void>(`/api/students/${studentId}/dispensas`, "DELETE", {
+        dispensaId,
       }),
     onSuccess: () => {
       if (studentId) {
         void queryClient.invalidateQueries({
-          queryKey: queryKeys.exemptions(studentId),
+          queryKey: queryKeys.dispensas(studentId),
         });
       }
     },
   });
 }
+
+export const useDeleteExemption = useDeleteDispensa;

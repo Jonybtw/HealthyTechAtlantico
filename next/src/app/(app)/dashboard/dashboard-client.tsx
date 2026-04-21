@@ -241,7 +241,7 @@ export function DashboardClient({
     return () => window.cancelAnimationFrame(frame);
   }, []);
 
-  const scaffoldClassName = "gap-5 sm:gap-6";
+  const scaffoldClassName = "gap-6";
   const buildHeaderProps = (title: string, description: string) => ({
     title,
     description,
@@ -287,7 +287,7 @@ export function DashboardClient({
           t("activitySummary"),
         )}
       >
-        <div className="grid gap-4 xl:grid-cols-[minmax(0,1.15fr)_minmax(280px,0.85fr)]">
+        <div className="grid gap-4 sm:grid-cols-2">
           <KpiCard
             icon={Activity}
             title={t("lastBiometric")}
@@ -301,7 +301,7 @@ export function DashboardClient({
             footer={
               <p className="text-sm text-white/74">
                 {summary.studentSummary.lastBiometric
-                  ? t("activitySummary")
+                  ? t("lastMeasurement")
                   : t("unlinkedDescription")}
               </p>
             }
@@ -349,6 +349,7 @@ export function DashboardClient({
           <PageSection
             tone="secondary"
             layout="list"
+            eyebrow={t("psychologistOverview")}
             title={t("psychologistQueueTitle")}
             description={t("psychologistQueueDescription")}
           >
@@ -400,6 +401,7 @@ export function DashboardClient({
             <PageSection
               tone="utility"
               layout="list"
+              eyebrow={t("psychologistRecentTitle")}
               title={t("psychologistRecentTitle")}
               description={t("psychologistRecentDescription")}
             >
@@ -426,7 +428,7 @@ export function DashboardClient({
                         <Badge
                           variant="default"
                           size="sm"
-                          className="bg-white/70 dark:bg-white/6"
+                          className="bg-surface-utility"
                         >
                           {formatCompactDate(questionnaire.submittedAt, locale)}
                         </Badge>
@@ -472,6 +474,7 @@ export function DashboardClient({
           <PageSection
             tone="secondary"
             layout="list"
+            eyebrow={t("parentOverview")}
             title={t("parentStudentsTitle")}
             description={t("parentStudentsDescription")}
           >
@@ -524,6 +527,7 @@ export function DashboardClient({
             <PageSection
               tone="utility"
               layout="list"
+              eyebrow={t("parentReportsTitle")}
               title={t("parentReportsTitle")}
               description={t("parentReportsDescription")}
             >
@@ -607,12 +611,12 @@ function StaffDashboardHeader({
 }) {
   return (
     <PageHeader
-      title={`${greeting}, ${username}`}
+      title={`${greeting}, ${username}!`}
       description={description}
       eyebrow={t("title")}
       actionsClassName="items-start lg:items-center"
     >
-      <span className="inline-flex items-center gap-2 rounded-full border border-white/18 bg-white/10 px-3 py-1.5 text-sm text-white/82 backdrop-blur-md">
+      <span className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3 py-1.5 text-sm text-white/90 backdrop-blur-md">
         <CalendarDays className="size-4 text-gold-300" />
         {todayLabel}
       </span>
@@ -696,14 +700,14 @@ function StaffOverview({
       <div className="flex flex-col gap-6">
         <div className="grid gap-3 xl:grid-cols-[minmax(0,0.82fr)_minmax(0,1.18fr)] xl:items-end">
           <div>
-            <p className="text-sm font-medium text-muted-foreground">
+            <p className="section-kicker">
               {t("overviewEyebrow")}
             </p>
-            <h2 className="mt-1 font-display text-[1.8rem] font-semibold tracking-[-0.045em] text-foreground sm:text-[2.1rem]">
+            <h2 className="section-title mt-1">
               {t("overviewTitle")}
             </h2>
           </div>
-          <p className="max-w-2xl text-sm leading-relaxed text-muted-foreground">
+          <p className="section-copy max-w-2xl">
             {t("overviewDescription")}
           </p>
         </div>
@@ -755,6 +759,7 @@ function DashboardAnalytics({
 
   return (
     <PageSection
+      eyebrow={t("annualSeries")}
       title={t("zafDistribution")}
       description={t("comparisonPanelDescription")}
       tone="secondary"
@@ -889,7 +894,7 @@ function DashboardAnalytics({
                         </p>
                         <p className="mt-1 text-sm font-semibold text-foreground">
                           {formatNumberValue(academicYear.withBio, locale)}{" "}
-                          {t("studentsWithBiometrics").toLowerCase()}
+                          {t("studentsUnit")}
                         </p>
                       </div>
                       <div className="text-right">
@@ -924,9 +929,11 @@ function DashboardAnalytics({
           ) : latestYear ? (
             <DashboardSeriesEmptyState year={latestYear.year} t={t} />
           ) : (
-            <div className="rounded-[1.2rem] border border-dashed border-border/70 bg-background/60 px-4 py-6 text-sm text-muted-foreground">
-              {t("noBioData")}
-            </div>
+            <EmptyState
+              icon={Activity}
+              title={t("noBioData")}
+              description={t("annualSeriesPendingDescription")}
+            />
           )}
         </div>
       </div>
@@ -972,7 +979,7 @@ function StaffMetricRailCell({
           <p className="text-sm font-medium text-muted-foreground">
             {title}
           </p>
-          <p className="mt-4 text-4xl font-black leading-none tracking-tight text-foreground">
+          <p className="mt-4 text-[2.5rem] font-black leading-none tracking-tight text-foreground">
             {value}
           </p>
           <p className="mt-2 max-w-[18ch] text-sm leading-relaxed text-muted-foreground">
@@ -1048,7 +1055,7 @@ function StaffSpotlightMetric({
 
 function DashboardMetaPill({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-[1.1rem] border border-white/28 bg-white/70 px-4 py-3 shadow-sm backdrop-blur-md dark:border-white/10 dark:bg-white/6">
+    <div className="rounded-xl border border-border bg-surface-utility px-4 py-3">
       <p className="text-tiny font-semibold uppercase tracking-[0.18em] text-muted-foreground">
         {label}
       </p>
@@ -1065,14 +1072,14 @@ function DashboardCoverageBar({
   value: number;
 }) {
   return (
-    <div className="rounded-[1.1rem] border border-white/28 bg-white/70 px-3.5 py-3 shadow-sm backdrop-blur-md dark:border-white/10 dark:bg-white/6">
+    <div className="rounded-xl border border-border bg-surface-utility px-3.5 py-3">
       <div className="flex items-center justify-between gap-3">
         <p className="text-tiny font-semibold uppercase tracking-[0.18em] text-muted-foreground">
           {label}
         </p>
         <span className="text-sm font-semibold text-foreground">{value}%</span>
       </div>
-      <div className="mt-3 h-2.5 overflow-hidden rounded-full bg-navy-100 dark:bg-white/10">
+      <div className="mt-3 h-2.5 overflow-hidden rounded-full bg-muted">
         <div
           className="h-full rounded-full bg-navy-900 transition-all duration-700 dark:bg-gold-300"
           style={{ width: `${value}%` }}
@@ -1092,7 +1099,7 @@ function DashboardPanel({
   href?: string;
 }) {
   const panelClassName = cn(
-    "relative overflow-hidden rounded-[1.35rem] border border-white/22 bg-white/66 p-4 shadow-[0_18px_40px_-28px_rgba(9,21,35,0.4)] backdrop-blur-md transition-all duration-300 dark:border-white/10 dark:bg-navy-950/48",
+    "relative overflow-hidden rounded-2xl border border-border bg-surface-secondary p-4 shadow-sm transition-all duration-300",
     href &&
       "group hover:-translate-y-0.5 hover:border-gold-300/35 hover:shadow-card-hover",
     className,
@@ -1115,29 +1122,4 @@ function DashboardPanel({
   );
 }
 
-function DashboardLegendItem({
-  colorClassName,
-  label,
-  meta,
-  value,
-}: {
-  colorClassName: string;
-  label: string;
-  meta?: string;
-  value: number;
-}) {
-  return (
-    <div className="flex items-center gap-3 rounded-[1.1rem] border border-white/22 bg-white/52 px-3 py-2.5 dark:border-white/8 dark:bg-white/5">
-      <span className={cn("h-3 w-3 rounded-full", colorClassName)} />
-      <span className="flex-1 text-sm font-semibold text-foreground">
-        {label}
-      </span>
-      {meta ? (
-        <span className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-          {meta}
-        </span>
-      ) : null}
-      <span className="text-sm font-bold text-foreground">{value}</span>
-    </div>
-  );
-}
+// DashboardLegendItem removed – unused

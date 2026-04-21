@@ -83,7 +83,7 @@ export const NAV_ITEMS: NavItem[] = [
     section: "operations",
   },
   {
-    href: "/exemptions",
+    href: "/dispensas",
     label: "nav.exemptions",
     icon: Shield,
     roles: ["ADMIN", "PROFESSOR"],

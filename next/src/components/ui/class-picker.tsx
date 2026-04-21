@@ -38,13 +38,16 @@ export function ClassPicker({
     <div className={className}>
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
-          <button className="items-center justify-between rounded-2xl bg-card px-4 py-2 border border-border/70 shadow-sm hover:border-navy-300/40 hover:bg-muted/50 hover:text-foreground min-h-[46px] inline-flex w-full whitespace-nowrap outline-none transition-all duration-300 focus-visible:ring-1 focus-visible:ring-ring">
-            <div className="flex items-center gap-2 text-sm font-medium whitespace-nowrap">
+          <button
+            type="button"
+            className="inline-flex min-h-[46px] w-full items-center justify-between rounded-2xl border border-border/70 bg-card px-4 py-2 shadow-sm outline-none transition-all duration-300 hover:border-navy-300/40 hover:bg-muted/50 hover:text-foreground focus-visible:ring-1 focus-visible:ring-ring"
+          >
+            <div className="flex min-w-0 items-center gap-2 text-sm font-medium">
               <School className="h-4 w-4 text-muted-foreground mr-1" />
               {value && selectedClass ? (
-                <div className="flex items-center gap-1.5">
-                  <span>{selectedClass.name}</span>
-                  <span className="text-xs font-normal text-muted-foreground">
+                <div className="flex min-w-0 items-center gap-1.5">
+                  <span className="truncate">{selectedClass.name}</span>
+                  <span className="shrink-0 text-xs font-normal text-muted-foreground">
                     {selectedClass.year}
                   </span>
                 </div>
@@ -59,8 +62,15 @@ export function ClassPicker({
             />
           </button>
         </PopoverTrigger>
-        <PopoverContent className="w-80 p-0 rounded-2xl" align="start">
-          <div className="flex flex-col gap-1 p-2">
+        <PopoverContent
+          className="w-[var(--radix-popover-trigger-width)] min-w-[280px] max-h-[320px] rounded-2xl p-0"
+          align="start"
+          side="bottom"
+          sideOffset={8}
+          collisionPadding={16}
+          avoidCollisions={false}
+        >
+          <div className="flex max-h-[320px] flex-col gap-1 overflow-y-auto p-2">
             <div className="px-3 py-2 text-xs font-semibold text-muted-foreground">
               {placeholder || t("class")}
             </div>
@@ -72,6 +82,7 @@ export function ClassPicker({
               classes.map((schoolClass) => (
                 <button
                   key={schoolClass.id}
+                  type="button"
                   onClick={() => {
                     onChange(schoolClass.id);
                     setOpen(false);

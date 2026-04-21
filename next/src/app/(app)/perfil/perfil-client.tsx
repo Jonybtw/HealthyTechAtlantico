@@ -7,12 +7,13 @@ import {
   Lock,
   ShieldCheck,
   Share2,
-  User,
   Check,
   X,
   Save,
   Key,
   Shield,
+  BadgeCheck,
+  Mail,
 } from "lucide-react";
 import { toast } from "sonner";
 import { useForm } from "react-hook-form";
@@ -25,6 +26,7 @@ import { PageScaffold } from "@/components/ui/page-scaffold";
 import { PageSection } from "@/components/ui/page-section";
 import { Form, FormField, FormItem, FormControl } from "@/components/ui/form";
 import { readApiResponse } from "@/lib/api-client";
+import { cn } from "@/lib/utils";
 
 type PasswordValues = z.infer<typeof changePasswordFormSchema>;
 type UserProfile = {
@@ -34,6 +36,153 @@ type UserProfile = {
   consentRgpd: boolean;
   consentShare: boolean;
 };
+
+const ROLE_STYLES: Record<
+  string,
+  { label: string; bg: string; text: string; dot: string }
+> = {
+  ADMIN: {
+    label: "Administrador",
+    bg: "bg-danger-50 dark:bg-danger-500/10",
+    text: "text-danger-700 dark:text-danger-300",
+    dot: "bg-danger-500",
+  },
+  PROFESSOR: {
+    label: "Professor",
+    bg: "bg-navy-50 dark:bg-navy-900/30",
+    text: "text-navy-700 dark:text-navy-300",
+    dot: "bg-navy-600",
+  },
+  ALUNO: {
+    label: "Aluno",
+    bg: "bg-sky-50 dark:bg-sky-900/20",
+    text: "text-sky-700 dark:text-sky-300",
+    dot: "bg-sky-500",
+  },
+  PAIS: {
+    label: "Encarregado",
+    bg: "bg-emerald-50 dark:bg-emerald-900/20",
+    text: "text-emerald-700 dark:text-emerald-300",
+    dot: "bg-emerald-500",
+  },
+  PSICOLOGO: {
+    label: "Psicólogo",
+    bg: "bg-violet-50 dark:bg-violet-900/20",
+    text: "text-violet-700 dark:text-violet-300",
+    dot: "bg-violet-500",
+  },
+};
+
+function UserAvatar({ name, email }: { name?: string | null; email?: string }) {
+  const initials = name
+    ? name
+        .split(" ")
+        .slice(0, 2)
+        .map((word) => word[0])
+        .join("")
+        .toUpperCase()
+    : (email?.[0] ?? "?").toUpperCase();
+
+  return (
+    <div className="flex size-14 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-navy-700 via-navy-800 to-navy-900 shadow-card ring-2 ring-white/10 dark:ring-white/5">
+      <span className="font-display text-lg font-bold tracking-tight text-white">
+        {initials}
+      </span>
+    </div>
+  );
+}
+
+function ConsentCard({
+  icon,
+  iconBg,
+  title,
+  description,
+  granted,
+  loading,
+  onGrant,
+  onRevoke,
+}: {
+  icon: React.ReactNode;
+  iconBg: string;
+  title: string;
+  description: string;
+  granted: boolean;
+  loading: boolean;
+  onGrant: () => void;
+  onRevoke: () => void;
+}) {
+  return (
+    <div className="rounded-2xl border border-border bg-surface-secondary p-4 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-card sm:p-5">
+      <div className="flex items-start gap-3.5">
+        <div
+          className={cn(
+            "flex size-9 shrink-0 items-center justify-center rounded-xl",
+            iconBg,
+          )}
+        >
+          {icon}
+        </div>
+        <div className="min-w-0 flex-1 space-y-3">
+          <div className="flex flex-wrap items-start justify-between gap-2">
+            <div>
+              <h3 className="text-sm font-semibold tracking-tight text-foreground">
+                {title}
+              </h3>
+            </div>
+            {/* Current state badge */}
+            <span
+              className={cn(
+                "inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-micro font-semibold",
+                granted
+                  ? "border border-emerald-200/60 bg-emerald-50 text-emerald-700 dark:border-emerald-700/30 dark:bg-emerald-900/20 dark:text-emerald-300"
+                  : "border border-border/60 bg-muted/60 text-muted-foreground",
+              )}
+            >
+              <span
+                className={cn(
+                  "size-1.5 rounded-full",
+                  granted
+                    ? "bg-emerald-500 dark:bg-emerald-400"
+                    : "bg-muted-foreground/40",
+                )}
+              />
+              {granted ? "Ativo" : "Inativo"}
+            </span>
+          </div>
+
+          <p className="text-xs leading-relaxed text-muted-foreground">
+            {description}
+          </p>
+
+          <div className="flex flex-wrap gap-2">
+            <Button
+              type="button"
+              size="sm"
+              variant={granted ? "primary" : "ghost"}
+              loading={loading && granted === false}
+              disabled={loading || granted}
+              icon={<Check className="size-3.5" />}
+              onClick={onGrant}
+            >
+              Ativar
+            </Button>
+            <Button
+              type="button"
+              size="sm"
+              variant={!granted ? "danger" : "ghost"}
+              loading={loading && granted === true}
+              disabled={loading || !granted}
+              icon={<X className="size-3.5" />}
+              onClick={onRevoke}
+            >
+              Revogar
+            </Button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export default function PerfilPage() {
   const t = useTranslations("perfil");
@@ -113,121 +262,92 @@ export default function PerfilPage() {
     }
   };
 
+  const roleKey = user?.role ?? "ALUNO";
+  const roleStyle = ROLE_STYLES[roleKey] ?? ROLE_STYLES.ALUNO;
+
   return (
     <PageScaffold
+      className="gap-6"
       headerProps={{
         title: t("title"),
         description: t("description"),
         eyebrow: "CONTA · PERFIL",
       }}
     >
-      <div className="grid gap-4 xl:grid-cols-2">
+      <div className="grid gap-6 xl:grid-cols-2">
+        {/* ── Identity & Consent ─────────────────────────────────────────── */}
         <PageSection
           tone="secondary"
           layout="default"
           eyebrow={t("activeAccount")}
-          title={user?.name || user?.email || "-"}
-          description={user?.email}
-          actions={
-            <div className="flex size-9 items-center justify-center rounded-xl bg-navy-900 text-white shadow-card">
-              <User className="size-4" />
-            </div>
-          }
+          title={user?.name ?? user?.email ?? "—"}
+          description={user?.name ? user.email : undefined}
+          actions={<UserAvatar name={user?.name} email={user?.email} />}
         >
-          <div className="surface-utility rounded-2xl p-3">
-            <p className="section-kicker">{t("roleLabel")}</p>
-            <p className="mt-1 text-sm font-semibold text-foreground">
-              {roles(user?.role ?? "ALUNO")}
-            </p>
-          </div>
-
-          <div className="surface-utility rounded-2xl p-3.5 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-card">
-            <div className="flex items-start gap-3">
-              <div className="flex size-8 items-center justify-center rounded-xl bg-gold-100 text-gold-700 dark:bg-gold-400/10 dark:text-gold-300">
-                <ShieldCheck className="size-4" />
+          {/* Role badge */}
+          <div className="rounded-2xl border border-border bg-surface-secondary px-4 py-3.5 shadow-sm">
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex items-center gap-2.5">
+                <BadgeCheck className="size-4 text-muted-foreground" />
+                <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+                  {t("roleLabel")}
+                </p>
               </div>
-              <div className="space-y-3">
-                <div>
-                  <h3 className="text-sm font-semibold tracking-tight text-foreground">
-                    {t("rgpdTitle")}
-                  </h3>
-                  <p className="text-sm leading-relaxed text-muted-foreground sm:text-sm">
-                    {t("rgpdDescription")}
-                  </p>
-                </div>
+              <span
+                className={cn(
+                  "inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-semibold",
+                  roleStyle.bg,
+                  roleStyle.text,
+                  "border-current/20",
+                )}
+              >
+                <span
+                  className={cn("size-1.5 rounded-full", roleStyle.dot)}
+                />
+                {roles(roleKey)}
+              </span>
+            </div>
 
-                <div className="flex flex-wrap gap-2">
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant={user?.consentRgpd ? "primary" : "ghost"}
-                    loading={updatingConsent === "rgpd"}
-                    icon={<Check className="size-4" />}
-                    onClick={() => syncConsent("consentRgpd", true)}
-                  >
-                    {t("rgpdGrant")}
-                  </Button>
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant={!user?.consentRgpd ? "danger" : "ghost"}
-                    loading={updatingConsent === "rgpd"}
-                    icon={<X className="size-4" />}
-                    onClick={() => syncConsent("consentRgpd", false)}
-                  >
-                    {t("rgpdRevoke")}
-                  </Button>
-                </div>
-              </div>
+            <div className="mt-3.5 flex items-center gap-2.5">
+              <Mail className="size-4 shrink-0 text-muted-foreground" />
+              <p className="truncate text-sm font-medium text-foreground">
+                {user?.email ?? "—"}
+              </p>
             </div>
           </div>
 
-          <div className="surface-utility rounded-2xl p-3.5 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-card">
-            <div className="flex items-start gap-3">
-              <div className="flex size-8 items-center justify-center rounded-xl bg-navy-100 text-navy-700 dark:bg-navy-500/10 dark:text-navy-200">
-                <Share2 className="size-4" />
-              </div>
-              <div className="space-y-3">
-                <div>
-                  <h3 className="text-sm font-semibold tracking-tight text-foreground">
-                    {t("shareTitle")}
-                  </h3>
-                  <p className="text-sm leading-relaxed text-muted-foreground sm:text-sm">
-                    {t("shareDescription")}
-                  </p>
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant={user?.consentShare ? "secondary" : "ghost"}
-                    loading={updatingConsent === "share"}
-                    icon={<Check className="size-4" />}
-                    onClick={() => syncConsent("consentShare", true)}
-                  >
-                    {t("activate")}
-                  </Button>
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant={!user?.consentShare ? "ghost" : "danger"}
-                    loading={updatingConsent === "share"}
-                    icon={<X className="size-4" />}
-                    onClick={() => syncConsent("consentShare", false)}
-                  >
-                    {t("deactivate")}
-                  </Button>
-                </div>
-              </div>
-            </div>
-          </div>
+          {/* RGPD consent */}
+          <ConsentCard
+            icon={<ShieldCheck className="size-4" />}
+            iconBg="bg-gold-100 text-gold-700 dark:bg-gold-400/10 dark:text-gold-300"
+            title={t("rgpdTitle")}
+            description={t("rgpdDescription")}
+            granted={user?.consentRgpd ?? false}
+            loading={updatingConsent === "rgpd"}
+            onGrant={() => syncConsent("consentRgpd", true)}
+            onRevoke={() => syncConsent("consentRgpd", false)}
+          />
+
+          {/* Share consent */}
+          <ConsentCard
+            icon={<Share2 className="size-4" />}
+            iconBg="bg-navy-100 text-navy-700 dark:bg-navy-500/10 dark:text-navy-200"
+            title={t("shareTitle")}
+            description={t("shareDescription")}
+            granted={user?.consentShare ?? false}
+            loading={updatingConsent === "share"}
+            onGrant={() => syncConsent("consentShare", true)}
+            onRevoke={() => syncConsent("consentShare", false)}
+          />
         </PageSection>
 
+        {/* ── Change Password ─────────────────────────────────────────────── */}
         <Form {...pwForm}>
           <form onSubmit={pwForm.handleSubmit(onPasswordSubmit)}>
             <PageSection
-              tone="secondary"
+              tone="primary"
               layout="form"
+              className="overflow-hidden"
               eyebrow={t("securityTitle")}
               title={t("changePassword")}
               description={t("passwordDescription")}
@@ -237,6 +357,7 @@ export default function PerfilPage() {
                 </div>
               }
             >
+              {/* Hidden email for password managers */}
               <input
                 type="email"
                 name="email"
@@ -247,6 +368,7 @@ export default function PerfilPage() {
                 aria-hidden="true"
                 className="sr-only"
               />
+
               <div className="grid gap-3.5">
                 <FormField
                   control={pwForm.control}
@@ -319,7 +441,7 @@ export default function PerfilPage() {
                   type="submit"
                   loading={pwForm.formState.isSubmitting}
                   icon={<Save className="size-4" />}
-                  className="h-12 justify-center text-base"
+                  className="h-12 w-full justify-center text-base"
                 >
                   {t("savePassword")}
                 </Button>

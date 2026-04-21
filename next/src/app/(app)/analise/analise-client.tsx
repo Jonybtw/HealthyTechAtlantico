@@ -244,6 +244,34 @@ export default function AnaliseClient() {
   }, [canViewAnalysis, common]);
 
   useEffect(() => {
+    if (!canViewAnalysis || loadingStudents || students.length === 0) {
+      return;
+    }
+
+    setStudentId((current) => {
+      if (current && students.some((student) => student.id === current)) {
+        return current;
+      }
+
+      return students[0].id;
+    });
+  }, [canViewAnalysis, loadingStudents, students]);
+
+  useEffect(() => {
+    if (!canViewAnalysis || classes.length === 0) {
+      return;
+    }
+
+    setClassId((current) => {
+      if (current && classes.some((item) => item.id === current)) {
+        return current;
+      }
+
+      return classes[0].id;
+    });
+  }, [canViewAnalysis, classes]);
+
+  useEffect(() => {
     if (!studentId) {
       setBioData([]);
       setTestData([]);
@@ -1064,7 +1092,7 @@ function ClassDistributionCard({
   const noDataWidth = (noData / safeTotal) * 100;
 
   return (
-    <div className="rounded-[28px] border border-border/70 bg-background/72 p-5">
+    <div className="rounded-3xl border border-border/70 bg-background/72 p-5">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <p className="text-tiny font-semibold uppercase tracking-[0.16em] text-muted-foreground">

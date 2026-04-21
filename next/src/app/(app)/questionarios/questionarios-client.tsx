@@ -303,10 +303,10 @@ export default function QuestionariosPage() {
     [locale],
   );
 
-  const loadStudents = useCallback(async () => {
+  const loadStudents = useCallback(async (signal?: AbortSignal) => {
     setLoadingStudents(true);
     try {
-      const res = await fetch("/api/students?limit=500");
+      const res = await fetch("/api/students?limit=500", { signal });
       const body = await readApiResponse<{ students: StudentOption[] }>(res);
       const nextStudents = body.students.map((student) => ({
         id: student.id,
@@ -319,43 +319,65 @@ export default function QuestionariosPage() {
       setStudents(nextStudents);
       if (role === "ALUNO" && nextStudents.length === 1)
         setStudentId(nextStudents[0].id);
-    } catch {
+    } catch (error) {
+      if (error instanceof DOMException && error.name === "AbortError") {
+        return;
+      }
+
       setStudents([]);
       toast.error(common("studentListLoadError"));
     } finally {
-      setLoadingStudents(false);
+      if (!signal?.aborted) {
+        setLoadingStudents(false);
+      }
     }
   }, [common, role]);
 
   const loadQuestionnaireHistory = useCallback(
-    async (sid: string, type: QuestionnaireTypeValue) => {
+    async (sid: string, type: QuestionnaireTypeValue, signal?: AbortSignal) => {
       setLoadingHistory(true);
       try {
         const res = await fetch(
           `/api/students/${sid}/questionnaires?type=${type}&limit=${HISTORY_LIMIT}`,
+          { signal },
         );
         const questionnaires =
           await readApiResponse<QuestionnaireRecord[]>(res);
+
+        if (signal?.aborted) {
+          return;
+        }
+
         setQuestionnaireHistory(questionnaires);
         setDeferredCount(
           QUESTIONNAIRE_INSTRUMENTS[type].supportsDeferral
             ? (questionnaires[0]?.deferredCount ?? 0)
             : 0,
         );
-      } catch {
+      } catch (error) {
+        if (error instanceof DOMException && error.name === "AbortError") {
+          return;
+        }
+
         setQuestionnaireHistory([]);
         setDeferredCount(0);
       } finally {
-        setLoadingHistory(false);
+        if (!signal?.aborted) {
+          setLoadingHistory(false);
+        }
       }
     },
     [],
   );
 
   useEffect(() => {
-    void loadStudents();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    const controller = new AbortController();
+    void loadStudents(controller.signal);
+
+    return () => {
+      controller.abort();
+    };
+  }, [loadStudents]);
 
   useEffect(() => {
     if (!studentId) {
@@ -363,7 +385,13 @@ export default function QuestionariosPage() {
       setDeferredCount(0);
       return;
     }
-    void loadQuestionnaireHistory(studentId, qType);
+
+    const controller = new AbortController();
+    void loadQuestionnaireHistory(studentId, qType, controller.signal);
+
+    return () => {
+      controller.abort();
+    };
   }, [loadQuestionnaireHistory, qType, studentId]);
 
   useEffect(() => {
@@ -654,8 +682,7 @@ export default function QuestionariosPage() {
       <div className="mx-auto flex w-full max-w-4xl flex-col gap-5 pb-28">
         <PageSection tone="primary" layout="form" className="overflow-hidden">
           <div className="grid gap-6">
-            <div className="relative overflow-hidden rounded-2xl border border-white/20 dark:border-white/10 bg-[radial-gradient(circle_at_top_right,rgba(212,175,55,0.18),transparent_36%),linear-gradient(180deg,rgba(15,23,42,0.02),rgba(15,23,42,0.06))] p-5 sm:p-6">
-              <div className="absolute inset-x-6 top-0 h-px bg-gradient-to-r from-transparent via-gold-300/70 to-transparent" />
+            <div className="rounded-2xl border border-border bg-surface-secondary p-5 sm:p-6">
               <div className="flex flex-col gap-4">
                 <div className="flex flex-wrap items-center gap-2 text-tiny font-semibold uppercase tracking-[0.2em] text-muted-foreground">
                   <span>{t("flowEyebrow")}</span>
@@ -675,7 +702,7 @@ export default function QuestionariosPage() {
                       })}
                     </p>
                   </div>
-                  <div className="inline-flex items-center gap-2 self-start rounded-full border border-white/20 dark:border-white/10/70 bg-white/50 dark:bg-navy-950/40 backdrop-blur-sm px-3 py-2 text-xs font-semibold text-foreground shadow-sm">
+                  <div className="inline-flex items-center gap-2 self-start rounded-full border border-border bg-surface-utility px-3 py-2 text-xs font-semibold text-foreground shadow-sm">
                     <Clock3 className="size-3.5 text-gold-600" />
                     <span>{t("estimatedTimeLabel")}</span>
                     <span className="text-muted-foreground">
@@ -715,7 +742,7 @@ export default function QuestionariosPage() {
                     }
                   />
                 </div>
-                <div className="rounded-2xl border border-white/20 dark:border-white/10 bg-white/50 dark:bg-navy-950/40 backdrop-blur-sm p-4">
+                <div className="rounded-2xl border border-border bg-surface-utility p-4">
                   <div className="flex items-start gap-3">
                     <Sparkles className="mt-0.5 size-4 text-gold-600" />
                     <div className="space-y-1.5">
@@ -760,10 +787,7 @@ export default function QuestionariosPage() {
                       interactiveControlClasses.choiceBase,
                       "rounded-2xl p-4",
                       active
-                        ? cn(
-                            interactiveControlClasses.choiceActive,
-                            "bg-[radial-gradient(circle_at_top,rgba(245,158,11,0.16),transparent_48%),linear-gradient(180deg,rgba(2,6,23,0.96),rgba(15,23,42,0.92))] shadow-[0_22px_44px_rgba(15,23,42,0.26)]",
-                          )
+                        ? interactiveControlClasses.choiceActive
                         : interactiveControlClasses.choiceInactive,
                     )}
                   >
@@ -828,7 +852,7 @@ export default function QuestionariosPage() {
                             "rounded-full border px-3 py-1.5 text-xs font-semibold",
                             active
                               ? "border-white/20 bg-white/10 text-white"
-                              : "border-white/20 dark:border-white/10/70 bg-white/50 dark:bg-navy-950/40 backdrop-blur-sm text-foreground",
+                              : "border-border bg-surface-secondary text-foreground",
                           )}
                         >
                           {active ? t("ctaSelected") : t("ctaChoose")}
@@ -867,7 +891,7 @@ export default function QuestionariosPage() {
                   ) : null
                 }
               />
-              <div className="rounded-2xl border border-dashed border-white/20 dark:border-white/10/70 bg-white/50 dark:bg-navy-950/40 backdrop-blur-sm p-4 sm:p-5">
+              <div className="rounded-2xl border border-dashed border-border bg-surface-secondary p-4 sm:p-5">
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                   <div>
                     <p className="text-sm font-semibold text-foreground">
@@ -1195,7 +1219,7 @@ export default function QuestionariosPage() {
                 </div>
 
                 {qType === "AUTOCONCEITO" ? (
-                  <div className="grid gap-3 rounded-2xl border border-white/20 dark:border-white/10 bg-white/50 dark:bg-navy-950/40 backdrop-blur-sm p-4 sm:grid-cols-3">
+                  <div className="grid gap-3 rounded-2xl border border-border bg-surface-secondary p-4 sm:grid-cols-3">
                     {[
                       {
                         key: "energyLevel",
@@ -1260,7 +1284,7 @@ export default function QuestionariosPage() {
             </PageSection>
 
             <div className="sticky bottom-4 z-10">
-              <div className="overflow-hidden rounded-2xl border border-white/20 dark:border-white/10/70 bg-white/50 dark:bg-navy-950/40 backdrop-blur-sm shadow-[0_18px_55px_rgba(15,23,42,0.2)] backdrop-blur">
+              <div className="overflow-hidden rounded-2xl border border-border bg-surface-secondary shadow-[0_18px_55px_rgba(15,23,42,0.2)] backdrop-blur">
                 <div className="flex flex-col gap-4 p-4 sm:p-5 lg:flex-row lg:items-center lg:justify-between">
                   <div className="space-y-2">
                     <div className="flex flex-wrap items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
@@ -1337,7 +1361,7 @@ export default function QuestionariosPage() {
               {questionnaireHistory.map((item) => (
                 <div
                   key={item.id}
-                  className="rounded-2xl border border-white/20 dark:border-white/10 bg-white/50 dark:bg-navy-950/40 backdrop-blur-sm p-4"
+                  className="rounded-2xl border border-border bg-surface-secondary p-4"
                 >
                   <div className="flex flex-wrap items-start justify-between gap-3">
                     <div>
@@ -1351,7 +1375,7 @@ export default function QuestionariosPage() {
                       </p>
                     </div>
                     {item.type !== "KIDMED" ? (
-                      <span className="rounded-full border border-white/20 dark:border-white/10 bg-white/50 dark:bg-navy-950/40 backdrop-blur-sm px-2.5 py-1 text-xs text-muted-foreground">
+                      <span className="rounded-full border border-border bg-surface-secondary px-2.5 py-1 text-xs text-muted-foreground">
                         {t("deferralsUsedCompact", {
                           count: item.deferredCount,
                         })}
@@ -1386,7 +1410,7 @@ export default function QuestionariosPage() {
                       return (
                         <span
                           key={badge.key}
-                          className="rounded-full border border-white/20 dark:border-white/10 bg-white/50 dark:bg-navy-950/40 backdrop-blur-sm px-2.5 py-1"
+                          className="rounded-full border border-border bg-surface-secondary px-2.5 py-1"
                         >
                           {t(badge.labelKey)}: {value}
                         </span>
@@ -1471,7 +1495,7 @@ function WizardStepper({
                 ? "border-navy-900/70 bg-navy-950 text-white shadow-card"
                 : completed
                   ? "border-success-300/60 bg-success-50/70 hover:shadow-card-hover dark:bg-success-950/20"
-                  : "border-white/20 dark:border-white/10/70 bg-white/60 dark:bg-navy-950/40 backdrop-blur-md/60 hover:-translate-y-0.5 hover:shadow-card-hover",
+                  : "border-border bg-surface-secondary hover:-translate-y-0.5 hover:shadow-card-hover",
               step.disabled && "cursor-not-allowed opacity-55",
             )}
           >
@@ -1516,7 +1540,7 @@ function WizardStepper({
 
 function MetaChip({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-2xl border border-white/20 dark:border-white/10 bg-white/50 dark:bg-navy-950/40 backdrop-blur-sm px-3.5 py-3">
+    <div className="rounded-2xl border border-border bg-surface-secondary px-3.5 py-3">
       <p className="text-tiny font-semibold uppercase tracking-[0.18em] text-muted-foreground">
         {label}
       </p>
@@ -1578,7 +1602,7 @@ function BinaryRow({
   ] as const;
 
   return (
-    <fieldset className="rounded-2xl border border-white/20 dark:border-white/10 bg-white/50 dark:bg-navy-950/40 backdrop-blur-sm p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]">
+    <fieldset className="rounded-2xl border border-border bg-surface-secondary p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]">
       <legend className="px-1 text-sm font-semibold leading-relaxed text-foreground">
         {label}
       </legend>
@@ -1652,7 +1676,7 @@ function StatusPanel({
   footer?: ReactNode;
 }) {
   return (
-    <div className="rounded-2xl border border-white/20 dark:border-white/10 bg-white/50 dark:bg-navy-950/40 backdrop-blur-sm p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] sm:p-5">
+    <div className="rounded-2xl border border-border bg-surface-secondary p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] sm:p-5">
       <div className="flex items-start gap-3">
         <span className="mt-0.5">{icon}</span>
         <div className="flex-1">
@@ -1677,7 +1701,7 @@ function QuestionBlock({
   children: ReactNode;
 }) {
   return (
-    <div className="rounded-2xl border border-white/20 dark:border-white/10 bg-white/50 dark:bg-navy-950/40 backdrop-blur-sm p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] sm:p-5">
+    <div className="rounded-2xl border border-border bg-surface-secondary p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] sm:p-5">
       <div className="mb-4">
         <p className="text-base font-semibold tracking-tight text-foreground">
           {title}
@@ -1701,7 +1725,7 @@ function ReviewCard({
   detail: string;
 }) {
   return (
-    <div className="rounded-2xl border border-white/20 dark:border-white/10 bg-white/50 dark:bg-navy-950/40 backdrop-blur-sm p-4">
+    <div className="rounded-2xl border border-border bg-surface-secondary p-4">
       <p className="text-tiny font-semibold uppercase tracking-[0.18em] text-muted-foreground">
         {label}
       </p>
@@ -1725,7 +1749,7 @@ function ProgressReviewCard({
   colorClass: string;
 }) {
   return (
-    <div className="rounded-2xl border border-white/20 dark:border-white/10 bg-white/50 dark:bg-navy-950/40 backdrop-blur-sm p-4">
+    <div className="rounded-2xl border border-border bg-surface-secondary p-4">
       <div className="flex items-center justify-between gap-3">
         <span className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
           {label}
@@ -1753,7 +1777,7 @@ function HistorySkeletonList() {
       {Array.from({ length: 3 }, (_, index) => (
         <div
           key={index}
-          className="rounded-2xl border border-white/20 dark:border-white/10 bg-white/50 dark:bg-navy-950/40 backdrop-blur-sm p-4"
+          className="rounded-2xl border border-border bg-surface-secondary p-4"
         >
           <div className="flex items-start justify-between gap-3">
             <div className="flex-1 space-y-2">
@@ -1811,15 +1835,15 @@ function KidmedResultSummary({
         {t(getKidmedClassificationFeedbackKey(result.classification))}
       </p>
       <div className="mt-3 flex flex-wrap gap-2 text-xs text-muted-foreground">
-        <span className="rounded-full border border-white/20 dark:border-white/10 bg-white/50 dark:bg-navy-950/40 backdrop-blur-sm px-2.5 py-1">
+        <span className="rounded-full border border-border bg-surface-secondary px-2.5 py-1">
           {currentPeriodLabel}
         </span>
         {result.instrumentVersion ? (
-          <span className="rounded-full border border-white/20 dark:border-white/10 bg-white/50 dark:bg-navy-950/40 backdrop-blur-sm px-2.5 py-1">
+          <span className="rounded-full border border-border bg-surface-secondary px-2.5 py-1">
             {result.instrumentVersion}
           </span>
         ) : null}
-        <span className="rounded-full border border-white/20 dark:border-white/10 bg-white/50 dark:bg-navy-950/40 backdrop-blur-sm px-2.5 py-1">
+        <span className="rounded-full border border-border bg-surface-secondary px-2.5 py-1">
           {t("kidmedSubmittedAt", {
             date: new Date(result.submittedAt).toLocaleDateString(),
           })}

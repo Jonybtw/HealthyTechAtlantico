@@ -30,11 +30,12 @@ interface DataTableProps<T> {
   toolbarSummary?: React.ReactNode;
   toolbarActions?: React.ReactNode;
   searchPlaceholder?: string;
+  searchValue?: string;
   emptyMessage?: string;
   emptyStateIcon?: LucideIcon;
   onRowClick?: (row: T) => void;
   rowKey: (row: T) => string;
-  
+
   /* Server pagination optional props */
   serverTotalItems?: number;
   serverPage?: number;
@@ -51,6 +52,7 @@ export function DataTable<T extends object>({
   toolbarSummary,
   toolbarActions,
   searchPlaceholder = "Pesquisar...",
+  searchValue,
   emptyMessage = "Sem registos.",
   emptyStateIcon: EmptyIcon = Search,
   onRowClick,
@@ -60,7 +62,9 @@ export function DataTable<T extends object>({
   onServerPageChange,
   onServerSearch,
 }: DataTableProps<T>) {
-  const [search, setSearch] = useState("");
+  const isSearchControlled = searchValue !== undefined;
+  const [internalSearch, setInternalSearch] = useState("");
+  const search = isSearchControlled ? (searchValue ?? "") : internalSearch;
   const deferredSearch = useDeferredValue(search);
   const [sortKey, setSortKey] = useState<string | null>(null);
   const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
@@ -85,7 +89,7 @@ export function DataTable<T extends object>({
         );
       }),
     );
-  }, [columns, data, deferredSearch]);
+  }, [columns, data, deferredSearch, serverTotalItems]);
 
   const sorted = useMemo(() => {
     if (serverTotalItems !== undefined) return filtered;
@@ -110,15 +114,16 @@ export function DataTable<T extends object>({
     });
 
     return sortedRows;
-  }, [filtered, sortDir, sortKey]);
+  }, [filtered, sortDir, sortKey, serverTotalItems]);
 
   const totalItemsCount = serverTotalItems ?? sorted.length;
   const totalPages = Math.max(1, Math.ceil(totalItemsCount / pageSize));
   const safePage = Math.min(page, totalPages);
-  
-  const paged = serverTotalItems !== undefined 
-    ? data 
-    : sorted.slice((safePage - 1) * pageSize, safePage * pageSize);
+
+  const paged =
+    serverTotalItems !== undefined
+      ? data
+      : sorted.slice((safePage - 1) * pageSize, safePage * pageSize);
 
   function handlePageChange(newPage: number) {
     if (onServerPageChange) {
@@ -129,7 +134,9 @@ export function DataTable<T extends object>({
   }
 
   function handleSearchChange(val: string) {
-    setSearch(val);
+    if (!isSearchControlled) {
+      setInternalSearch(val);
+    }
     if (onServerSearch) {
       onServerSearch(val);
     } else {
@@ -149,7 +156,7 @@ export function DataTable<T extends object>({
 
   return (
     <div className="animate-fade-in-up flex flex-col gap-4">
-      <div className="overflow-hidden rounded-2xl border border-white/20 bg-white/72 shadow-card dark:border-white/10 dark:bg-navy-950/60">
+      <div className="overflow-hidden rounded-2xl border border-border bg-surface-secondary shadow-card">
         {searchable || toolbarTitle || toolbarSummary || toolbarActions ? (
           <div className="flex flex-col gap-4 border-b border-border/60 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
             <div className="space-y-0.5">
@@ -162,8 +169,8 @@ export function DataTable<T extends object>({
                 </div>
               ) : (
                 <p className="text-sm font-semibold text-foreground">
-                  {filtered.length} resultado
-                  {filtered.length === 1 ? "" : "s"}
+                  {totalItemsCount} resultado
+                  {totalItemsCount === 1 ? "" : "s"}
                 </p>
               )}
             </div>
@@ -191,13 +198,22 @@ export function DataTable<T extends object>({
 
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm">
-            <thead>
-              <tr className="bg-muted/50">
+            <thead className="sticky top-0 z-10">
+              <tr className="bg-muted/60 backdrop-blur-sm">
                 {columns.map((column) => (
                   <th
                     key={column.key}
                     onClick={
                       column.sortable ? () => toggleSort(column.key) : undefined
+                    }
+                    aria-sort={
+                      column.sortable && sortKey === column.key
+                        ? sortDir === "asc"
+                          ? "ascending"
+                          : "descending"
+                        : column.sortable
+                          ? "none"
+                          : undefined
                     }
                     className={`px-5 py-3.5 text-tiny font-semibold uppercase tracking-[0.18em] text-muted-foreground ${
                       column.sortable
@@ -273,7 +289,7 @@ export function DataTable<T extends object>({
               </span>{" "}
               de{" "}
               <span className="font-bold text-foreground">{totalItemsCount}</span>{" "}
-              resultados
+              resultado{totalItemsCount === 1 ? "" : "s"}
             </p>
             <div className="flex items-center gap-1.5">
               <Button

@@ -9,13 +9,10 @@ import {
   Ruler,
   Timer,
   Wind,
-  Zap,
   Scale,
   Scissors,
   ChevronRight,
-  FlaskConical,
-  TrendingUp,
-  Users,
+  Zap,
 } from "lucide-react";
 import { requireAnyRole } from "@/lib/auth-guard";
 import { cn } from "@/lib/utils";
@@ -153,59 +150,15 @@ export default async function ProtocolosPage() {
   const t = await getTranslations("protocolos");
 
   return (
-    <PageScaffold>
-      {/* ── Hero Banner ──────────────────────────────────────────────────────── */}
-      <div className="relative mb-2 overflow-hidden rounded-2xl bg-gradient-to-br from-navy-800 via-navy-700 to-navy-600 px-6 py-8 shadow-card lg:px-10 lg:py-8">
-        {/* Decorative blobs */}
-        <div className="pointer-events-none absolute -right-12 -top-10 size-64 rounded-full bg-gold-400/10 blur-3xl" />
-        <div className="pointer-events-none absolute -bottom-10 -left-8 size-52 rounded-full bg-navy-400/20 blur-3xl" />
-        <div className="pointer-events-none absolute right-36 top-4 size-24 rounded-full bg-gold-300/8 blur-2xl" />
-
-        <div className="relative flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex items-center gap-5">
-            {/* Icon */}
-            <div className="flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-2xl bg-white/10 shadow-lg ring-1 ring-white/20 backdrop-blur-sm">
-              <FlaskConical className="h-7 w-7 text-gold-300" />
-            </div>
-            <div>
-              <p className="mb-1 text-tiny font-semibold uppercase tracking-[0.18em] text-navy-200">
-                {t("eyebrow")}
-              </p>
-              <h2 className="font-display text-xl font-bold tracking-tight text-white sm:text-2xl">
-                {t("title")}
-              </h2>
-              <p className="mt-1 text-sm text-navy-200/80 sm:text-sm">
-                {t("description")}
-              </p>
-            </div>
-          </div>
-
-          {/* Stats pills */}
-          <div className="flex flex-wrap gap-3">
-            {[
-              { icon: Scale, value: "IMC", label: "& Cintura" },
-              { icon: TrendingUp, value: "8", label: "Testes" },
-              { icon: Users, value: "9–18", label: "Anos" },
-            ].map(({ icon: Icon, value, label }) => (
-              <div
-                key={label}
-                className="flex items-center gap-2 rounded-xl bg-white/8 px-3.5 py-2.5 ring-1 ring-white/12 backdrop-blur-sm"
-              >
-                <Icon className="h-4 w-4 text-gold-300" />
-                <div>
-                  <div className="text-sm font-bold text-white leading-none">
-                    {value}
-                  </div>
-                  <div className="mt-0.5 text-tiny text-navy-200/70">
-                    {label}
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-
+    <PageScaffold
+      className="gap-6"
+      headerProps={{
+        title: t("title"),
+        description: t("description"),
+        eyebrow: "REFERÊNCIA / PROTOCOLOS ZAF",
+        meta: "IMC & Cintura  ·  8 Testes  ·  9–18 Anos",
+      }}
+    >
       {/* ── Sticky Quick Navigation ────────────────────────────────────────── */}
       <ProtocolosNav />
 
@@ -487,10 +440,10 @@ export default async function ProtocolosPage() {
                 <article
                   key={item.testKey}
                   className={cn(
-                    "group relative flex flex-col overflow-hidden rounded-2xl border bg-white/60 dark:bg-navy-950/40 backdrop-blur-md/80 shadow-[0_4px_20px_-10px_rgb(9_21_35_/_0.12)] backdrop-blur-sm transition-all duration-300",
+                    "group relative flex flex-col overflow-hidden rounded-2xl border bg-surface-secondary shadow-card transition-all duration-300",
                     "hover:-translate-y-1.5 hover:shadow-[0_16px_40px_-16px_rgb(9_21_35_/_0.18)]",
                     "animate-fade-in-up",
-                    "border-white/20 dark:border-white/10 hover:border-white/20 dark:border-white/10/80",
+                    "border-white/20 dark:border-white/10",
                   )}
                   style={{ animationDelay: `${index * 55}ms` }}
                 >
@@ -498,8 +451,7 @@ export default async function ProtocolosPage() {
                   <div
                     className={cn(
                       "h-0.5 w-full",
-                      item.testKey.includes("Vai") ||
-                        item.testKey === "testVaiVem" ||
+                      item.testKey === "testVaiVem" ||
                         item.testKey === "testCooper" ||
                         item.testKey === "testMilha"
                         ? "bg-gradient-to-r from-sky-400 to-sky-300"
@@ -550,7 +502,7 @@ export default async function ProtocolosPage() {
                     </p>
 
                     {/* Footer: unit */}
-                    <div className="mt-4 flex items-center justify-between border-t border-white/20 dark:border-white/10/30 pt-3.5">
+                    <div className="mt-4 flex items-center justify-between border-t border-white/20 dark:border-white/10 pt-3.5">
                       <span className="text-tiny font-medium uppercase tracking-[0.08em] text-muted-foreground">
                         {t("unitLabel")}
                       </span>

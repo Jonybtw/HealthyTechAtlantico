@@ -46,7 +46,6 @@ import { BrandLogo } from "@/components/brand-logo";
 import { useHotkeys } from "@/hooks/use-hotkeys";
 import { useIsClient } from "@/hooks/use-is-client";
 import { usePreferences } from "@/hooks/use-preferences";
-import { MeshBackground } from "@/components/ui/mesh-glow";
 
 interface AppShellProps {
   user: {
@@ -186,13 +185,13 @@ export function AppShell({ user, children }: AppShellProps) {
     },
   ]);
 
-  const brandName = "HealthyTech Atlantico";
+  const brandName = "HealthyTech Atlântico";
   const savedTitle = useRef("");
   useEffect(() => {
     function onVisibility() {
       if (document.hidden) {
         savedTitle.current = document.title;
-        document.title = "Volta ao HealthyTech Atlantico";
+      document.title = "Volta ao HealthyTech Atlântico";
       } else {
         document.title = savedTitle.current || brandName;
       }
@@ -274,35 +273,20 @@ export function AppShell({ user, children }: AppShellProps) {
         >
           {t("nav.skipToContent")}
         </a>
-        <MeshBackground />
-        <div className="bg-noise" aria-hidden="true" />
-
         <aside
           data-theme="dark"
           aria-label={t("nav.sidebarNavigation")}
           className="dark fixed inset-y-0 left-0 z-30 hidden w-72 overflow-hidden rounded-r-[2.75rem] border-r border-navy-800 shadow-2xl transition-colors duration-300 lg:flex lg:flex-col"
         >
-          {/* Base sólida para isolar e preservar o Dark Mode Perfeito */}
           <div className="absolute inset-0 bg-navy-950 rounded-r-[2.75rem]" />
-
-          {/* Malha sutil de fundo para dar textura rica e blur */}
-          <div className="absolute inset-0 pointer-events-none overflow-hidden rounded-r-[2.75rem]">
-            <div className="absolute -left-20 -top-20 size-96 rounded-full bg-gold-400/5" />
-            <div className="absolute -bottom-20 -right-20 size-96 rounded-full bg-navy-300/5" />
-            <div className="bg-noise absolute inset-0 opacity-[0.03]" />
-          </div>
-
-          <div className="absolute inset-0 bg-navy-950/90 rounded-r-[2.75rem]" />
-
-          <div className="absolute inset-x-0 top-0 h-28 rounded-tr-[2.75rem] bg-[radial-gradient(circle_at_top_left,rgba(216,173,52,0.16),transparent_40%),linear-gradient(180deg,rgba(20,48,76,0.24),transparent)] z-0" />
 
           <div className="relative z-10 flex items-center justify-center border-b border-white/10 px-6 py-5">
             <BrandLogo
               alt={brandName}
-              className="h-[98px] w-[96px]"
+              className="h-[72px] w-[72px]"
               imageClassName="drop-shadow-[0_2px_8px_rgba(255,255,255,0.12)] brightness-0 invert"
               priority
-              sizes="96px"
+              sizes="72px"
             />
           </div>
 
@@ -336,7 +320,7 @@ export function AppShell({ user, children }: AppShellProps) {
             aria-label={t("nav.topBar")}
             className="sticky top-0 z-20 border-b border-white/45 bg-white/62 shadow-[0_16px_34px_-30px_rgba(9,21,35,0.42)] backdrop-blur-md transition-colors duration-300 dark:border-white/10 dark:bg-navy-950/66"
           >
-            <div className="mx-auto flex w-full max-w-[1680px] items-center justify-between gap-3 px-4 py-2.5 sm:px-6 lg:px-8">
+            <div className="mx-auto flex w-full max-w-[1680px] items-center justify-between gap-3 px-4 py-3 sm:px-6 lg:px-8">
               <div className="flex min-w-0 items-center gap-3">
                 <Button
                   variant="ghost"
@@ -609,18 +593,7 @@ export function AppShell({ user, children }: AppShellProps) {
               data-theme="dark"
               className="dark w-72 rounded-none border-r border-navy-800 p-0 transition-colors duration-300 overflow-hidden"
             >
-              {/* Dark Mode Base Layer */}
               <div className="absolute inset-0 bg-navy-950" />
-
-              <div className="absolute inset-0 pointer-events-none overflow-hidden">
-                <div className="absolute -left-20 -top-20 size-96 rounded-full bg-gold-400/10 " />
-                <div className="absolute -bottom-20 -right-20 size-96 rounded-full bg-navy-300/5 " />
-                <div className="bg-noise absolute inset-0 opacity-[0.03]" />
-              </div>
-
-              <div className="absolute inset-0 bg-navy-950 " />
-
-              <div className="absolute inset-x-0 top-0 h-28 bg-[radial-gradient(circle_at_top_left,rgba(216,173,52,0.16),transparent_40%),linear-gradient(180deg,rgba(20,48,76,0.24),transparent)] z-0" />
 
               <div className="relative z-10 flex h-full flex-col">
                 <div className="relative flex items-center justify-center border-b border-white/10 px-6 py-5">

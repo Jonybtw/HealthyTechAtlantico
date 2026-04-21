@@ -292,7 +292,13 @@ describe("QuestionariosPage", () => {
 
     await user.click(yesOption);
 
-    expect(yesOption).toHaveAttribute("aria-checked", "true");
-    expect(noOption).toHaveAttribute("aria-checked", "false");
+    await waitFor(() => {
+      expect(
+        screen.getByRole("radio", { name: /sportsPracticeLabel - yes/i }),
+      ).toHaveAttribute("aria-checked", "true");
+      expect(
+        screen.getByRole("radio", { name: /sportsPracticeLabel - no/i }),
+      ).toHaveAttribute("aria-checked", "false");
+    });
   });
 });

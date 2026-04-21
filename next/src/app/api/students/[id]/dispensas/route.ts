@@ -20,7 +20,7 @@ import { PERMISSIONS } from "@/lib/rbac";
 import { getStudentAccessContext } from "@/lib/student-access";
 import { exemptionSchema } from "@/lib/validations";
 
-// GET /api/students/[id]/exemptions
+// GET /api/students/[id]/dispensas
 export async function GET(
   _req: NextRequest,
   { params }: { params: Promise<{ id: string }> },
@@ -49,12 +49,12 @@ export async function GET(
 
     return ok(exemptions);
   } catch (error) {
-    console.error("GET exemptions error:", error);
+    console.error("GET dispensas error:", error);
     return serverError();
   }
 }
 
-// POST /api/students/[id]/exemptions
+// POST /api/students/[id]/dispensas
 export async function POST(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> },
@@ -102,12 +102,12 @@ export async function POST(
       return validationError(error.issues);
     }
 
-    console.error("POST exemptions error:", error);
+    console.error("POST dispensas error:", error);
     return serverError();
   }
 }
 
-// DELETE /api/students/[id]/exemptions (body: { exemptionId })
+// DELETE /api/students/[id]/dispensas (body: { dispensaId })
 export async function DELETE(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> },
@@ -130,16 +130,18 @@ export async function DELETE(
     }
 
     const body = await req.json();
-    const exemptionId = body?.exemptionId as string | undefined;
+    const exemptionId = (body?.dispensaId ?? body?.exemptionId) as
+      | string
+      | undefined;
     if (!exemptionId) {
-      return badRequest("exemptionId obrigatório");
+      return badRequest("dispensaId obrigatório");
     }
 
     const exemption = await prisma.exemption.findUnique({
       where: { id: exemptionId },
     });
     if (!exemption || exemption.studentId !== id) {
-      return notFound("Exemption não encontrada");
+      return notFound("Dispensa não encontrada");
     }
 
     await prisma.exemption.delete({ where: { id: exemptionId } });
@@ -152,7 +154,7 @@ export async function DELETE(
 
     return noContent();
   } catch (error) {
-    console.error("DELETE exemptions error:", error);
+    console.error("DELETE dispensas error:", error);
     return serverError();
   }
 }

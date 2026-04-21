@@ -148,21 +148,14 @@ export function KpiCard({
           </p>
         ) : null}
 
-        {!heroCard ? (
-          <div className="mt-5 h-1.5 w-full overflow-hidden rounded-full bg-navy-100 dark:bg-navy-900">
-            <div
-              className={`h-full ${styles.barFill} rounded-full opacity-70 transition-all duration-1000 group-hover:opacity-100`}
-              style={{ width: "100%" }}
-            />
-          </div>
-        ) : null}
+
 
         {footer ? (
           <div
             className={cn(
               "mt-5 border-t pt-4",
               heroCard
-                ? "border-white/12"
+                ? "border-white/14 text-white/80"
                 : "border-navy-200 dark:border-navy-800",
             )}
           >

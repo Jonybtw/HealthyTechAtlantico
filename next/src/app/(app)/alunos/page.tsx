@@ -1,11 +1,9 @@
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 import { requireAuth } from "@/lib/auth-guard";
-import { prisma } from "@/lib/prisma";
-import { isStaffRole } from "@/lib/rbac";
 import { redirect } from "next/navigation";
-import { AlunosClient } from "./alunos-client";
-import { canRole, PERMISSIONS } from "@/lib/rbac";
+import { AlunosClient } from "@/app/(app)/alunos/alunos-client";
+import { canRole, isStaffRole, PERMISSIONS } from "@/lib/rbac";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("alunos");
@@ -30,34 +28,15 @@ export default async function AlunosPage({ searchParams }: Props) {
   const resolvedParams = await searchParams;
   const page = parseInt(resolvedParams.page as string, 10) || 1;
   const search = (resolvedParams.search as string) || "";
-  const pageSize = 15;
-
-  const whereCondition = search
-    ? { name: { contains: search, mode: "insensitive" as const } }
-    : {};
-
-  const totalStudents = await prisma.student.count({ where: whereCondition });
-
-  const students = await prisma.student.findMany({
-    where: whereCondition,
-    orderBy: { name: "asc" },
-    take: pageSize, 
-    skip: (page - 1) * pageSize,
-    select: {
-      id: true,
-      name: true,
-      sex: true,
-      birthDate: true,
-      className: true,
-      schoolYear: true,
-    },
-  });
+  const className = (resolvedParams.class_name as string) || "";
+  const schoolYear = (resolvedParams.school_year as string) || "";
 
   return (
     <AlunosClient 
-      initialStudents={students} 
-      totalStudents={totalStudents}
       currentPage={page}
+      searchQuery={search}
+      classNameQuery={className}
+      schoolYearQuery={schoolYear}
     />
   );
 }

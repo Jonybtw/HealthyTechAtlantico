@@ -19,84 +19,6 @@ vi.mock("next/link", () => ({
   ),
 }));
 
-vi.mock("next-intl", () => ({
-  useLocale: () => "pt-PT",
-  useTranslations:
-    (namespace?: string) =>
-    (key: string, values?: Record<string, string | number>) => {
-      const fullKey = namespace ? `${namespace}.${key}` : key;
-      const dictionary: Record<string, string> = {
-        "dashboard.title": "Painel",
-        "dashboard.unlinkedTitle": "Perfil nÃ£o associado",
-        "dashboard.unlinkedDescription":
-          "Conta ainda nÃ£o associada a um perfil de aluno.",
-        "dashboard.activitySummary": "Resumo da tua atividade",
-        "dashboard.lastBiometric": "Ãšltima biometria",
-        "dashboard.lastTests": "Ãšltimos testes",
-        "dashboard.lastMeasurement": "Data da Ãºltima mediÃ§Ã£o",
-        "dashboard.lastTestDate": "Data do Ãºltimo teste fÃ­sico",
-        "dashboard.platformOverview":
-          "VisÃ£o geral da plataforma HealthyTech AtlÃ¢ntico",
-        "dashboard.psychologistOverview":
-          "VisÃ£o geral da fila de acompanhamento dos alunos",
-        "dashboard.parentOverview":
-          "VisÃ£o geral dos alunos associados Ã  tua conta",
-        "dashboard.students": "Alunos",
-        "dashboard.classes": "Turmas",
-        "dashboard.sessions": "SessÃµes",
-        "dashboard.pendingSos": "SOS Pendentes",
-        "dashboard.totalRegistered": "Total registados",
-        "dashboard.activeClasses": "Turmas ativas",
-        "dashboard.evaluationsDone": "AvaliaÃ§Ãµes realizadas",
-        "dashboard.alertsPending": "Alertas por resolver",
-        "dashboard.zafDistribution": "DistribuiÃ§Ã£o ZAF por Ano Letivo",
-        "dashboard.zafDistributionSummary":
-          "Comparativo recente entre Zona SaudÃ¡vel e Zona de Melhoria.",
-        "dashboard.zsaf": "Z. SaudÃ¡vel",
-        "dashboard.zmf": "Z. Melhoria",
-        "dashboard.psychologistQueueTitle":
-          "Fila prioritÃ¡ria de acompanhamento",
-        "dashboard.psychologistQueueDescription":
-          "Casos pendentes que devem ser revistos primeiro pelo psicÃ³logo.",
-        "dashboard.psychologistRecentTitle": "QuestionÃ¡rios recentes",
-        "dashboard.psychologistRecentDescription":
-          "Ãšltimos instrumentos submetidos.",
-        "dashboard.classPending": "Turma por confirmar",
-        "dashboard.alertOpenedOn": "Aberto em {date}",
-        "dashboard.openStudentFollowUp": "Abrir acompanhamento",
-        "dashboard.parentStudentsTitle": "Acompanhamento dos alunos",
-        "dashboard.parentStudentsDescription":
-          "VisÃ£o rÃ¡pida do estado recente dos alunos associados Ã  tua conta.",
-        "dashboard.parentReportsTitle": "RelatÃ³rios recentes",
-        "dashboard.parentReportsDescription":
-          "Ãšltimos relatÃ³rios gerados para consulta familiar.",
-        "dashboard.studentRecord": "Registo do aluno",
-        "dashboard.lastReport": "Ãšltimo relatÃ³rio",
-        "dashboard.lastQuestionnaire": "Ãšltimo questionÃ¡rio",
-        "dashboard.linkedStudents": "Alunos associados",
-        "dashboard.historyGeneratedOn": "Gerado em {date}",
-        "dashboard.studentsUnit": "alunos",
-        "dashboard.greetingMorning": "Bom dia",
-        "dashboard.greetingAfternoon": "Boa tarde",
-        "dashboard.greetingEvening": "Boa noite",
-        "nav.perfil": "Perfil",
-        "questionarios.autoconceito": "Autoconceito",
-        "questionarios.autoestima": "Autoestima",
-        "questionarios.kidmed": "KIDMED",
-      };
-
-      let value = dictionary[fullKey] ?? key;
-
-      if (values) {
-        for (const [token, replacement] of Object.entries(values)) {
-          value = value.replaceAll(`{${token}}`, String(replacement));
-        }
-      }
-
-      return value;
-    },
-}));
-
 vi.mock("recharts", () => {
   const Wrapper = ({ children }: { children?: ReactNode }) => (
     <div>{children}</div>
@@ -114,6 +36,108 @@ vi.mock("@/hooks/use-reduced-effects", () => ({
   useReducedEffects: () => true,
 }));
 
+const messages = {
+  dashboard: {
+    title: "Painel",
+    unlinkedTitle: "Perfil n\u00e3o associado",
+    unlinkedDescription: "Conta ainda n\u00e3o associada a um perfil de aluno.",
+    activitySummary: "Resumo da tua atividade",
+    lastBiometric: "\u00daltima biometria",
+    lastTests: "\u00daltimos testes",
+    lastMeasurement: "Data da \u00faltima medi\u00e7\u00e3o",
+    lastTestDate: "Data do \u00faltimo teste f\u00edsico",
+    platformOverview: "Vis\u00e3o geral da plataforma HealthyTech Atl\u00e2ntico",
+    psychologistOverview:
+      "Vis\u00e3o geral da fila de acompanhamento dos alunos",
+    parentOverview: "Vis\u00e3o geral dos alunos associados \u00e0 tua conta",
+    students: "Alunos",
+    classes: "Turmas",
+    sessions: "Sess\u00f5es",
+    pendingSos: "SOS Pendentes",
+    totalRegistered: "Total registados",
+    activeClasses: "Turmas ativas",
+    evaluationsDone: "Avalia\u00e7\u00f5es realizadas",
+    alertsPending: "Alertas por resolver",
+    zafDistribution: "Distribui\u00e7\u00e3o ZAF por Ano Letivo",
+    zafDistributionSummary:
+      "Comparativo recente entre Zona Saud\u00e1vel e Zona de Melhoria.",
+    zsaf: "Z. Saud\u00e1vel",
+    zmf: "Z. Melhoria",
+    psychologistQueueTitle: "Fila priorit\u00e1ria de acompanhamento",
+    psychologistQueueDescription:
+      "Casos pendentes que devem ser revistos primeiro pelo psic\u00f3logo.",
+    psychologistRecentTitle: "Question\u00e1rios recentes",
+    psychologistRecentDescription: "\u00daltimos instrumentos submetidos.",
+    classPending: "Turma por confirmar",
+    alertOpenedOn: "Aberto em {date}",
+    openStudentFollowUp: "Abrir acompanhamento",
+    noPendingCasesTitle: "Sem casos pendentes",
+    noPendingCasesDescription: "A fila SOS est\u00e1 limpa neste momento.",
+    noRecentQuestionnairesTitle: "Sem question\u00e1rios recentes",
+    noRecentQuestionnairesDescription:
+      "Quando houver novas submiss\u00f5es, aparecem aqui para leitura r\u00e1pida.",
+    parentStudentsTitle: "Acompanhamento dos alunos",
+    parentStudentsDescription:
+      "Vis\u00e3o r\u00e1pida do estado recente dos alunos associados \u00e0 tua conta.",
+    parentReportsTitle: "Relat\u00f3rios recentes",
+    parentReportsDescription:
+      "\u00daltimos relat\u00f3rios gerados para consulta familiar.",
+    studentRecord: "Registo do aluno",
+    lastReport: "\u00daltimo relat\u00f3rio",
+    lastQuestionnaire: "\u00daltimo question\u00e1rio",
+    linkedStudents: "Alunos associados",
+    historyGeneratedOn: "Gerado em {date}",
+    noLinkedStudentsDashboardTitle: "Sem alunos associados",
+    noLinkedStudentsDashboardDescription:
+      "Quando a escola concluir a associa\u00e7\u00e3o, os dados surgem aqui.",
+    noReportsDashboardTitle: "Sem relat\u00f3rios recentes",
+    noReportsDashboardDescription:
+      "Os relat\u00f3rios disponibilizados pela escola aparecem nesta \u00e1rea.",
+    studentsUnit: "alunos",
+    overviewEyebrow: "Resumo operacional",
+    overviewTitle: "Panorama da atividade",
+    overviewDescription:
+      "Leitura r\u00e1pida dos n\u00fameros-chave da plataforma e dos sinais que pedem aten\u00e7\u00e3o no dia a dia.",
+    dashboardStatus: "Vis\u00e3o institucional",
+    yearInFocus: "Ano em foco",
+    coverageRecent: "Cobertura biom\u00e9trica do ano letivo mais recente.",
+    studentsWithBiometrics: "Com biometria",
+    coverageLabel: "Cobertura registada",
+    healthyStudentsLabel: "Em Z. Saud\u00e1vel",
+    improvementStudentsLabel: "Em Z. Melhoria",
+    annualSeries: "S\u00e9rie anual",
+    annualSeriesDescription:
+      "Compara\u00e7\u00e3o do peso da Zona Saud\u00e1vel em cada ano letivo com registos.",
+    comparisonPanelTitle: "Evolu\u00e7\u00e3o por ano letivo",
+    comparisonPanelDescription:
+      "Percentagem de Zona Saud\u00e1vel entre os alunos com biometria registada.",
+    annualSeriesPendingTitle:
+      "Ainda n\u00e3o existe s\u00e9rie hist\u00f3rica compar\u00e1vel.",
+    annualSeriesPendingDescription:
+      "A evolu\u00e7\u00e3o anual aparece quando houver mais do que um ano letivo com biometria registada.",
+  },
+  nav: {
+    perfil: "Perfil",
+  },
+  questionarios: {
+    autoconceito: "Autoconceito",
+    autoestima: "Autoestima",
+    kidmed: "KIDMED",
+  },
+} as const;
+
+function renderDashboard(summary: DashboardSummary, username: string) {
+  return render(
+    <DashboardClient
+      greeting="Bom dia"
+      todayLabel="quarta-feira, 1 de abril de 2026"
+      username={username}
+      summary={summary}
+      messages={messages}
+    />,
+  );
+}
+
 describe("DashboardClient", () => {
   it("renders the unlinked student state with the unified header", () => {
     const summary: DashboardSummary = {
@@ -123,20 +147,11 @@ describe("DashboardClient", () => {
       zafByYear: null,
     };
 
-    render(
-      <DashboardClient
-        greeting="Bom dia"
-        todayLabel="quarta-feira, 1 de abril de 2026"
-        username="JoÃ£o"
-        summary={summary}
-      />,
-    );
+    renderDashboard(summary, "Jo\u00e3o");
 
+    expect(screen.getByRole("heading", { name: /Jo\u00e3o/i })).toBeInTheDocument();
     expect(
-      screen.getByRole("heading", { name: /JoÃ£o/i }),
-    ).toBeInTheDocument();
-    expect(
-      screen.getByRole("heading", { name: "Perfil nÃ£o associado" }),
+      screen.getByRole("heading", { name: "Perfil n\u00e3o associado" }),
     ).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Perfil" })).toBeInTheDocument();
   });
@@ -153,20 +168,11 @@ describe("DashboardClient", () => {
       zafByYear: null,
     };
 
-    render(
-      <DashboardClient
-        greeting="Bom dia"
-        todayLabel="quarta-feira, 1 de abril de 2026"
-        username="Maria Silva"
-        summary={summary}
-      />,
-    );
+    renderDashboard(summary, "Maria Silva");
 
-    expect(
-      screen.getByRole("heading", { name: /Maria/i }),
-    ).toBeInTheDocument();
-    expect(screen.getByText("Ãšltima biometria")).toBeInTheDocument();
-    expect(screen.getByText("Ãšltimos testes")).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: /Maria/i })).toBeInTheDocument();
+    expect(screen.getByText("\u00daltima biometria")).toBeInTheDocument();
+    expect(screen.getByText("\u00daltimos testes")).toBeInTheDocument();
   });
 
   it("renders the psychologist dashboard sections", () => {
@@ -204,19 +210,14 @@ describe("DashboardClient", () => {
       ],
     };
 
-    render(
-      <DashboardClient
-        greeting="Bom dia"
-        todayLabel="quarta-feira, 1 de abril de 2026"
-        username="PsicÃ³loga"
-        summary={summary}
-      />,
-    );
+    renderDashboard(summary, "Psic\u00f3loga");
 
     expect(
-      screen.getByText("Fila prioritÃ¡ria de acompanhamento"),
+      screen.getByText("Fila priorit\u00e1ria de acompanhamento"),
     ).toBeInTheDocument();
-    expect(screen.getByText("QuestionÃ¡rios recentes")).toBeInTheDocument();
+    expect(screen.getAllByText("Question\u00e1rios recentes").length).toBeGreaterThan(
+      0,
+    );
     expect(
       screen.getByRole("link", { name: /Abrir acompanhamento/i }),
     ).toBeInTheDocument();
@@ -250,28 +251,21 @@ describe("DashboardClient", () => {
       recentReports: [
         {
           id: "report-1",
-          title: "RelatÃ³rio de marÃ§o",
+          title: "Relat\u00f3rio de mar\u00e7o",
           studentName: "Miguel",
           createdAt: "2026-03-15T00:00:00.000Z",
         },
       ],
     };
 
-    render(
-      <DashboardClient
-        greeting="Bom dia"
-        todayLabel="quarta-feira, 1 de abril de 2026"
-        username="Encarregado"
-        summary={summary}
-      />,
-    );
+    renderDashboard(summary, "Encarregado");
 
-    expect(
-      screen.getByText("Acompanhamento dos alunos"),
-    ).toBeInTheDocument();
-    expect(screen.getByText("RelatÃ³rios recentes")).toBeInTheDocument();
+    expect(screen.getByText("Acompanhamento dos alunos")).toBeInTheDocument();
+    expect(screen.getAllByText("Relat\u00f3rios recentes").length).toBeGreaterThan(
+      0,
+    );
     expect(screen.getAllByText("Miguel").length).toBeGreaterThan(0);
-    expect(screen.getByText("RelatÃ³rio de marÃ§o")).toBeInTheDocument();
+    expect(screen.getByText("Relat\u00f3rio de mar\u00e7o")).toBeInTheDocument();
   });
 
   it("renders the staff dashboard analytics area", () => {
@@ -314,19 +308,12 @@ describe("DashboardClient", () => {
       ],
     };
 
-    render(
-      <DashboardClient
-        greeting="Bom dia"
-        todayLabel="quarta-feira, 1 de abril de 2026"
-        username="DireÃ§Ã£o"
-        summary={summary}
-      />,
-    );
+    renderDashboard(summary, "Dire\u00e7\u00e3o");
 
     expect(
-      screen.getAllByText("DistribuiÃ§Ã£o ZAF por Ano Letivo").length,
+      screen.getAllByText("Distribui\u00e7\u00e3o ZAF por Ano Letivo").length,
     ).toBeGreaterThan(0);
-    expect(screen.getByText("2025/2026")).toBeInTheDocument();
+    expect(screen.getAllByText("2025/2026").length).toBeGreaterThan(0);
     expect(screen.getByText("340")).toBeInTheDocument();
   });
 });

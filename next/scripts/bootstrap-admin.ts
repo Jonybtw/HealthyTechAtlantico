@@ -1,12 +1,26 @@
+import "dotenv/config";
 import bcrypt from "bcryptjs";
 import { PrismaClient, Role } from "@prisma/client";
+import { PrismaPg } from "@prisma/adapter-pg";
+import pg from "pg";
+import { getPgSslConfig } from "../src/lib/database-ssl";
 
-const prisma = new PrismaClient();
+const pool = new pg.Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: getPgSslConfig(),
+});
+
+const adapter = new PrismaPg(pool as any);
+const prisma = new PrismaClient({ adapter });
 
 function getArg(flag: string): string | undefined {
   const index = process.argv.indexOf(flag);
   if (index === -1) return undefined;
   return process.argv[index + 1];
+}
+
+function getPositionalArgs(): string[] {
+  return process.argv.slice(2).filter((arg) => !arg.startsWith("--"));
 }
 
 function fail(message: string): never {
@@ -16,9 +30,12 @@ function fail(message: string): never {
 }
 
 async function main() {
-  const email = getArg("--email")?.trim().toLowerCase();
+  const positionalArgs = getPositionalArgs();
+  const email =
+    getArg("--email")?.trim().toLowerCase() ??
+    positionalArgs[0]?.trim().toLowerCase();
   const name = getArg("--name")?.trim();
-  const password = getArg("--password");
+  const password = getArg("--password") ?? positionalArgs[1];
 
   if (!email) {
     fail("Missing required --email argument.");
@@ -69,4 +86,5 @@ main()
   })
   .finally(async () => {
     await prisma.$disconnect();
+    await pool.end();
   });

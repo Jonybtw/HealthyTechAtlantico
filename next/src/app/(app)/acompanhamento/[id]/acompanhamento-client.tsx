@@ -286,7 +286,7 @@ export function AcompanhamentoClient({
           description={t("studentContextDescription")}
         >
           <div className="grid gap-3 sm:grid-cols-2">
-            <div className="rounded-2xl border border-white/20 dark:border-white/10 bg-white/50 dark:bg-navy-950/40 backdrop-blur-sm p-4">
+            <div className="rounded-2xl border border-border bg-surface-utility p-4">
               <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
                 {t("studentLabel")}
               </p>
@@ -307,7 +307,7 @@ export function AcompanhamentoClient({
               </div>
             </div>
 
-            <div className="rounded-2xl border border-white/20 dark:border-white/10 bg-white/50 dark:bg-navy-950/40 backdrop-blur-sm p-4">
+            <div className="rounded-2xl border border-border bg-surface-utility p-4">
               <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
                 {t("contextSummary")}
               </p>
@@ -405,7 +405,7 @@ export function AcompanhamentoClient({
               {sosAlerts.map((alert) => (
                 <StaggerItem
                   key={alert.id}
-                  className="surface-secondary rounded-2xl border border-white/20 dark:border-white/10 p-4"
+                  className="surface-secondary rounded-2xl p-4"
                 >
                   <div className="flex flex-wrap items-start justify-between gap-3">
                     <div>
@@ -438,7 +438,7 @@ export function AcompanhamentoClient({
                   </div>
 
                   <div className="mt-4 grid gap-3 sm:grid-cols-2">
-                    <div className="rounded-xl border border-white/20 dark:border-white/10 bg-white/50 dark:bg-navy-950/40 backdrop-blur-sm p-3">
+                    <div className="rounded-xl border border-border bg-surface-utility p-3">
                       <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
                         {t("psychLabel")}
                       </p>
@@ -449,7 +449,7 @@ export function AcompanhamentoClient({
                         {alert.psychEmail ?? "-"}
                       </p>
                     </div>
-                    <div className="rounded-xl border border-white/20 dark:border-white/10 bg-white/50 dark:bg-navy-950/40 backdrop-blur-sm p-3">
+                    <div className="rounded-xl border border-border bg-surface-utility p-3">
                       <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
                         {t("teacherLabel")}
                       </p>
@@ -515,7 +515,7 @@ export function AcompanhamentoClient({
                 return (
                   <StaggerItem
                     key={questionnaire.id}
-                    className="surface-secondary rounded-2xl border border-white/20 dark:border-white/10 p-4"
+                    className="surface-secondary rounded-2xl p-4"
                   >
                     <div className="flex flex-wrap items-start justify-between gap-3">
                       <div>
@@ -527,12 +527,12 @@ export function AcompanhamentoClient({
                         </p>
                       </div>
                       {questionnaire.type === "KIDMED" ? (
-                        <span className="rounded-full border border-white/20 dark:border-white/10 bg-white/50 dark:bg-navy-950/40 backdrop-blur-sm px-2.5 py-1 text-xs font-semibold text-muted-foreground">
+                        <span className="rounded-full border border-border bg-surface-utility px-2.5 py-1 text-xs font-semibold text-muted-foreground">
                           {getQuestionnairePeriodLabel(questionnaire) ??
                             q("kidmed")}
                         </span>
                       ) : (
-                        <span className="rounded-full border border-white/20 dark:border-white/10 bg-white/50 dark:bg-navy-950/40 backdrop-blur-sm px-2.5 py-1 text-xs font-semibold text-muted-foreground">
+                        <span className="rounded-full border border-border bg-surface-utility px-2.5 py-1 text-xs font-semibold text-muted-foreground">
                           {t("deferralsUsed", {
                             count: questionnaire.deferredCount,
                           })}
@@ -545,7 +545,7 @@ export function AcompanhamentoClient({
                         {highlights.map((item) => (
                           <div
                             key={item.key}
-                            className="rounded-xl border border-white/20 dark:border-white/10 bg-white/50 dark:bg-navy-950/40 backdrop-blur-sm p-3"
+                            className="rounded-xl border border-border bg-surface-utility p-3"
                           >
                             <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
                               {item.label}

@@ -270,8 +270,8 @@ html[data-theme="dark"] .bg-noise::after {
 }
 
 ::-webkit-scrollbar {
-  width: 12px;
-  height: 12px;
+  width: 10px;
+  height: 10px;
 }
 
 ::-webkit-scrollbar-track {
@@ -440,11 +440,11 @@ html[data-theme="dark"] .surface-utility {
 }
 
 .page-stack {
-  @apply flex flex-col gap-3 sm:gap-4;
+  @apply flex flex-col gap-4 sm:gap-5 lg:gap-6;
 }
 
 .page-content-stack {
-  @apply flex flex-col gap-3;
+  @apply flex flex-col gap-4;
 }
 
 .section-kicker {

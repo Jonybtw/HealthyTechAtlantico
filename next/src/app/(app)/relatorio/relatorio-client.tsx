@@ -6,7 +6,6 @@ import { toast } from "sonner";
 import {
   Activity,
   CheckCircle2,
-  Download,
   FileCheck2,
   FileText,
   Gauge,
@@ -131,7 +130,7 @@ function normalizeTestEntry(raw: RawTestEntry): TestEntry {
     testId: raw.testId,
     valueText:
       raw.valueText === null || raw.valueText === undefined
-        ? "—"
+        ? "-"
         : String(raw.valueText),
     unit: raw.unit ?? "",
     date: raw.date ?? raw.createdAt ?? null,
@@ -139,27 +138,43 @@ function normalizeTestEntry(raw: RawTestEntry): TestEntry {
 }
 
 function formatNumber(value: number | null, digits = 1) {
-  return typeof value === "number" ? value.toFixed(digits) : "—";
+  return typeof value === "number" ? value.toFixed(digits) : "-";
 }
 
 function getPdfImcState(
   imc: number | null,
   t: (key: string) => string,
-): { label: string; color: PdfColor; badgeVariant: "success" | "warning" | "danger" } {
+): {
+  label: string;
+  color: PdfColor;
+  badgeVariant: "success" | "warning" | "danger";
+} {
   if (imc === null) {
-    return { label: "—", color: [95, 109, 123], badgeVariant: "warning" };
+    return { label: "-", color: [95, 109, 123], badgeVariant: "warning" };
   }
 
   if (imc < 18.5) {
-    return { label: t("lowWeight"), color: [245, 158, 11], badgeVariant: "warning" };
+    return {
+      label: t("lowWeight"),
+      color: [245, 158, 11],
+      badgeVariant: "warning",
+    };
   }
 
   if (imc < 25) {
-    return { label: t("normal"), color: [16, 185, 129], badgeVariant: "success" };
+    return {
+      label: t("normal"),
+      color: [16, 185, 129],
+      badgeVariant: "success",
+    };
   }
 
   if (imc < 30) {
-    return { label: t("overweight"), color: [245, 158, 11], badgeVariant: "warning" };
+    return {
+      label: t("overweight"),
+      color: [245, 158, 11],
+      badgeVariant: "warning",
+    };
   }
 
   return { label: t("obesity"), color: [239, 68, 68], badgeVariant: "danger" };
@@ -190,41 +205,71 @@ export default function RelatorioClient() {
   const [guardianUserId, setGuardianUserId] = useState("");
   const [sendingEmail, setSendingEmail] = useState(false);
 
-  const loadStudents = useCallback(async () => {
-    setLoadingStudents(true);
+  const loadStudents = useCallback(
+    async (signal?: AbortSignal) => {
+      setLoadingStudents(true);
 
-    if (!canViewReports) {
-      setStudents([]);
-      setStudentId(null);
-      setLoadingStudents(false);
+      if (!canViewReports) {
+        setStudents([]);
+        setStudentId(null);
+        setLoadingStudents(false);
+        return;
+      }
+
+      try {
+        const response = await fetch("/api/students?limit=500", { signal });
+
+        if (!response.ok) {
+          throw new Error(common("studentListLoadError"));
+        }
+
+        const body = await readApiResponse<{ students: StudentOption[] }>(
+          response,
+        );
+        setStudents(body.students);
+
+        if (role === "ALUNO" && body.students.length === 1) {
+          setStudentId(body.students[0].id);
+        }
+      } catch (error) {
+        if (error instanceof DOMException && error.name === "AbortError") {
+          return;
+        }
+
+        toast.error(common("studentListLoadError"));
+        setStudents([]);
+        setStudentId(null);
+      } finally {
+        if (!signal?.aborted) {
+          setLoadingStudents(false);
+        }
+      }
+    },
+    [canViewReports, common, role],
+  );
+
+  useEffect(() => {
+    const controller = new AbortController();
+    void loadStudents(controller.signal);
+
+    return () => {
+      controller.abort();
+    };
+  }, [loadStudents]);
+
+  useEffect(() => {
+    if (loadingStudents || students.length === 0) {
       return;
     }
 
-    try {
-      const response = await fetch("/api/students?limit=500");
-
-      if (!response.ok) {
-        throw new Error(common("studentListLoadError"));
+    setStudentId((current) => {
+      if (current && students.some((student) => student.id === current)) {
+        return current;
       }
 
-      const body = await readApiResponse<{ students: StudentOption[] }>(response);
-      setStudents(body.students);
-
-      if (role === "ALUNO" && body.students.length === 1) {
-        setStudentId(body.students[0].id);
-      }
-    } catch {
-      toast.error(common("studentListLoadError"));
-      setStudents([]);
-      setStudentId(null);
-    } finally {
-      setLoadingStudents(false);
-    }
-  }, [canViewReports, common, role]);
-
-  useEffect(() => {
-    loadStudents();
-  }, [loadStudents]);
+      return students[0].id;
+    });
+  }, [loadingStudents, students]);
 
   useEffect(() => {
     if (!canViewReports || !studentId) {
@@ -235,38 +280,53 @@ export default function RelatorioClient() {
       return;
     }
 
-    let active = true;
+    const controller = new AbortController();
 
     setLoadingPreview(true);
 
-    Promise.all([
-      fetch(`/api/students/${studentId}/biometrics`)
-        .then((response) => readApiResponse<RawBiometricEntry[]>(response))
-        .then((entries) => entries.map(normalizeBiometricEntry))
-        .catch(() => []),
-      fetch(`/api/students/${studentId}/tests?latest=true`)
-        .then((response) => readApiResponse<RawTestEntry[]>(response))
-        .then((entries) => entries.map(normalizeTestEntry))
-        .catch(() => []),
-    ])
-      .then(([biometrics, tests]) => {
-        if (!active) {
+    void (async () => {
+      try {
+        const [bioResponse, testsResponse] = await Promise.all([
+          fetch(`/api/students/${studentId}/biometrics`, {
+            signal: controller.signal,
+          }),
+          fetch(`/api/students/${studentId}/tests?latest=true`, {
+            signal: controller.signal,
+          }),
+        ]);
+
+        const [biometrics, tests] = await Promise.all([
+          readApiResponse<RawBiometricEntry[]>(bioResponse),
+          readApiResponse<RawTestEntry[]>(testsResponse),
+        ]);
+
+        if (controller.signal.aborted) {
           return;
         }
 
-        setBioData(biometrics);
-        setTestData(tests);
-      })
-      .finally(() => {
-        if (active) {
+        setBioData(biometrics.map(normalizeBiometricEntry));
+        setTestData(tests.map(normalizeTestEntry));
+      } catch (error) {
+        if (error instanceof DOMException && error.name === "AbortError") {
+          return;
+        }
+
+        if (!controller.signal.aborted) {
+          setBioData([]);
+          setTestData([]);
+          toast.error(common("connectionError"));
+        }
+      } finally {
+        if (!controller.signal.aborted) {
           setLoadingPreview(false);
         }
-      });
+      }
+    })();
 
     return () => {
-      active = false;
+      controller.abort();
     };
-  }, [canViewReports, studentId]);
+  }, [canViewReports, common, studentId]);
 
   useEffect(() => {
     if (!canSendEmail || !studentId) {
@@ -275,13 +335,16 @@ export default function RelatorioClient() {
       return;
     }
 
-    let active = true;
+    const controller = new AbortController();
 
-    fetch(`/api/students/${studentId}/guardians`)
-      .then((response) => readApiResponse<GuardianOption[]>(response))
-      .catch(() => [])
-      .then((items) => {
-        if (!active) {
+    void (async () => {
+      try {
+        const response = await fetch(`/api/students/${studentId}/guardians`, {
+          signal: controller.signal,
+        });
+        const items = await readApiResponse<GuardianOption[]>(response);
+
+        if (controller.signal.aborted) {
           return;
         }
 
@@ -291,20 +354,23 @@ export default function RelatorioClient() {
             ? current
             : (items[0]?.id ?? ""),
         );
-      })
-      .catch(() => {
-        if (!active) {
+      } catch (error) {
+        if (error instanceof DOMException && error.name === "AbortError") {
           return;
         }
 
-        setGuardians([]);
-        setGuardianUserId("");
-      });
+        if (!controller.signal.aborted) {
+          setGuardians([]);
+          setGuardianUserId("");
+          toast.error(common("connectionError"));
+        }
+      }
+    })();
 
     return () => {
-      active = false;
+      controller.abort();
     };
-  }, [canSendEmail, studentId]);
+  }, [canSendEmail, common, studentId]);
 
   const selectedStudent = students.find((student) => student.id === studentId);
   const latestBiometric = bioData[0] ?? null;
@@ -387,7 +453,7 @@ export default function RelatorioClient() {
     previewWindow.document.body.innerHTML = `
       <div style="font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; min-height: 100vh; margin: 0; display: grid; place-items: center; background: #f4f1ea; color: #091523;">
         <div style="text-align: center; padding: 24px;">
-          <div style="font-size: 14px; letter-spacing: 0.18em; text-transform: uppercase; color: #5f6d7b; margin-bottom: 12px;">HealthyTech Atlantico</div>
+          <div style="font-size: 14px; letter-spacing: 0.18em; text-transform: uppercase; color: #5f6d7b; margin-bottom: 12px;">HealthyTech Atlântico</div>
           <div style="font-size: 28px; font-weight: 700; margin-bottom: 8px;">${t("generating")}</div>
           <div style="font-size: 14px; color: #5f6d7b;">${t("pdfSubtitle")}</div>
         </div>
@@ -463,7 +529,7 @@ export default function RelatorioClient() {
       text(mutedForeground);
       doc.setFont("helvetica", "bold");
       doc.setFontSize(8);
-      doc.text("HEALTHYTECH ATLANTICO", headerTextX, 17);
+      doc.text("HEALTHYTECH ATLÂNTICO", headerTextX, 17);
 
       text(foreground);
       doc.setFontSize(16);
@@ -473,11 +539,14 @@ export default function RelatorioClient() {
       doc.setFont("helvetica", "normal");
       doc.setFontSize(8);
       doc.text(
-        `${locale === "en" ? "Issued on" : "Emitido em"} ${new Intl.DateTimeFormat(locale, {
-          day: "2-digit",
-          month: "long",
-          year: "numeric",
-        }).format(new Date())}`,
+        `${locale === "en" ? "Issued on" : "Emitido em"} ${new Intl.DateTimeFormat(
+          locale,
+          {
+            day: "2-digit",
+            month: "long",
+            year: "numeric",
+          },
+        ).format(new Date())}`,
         width - 14,
         25,
         { align: "right" },
@@ -502,7 +571,7 @@ export default function RelatorioClient() {
 
       text(foreground);
       doc.setFontSize(12);
-      doc.text(selectedStudent?.name ?? "—", 30, y + 2);
+      doc.text(selectedStudent?.name ?? "-", 30, y + 2);
 
       text(mutedForeground);
       doc.setFont("helvetica", "normal");
@@ -535,13 +604,17 @@ export default function RelatorioClient() {
           {
             label: t("heightLabel"),
             value:
-              entry.heightM === null ? "-" : `${formatNumber(entry.heightM, 2)} m`,
+              entry.heightM === null
+                ? "-"
+                : `${formatNumber(entry.heightM, 2)} m`,
             badge: null,
           },
           {
             label: t("weightLabel"),
             value:
-              entry.weightKg === null ? "-" : `${formatNumber(entry.weightKg, 1)} kg`,
+              entry.weightKg === null
+                ? "-"
+                : `${formatNumber(entry.weightKg, 1)} kg`,
             badge: null,
           },
           {
@@ -552,7 +625,9 @@ export default function RelatorioClient() {
           {
             label: t("waistLabel"),
             value:
-              entry.waistCm === null ? "-" : `${formatNumber(entry.waistCm, 1)} cm`,
+              entry.waistCm === null
+                ? "-"
+                : `${formatNumber(entry.waistCm, 1)} cm`,
             badge: null,
           },
         ];
@@ -654,8 +729,8 @@ export default function RelatorioClient() {
       doc.setFontSize(6.5);
       doc.text(
         locale === "en"
-          ? "HealthyTech Atlantico · Document generated automatically"
-          : "HealthyTech Atlantico · Documento gerado automaticamente",
+          ? "HealthyTech Atlântico · Document generated automatically"
+          : "HealthyTech Atlântico · Documento gerado automaticamente",
         width / 2,
         height - 7.5,
         { align: "center" },
@@ -765,10 +840,10 @@ export default function RelatorioClient() {
           >
             <div className="grid gap-5 xl:grid-cols-[minmax(0,1.1fr)_280px]">
               <div className="space-y-4">
-                <FieldShell
-                  label={t("studentSelectionLabel")}
-                  hint={role !== "ALUNO" ? t("studentSelectionHint") : undefined}
-                >
+                <div className="space-y-2">
+                  <p className="text-tiny font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+                    {t("studentSelectionLabel")}
+                  </p>
                   {role !== "ALUNO" ? (
                     <StudentPicker
                       students={students}
@@ -779,10 +854,15 @@ export default function RelatorioClient() {
                   ) : (
                     <SelectedStudentCard student={selectedStudent} />
                   )}
-                </FieldShell>
+                  {role !== "ALUNO" ? (
+                    <p className="text-tiny leading-relaxed text-muted-foreground">
+                      {t("studentSelectionHint")}
+                    </p>
+                  ) : null}
+                </div>
 
                 {studentId && selectedStudent ? (
-                  <div className="rounded-[30px] border border-white/28 bg-[linear-gradient(145deg,rgba(255,255,255,0.94),rgba(246,240,231,0.94))] p-5 shadow-card">
+                  <div className="rounded-3xl border border-white/28 bg-[linear-gradient(145deg,rgba(255,255,255,0.94),rgba(246,240,231,0.94))] p-5 shadow-card">
                     <div className="flex flex-wrap items-start justify-between gap-4">
                       <div className="flex items-center gap-4">
                         <span
@@ -844,12 +924,14 @@ export default function RelatorioClient() {
                 )}
               </div>
 
-              <div className="rounded-[28px] border border-navy-900/90 bg-[linear-gradient(160deg,rgba(9,21,35,0.98),rgba(20,38,57,0.94))] p-5 text-white shadow-card">
+              <div className="rounded-3xl border border-navy-900/90 bg-[linear-gradient(160deg,rgba(9,21,35,0.98),rgba(20,38,57,0.94))] p-5 text-white shadow-card">
                 <p className="text-tiny font-semibold uppercase tracking-[0.2em] text-gold-200/82">
                   {t("documentIncludesTitle")}
                 </p>
                 <h3 className="mt-2 font-display text-2xl font-semibold tracking-[-0.04em] text-white">
-                  {studentId ? t("readyToGenerateTitle") : t("previewInstruction")}
+                  {studentId
+                    ? t("readyToGenerateTitle")
+                    : t("previewInstruction")}
                 </h3>
                 <p className="mt-2 text-sm leading-relaxed text-white/70">
                   {studentId
@@ -860,12 +942,16 @@ export default function RelatorioClient() {
                 <div className="mt-5 space-y-3">
                   <InlineStatusRow
                     label={t("biometricsSection")}
-                    value={bioData.length > 0 ? t("includedInPdf") : biometricsStatus}
+                    value={
+                      bioData.length > 0 ? t("includedInPdf") : biometricsStatus
+                    }
                     tone={bioData.length > 0 ? "success" : "warning"}
                   />
                   <InlineStatusRow
                     label={t("testsSection")}
-                    value={testData.length > 0 ? t("includedInPdf") : testsStatus}
+                    value={
+                      testData.length > 0 ? t("includedInPdf") : testsStatus
+                    }
                     tone={testData.length > 0 ? "success" : "warning"}
                   />
                   <InlineStatusRow
@@ -986,7 +1072,9 @@ export default function RelatorioClient() {
                 <ReportEmptyPanel
                   icon={FileText}
                   title={
-                    studentId ? t("noTestsSelectedTitle") : t("documentEmptyTitle")
+                    studentId
+                      ? t("noTestsSelectedTitle")
+                      : t("documentEmptyTitle")
                   }
                   description={
                     studentId
@@ -1003,13 +1091,15 @@ export default function RelatorioClient() {
           eyebrow={t("actionsEyebrow")}
           title={t("actionsTitle")}
           description={
-            studentId ? t("actionsDescription") : t("noStudentActionDescription")
+            studentId
+              ? t("actionsDescription")
+              : t("noStudentActionDescription")
           }
           tone="secondary"
           className="xl:sticky xl:top-24"
         >
           <div className="space-y-4">
-            <div className="rounded-[26px] border border-white/24 bg-[linear-gradient(145deg,rgba(255,255,255,0.92),rgba(246,240,231,0.9))] p-4 shadow-card">
+            <div className="rounded-3xl border border-white/24 bg-[linear-gradient(145deg,rgba(255,255,255,0.92),rgba(246,240,231,0.9))] p-4 shadow-card">
               <div className="flex items-start gap-3">
                 <div className="flex size-10 shrink-0 items-center justify-center rounded-2xl bg-navy-100 text-navy-700 dark:bg-navy-900 dark:text-navy-200">
                   <FileText className="size-5" />
@@ -1036,7 +1126,7 @@ export default function RelatorioClient() {
             </div>
 
             {canSendEmail ? (
-              <div className="rounded-[26px] border border-border/70 bg-background/75 p-4">
+              <div className="rounded-3xl border border-border/70 bg-background/75 p-4">
                 <div className="flex items-start gap-3">
                   <div className="flex size-10 shrink-0 items-center justify-center rounded-2xl bg-gold-100 text-gold-700 dark:bg-gold-500/10 dark:text-gold-300">
                     <Mail className="size-5" />
@@ -1095,7 +1185,7 @@ export default function RelatorioClient() {
               </div>
             ) : null}
 
-            <div className="rounded-[26px] border border-border/70 bg-background/70 p-4">
+            <div className="rounded-3xl border border-border/70 bg-background/70 p-4">
               <p className="text-tiny font-semibold uppercase tracking-[0.16em] text-muted-foreground">
                 {t("studentSelectionLabel")}
               </p>
@@ -1107,7 +1197,10 @@ export default function RelatorioClient() {
               </p>
               {selectedStudent ? (
                 <div className="mt-4">
-                  <Badge variant={hasReportData ? "success" : "warning"} size="md">
+                  <Badge
+                    variant={hasReportData ? "success" : "warning"}
+                    size="md"
+                  >
                     {hasReportData
                       ? t("readyToGenerateTitle")
                       : t("documentIncludesTitle")}
@@ -1122,7 +1215,11 @@ export default function RelatorioClient() {
   );
 }
 
-function SelectedStudentCard({ student }: { student: StudentOption | undefined }) {
+function SelectedStudentCard({
+  student,
+}: {
+  student: StudentOption | undefined;
+}) {
   return (
     <div className="flex min-h-[64px] w-full items-center rounded-2xl border border-input/80 bg-card/95 px-4 py-3 shadow-sm">
       <div className="flex w-full items-center gap-3">
@@ -1140,7 +1237,9 @@ function SelectedStudentCard({ student }: { student: StudentOption | undefined }
               <User className="size-4" />
             </div>
             <div className="min-w-0 flex-1">
-              <p className="truncate text-sm font-semibold text-foreground">-</p>
+              <p className="truncate text-sm font-semibold text-foreground">
+                -
+              </p>
               <p className="truncate text-xs text-muted-foreground">-</p>
             </div>
           </>
@@ -1191,7 +1290,7 @@ function ReportStatusCard({
   return (
     <div className="rounded-2xl border border-border/70 bg-background/58 p-4">
       <div className="flex items-start gap-3">
-        <div className="flex size-10 shrink-0 items-center justify-center rounded-2xl bg-white/85 text-navy-700 shadow-sm dark:bg-navy-900 dark:text-navy-200">
+        <div className="flex size-10 shrink-0 items-center justify-center rounded-2xl bg-surface-utility text-foreground shadow-sm">
           <Icon className="size-5" />
         </div>
         <div className="space-y-1">
@@ -1247,8 +1346,8 @@ function ReportEmptyPanel({
   description: string;
 }) {
   return (
-    <div className="flex min-h-[220px] flex-col items-center justify-center rounded-[28px] border border-dashed border-border/80 bg-background/55 px-6 py-8 text-center">
-      <div className="flex size-12 items-center justify-center rounded-2xl bg-white/88 text-muted-foreground shadow-sm dark:bg-navy-900 dark:text-navy-200">
+    <div className="flex min-h-[220px] flex-col items-center justify-center rounded-3xl border border-dashed border-border/80 bg-background/55 px-6 py-8 text-center">
+      <div className="flex size-12 items-center justify-center rounded-2xl bg-surface-utility text-foreground shadow-sm">
         <Icon className="size-5" />
       </div>
       <h3 className="mt-4 text-lg font-semibold tracking-[-0.03em] text-foreground">
@@ -1271,9 +1370,9 @@ function ReportEmptySteps({
   steps: string[];
 }) {
   return (
-    <div className="rounded-[30px] border border-dashed border-border/80 bg-background/50 px-5 py-6">
+    <div className="rounded-3xl border border-dashed border-border/80 bg-background/50 px-5 py-6">
       <div className="flex items-start gap-3">
-        <div className="flex size-12 shrink-0 items-center justify-center rounded-2xl bg-white/85 text-navy-700 shadow-sm dark:bg-navy-900 dark:text-navy-200">
+        <div className="flex size-12 shrink-0 items-center justify-center rounded-2xl bg-surface-utility text-foreground shadow-sm">
           <FileCheck2 className="size-5" />
         </div>
         <div>
@@ -1313,7 +1412,7 @@ function InlineStatusRow({
   tone: "default" | "success" | "warning" | "info";
 }) {
   return (
-    <div className="flex items-center justify-between gap-3 rounded-2xl border border-white/10 bg-white/6 px-3 py-3">
+    <div className="flex items-center justify-between gap-3 rounded-2xl border border-border bg-surface-secondary shadow-sm px-3 py-3">
       <span className="text-sm text-white/78">{label}</span>
       <Badge variant={tone === "default" ? "default" : tone}>{value}</Badge>
     </div>

@@ -1,10 +1,23 @@
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
+import { Prisma, type Exemption } from "@prisma/client";
 import { requireAuth } from "@/lib/auth-guard";
 import { prisma } from "@/lib/prisma";
 import { isStaffRole } from "@/lib/rbac";
 import { notFound, redirect } from "next/navigation";
 import { StudentDetailClient } from "./student-detail-client";
+
+function isMissingExemptionsTableError(error: unknown): boolean {
+  if (!(error instanceof Prisma.PrismaClientKnownRequestError)) {
+    return false;
+  }
+
+  if (error.code !== "P2021") {
+    return false;
+  }
+
+  return String(error.meta?.table ?? "").includes("exemptions");
+}
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("studentDetail");
@@ -32,7 +45,6 @@ export default async function StudentDetailPage({ params }: Props) {
       biometrics: { orderBy: { recordedAt: "desc" }, take: 5 },
       tests: { orderBy: { recordedAt: "desc" }, take: 5 },
       questionnaires: { orderBy: { submittedAt: "desc" }, take: 5 },
-      exemptions: { orderBy: { startDate: "desc" } },
       kidmedConsentRecordedBy: {
         select: { id: true, name: true, email: true },
       },
@@ -41,6 +53,19 @@ export default async function StudentDetailPage({ params }: Props) {
   });
 
   if (!student) notFound();
+
+  let exemptions: Exemption[] = [];
+
+  try {
+    exemptions = await prisma.exemption.findMany({
+      where: { studentId: id },
+      orderBy: { startDate: "desc" },
+    });
+  } catch (error) {
+    if (!isMissingExemptionsTableError(error)) {
+      throw error;
+    }
+  }
 
   // Serialize dates for client
   const serialized = {
@@ -74,7 +99,7 @@ export default async function StudentDetailPage({ params }: Props) {
       ...q,
       submittedAt: q.submittedAt.toISOString(),
     })),
-    exemptions: student.exemptions.map((d) => ({
+    exemptions: exemptions.map((d) => ({
       ...d,
       startDate: d.startDate.toISOString(),
       endDate: d.endDate.toISOString(),

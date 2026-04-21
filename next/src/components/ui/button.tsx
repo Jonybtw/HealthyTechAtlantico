@@ -18,17 +18,17 @@ export const interactiveControlClasses = {
   choiceActive:
     "border-navy-800/90 bg-gradient-to-b from-navy-800 via-navy-700 to-navy-600 text-white shadow-card hover:border-navy-700 dark:border-navy-800 dark:from-navy-900 dark:via-navy-800 dark:to-navy-700",
   choiceInactive:
-    "border-white/20 bg-white/60 text-navy-900 shadow-[inset_0_1px_0_rgba(255,255,255,0.52)] hover:-translate-y-0.5 hover:border-gold-300/45 hover:bg-white/82 hover:shadow-card-hover dark:border-white/10 dark:bg-navy-950/40 dark:text-white dark:hover:bg-navy-900/60",
+    "border-border bg-surface-utility text-foreground shadow-sm hover:-translate-y-0.5 hover:border-gold-300/45 hover:bg-surface-secondary hover:shadow-card-hover",
   choiceIconActive:
     "border-white/15 bg-white/12 text-gold-200 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]",
   choiceIconInactive:
     "border-gold-400/20 bg-gold-400/10 text-gold-600 dark:text-gold-300",
   segmentedGroup:
-    "grid min-w-0 gap-1 rounded-full border border-white/28 bg-white/76 p-1 shadow-[inset_0_1px_0_rgba(255,255,255,0.85)] dark:border-white/10 dark:bg-white/5 dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]",
+    "grid min-w-0 gap-1 rounded-full border border-border bg-surface-utility p-1 shadow-sm",
   segmentedActive:
     "border-navy-800/90 bg-gradient-to-b from-navy-800 via-navy-700 to-navy-600 text-white shadow-card hover:border-navy-700 dark:border-navy-800 dark:from-navy-900 dark:via-navy-800 dark:to-navy-700",
   segmentedInactive:
-    "border-transparent bg-transparent text-navy-500 hover:bg-white/75 hover:text-navy-900 dark:text-navy-200/78 dark:hover:bg-white/8 dark:hover:text-white",
+    "border-transparent bg-transparent text-muted-foreground hover:bg-surface-secondary hover:text-foreground",
 } as const;
 
 const buttonVariants = cva(
@@ -42,19 +42,19 @@ const buttonVariants = cva(
         primary:
           `${raisedButtonClassName} border-navy-800/95 bg-gradient-to-b from-navy-800 via-navy-700 to-navy-600 text-white hover:from-navy-700 hover:via-navy-600 hover:to-navy-500 dark:border-navy-800 dark:from-navy-900 dark:via-navy-800 dark:to-navy-700`,
         secondary:
-          `${raisedButtonClassName} border-white/24 bg-white/68 text-navy-900 shadow-[inset_0_1px_0_rgba(255,255,255,0.52),0_10px_24px_-18px_rgba(9,21,35,0.35)] hover:border-gold-300/45 hover:bg-white/84 dark:border-white/10 dark:bg-white/7 dark:text-white dark:hover:bg-white/12`,
+          `${raisedButtonClassName} border-border bg-surface-secondary text-foreground shadow-sm hover:border-gold-300/45 hover:bg-background`,
         gold:
           `${raisedButtonClassName} border-gold-400/80 bg-gradient-to-b from-gold-300 via-gold-400 to-gold-500 text-navy-950 hover:from-gold-200 hover:via-gold-300 hover:to-gold-400 dark:border-gold-300/70 dark:from-gold-300 dark:via-gold-400 dark:to-gold-500`,
         danger:
           `${raisedButtonClassName} border-danger-600/90 bg-gradient-to-b from-danger-500 via-danger-600 to-danger-700 text-white hover:from-danger-400 hover:via-danger-500 hover:to-danger-600`,
         ghost:
-          "border border-transparent bg-transparent text-foreground hover:border-white/20 hover:bg-white/68 hover:text-navy-950 dark:hover:border-white/10 dark:hover:bg-white/8 dark:hover:text-white",
+          "border border-transparent bg-transparent text-foreground hover:border-border hover:bg-surface-secondary",
         progress:
           `${raisedButtonClassName} border-gold-300/45 bg-[linear-gradient(135deg,rgba(244,211,94,0.98),rgba(234,179,8,0.94))] text-navy-950 shadow-[0_16px_34px_rgba(234,179,8,0.28)] hover:shadow-[0_22px_42px_rgba(234,179,8,0.34)]`,
         sanctuary:
           `${raisedButtonClassName} border-navy-800/95 bg-gradient-to-b from-navy-700 via-navy-800 to-navy-900 text-white hover:from-navy-600 hover:via-navy-700 hover:to-navy-800`,
         outline:
-          "border border-border/80 bg-white/42 text-foreground shadow-[inset_0_1px_0_rgba(255,255,255,0.35)] hover:-translate-y-0.5 hover:border-gold-300/45 hover:bg-white/74 hover:shadow-card dark:bg-white/4 dark:hover:bg-white/9",
+          "border border-border bg-surface-utility text-foreground shadow-sm hover:-translate-y-0.5 hover:border-gold-300/45 hover:bg-surface-secondary hover:shadow-card",
         link: "text-accent underline-offset-4 hover:underline border-0 shadow-none",
       },
       size: {

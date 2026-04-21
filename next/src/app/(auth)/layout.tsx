@@ -35,7 +35,7 @@ const COLEGIO_IMAGES = [
 
 function LoginHeroCarousel({
   images,
-  intervalMs = Math.max(5200, 10000),
+  intervalMs = 5200,
 }: {
   images: string[];
   intervalMs?: number;
@@ -134,7 +134,7 @@ export default function AuthLayout({
                 />
               </div>
 
-              <h1 className="max-w-[11ch] font-display text-4xl font-semibold leading-[0.94] tracking-[-0.06em] text-white drop-shadow-md sm:text-[3.2rem] xl:text-[3.6rem]">
+              <h1 className="max-w-[11ch] font-display text-[2.5rem] font-semibold leading-[0.94] tracking-[-0.06em] text-white drop-shadow-md sm:text-[3.2rem] xl:text-[3.6rem]">
                 Excelência no Acompanhamento Escolar.
               </h1>
 

@@ -25,13 +25,27 @@ vi.mock("next-intl", () => ({
           "turma.colZone": "Zona",
           "turma.colTests": "Testes",
           "turma.className": "Turma",
-          "turma.healthyZone": "Zona Saudavel",
+          "turma.healthyZone": "Zona Saudável",
           "turma.improvementZone": "Zona de Melhoria",
           "turma.noDataLabel": "Sem dados",
           "turma.noStudents": "Nenhum aluno nesta turma.",
           "turma.noClassSelected": "Nenhuma turma selecionada",
           "turma.noClassSelectedDesc": "Selecione uma turma para ver os dados.",
           "turma.studentsUnit": "alunos",
+          "turma.workspaceEyebrow": "Centro de turma",
+          "turma.workspaceTitle": "Resumo da turma",
+          "turma.classSummaryTitle": "Turma selecionada",
+          "turma.coverageShort": "cobertura",
+          "turma.attentionQueueCompact": "em atenção",
+          "turma.totalStudentsTitle": "Total",
+          "turma.biometricCoverageTitle": "Cobertura biométrica",
+          "turma.attentionQueueTitle": "Fila de atenção",
+          "turma.withDataLabel": "com dados",
+          "turma.attentionNoneTitle": "Sem alertas",
+          "turma.rosterToolbarTitle": "Diretório da turma",
+          "turma.searchStudents": "Pesquisar aluno",
+          "turma.testsRecordedLabel": "testes registados",
+          "turma.openAnalysis": "Abrir análise",
           "common.importCsv": "Importar CSV",
           "common.exportCsv": "Exportar CSV",
         } as Record<string, string>
@@ -52,7 +66,7 @@ vi.mock("@/hooks/use-queries", () => ({
       {
         id: "class-1",
         name: "8A",
-        academicYearLabel: "2025/2026",
+        year: "2025/2026",
       },
     ],
     isLoading: false,
@@ -81,7 +95,7 @@ describe("TurmaPage", () => {
             className: "8A",
             latestBiometric: {
               imc: 21.4,
-              imcZone: "ZSAF - Zona Saudavel",
+              imcZone: "ZSAF - Zona Saudável",
             },
             testCount: 4,
           },
@@ -95,9 +109,6 @@ describe("TurmaPage", () => {
     const user = userEvent.setup();
 
     render(<TurmaPage />);
-
-    await user.click(screen.getByRole("button", { name: "Turma" }));
-    await user.click(screen.getByRole("button", { name: "8A" }));
 
     await waitFor(() => {
       expect(screen.getByText("Maria Silva")).toBeInTheDocument();

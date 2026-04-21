@@ -530,7 +530,7 @@ export function StudentDetailClient({ student }: Props) {
                 </div>
 
                 {student.biometrics.length > 0 ? (
-                  <div className="rounded-2xl border border-white/20 bg-white/55 p-4 backdrop-blur-sm dark:border-white/10 dark:bg-navy-950/35">
+                  <div className="rounded-2xl border border-border bg-surface-utility p-4">
                     <div className="mb-3 flex items-center gap-2">
                       <TrendingUp className="size-4 text-gold-500" />
                       <p className="text-tiny font-semibold uppercase tracking-[0.2em] text-muted-foreground">
@@ -739,7 +739,7 @@ export function StudentDetailClient({ student }: Props) {
                 ) : null}
               </div>
 
-              <div className="flex items-start gap-3 rounded-xl border border-white/20 bg-white/55 p-4 backdrop-blur-sm dark:border-white/10 dark:bg-navy-950/35">
+              <div className="flex items-start gap-3 rounded-xl border border-border bg-surface-utility p-4">
                 {student.kidmedConsentAt ? (
                   <ShieldCheck className="mt-0.5 size-5 shrink-0 text-success-600 dark:text-success-300" />
                 ) : (
@@ -784,7 +784,7 @@ export function StudentDetailClient({ student }: Props) {
                 {student.exemptions.map((exemption) => (
                   <li
                     key={exemption.id}
-                    className="flex items-start justify-between rounded-xl border border-white/20 bg-white/55 px-4 py-3 backdrop-blur-sm dark:border-white/10 dark:bg-navy-950/35"
+                    className="flex items-start justify-between rounded-xl border border-border bg-surface-utility px-4 py-3"
                   >
                     <span className="text-sm font-medium text-foreground">
                       {exemption.reason}
@@ -815,7 +815,7 @@ export function StudentDetailClient({ student }: Props) {
                 {student.guardians.map((guardianLink) => (
                   <li
                     key={guardianLink.id}
-                    className="flex items-center justify-between rounded-xl border border-white/20 bg-white/55 px-4 py-3 backdrop-blur-sm dark:border-white/10 dark:bg-navy-950/35"
+                    className="flex items-center justify-between rounded-xl border border-border bg-surface-utility px-4 py-3"
                   >
                     <span className="text-sm font-medium text-foreground">
                       {guardianLink.guardian.name ?? guardianLink.guardian.email}{" "}
@@ -861,7 +861,7 @@ function StatTile({
   badge?: ReactNode;
 }) {
   return (
-    <div className="group relative flex min-h-[114px] w-full flex-col justify-between overflow-hidden rounded-2xl border border-white/35 bg-white/65 px-4 py-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.68),0_10px_28px_-22px_rgba(9,21,35,0.35)] backdrop-blur-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-gold-300/35 hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.7),0_18px_34px_-24px_rgba(9,21,35,0.45)] dark:border-white/10 dark:bg-navy-950/35 dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] dark:hover:border-gold-300/30">
+    <div className="group relative flex min-h-[114px] w-full flex-col justify-between overflow-hidden rounded-2xl border border-border bg-surface-secondary px-4 py-4 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-card-hover hover:border-gold-300/35">
       <div className="pointer-events-none absolute -right-8 -top-8 size-24 rounded-full bg-gold-300/12 blur-2xl transition-opacity duration-300 group-hover:opacity-100 dark:bg-gold-400/10" />
 
       <div className="flex items-center gap-2.5">

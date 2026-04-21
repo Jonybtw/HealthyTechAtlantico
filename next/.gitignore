@@ -65,3 +65,4 @@ playwright/.cache/
 /prod-server.err
 /start-server.err
 /tsc-error.txt
+/tmp-browser-audit/

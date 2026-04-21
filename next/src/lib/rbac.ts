@@ -110,10 +110,7 @@ export function canAccessStudentByRole({
   if (!canRole(role, permission)) return false;
   if (role === "ADMIN" || role === "PROFESSOR") return true;
   if (role === "PSICOLOGO") {
-    return (
-      permission === PERMISSIONS.READ_SOS ||
-      permission === PERMISSIONS.READ_QUESTIONNAIRES
-    );
+    return true;
   }
   if (role === "ALUNO") return isOwner;
   if (role === "PAIS") return isGuardian;

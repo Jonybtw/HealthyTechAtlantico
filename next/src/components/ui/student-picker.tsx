@@ -184,7 +184,7 @@ export function StudentPicker({
       ? createPortal(
           <div
             ref={menuRef}
-            className="animate-scale-in fixed z-[180] overflow-hidden rounded-2xl border border-border/80 bg-white/96 shadow-float dark:bg-navy-950/96"
+            className="animate-scale-in fixed z-[180] overflow-hidden rounded-2xl border border-border bg-surface-utility shadow-card"
             style={menuStyle}
           >
             <div className="max-h-72 overflow-y-auto p-2">

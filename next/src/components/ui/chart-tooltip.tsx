@@ -16,7 +16,7 @@ export function ChartTooltip({
   if (!active || !payload?.length) return null;
 
   return (
-    <div className="rounded-xl border border-white/20 bg-white/88 p-3 text-sm shadow-card backdrop-blur-xl dark:border-white/10 dark:bg-navy-950/78">
+    <div className="rounded-xl border border-border bg-surface-utility p-3 text-sm shadow-sm">
       <p className="font-semibold mb-2 tracking-tight text-foreground">
         {label}
       </p>

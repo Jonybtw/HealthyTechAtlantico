@@ -23,7 +23,7 @@ export default function Loading() {
           <div className="relative flex items-center justify-center">
             <div className="absolute size-24 rounded-full bg-gold-500/15 blur-3xl animate-pulse" />
             <BrandLogo
-              alt="HealthyTech Atlantico"
+          alt="HealthyTech Atlântico"
               className="relative z-10 h-[96px] w-[94px]"
             imageClassName="brightness-0 invert drop-shadow-[0_0_20px_rgba(255,255,255,0.12)]"
             priority

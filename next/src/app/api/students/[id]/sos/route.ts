@@ -166,7 +166,7 @@ export async function POST(
           sendMail({
             to,
             subject: `SOS alert - ${student.name}`,
-            html: `<p>Foi ativado um alerta SOS para o/a aluno/a <strong>${escapeHtml(student.name)}</strong>${classLabel}.</p><p>Por favor verifique a situação na plataforma HealthyTech Atlantico.</p>`,
+        html: `<p>Foi ativado um alerta SOS para o/a aluno/a <strong>${escapeHtml(student.name)}</strong>${classLabel}.</p><p>Por favor verifique a situação na plataforma HealthyTech Atlântico.</p>`,
           }),
         ),
       );

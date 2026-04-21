@@ -7,7 +7,6 @@ import {
   Activity,
   ArrowUpDown,
   CalendarDays,
-  CheckCircle2,
   Clock3,
   Dumbbell,
   FileUp,
@@ -17,7 +16,6 @@ import {
   Scale,
   ShieldAlert,
   Timer,
-  UserRound,
   Wind,
   Zap,
 } from "lucide-react";
@@ -397,10 +395,10 @@ export default function TestesPage() {
 
   const sessionReady = completedTestsCount > 0 || biometricsReady;
 
-  const loadStudents = useCallback(async () => {
+  const loadStudents = useCallback(async (signal?: AbortSignal) => {
     setLoadingStudents(true);
     try {
-      const response = await fetch("/api/students?limit=500");
+      const response = await fetch("/api/students?limit=500", { signal });
       if (!response.ok) {
         toast.error(common("studentListLoadError"));
         return;
@@ -427,19 +425,26 @@ export default function TestesPage() {
           schoolYear: student.schoolYear ?? null,
         })),
       );
-    } catch {
+    } catch (error) {
+      if (error instanceof DOMException && error.name === "AbortError") {
+        return;
+      }
+
       toast.error(common("studentListLoadError"));
     } finally {
-      setLoadingStudents(false);
+      if (!signal?.aborted) {
+        setLoadingStudents(false);
+      }
     }
   }, [common]);
 
   const loadLatestTests = useCallback(
-    async (targetStudentId: string) => {
+    async (targetStudentId: string, signal?: AbortSignal) => {
       setLoadingLatestTests(true);
       try {
         const response = await fetch(
           `/api/students/${targetStudentId}/tests?latest=true`,
+          { signal },
         );
         const records = await readApiResponse<TestRecordResponse[]>(response);
         setLatestTests(
@@ -451,18 +456,29 @@ export default function TestesPage() {
               );
             }),
         );
-      } catch {
+      } catch (error) {
+        if (error instanceof DOMException && error.name === "AbortError") {
+          return;
+        }
+
         setLatestTests([]);
         toast.error(t("loadConnectionError"));
       } finally {
-        setLoadingLatestTests(false);
+        if (!signal?.aborted) {
+          setLoadingLatestTests(false);
+        }
       }
     },
     [t],
   );
 
   useEffect(() => {
-    void loadStudents();
+    const controller = new AbortController();
+    void loadStudents(controller.signal);
+
+    return () => {
+      controller.abort();
+    };
   }, [loadStudents]);
 
   useEffect(() => {
@@ -477,7 +493,12 @@ export default function TestesPage() {
       return;
     }
 
-    void loadLatestTests(studentId);
+    const controller = new AbortController();
+    void loadLatestTests(studentId, controller.signal);
+
+    return () => {
+      controller.abort();
+    };
   }, [studentId, loadLatestTests]);
 
   const updateField =
@@ -605,13 +626,13 @@ export default function TestesPage() {
         failed: number;
       }>(response);
 
-      toast.success(`Importados ${result.created} testes`);
+      toast.success(t("importSuccess", { count: result.created }));
       if (result.failed > 0) {
-        toast.warning(`${result.failed} linhas falharam validacao`);
+        toast.warning(t("importPartialWarning", { count: result.failed }));
       }
     } catch (error) {
       toast.error(
-        error instanceof Error ? error.message : "Erro na importacao CSV",
+        error instanceof Error ? error.message : t("importError"),
       );
     } finally {
       event.target.value = "";
@@ -679,7 +700,7 @@ export default function TestesPage() {
             description="Regista a sessao por familias de prova e confirma a leitura ZAF em tempo real."
           >
             <form onSubmit={handleSubmit} className="grid gap-5">
-              <div className="rounded-[1.5rem] border border-white/35 bg-white/72 p-4 shadow-card backdrop-blur-md dark:border-white/10 dark:bg-navy-950/42 sm:p-5">
+              <div className="rounded-2xl border border-border bg-surface-secondary p-4 shadow-sm sm:p-5">
                 <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_240px] xl:items-end">
                   <div className="min-w-0">
                     <p className="text-tiny font-semibold uppercase tracking-[0.22em] text-muted-foreground">
@@ -697,7 +718,7 @@ export default function TestesPage() {
                     </div>
                   </div>
 
-                  <div className="rounded-[1.3rem] border border-border/60 bg-background/70 px-4 py-4 shadow-sm">
+                  <div className="rounded-2xl border border-border bg-surface-utility px-4 py-4 shadow-sm">
                     <div className="flex items-start justify-between gap-3">
                       <div>
                         <p className="text-tiny font-semibold uppercase tracking-[0.18em] text-muted-foreground">
@@ -711,7 +732,7 @@ export default function TestesPage() {
                         {completedTestsCount}/8
                       </span>
                     </div>
-                    <div className="mt-4 h-2 rounded-full bg-navy-950/10 dark:bg-white/10">
+                    <div className="mt-4 h-2 rounded-full bg-muted">
                       <div
                         className="h-full rounded-full bg-gradient-to-r from-navy-800 via-navy-700 to-gold-400 transition-all duration-500"
                         style={{
@@ -728,7 +749,7 @@ export default function TestesPage() {
                 </div>
               </div>
 
-              <div className="overflow-hidden rounded-[1.65rem] border border-white/28 bg-white/72 shadow-card backdrop-blur-md dark:border-white/10 dark:bg-navy-950/42">
+              <div className="overflow-hidden rounded-2xl border border-border bg-surface-secondary shadow-sm">
                 {CATEGORY_SECTIONS.map((section, index) => (
                   <WorkbenchFamilyRow
                     key={section.id}
@@ -765,7 +786,7 @@ export default function TestesPage() {
                 <div className="grid gap-4 border-t border-white/18 p-5 dark:border-white/8 xl:grid-cols-[220px_minmax(0,1fr)]">
                   <div className="space-y-2">
                     <div className="flex items-center gap-2">
-                      <span className="flex size-10 items-center justify-center rounded-2xl bg-navy-100 text-navy-800 dark:bg-white/10 dark:text-gold-200">
+                      <span className="flex size-10 items-center justify-center rounded-2xl bg-surface-utility text-foreground shadow-sm">
                         <Scale className="size-5" />
                       </span>
                       <p className="text-sm font-semibold text-foreground">
@@ -1027,7 +1048,7 @@ function WorkbenchFamilyRow({
     >
       <div className="space-y-2">
         <div className="flex items-center gap-2">
-          <span className="flex size-10 items-center justify-center rounded-2xl bg-navy-100 text-navy-800 dark:bg-white/10 dark:text-gold-200">
+          <span className="flex size-10 items-center justify-center rounded-2xl bg-surface-utility text-foreground shadow-sm">
             <Icon className="size-5" />
           </span>
           <p className="text-sm font-semibold text-foreground">
@@ -1139,7 +1160,7 @@ function FamilyProgressRow({
           {filled}/{total}
         </span>
       </div>
-      <div className="mt-3 h-2 rounded-full bg-navy-950/10 dark:bg-white/10">
+      <div className="mt-3 h-2 rounded-full bg-muted">
         <div
           className="h-full rounded-full bg-gradient-to-r from-navy-800 via-navy-700 to-gold-400"
           style={{ width: `${percentage}%` }}
@@ -1163,7 +1184,7 @@ function RecentTestCard({
     <div className="rounded-[1.35rem] border border-border/70 bg-background/65 p-4 shadow-sm">
       <div className="flex items-start justify-between gap-3">
         <div className="flex min-w-0 items-center gap-2.5">
-          <span className="flex size-10 shrink-0 items-center justify-center rounded-2xl bg-navy-100 text-navy-800 dark:bg-white/10 dark:text-gold-200">
+          <span className="flex size-10 shrink-0 items-center justify-center rounded-2xl bg-surface-utility text-foreground shadow-sm">
             <Icon className="size-5" />
           </span>
           <div className="min-w-0">

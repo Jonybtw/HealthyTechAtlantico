@@ -1,4 +1,4 @@
-import { render, waitFor } from "@testing-library/react";
+import { render, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const { currentRole } = vi.hoisted(() => ({
@@ -14,8 +14,11 @@ vi.mock("next-intl", () => ({
         "sos.staffDescription": "Student well-being alerts",
         "sos.refresh": "Refresh",
         "sos.totalAlerts": "Total",
+        "sos.totalAlertsDescription": "All alerts currently tracked.",
         "sos.pendingAlerts": "Pending",
+        "sos.pendingAlertsDescription": "Alerts waiting for action.",
         "sos.resolvedAlerts": "Resolved",
+        "sos.resolvedAlertsDescription": "Alerts already handled.",
         "sos.filterLabel": "Filter alerts",
         "sos.filterPending": "Pending",
         "sos.filterResolved": "Resolved",
@@ -34,6 +37,27 @@ vi.mock("next-intl", () => ({
         "sos.emptyInboxDescription": "Inbox empty",
         "sos.noFilteredTitle": "No filtered results",
         "sos.noFilteredDescription": "Adjust filters",
+        "sos.activeAlertTitle": "Status",
+        "sos.radarEyebrow": "Live radar",
+        "sos.radarTitle": "Current SOS queue",
+        "sos.radarDescription": "Priority view of active alerts.",
+        "sos.priorityEyebrow": "Priority",
+        "sos.priorityTitle": "Priority follow-up",
+        "sos.priorityDescription": "Next alerts to review.",
+        "sos.queueEyebrow": "Queue",
+        "sos.queueTitle": "SOS queue",
+        "sos.queueDescription": "Operational list of student alerts.",
+        "sos.visibleAlertsCount": "{count} visible alerts",
+        "sos.lastUpdated": "Updated {time}",
+        "sos.neverUpdated": "Never updated",
+        "sos.refreshing": "Refreshing",
+        "sos.oldestPendingLabel": "Oldest pending",
+        "sos.priorityEmptyTitle": "No priority alerts",
+        "sos.priorityEmptyDescription": "Everything is under control.",
+        "sos.priorityOnlyOldestTitle": "Only one pending alert",
+        "sos.priorityOnlyOldestDescription":
+          "The oldest alert is already highlighted above.",
+        "sos.studentLabel": "Student",
       } as Record<string, string>
     )[`${namespace}.${key}`] ?? key,
 }));
@@ -78,34 +102,38 @@ describe("SosPage staff links", () => {
             },
             resolvedBy: null,
           },
-        ])
-      )
+        ]),
+      ),
     );
   });
 
   it("routes psychologists to the read-only acompanhamento page", async () => {
     currentRole.value = "PSICOLOGO";
 
-    const { getByRole } = render(<SosPage />);
+    render(<SosPage />);
 
-    await waitFor(() => {
-      expect(getByRole("link", { name: "Open student profile" })).toHaveAttribute(
-        "href",
-        "/acompanhamento/student-1"
-      );
+    const links = await screen.findAllByRole("link", {
+      name: "Open student profile",
     });
+
+    expect(
+      links.some(
+        (link) => link.getAttribute("href") === "/acompanhamento/student-1",
+      ),
+    ).toBe(true);
   });
 
   it("keeps admins on the full student detail page", async () => {
     currentRole.value = "ADMIN";
 
-    const { getByRole } = render(<SosPage />);
+    render(<SosPage />);
 
-    await waitFor(() => {
-      expect(getByRole("link", { name: "Open student profile" })).toHaveAttribute(
-        "href",
-        "/alunos/student-1"
-      );
+    const links = await screen.findAllByRole("link", {
+      name: "Open student profile",
     });
+
+    expect(
+      links.some((link) => link.getAttribute("href") === "/alunos/student-1"),
+    ).toBe(true);
   });
 });

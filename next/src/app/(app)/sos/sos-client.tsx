@@ -495,7 +495,7 @@ export default function SosClient() {
                 {studentAlerts.map((alert) => (
                   <div
                     key={alert.id}
-                    className="rounded-2xl border border-white/20 bg-white/60 p-4 shadow-sm"
+                    className="rounded-2xl border border-border bg-surface-secondary p-4 shadow-sm"
                   >
                     <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                       <div className="min-w-0">
@@ -850,7 +850,7 @@ function SosFocusCard({
         <p className="text-tiny font-semibold uppercase tracking-[0.2em] text-muted-foreground">
           {label}
         </p>
-        <div className="mt-4 flex items-start gap-3 rounded-2xl border border-emerald-300/25 bg-white/72 p-4 dark:border-emerald-500/20 dark:bg-white/5">
+        <div className="mt-4 flex items-start gap-3 rounded-2xl border border-border bg-surface-utility p-4">
           <CheckCircle2 className="mt-0.5 size-5 text-emerald-600 dark:text-emerald-300" />
           <div>
             <p className="text-sm font-semibold text-foreground">{emptyTitle}</p>
@@ -887,13 +887,13 @@ function SosFocusCard({
         </div>
 
         <div className="grid gap-3 sm:grid-cols-2 xl:min-w-[340px]">
-          <div className="rounded-2xl border border-white/30 bg-white/75 px-3 py-3 dark:border-white/10 dark:bg-white/5">
+          <div className="rounded-2xl border border-border bg-surface-utility px-3 py-3">
             <p className="text-tiny font-semibold uppercase tracking-[0.18em] text-muted-foreground">
               {psychLabel}
             </p>
             <p className="mt-1 text-sm font-medium text-foreground">{alert.psych}</p>
           </div>
-          <div className="rounded-2xl border border-white/30 bg-white/75 px-3 py-3 dark:border-white/10 dark:bg-white/5">
+          <div className="rounded-2xl border border-border bg-surface-utility px-3 py-3">
             <p className="text-tiny font-semibold uppercase tracking-[0.18em] text-muted-foreground">
               {teacherLabel}
             </p>
@@ -938,7 +938,7 @@ function SosStatCard({
   accent?: "default" | "warning" | "success";
 }) {
   return (
-    <div className="rounded-[1.35rem] border border-white/25 bg-white/72 p-4 shadow-card backdrop-blur-md dark:border-white/10 dark:bg-navy-950/45">
+    <div className="rounded-2xl border border-border bg-surface-secondary p-4 shadow-sm">
       <p className="text-tiny font-semibold uppercase tracking-[0.18em] text-muted-foreground">
         {label}
       </p>
@@ -983,7 +983,7 @@ function PriorityAlertCard({
   const studentHref = getStudentHref(role, alert.student.id);
 
   return (
-    <div className="rounded-[1.35rem] border border-white/25 bg-white/75 p-4 shadow-card dark:border-white/10 dark:bg-navy-950/45">
+    <div className="rounded-2xl border border-border bg-surface-secondary p-4 shadow-sm">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <StudentIdentity

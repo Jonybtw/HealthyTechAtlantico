@@ -1,10 +1,8 @@
 import { type NextRequest } from "next/server";
 import { z } from "zod";
-import type { Role } from "@prisma/client";
 import { auth } from "@/lib/auth";
 import {
   created,
-  err,
   notFound,
   ok,
   serverError,
@@ -131,7 +129,7 @@ export async function POST(req: NextRequest) {
             subject: `SOS alert - ${student.name}`,
             html: `<p>Foi ativado um alerta SOS para o/a aluno/a <strong>${escapeHtml(
               student.name,
-            )}</strong>${classLabel}.</p><p>Por favor verifique a situação na plataforma HealthyTech Atlantico.</p>`,
+        )}</strong>${classLabel}.</p><p>Por favor verifique a situação na plataforma HealthyTech Atlântico.</p>`,
           }),
         ),
       );

@@ -23,6 +23,7 @@ export async function createStudentAction(
       name: String(formData.get("name") ?? ""),
       sex: String(formData.get("sex") ?? ""),
       birthDate: String(formData.get("birthDate") ?? ""),
+      schoolYear: String(formData.get("schoolYear") ?? ""),
       className: String(formData.get("className") ?? ""),
     };
 
@@ -33,6 +34,7 @@ export async function createStudentAction(
         name: data.name,
         sex: data.sex,
         birthDate: data.birthDate ? new Date(data.birthDate) : null,
+        schoolYear: data.schoolYear || null,
         className: data.className || null,
         createdById: user.id,
       },

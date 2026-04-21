@@ -22,7 +22,6 @@ import { Badge } from "@/components/ui/badge";
 import { ZoneBadge } from "@/components/ui/zone-badge";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Skeleton } from "@/components/ui/skeleton";
-import { KpiCard } from "@/components/ui/kpi-card";
 import { StudentIdentity } from "@/components/ui/student-identity";
 import { useUser } from "@/components/user-context";
 import { useClasses } from "@/hooks/use-queries";
@@ -76,27 +75,49 @@ export default function TurmaPage() {
   }, [classesError, t]);
 
   useEffect(() => {
+    if (!canViewClassReports || loadingClasses || classes.length === 0) {
+      return;
+    }
+
+    setClassId((current) => {
+      if (current && classes.some((item) => item.id === current)) {
+        return current;
+      }
+
+      return classes[0].id;
+    });
+  }, [canViewClassReports, loadingClasses, classes]);
+
+  useEffect(() => {
     if (!canViewClassReports || !classId) {
       return;
     }
 
-    let active = true;
+    const controller = new AbortController();
     setLoading(true);
 
     (async () => {
       const response = await fetch(
         `/api/classes/report?classId=${encodeURIComponent(classId)}`,
+        { signal: controller.signal },
       );
       const body = await readApiResponse<StudentRow[]>(response);
 
-      if (!active) {
+      if (controller.signal.aborted) {
         return;
       }
 
       setStudents(body);
     })()
-      .catch(() => {
-        if (!active) {
+      .catch((error) => {
+        if (
+          error instanceof DOMException &&
+          error.name === "AbortError"
+        ) {
+          return;
+        }
+
+        if (controller.signal.aborted) {
           return;
         }
 
@@ -104,13 +125,13 @@ export default function TurmaPage() {
         toast.error(t("loadError"));
       })
       .finally(() => {
-        if (active) {
+        if (!controller.signal.aborted) {
           setLoading(false);
         }
       });
 
     return () => {
-      active = false;
+      controller.abort();
     };
   }, [canViewClassReports, classId, t]);
 
@@ -187,17 +208,20 @@ export default function TurmaPage() {
       }>(response);
 
       toast.success(
-        `Importadas ${result.createdClasses} turmas (${result.createdAcademicYears} anos letivos novos)`,
+        t("importSuccess", {
+          classes: result.createdClasses,
+          years: result.createdAcademicYears,
+        }),
       );
 
       if (result.failed > 0) {
-        toast.warning(`${result.failed} linhas falharam validacao`);
+        toast.warning(t("importPartialWarning", { count: result.failed }));
       }
 
       await refetchClasses();
     } catch (error) {
       toast.error(
-        error instanceof Error ? error.message : "Erro na importacao CSV",
+        error instanceof Error ? error.message : t("importError"),
       );
     } finally {
       event.target.value = "";
@@ -240,30 +264,6 @@ export default function TurmaPage() {
     };
   }, [students]);
 
-  const classInsight = useMemo(() => {
-    if (!students.length) {
-      return t("insightSelectClass");
-    }
-
-    if (stats.noData === stats.total) {
-      return t("insightNoCoverage");
-    }
-
-    if (stats.noData > 0) {
-      return t("insightPendingCoverage", { count: stats.noData });
-    }
-
-    if (stats.healthyPct >= 70) {
-      return t("insightHealthyHigh", { percent: stats.healthyPct });
-    }
-
-    if (stats.healthyPct >= 50) {
-      return t("insightHealthyMid", { percent: stats.healthyPct });
-    }
-
-    return t("insightHealthyLow");
-  }, [stats.healthyPct, stats.noData, stats.total, students.length, t]);
-
   const attentionStudents = useMemo(() => {
     return [...students]
       .filter((student) => {
@@ -284,6 +284,7 @@ export default function TurmaPage() {
         return left.name.localeCompare(right.name, "pt");
       });
   }, [students]);
+  const hasAttentionStudents = attentionStudents.length > 0;
 
   const columns = useMemo<Column<StudentRow>[]>(() => {
     return [
@@ -312,7 +313,7 @@ export default function TurmaPage() {
           <span className="text-sm font-semibold text-foreground">
             {student.latestBiometric
               ? Number(student.latestBiometric.imc).toFixed(1)
-              : "—"}
+              : "-"}
           </span>
         ),
       },
@@ -347,13 +348,13 @@ export default function TurmaPage() {
         headerProps={{
           title: t("title"),
           description: t("description"),
-          eyebrow: "GESTAO · TURMA",
+          eyebrow: "GESTÃO · TURMA",
         }}
       >
         <EmptyState
           icon={AlertTriangle}
-          title="Sem acesso a relatorios de turma"
-          description="Esta area esta reservada a professores e administradores."
+          title="Sem acesso a relatórios de turma"
+          description="Esta área está reservada a professores e administradores."
         />
       </PageScaffold>
     );
@@ -365,7 +366,7 @@ export default function TurmaPage() {
       headerProps={{
         title: t("title"),
         description: t("description"),
-        eyebrow: "GESTAO · TURMA",
+        eyebrow: "GESTÃO · TURMA",
       }}
       headerActions={
         <div className="flex flex-wrap items-center gap-2">
@@ -400,9 +401,6 @@ export default function TurmaPage() {
       <PageSection
         tone="primary"
         layout="analytics"
-        eyebrow={t("workspaceEyebrow")}
-        title={t("workspaceTitle")}
-        description={t("workspaceDescription")}
       >
         {loadingClasses ? (
           <Skeleton className="h-28 rounded-2xl" />
@@ -422,8 +420,13 @@ export default function TurmaPage() {
             }
           />
         ) : classes.length > 0 ? (
-          <div className="grid gap-4 lg:grid-cols-[340px_minmax(0,1fr)]">
-            <div className="space-y-2">
+          <div className="space-y-4">
+            <div className="space-y-1">
+              <p className="section-kicker">{t("workspaceEyebrow")}</p>
+              <h2 className="section-title">{t("workspaceTitle")}</h2>
+            </div>
+
+            <div className="max-w-[420px] space-y-2">
               <p className="text-tiny font-semibold uppercase tracking-[0.16em] text-muted-foreground">
                 {t("className")}
               </p>
@@ -439,29 +442,36 @@ export default function TurmaPage() {
               />
             </div>
 
-            <div className="rounded-[28px] border border-border/70 bg-background/68 p-5">
-              <p className="text-tiny font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-                {t("classSummaryTitle")}
-              </p>
-              <div className="mt-3 flex flex-wrap items-start justify-between gap-4">
-                <div>
-                  <h3 className="text-2xl font-semibold tracking-[-0.04em] text-foreground">
-                    {selectedClass?.name ?? t("noClassSelected")}
+            {classId ? (
+              <div className="flex flex-col gap-3 border-t border-border/60 pt-4 sm:flex-row sm:items-end sm:justify-between">
+                <div className="min-w-0">
+                  <p className="text-tiny font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+                    {t("classSummaryTitle")}
+                  </p>
+                  <h3 className="mt-2 text-2xl font-semibold tracking-[-0.04em] text-foreground sm:text-3xl">
+                    {selectedClass?.name}
                   </h3>
                   <p className="mt-1 text-sm text-muted-foreground">
-                    {selectedClass?.year ?? t("classSummaryEmpty")}
+                    {selectedClass?.year}
                   </p>
                 </div>
-                {classId ? (
+                <div className="flex flex-wrap items-center gap-2">
                   <Badge variant="info" size="md">
                     {stats.coveragePct}% {t("coverageShort")}
                   </Badge>
-                ) : null}
+                  <Badge
+                    variant={stats.attention > 0 ? "warning" : "success"}
+                    size="md"
+                  >
+                    {stats.attention} {t("attentionQueueCompact")}
+                  </Badge>
+                </div>
               </div>
-              <p className="mt-4 max-w-3xl text-sm leading-relaxed text-muted-foreground">
-                {classInsight}
+            ) : (
+              <p className="text-sm text-muted-foreground">
+                {t("classSummaryEmpty")}
               </p>
-            </div>
+            )}
           </div>
         ) : (
           <EmptyState
@@ -472,192 +482,166 @@ export default function TurmaPage() {
         )}
       </PageSection>
 
-      {!classId ? (
-        <EmptyState
-          icon={Users}
-          title={t("noClassSelected")}
-          description={t("noClassSelectedDesc")}
-        />
-      ) : loading ? (
+      {!classId ? null : loading ? (
         <div className="space-y-5">
-          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-            {Array.from({ length: 4 }, (_, index) => (
-              <Skeleton key={index} className="h-40 rounded-2xl" />
-            ))}
-          </div>
-          <div className="grid gap-5 xl:grid-cols-[minmax(0,1.18fr)_360px]">
-            <Skeleton className="h-[560px] rounded-2xl" />
-            <div className="grid gap-5">
-              <Skeleton className="h-[260px] rounded-2xl" />
-              <Skeleton className="h-[320px] rounded-2xl" />
-            </div>
+          <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_320px]">
+            <Skeleton className="h-[640px] rounded-2xl" />
+            <Skeleton className="h-[320px] rounded-2xl" />
           </div>
         </div>
       ) : (
-        <>
-          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-            <KpiCard
-              icon={Users}
-              title={t("totalStudentsTitle")}
-              value={stats.total}
-              description={t("studentsUnit")}
-              accent="blue"
+        <div
+          className={
+            hasAttentionStudents
+              ? "grid gap-5 xl:grid-cols-[minmax(0,1fr)_320px]"
+              : "grid gap-5"
+          }
+        >
+          <PageSection
+            tone="secondary"
+            layout="list"
+            actions={
+              hasAttentionStudents ? undefined : (
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="secondary"
+                  icon={<ChartIcon className="size-4" />}
+                  onClick={() => router.push("/analise")}
+                >
+                  {t("openAnalysis")}
+                </Button>
+              )
+            }
+          >
+            <ClassSnapshotBar
+              total={stats.total}
+              withData={stats.withData}
+              healthy={stats.healthy}
+              healthyPct={stats.healthyPct}
+              improvement={stats.improvement}
+              noData={stats.noData}
+              attention={stats.attention}
+              coveragePct={stats.coveragePct}
+              totalLabel={t("totalStudentsTitle")}
+              coverageLabel={t("biometricCoverageTitle")}
+              healthyLabel={t("healthyZone")}
+              attentionLabel={t("attentionQueueTitle")}
+              improvementLabel={t("improvementZone")}
+              noDataLabel={t("noDataLabel")}
+              studentsUnit={t("studentsUnit")}
+              withDataLabel={t("withDataLabel")}
+              attentionEmptyLabel={t("attentionNoneTitle")}
             />
-            <KpiCard
-              icon={ChartIcon}
-              title={t("biometricCoverageTitle")}
-              value={`${stats.withData}/${stats.total}`}
-              description={`${stats.coveragePct}% ${t("withDataLabel")}`}
-              accent="green"
+            <DataTable
+              columns={columns}
+              data={students}
+              rowKey={(student) => student.id}
+              onRowClick={(student) => router.push(`/alunos/${student.id}`)}
+              emptyMessage={t("noStudents")}
+              toolbarTitle={t("rosterToolbarTitle")}
+              toolbarSummary={`${students.length} ${t("studentsUnit")}`}
+              searchPlaceholder={t("searchStudents")}
             />
-            <KpiCard
-              icon={Target}
-              title={t("healthyZoneTitle")}
-              value={`${stats.healthyPct}%`}
-              description={`${stats.healthy} ${t("healthyZone")}`}
-              accent="gold"
-            />
-            <KpiCard
-              icon={AlertTriangle}
-              title={t("attentionQueueTitle")}
-              value={stats.attention}
-              description={t("attentionQueueCompact")}
-              accent="red"
-            />
-          </div>
+          </PageSection>
 
-          <div className="grid gap-5 xl:grid-cols-[minmax(0,1.18fr)_360px]">
+          {hasAttentionStudents ? (
             <PageSection
-              tone="secondary"
+              tone="utility"
               layout="list"
-              title={t("rosterTitle")}
-              description={t("rosterDescription", { count: students.length })}
+              title={t("attentionQueueTitle")}
+              actions={
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="secondary"
+                  icon={<ChartIcon className="size-4" />}
+                  onClick={() => router.push("/analise")}
+                >
+                  {t("openAnalysis")}
+                </Button>
+              }
             >
-              <DataTable
-                columns={columns}
-                data={students}
-                rowKey={(student) => student.id}
-                onRowClick={(student) => router.push(`/alunos/${student.id}`)}
-                emptyMessage={t("noStudents")}
-                toolbarTitle={t("rosterToolbarTitle")}
-                toolbarSummary={`${students.length} ${t("studentsUnit")}`}
-                searchPlaceholder={t("searchStudents")}
-              />
+              <div className="space-y-3">
+                {attentionStudents.slice(0, 5).map((student) => {
+                  const needsBiometrics = !student.latestBiometric;
+                  const badgeVariant = needsBiometrics ? "warning" : "danger";
+                  const badgeLabel = needsBiometrics
+                    ? t("attentionReasonNoData")
+                    : t("attentionReasonImprovement");
+
+                  return (
+                    <button
+                      key={student.id}
+                      type="button"
+                      onClick={() => router.push(`/alunos/${student.id}`)}
+                      className="flex w-full items-center gap-3 rounded-2xl border border-border/70 bg-background/72 px-4 py-3 text-left transition-all duration-200 hover:-translate-y-0.5 hover:border-gold-300/40 hover:shadow-card"
+                    >
+                      <div className="min-w-0 flex-1">
+                        <StudentIdentity
+                          student={student}
+                          subtitle={
+                            <span>
+                              {student.testCount} {t("testsRecordedLabel")}
+                            </span>
+                          }
+                        />
+                        <div className="mt-1 flex flex-wrap items-center gap-2">
+                          <Badge variant={badgeVariant} size="sm">
+                            {badgeLabel}
+                          </Badge>
+                        </div>
+                      </div>
+
+                      <ArrowRight className="size-4 shrink-0 text-muted-foreground" />
+                    </button>
+                  );
+                })}
+              </div>
             </PageSection>
-
-            <div className="grid gap-5">
-              <PageSection
-                tone="secondary"
-                layout="analytics"
-                title={t("coverageTitle")}
-                description={t("coverageDescription")}
-              >
-                <ClassCoveragePanel
-                  healthy={stats.healthy}
-                  improvement={stats.improvement}
-                  noData={stats.noData}
-                  total={stats.total}
-                  coveragePct={stats.coveragePct}
-                  healthyLabel={t("healthyZone")}
-                  improvementLabel={t("improvementZone")}
-                  noDataLabel={t("noDataLabel")}
-                  coverageLabel={t("biometricCoverageTitle")}
-                />
-              </PageSection>
-
-              <PageSection
-                tone="utility"
-                layout="list"
-                title={t("attentionQueueTitle")}
-                description={t("attentionQueueDescription")}
-                actions={
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant="secondary"
-                    icon={<ChartIcon className="size-4" />}
-                    onClick={() => router.push("/analise")}
-                  >
-                    {t("openAnalysis")}
-                  </Button>
-                }
-              >
-                {attentionStudents.length > 0 ? (
-                  <div className="space-y-3">
-                    {attentionStudents.slice(0, 5).map((student) => {
-                      const needsBiometrics = !student.latestBiometric;
-                      const badgeVariant = needsBiometrics ? "warning" : "danger";
-                      const badgeLabel = needsBiometrics
-                        ? t("attentionReasonNoData")
-                        : t("attentionReasonImprovement");
-
-                      return (
-                        <button
-                          key={student.id}
-                          type="button"
-                          onClick={() => router.push(`/alunos/${student.id}`)}
-                          className="flex w-full items-center gap-3 rounded-2xl border border-border/70 bg-background/72 px-4 py-3 text-left transition-all duration-200 hover:-translate-y-0.5 hover:border-gold-300/40 hover:shadow-card"
-                        >
-                          <div className="min-w-0 flex-1">
-                            <StudentIdentity
-                              student={student}
-                              subtitle={
-                                <span>
-                                  {student.testCount} {t("testsRecordedLabel")}
-                                </span>
-                              }
-                            />
-                            <div className="mt-1 flex flex-wrap items-center gap-2">
-                              <Badge variant={badgeVariant} size="sm">
-                                {badgeLabel}
-                              </Badge>
-                            </div>
-                          </div>
-
-                          <ArrowRight className="size-4 shrink-0 text-muted-foreground" />
-                        </button>
-                      );
-                    })}
-                  </div>
-                ) : (
-                  <div className="rounded-2xl border border-success-500/18 bg-success-500/6 px-4 py-4">
-                    <p className="text-sm font-semibold text-foreground">
-                      {t("attentionNoneTitle")}
-                    </p>
-                    <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
-                      {t("attentionNoneDescription")}
-                    </p>
-                  </div>
-                )}
-              </PageSection>
-            </div>
-          </div>
-        </>
+          ) : null}
+        </div>
       )}
     </PageScaffold>
   );
 }
 
-function ClassCoveragePanel({
+function ClassSnapshotBar({
   total,
+  withData,
   healthy,
+  healthyPct,
   improvement,
   noData,
+  attention,
   coveragePct,
+  totalLabel,
   healthyLabel,
+  attentionLabel,
   improvementLabel,
   noDataLabel,
   coverageLabel,
+  studentsUnit,
+  withDataLabel,
+  attentionEmptyLabel,
 }: {
   total: number;
+  withData: number;
   healthy: number;
+  healthyPct: number;
   improvement: number;
   noData: number;
+  attention: number;
   coveragePct: number;
+  totalLabel: string;
   healthyLabel: string;
+  attentionLabel: string;
   improvementLabel: string;
   noDataLabel: string;
   coverageLabel: string;
+  studentsUnit: string;
+  withDataLabel: string;
+  attentionEmptyLabel: string;
 }) {
   const safeTotal = total || 1;
   const healthyWidth = (healthy / safeTotal) * 100;
@@ -665,52 +649,100 @@ function ClassCoveragePanel({
   const noDataWidth = (noData / safeTotal) * 100;
 
   return (
-    <div className="space-y-4 rounded-[28px] border border-border/70 bg-background/70 p-5">
-      <div className="flex items-start justify-between gap-3">
-        <div>
-          <p className="text-tiny font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-            {coverageLabel}
-          </p>
-          <p className="mt-2 text-3xl font-semibold tracking-[-0.05em] text-foreground">
-            {coveragePct}%
-          </p>
-        </div>
-        <Badge variant="info" size="md">
-          {total} alunos
-        </Badge>
-      </div>
-
-      <div className="overflow-hidden rounded-full bg-muted/80">
-        <div className="flex h-4 w-full">
-          <div
-            className="h-full bg-success-500"
-            style={{ width: `${healthyWidth}%` }}
-          />
-          <div
-            className="h-full bg-danger-500"
-            style={{ width: `${improvementWidth}%` }}
-          />
-          <div
-            className="h-full bg-navy-400"
-            style={{ width: `${noDataWidth}%` }}
-          />
-        </div>
-      </div>
-
-      <div className="grid gap-3">
-        <CoverageStatRow label={healthyLabel} value={healthy} tone="success" />
-        <CoverageStatRow
-          label={improvementLabel}
-          value={improvement}
-          tone="danger"
+    <div className="space-y-4 rounded-3xl border border-border/70 bg-background/60 p-4">
+      <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+        <MetricChip
+          icon={Users}
+          label={totalLabel}
+          value={String(total)}
+          meta={studentsUnit}
         />
-        <CoverageStatRow label={noDataLabel} value={noData} tone="default" />
+        <MetricChip
+          icon={ChartIcon}
+          label={coverageLabel}
+          value={`${withData}/${total}`}
+          meta={`${coveragePct}% ${withDataLabel}`}
+        />
+        <MetricChip
+          icon={Target}
+          label={healthyLabel}
+          value={`${healthyPct}%`}
+          meta={`${healthy} ${healthyLabel}`}
+        />
+        <MetricChip
+          icon={AlertTriangle}
+          label={attentionLabel}
+          value={String(attention)}
+          meta={
+            attention > 0 ? `${attention} ${attentionLabel.toLowerCase()}` : attentionEmptyLabel
+          }
+        />
+      </div>
+
+      <div className="space-y-2">
+        <div className="overflow-hidden rounded-full bg-muted/70">
+          <div className="flex h-2.5 w-full">
+            <div
+              className="h-full bg-success-500"
+              style={{ width: `${healthyWidth}%` }}
+            />
+            <div
+              className="h-full bg-danger-500"
+              style={{ width: `${improvementWidth}%` }}
+            />
+            <div
+              className="h-full bg-navy-400"
+              style={{ width: `${noDataWidth}%` }}
+            />
+          </div>
+        </div>
+
+        <div className="flex flex-wrap gap-2 text-xs text-muted-foreground">
+          <LegendPill label={healthyLabel} value={healthy} tone="success" />
+          <LegendPill
+            label={improvementLabel}
+            value={improvement}
+            tone="danger"
+          />
+          <LegendPill label={noDataLabel} value={noData} tone="default" />
+        </div>
       </div>
     </div>
   );
 }
 
-function CoverageStatRow({
+function MetricChip({
+  icon: Icon,
+  label,
+  value,
+  meta,
+}: {
+  icon: typeof Users;
+  label: string;
+  value: string;
+  meta: string;
+}) {
+  return (
+    <div className="rounded-2xl border border-border/70 bg-background/58 px-4 py-3">
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <p className="text-tiny font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+            {label}
+          </p>
+          <p className="mt-2 text-xl font-semibold tracking-[-0.04em] text-foreground">
+            {value}
+          </p>
+          <p className="mt-1 text-xs text-muted-foreground">{meta}</p>
+        </div>
+        <div className="rounded-full border border-border/70 bg-background/80 p-2 text-muted-foreground">
+          <Icon className="size-4" />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function LegendPill({
   label,
   value,
   tone,
@@ -727,14 +759,10 @@ function CoverageStatRow({
         : "bg-navy-400";
 
   return (
-    <div className="flex items-center justify-between gap-3 rounded-2xl border border-border/70 bg-background/60 px-4 py-3">
-      <div className="flex items-center gap-2">
-        <span className={`size-2.5 rounded-full ${dotClassName}`} />
-        <span className="text-sm text-muted-foreground">{label}</span>
-      </div>
-      <span className="text-lg font-semibold tracking-[-0.03em] text-foreground">
-        {value}
-      </span>
+    <div className="inline-flex items-center gap-2 rounded-full border border-border/70 bg-background/70 px-3 py-1.5">
+      <span className={`size-2 rounded-full ${dotClassName}`} />
+      <span>{label}</span>
+      <span className="font-semibold text-foreground">{value}</span>
     </div>
   );
 }
