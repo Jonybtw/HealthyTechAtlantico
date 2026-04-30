@@ -303,6 +303,7 @@
     "unlinkedDescription": "Your account is not linked to a student profile yet. Contact the school to complete the setup."
   },
   "questionarios": {
+    "eyebrow": "Questionnaires",
     "title": "Questionnaires",
     "description": "Well-being, habits, and KIDMED questionnaires.",
     "autoconceito": "Self-Concept",

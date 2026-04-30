@@ -303,6 +303,7 @@
     "unlinkedDescription": "A tua conta ainda não está associada a um perfil de aluno. Contacta a escola para concluírem a ligação."
   },
   "questionarios": {
+    "eyebrow": "Questionários",
     "title": "Questionários",
     "description": "Questionários de bem-estar, hábitos e KIDMED.",
     "autoconceito": "Autoconceito",

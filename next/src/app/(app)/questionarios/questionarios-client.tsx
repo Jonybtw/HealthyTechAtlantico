@@ -403,6 +403,7 @@ export default function QuestionariosPage() {
     return (
       <PageScaffold
         headerProps={{
+          eyebrow: t("eyebrow"),
           title: t("title"),
           description: t("description"),
         }}
@@ -428,6 +429,7 @@ export default function QuestionariosPage() {
     return (
       <PageScaffold
         headerProps={{
+          eyebrow: t("eyebrow"),
           title: t("title"),
           description: t("description"),
         }}
@@ -445,6 +447,7 @@ export default function QuestionariosPage() {
     return (
       <PageScaffold
         headerProps={{
+          eyebrow: t("eyebrow"),
           title: t("title"),
           description: t("description"),
         }}
@@ -670,6 +673,7 @@ export default function QuestionariosPage() {
   return (
     <PageScaffold
       headerProps={{
+        eyebrow: t("eyebrow"),
         title: t("title"),
         description: t("description"),
       }}
