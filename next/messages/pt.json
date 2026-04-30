@@ -77,7 +77,10 @@
     "strengthWeak": "Fraca",
     "strengthFair": "Razoável",
     "strengthGood": "Boa",
-    "strengthStrong": "Forte"
+    "strengthStrong": "Forte",
+    "verifiedSuccess": "E-mail verificado com sucesso! Inicia sessão para continuar.",
+    "passwordChangedSuccess": "Palavra-passe alterada com sucesso! Inicia sessão.",
+    "emailNotVerified": "E-mail ainda não verificado. Verifica a tua caixa de correio."
   },
   "common": {
     "save": "Gravar",
@@ -127,6 +130,9 @@
     "evaluationsDone": "Avaliações realizadas",
     "alertsPending": "Alertas por resolver",
     "activeClasses": "Turmas ativas",
+    "platformIndicatorsEyebrow": "Indicadores da plataforma",
+    "platformIndicatorsTitle": "Indicadores da plataforma",
+    "platformIndicatorsDescription": "Visão consolidada de alunos, turmas, avaliações e alertas.",
     "psychologistOverview": "Resumo da fila de acompanhamento.",
     "parentOverview": "Alunos associados à sua conta.",
     "psychologistQueueTitle": "Fila prioritária de acompanhamento",
@@ -199,6 +205,7 @@
     "studentsUnit": "alunos"
   },
   "biometria": {
+    "eyebrow": "Biometria",
     "title": "Biometria",
     "description": "Registar medições antropométricas e classificação ZAF",
     "selectedStudentLabel": "Aluno em foco",
@@ -271,6 +278,7 @@
     "enterValuesHint": "Introduza altura e peso para ver a classificação em tempo real."
   },
   "testes": {
+    "eyebrow": "Testes Físicos",
     "title": "Testes Físicos",
     "description": "Registar resultados dos testes de aptidão física",
     "selectTest": "Teste",
@@ -614,6 +622,7 @@
     "staffPendingHint": "Este alerta continua por resolver e deve ser acompanhado com prioridade."
   },
   "relatorio": {
+    "eyebrow": "Relatório",
     "title": "Relatório",
     "description": "Exportar relatório de saúde em PDF",
     "generate": "Gerar PDF",
@@ -689,6 +698,7 @@
     "unlinkedDescription": "A tua conta ainda não está associada a um perfil de aluno. Contacta a escola para concluírem a ligação."
   },
   "turma": {
+    "eyebrow": "Turma",
     "title": "Turma",
     "description": "Lista de alunos, cobertura biométrica e prioridades da turma selecionada.",
     "accessDeniedTitle": "Sem acesso",
@@ -750,6 +760,7 @@
     "insightHealthyLow": "A maioria da turma está fora da zona saudável; recomenda-se priorizar intervenção e nova medição de seguimento."
   },
   "exemptions": {
+    "eyebrow": "Dispensas",
     "title": "Dispensas",
     "description": "Registar dispensas de educação física",
     "workspaceEyebrow": "Dispensas",
@@ -802,6 +813,7 @@
     "historyLoadErrorDescription": "Houve um problema ao procurar as dispensas."
   },
   "analise": {
+    "eyebrow": "Análise",
     "title": "Análise",
     "description": "Evolução dos indicadores de saúde e aptidão física",
     "descriptionStudent": "Evolução dos teus dados de saúde",
@@ -1211,6 +1223,49 @@
     "allClear": "Tudo em ordem — sem alertas pendentes.",
     "pendingAlerts": "{count, plural, one {# alerta SOS pendente} other {# alertas SOS pendentes}}",
     "pendingDescription": "Visite a página SOS para resolver."
+  },
+  "registerLanding": {
+    "eyebrow": "Registo · Colégio Atlântico",
+    "title": "Criar nova conta",
+    "description": "Seleciona o tipo de conta que melhor descreve a tua relação com o colégio. Podes registar-te como Aluno ou como Encarregado de Educação.",
+    "studentTitle": "Aluno",
+    "studentDescription": "Acede ao teu histórico de avaliações físicas, questionários de bem-estar e relatórios de progresso.",
+    "guardianTitle": "Encarregado de Educação",
+    "guardianDescription": "Acompanha o progresso dos teus educandos e consulta relatórios partilhados pela escola.",
+    "backToLogin": "Já tenho conta — Iniciar Sessão"
+  },
+  "registerStudent": {
+    "eyebrow": "Registo de Aluno",
+    "title": "Criar conta de aluno",
+    "description": "Preenche os campos abaixo para criar a tua conta. Precisarás do teu número de processo para confirmar a associação à escola.",
+    "nameLabel": "Nome completo",
+    "emailLabel": "E-mail institucional",
+    "emailHint": "Usa o e-mail fornecido pelo colégio.",
+    "processNumberLabel": "Número de processo",
+    "processNumberHint": "O número de processo consta no cartão de aluno ou na secretaria.",
+    "passwordLabel": "Palavra-passe",
+    "passwordRules": "Mínimo 8 caracteres. Usa letras maiúsculas, minúsculas e números.",
+    "confirmPasswordLabel": "Confirmar palavra-passe",
+    "consentLabel": "Aceito que os meus dados de saúde sejam armazenados e tratados para fins de avaliação da aptidão física, nos termos do RGPD.",
+    "submit": "Criar conta de aluno",
+    "back": "← Voltar à seleção",
+    "loginLink": "Já tenho conta"
+  },
+  "registerGuardian": {
+    "eyebrow": "Registo de Encarregado",
+    "title": "Criar conta de encarregado",
+    "description": "Preenche os campos abaixo para criar a tua conta. O número de processo do teu educando é necessário para concluir a associação.",
+    "nameLabel": "Nome completo",
+    "emailLabel": "E-mail",
+    "processNumberLabel": "Número de processo do educando",
+    "processNumberHint": "O número de processo consta no cartão de aluno ou na secretaria.",
+    "passwordLabel": "Palavra-passe",
+    "passwordRules": "Mínimo 8 caracteres. Usa letras maiúsculas, minúsculas e números.",
+    "confirmPasswordLabel": "Confirmar palavra-passe",
+    "consentLabel": "Aceito que os dados de saúde do meu educando sejam armazenados e tratados para fins de avaliação da aptidão física, nos termos do RGPD.",
+    "submit": "Criar conta de encarregado",
+    "back": "← Voltar à seleção",
+    "loginLink": "Já tenho conta"
   },
   "authLayout": {
     "department": "Departamento de Educação Física — Colégio Atlântico",

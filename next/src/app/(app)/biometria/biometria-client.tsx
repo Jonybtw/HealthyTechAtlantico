@@ -424,6 +424,7 @@ export default function BiometriaPage() {
     return (
       <PageScaffold
         headerProps={{
+          eyebrow: t("eyebrow"),
           title: t("title"),
           description: t("description"),
         }}
@@ -441,6 +442,7 @@ export default function BiometriaPage() {
     <PageScaffold
       className="gap-6"
       headerProps={{
+        eyebrow: t("eyebrow"),
         title: t("title"),
         description: t("description"),
       }}
@@ -458,7 +460,7 @@ export default function BiometriaPage() {
               title={t("registerCardTitle")}
               description={t("registerCardDescription")}
             >
-              <div className="rounded-2xl border border-border bg-surface-secondary p-4 shadow-sm sm:p-5">
+              <div className="rounded-[24px] border border-border bg-surface-secondary p-4 shadow-sm sm:p-5">
                 <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_220px] lg:items-end">
                   <div className="min-w-0">
                     <p className="section-kicker">
@@ -622,7 +624,7 @@ export default function BiometriaPage() {
             </PageSection>
 
             <aside className="lg:sticky lg:top-24">
-              <div className="surface-secondary rounded-2xl p-5 sm:p-6">
+              <div className="surface-secondary rounded-[24px] p-5 sm:p-6">
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
                     <p className="section-kicker">
@@ -812,7 +814,7 @@ export default function BiometriaPage() {
               ) : loadingHistory ? (
                 <div className="grid gap-3">
                   {[1, 2, 3].map((item) => (
-                    <Skeleton key={item} className="h-20 rounded-2xl" />
+                    <Skeleton key={item} className="h-20 rounded-[24px]" />
                   ))}
                 </div>
               ) : recentHistory.length > 0 ? (
@@ -879,12 +881,12 @@ function BiometriaLoadingState() {
           <Skeleton className="h-28 rounded-[1.5rem]" />
         </PageSection>
 
-        <Skeleton className="h-[540px] rounded-2xl" />
+        <Skeleton className="h-[540px] rounded-[24px]" />
       </div>
 
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1.18fr)_minmax(280px,0.82fr)]">
-        <Skeleton className="h-72 rounded-2xl" />
-        <Skeleton className="h-72 rounded-2xl" />
+        <Skeleton className="h-72 rounded-[24px]" />
+        <Skeleton className="h-72 rounded-[24px]" />
       </div>
     </div>
   );
@@ -902,9 +904,9 @@ function MeasurementPanel({
   children: React.ReactNode;
 }) {
   return (
-    <div className="rounded-2xl border border-border bg-surface-secondary p-5 shadow-sm">
+    <div className="rounded-[24px] border border-border bg-surface-secondary p-5 shadow-sm">
       <div className="mb-4 flex items-start gap-3">
-        <span className="flex size-11 items-center justify-center rounded-2xl bg-surface-utility text-foreground shadow-sm">
+        <span className="flex size-11 items-center justify-center rounded-[24px] bg-surface-utility text-foreground shadow-sm">
           {icon}
         </span>
         <div>
@@ -923,7 +925,7 @@ function MeasurementPanel({
 
 function MetaRow({ label, value }: { label: string; value: string }) {
   return (
-    <div className="flex items-center justify-between gap-3 rounded-2xl border border-border/70 bg-background/65 px-4 py-3 shadow-sm">
+    <div className="flex items-center justify-between gap-3 rounded-[24px] border border-border/70 bg-background/65 px-4 py-3 shadow-sm">
       <span className="text-tiny font-semibold uppercase tracking-[0.18em] text-muted-foreground">
         {label}
       </span>
@@ -942,7 +944,7 @@ function FocusEmptyState({
   children: React.ReactNode;
 }) {
   return (
-    <div className="rounded-2xl border border-dashed border-border/60 bg-background/40 px-4 py-7 text-center">
+    <div className="rounded-[24px] border border-dashed border-border/60 bg-background/40 px-4 py-7 text-center">
       <Icon className="mx-auto size-7 text-muted-foreground/40" />
       <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
         {children}
@@ -1025,7 +1027,7 @@ function ReferenceRow({
         : "bg-danger-500";
 
   return (
-    <div className="rounded-2xl border border-border/70 bg-background/65 p-4 shadow-sm">
+    <div className="rounded-[24px] border border-border/70 bg-background/65 p-4 shadow-sm">
       <div className="flex items-center gap-3">
         <span className={cn("size-2.5 rounded-full", toneClass)} />
         <p className="text-sm font-semibold text-foreground">{title}</p>

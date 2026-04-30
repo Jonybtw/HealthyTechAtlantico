@@ -433,9 +433,9 @@ export default function QuestionariosPage() {
         }}
       >
         <div className="mx-auto grid w-full max-w-4xl gap-5">
-          <Skeleton className="h-[220px] rounded-2xl" />
-          <Skeleton className="h-[420px] rounded-2xl" />
-          <Skeleton className="h-[220px] rounded-2xl" />
+          <Skeleton className="h-[220px] rounded-[24px]" />
+          <Skeleton className="h-[420px] rounded-[24px]" />
+          <Skeleton className="h-[220px] rounded-[24px]" />
         </div>
       </PageScaffold>
     );
@@ -677,7 +677,7 @@ export default function QuestionariosPage() {
       <div className="mx-auto flex w-full max-w-4xl flex-col gap-5 pb-28">
         <PageSection tone="primary" layout="form" className="overflow-hidden">
           <div className="grid gap-6">
-            <div className="rounded-2xl border border-border bg-surface-secondary p-5 sm:p-6">
+            <div className="rounded-[24px] border border-border bg-surface-secondary p-5 sm:p-6">
               <div className="flex flex-col gap-4">
                 <div className="flex flex-wrap items-center gap-2 text-tiny font-semibold uppercase tracking-[0.2em] text-muted-foreground">
                   <span>{t("flowEyebrow")}</span>
@@ -737,7 +737,7 @@ export default function QuestionariosPage() {
                     }
                   />
                 </div>
-                <div className="rounded-2xl border border-border bg-surface-utility p-4">
+                <div className="rounded-[24px] border border-border bg-surface-utility p-4">
                   <div className="flex items-start gap-3">
                     <ClipboardList className="mt-0.5 size-4 text-muted-foreground" />
                     <div className="space-y-1.5">
@@ -780,7 +780,7 @@ export default function QuestionariosPage() {
                     onClick={() => setQType(type)}
                     className={cn(
                       interactiveControlClasses.choiceBase,
-                      "rounded-2xl p-4",
+                      "rounded-[24px] p-4",
                       active
                         ? interactiveControlClasses.choiceActive
                         : interactiveControlClasses.choiceInactive,
@@ -886,7 +886,7 @@ export default function QuestionariosPage() {
                   ) : null
                 }
               />
-              <div className="rounded-2xl border border-dashed border-border bg-surface-secondary p-4 sm:p-5">
+              <div className="rounded-[24px] border border-dashed border-border bg-surface-secondary p-4 sm:p-5">
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                   <div>
                     <p className="text-sm font-semibold text-foreground">
@@ -1214,7 +1214,7 @@ export default function QuestionariosPage() {
                 </div>
 
                 {qType === "AUTOCONCEITO" ? (
-                  <div className="grid gap-3 rounded-2xl border border-border bg-surface-secondary p-4 sm:grid-cols-3">
+                  <div className="grid gap-3 rounded-[24px] border border-border bg-surface-secondary p-4 sm:grid-cols-3">
                     {[
                       {
                         key: "energyLevel",
@@ -1279,7 +1279,7 @@ export default function QuestionariosPage() {
             </PageSection>
 
             <div className="sticky bottom-4 z-10">
-              <div className="overflow-hidden rounded-2xl border border-border bg-surface-secondary shadow-[0_18px_55px_rgba(15,23,42,0.2)] backdrop-blur">
+              <div className="overflow-hidden rounded-[24px] border border-border bg-surface-secondary shadow-[0_18px_55px_rgba(15,23,42,0.2)] backdrop-blur">
                 <div className="flex flex-col gap-4 p-4 sm:p-5 lg:flex-row lg:items-center lg:justify-between">
                   <div className="space-y-2">
                     <div className="flex flex-wrap items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
@@ -1356,7 +1356,7 @@ export default function QuestionariosPage() {
               {questionnaireHistory.map((item) => (
                 <div
                   key={item.id}
-                  className="rounded-2xl border border-border bg-surface-secondary p-4"
+                  className="rounded-[24px] border border-border bg-surface-secondary p-4"
                 >
                   <div className="flex flex-wrap items-start justify-between gap-3">
                     <div>
@@ -1485,7 +1485,7 @@ function WizardStepper({
             disabled={step.disabled}
             onClick={step.action}
             className={cn(
-              "rounded-2xl border px-4 py-4 text-left transition-all duration-300",
+              "rounded-[24px] border px-4 py-4 text-left transition-all duration-300",
               active
                 ? "border-navy-900/70 bg-navy-950 text-white shadow-card"
                 : completed
@@ -1535,7 +1535,7 @@ function WizardStepper({
 
 function MetaChip({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-2xl border border-border bg-surface-secondary px-3.5 py-3">
+    <div className="rounded-[24px] border border-border bg-surface-secondary px-3.5 py-3">
       <p className="text-tiny font-semibold uppercase tracking-[0.18em] text-muted-foreground">
         {label}
       </p>
@@ -1597,7 +1597,7 @@ function BinaryRow({
   ] as const;
 
   return (
-    <fieldset className="rounded-2xl border border-border bg-surface-secondary p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]">
+    <fieldset className="rounded-[24px] border border-border bg-surface-secondary p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]">
       <legend className="px-1 text-sm font-semibold leading-relaxed text-foreground">
         {label}
       </legend>
@@ -1616,14 +1616,14 @@ function BinaryRow({
             onClick={option.onSelect}
             className={cn(
               interactiveControlClasses.choiceBase,
-              "relative min-h-[92px] rounded-2xl p-4",
+              "relative min-h-[92px] rounded-[24px] p-4",
               option.selected ? option.activeClass : option.inactiveClass,
             )}
           >
             <div className="flex items-start justify-between gap-3">
               <span
                 className={cn(
-                  "flex size-11 items-center justify-center rounded-2xl border transition-all duration-300",
+                  "flex size-11 items-center justify-center rounded-[24px] border transition-all duration-300",
                   option.iconClass,
                 )}
               >
@@ -1671,7 +1671,7 @@ function StatusPanel({
   footer?: ReactNode;
 }) {
   return (
-    <div className="rounded-2xl border border-border bg-surface-secondary p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] sm:p-5">
+    <div className="rounded-[24px] border border-border bg-surface-secondary p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] sm:p-5">
       <div className="flex items-start gap-3">
         <span className="mt-0.5">{icon}</span>
         <div className="flex-1">
@@ -1696,7 +1696,7 @@ function QuestionBlock({
   children: ReactNode;
 }) {
   return (
-    <div className="rounded-2xl border border-border bg-surface-secondary p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] sm:p-5">
+    <div className="rounded-[24px] border border-border bg-surface-secondary p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] sm:p-5">
       <div className="mb-4">
         <p className="text-base font-semibold tracking-tight text-foreground">
           {title}
@@ -1720,7 +1720,7 @@ function ReviewCard({
   detail: string;
 }) {
   return (
-    <div className="rounded-2xl border border-border bg-surface-secondary p-4">
+    <div className="rounded-[24px] border border-border bg-surface-secondary p-4">
       <p className="text-tiny font-semibold uppercase tracking-[0.18em] text-muted-foreground">
         {label}
       </p>
@@ -1744,7 +1744,7 @@ function ProgressReviewCard({
   colorClass: string;
 }) {
   return (
-    <div className="rounded-2xl border border-border bg-surface-secondary p-4">
+    <div className="rounded-[24px] border border-border bg-surface-secondary p-4">
       <div className="flex items-center justify-between gap-3">
         <span className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
           {label}
@@ -1772,7 +1772,7 @@ function HistorySkeletonList() {
       {Array.from({ length: 3 }, (_, index) => (
         <div
           key={index}
-          className="rounded-2xl border border-border bg-surface-secondary p-4"
+          className="rounded-[24px] border border-border bg-surface-secondary p-4"
         >
           <div className="flex items-start justify-between gap-3">
             <div className="flex-1 space-y-2">
@@ -1804,7 +1804,7 @@ function KidmedResultSummary({
   if (result.score === null || result.classification === null) return null;
 
   return (
-    <div className="rounded-2xl border border-success-300/50 bg-success-50/60 p-4 dark:border-success-900/30 dark:bg-success-950/20">
+    <div className="rounded-[24px] border border-success-300/50 bg-success-50/60 p-4 dark:border-success-900/30 dark:bg-success-950/20">
       <p className="text-xs uppercase tracking-[0.18em] text-success-700 dark:text-success-300">
         {t("kidmedLatestResultLabel")}
       </p>

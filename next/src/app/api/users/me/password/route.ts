@@ -1,5 +1,4 @@
 import { type NextRequest } from "next/server";
-import { compare, hash } from "bcryptjs";
 import { z } from "zod";
 import { auth } from "@/lib/auth";
 import {
@@ -12,7 +11,12 @@ import {
 } from "@/lib/api-response";
 import { auditLog } from "@/lib/audit";
 import { AUDIT_ACTIONS } from "@/lib/audit-actions";
-import { prisma } from "@/lib/prisma";
+import {
+  changePasswordForUser,
+  PasswordChangeInvalidCurrentPasswordError,
+  PasswordChangePolicyError,
+  PasswordChangeUserNotFoundError,
+} from "@/lib/password-change";
 import { changePasswordSchema } from "@/lib/validations";
 
 export async function PUT(req: NextRequest) {
@@ -25,22 +29,10 @@ export async function PUT(req: NextRequest) {
     const body = await req.json();
     const data = changePasswordSchema.parse(body);
 
-    const user = await prisma.user.findUnique({
-      where: { id: session.user.id },
-    });
-    if (!user) {
-      return notFound("Utilizador não encontrado");
-    }
-
-    const valid = await compare(data.currentPassword, user.passwordHash);
-    if (!valid) {
-      return badRequest("Password atual incorreta");
-    }
-
-    const passwordHash = await hash(data.newPassword, 12);
-    await prisma.user.update({
-      where: { id: session.user.id },
-      data: { passwordHash },
+    const user = await changePasswordForUser({
+      userId: session.user.id,
+      currentPassword: data.currentPassword,
+      newPassword: data.newPassword,
     });
 
     await auditLog({
@@ -49,10 +41,22 @@ export async function PUT(req: NextRequest) {
       targetId: session.user.id,
     }).catch(console.error);
 
-    return ok({ ok: true });
+    return ok({ ok: true, userId: user.id });
   } catch (error: unknown) {
     if (error instanceof z.ZodError) {
       return validationError(error.issues);
+    }
+
+    if (error instanceof PasswordChangeUserNotFoundError) {
+      return notFound(error.message);
+    }
+
+    if (error instanceof PasswordChangeInvalidCurrentPasswordError) {
+      return badRequest(error.message);
+    }
+
+    if (error instanceof PasswordChangePolicyError) {
+      return badRequest(error.message);
     }
 
     console.error("PUT /api/users/me/password error:", error);

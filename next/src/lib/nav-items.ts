@@ -72,14 +72,14 @@ export const NAV_ITEMS: NavItem[] = [
     href: "/analise",
     label: "nav.analise",
     icon: BarChart3,
-    roles: ["ADMIN", "PROFESSOR", "PSICOLOGO"],
+    roles: ["ADMIN", "PROFESSOR"],
     section: "operations",
   },
   {
     href: "/turma",
     label: "nav.turma",
     icon: School,
-    roles: ["ADMIN", "PROFESSOR", "PSICOLOGO"],
+    roles: ["ADMIN", "PROFESSOR"],
     section: "operations",
   },
   {

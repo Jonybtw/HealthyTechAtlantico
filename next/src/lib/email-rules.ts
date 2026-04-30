@@ -11,10 +11,6 @@ export function isInternalEmail(email: string): boolean {
 }
 
 export function isAllowedEmailForRole(role: string, email: string): boolean {
-  if (role === "PAIS") {
-    return !isInternalEmail(email);
-  }
-
   if (
     role === "ADMIN" ||
     role === "ALUNO" ||
@@ -27,10 +23,6 @@ export function isAllowedEmailForRole(role: string, email: string): boolean {
   return true;
 }
 
-export function getEmailRuleMessage(role: string): string {
-  if (role === "PAIS") {
-    return `Pais e encarregados de educacao devem usar um email externo a @${INTERNAL_EMAIL_DOMAIN}`;
-  }
-
+export function getEmailRuleMessage(): string {
   return `Utilizadores internos devem usar um email @${INTERNAL_EMAIL_DOMAIN}`;
 }

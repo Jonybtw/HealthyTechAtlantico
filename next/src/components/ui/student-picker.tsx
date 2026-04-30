@@ -164,7 +164,7 @@ export function StudentPicker({
   if (loading) {
     return (
       <div
-        className="flex h-[46px] w-full items-center justify-between rounded-2xl border border-input bg-card px-4 shadow-sm"
+        className="flex h-[46px] w-full items-center justify-between rounded-[24px] border border-input bg-card px-4 shadow-sm"
         aria-busy="true"
         aria-live="polite"
       >
@@ -184,7 +184,7 @@ export function StudentPicker({
       ? createPortal(
           <div
             ref={menuRef}
-            className="animate-scale-in fixed z-[180] overflow-hidden rounded-2xl border border-border bg-surface-utility shadow-card"
+            className="animate-scale-in fixed z-[180] overflow-hidden rounded-[24px] border border-border bg-surface-utility shadow-card"
             style={menuStyle}
           >
             <div className="max-h-72 overflow-y-auto p-2">
@@ -249,7 +249,7 @@ export function StudentPicker({
             setOpen(true);
           }
         }}
-        className={`flex h-[46px] w-full cursor-pointer items-center justify-between rounded-2xl border px-4 text-left transition-all duration-300 ${
+        className={`flex h-[46px] w-full cursor-pointer items-center justify-between rounded-[24px] border px-4 text-left transition-all duration-300 ${
           open
             ? "border-gold-500/50 bg-card shadow-card"
             : "border-input bg-card shadow-sm hover:border-navy-300/40 hover:bg-muted/50 hover:text-foreground"

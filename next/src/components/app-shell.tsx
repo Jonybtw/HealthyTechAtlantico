@@ -297,8 +297,8 @@ export function AppShell({ user, children }: AppShellProps) {
           <div className="relative border-t border-white/10 p-3">
             <div className="rounded-3xl border border-white/10 bg-white/6 p-3 text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] ">
               <div className="flex items-center gap-3">
-                <Avatar className="size-8 rounded-2xl shadow-[0_10px_20px_rgba(217,166,28,0.25)]">
-                  <AvatarFallback className="rounded-2xl">
+                <Avatar className="size-8 rounded-[24px] shadow-[0_10px_20px_rgba(217,166,28,0.25)]">
+                  <AvatarFallback className="rounded-[24px]">
                     {initials}
                   </AvatarFallback>
                 </Avatar>
@@ -414,9 +414,9 @@ export function AppShell({ user, children }: AppShellProps) {
                     <DropdownMenuContent
                       align="end"
                       sideOffset={10}
-                      className="w-72 rounded-2xl border border-white/45 bg-white/84 p-1.5 shadow-[0_24px_60px_-28px_rgba(9,21,35,0.28)]  dark:border-white/10 dark:bg-navy-950/84"
+                      className="w-72 rounded-[24px] border border-white/45 bg-white/84 p-1.5 shadow-[0_24px_60px_-28px_rgba(9,21,35,0.28)]  dark:border-white/10 dark:bg-navy-950/84"
                     >
-                      <div className="rounded-2xl bg-gradient-to-br from-navy-50 to-white px-3.5 py-3 dark:from-white/8 dark:to-white/4">
+                      <div className="rounded-[24px] bg-gradient-to-br from-navy-50 to-white px-3.5 py-3 dark:from-white/8 dark:to-white/4">
                         <div className="flex items-start gap-3">
                           <Avatar className="size-10 shadow-sm ring-1 ring-white/70 dark:ring-white/10">
                             <AvatarFallback className="text-xs font-semibold">
@@ -439,10 +439,10 @@ export function AppShell({ user, children }: AppShellProps) {
                       <DropdownMenuSeparator />
                       <DropdownMenuItem
                         asChild
-                        className="rounded-2xl px-3 py-3"
+                        className="rounded-[24px] px-3 py-3"
                       >
                         <Link href="/perfil">
-                          <span className="flex size-8 items-center justify-center rounded-2xl bg-navy-100 text-navy-700 dark:bg-white/8 dark:text-navy-100">
+                          <span className="flex size-8 items-center justify-center rounded-[24px] bg-navy-100 text-navy-700 dark:bg-white/8 dark:text-navy-100">
                             <User className="size-4" />
                           </span>
                           {t("nav.perfil")}
@@ -454,7 +454,7 @@ export function AppShell({ user, children }: AppShellProps) {
                       </DropdownMenuLabel>
                       <DropdownMenuItem
                         onClick={toggleTheme}
-                        className="rounded-2xl px-3 py-3"
+                        className="rounded-[24px] px-3 py-3"
                       >
                         {theme === "light" ? (
                           <Moon className="size-4" />
@@ -470,7 +470,7 @@ export function AppShell({ user, children }: AppShellProps) {
                       </DropdownMenuItem>
                       <DropdownMenuItem
                         onClick={toggleLocale}
-                        className="rounded-2xl px-3 py-3"
+                        className="rounded-[24px] px-3 py-3"
                       >
                         <Globe className="size-4" />
                         {t("nav.changeLanguage")}
@@ -479,7 +479,7 @@ export function AppShell({ user, children }: AppShellProps) {
                         </DropdownMenuShortcut>
                       </DropdownMenuItem>
                       <DropdownMenuItem
-                        className="rounded-2xl px-3 py-3"
+                        className="rounded-[24px] px-3 py-3"
                         onSelect={(event) => {
                           event.preventDefault();
                           setAccessibilityOpen((value) => !value);
@@ -492,7 +492,7 @@ export function AppShell({ user, children }: AppShellProps) {
                         </DropdownMenuShortcut>
                       </DropdownMenuItem>
                       {accessibilityOpen ? (
-                        <div className="space-y-3 rounded-2xl border border-navy-200/70 bg-navy-50/75 px-2 py-2.5 dark:border-white/10 dark:bg-white/6">
+                        <div className="space-y-3 rounded-[24px] border border-navy-200/70 bg-navy-50/75 px-2 py-2.5 dark:border-white/10 dark:bg-white/6">
                           <div>
                             <DropdownMenuLabel className="px-2 pb-1 pt-1">
                               {t("nav.textSize")}
@@ -557,10 +557,10 @@ export function AppShell({ user, children }: AppShellProps) {
                       ) : null}
                       <DropdownMenuSeparator />
                       <DropdownMenuItem
-                        className="rounded-2xl px-3 py-3 text-danger-600 focus:text-danger-600"
+                        className="rounded-[24px] px-3 py-3 text-danger-600 focus:text-danger-600"
                         onClick={() => signOut({ callbackUrl: "/login" })}
                       >
-                        <span className="flex size-8 items-center justify-center rounded-2xl bg-danger-50 text-danger-600 dark:bg-danger-950/40">
+                        <span className="flex size-8 items-center justify-center rounded-[24px] bg-danger-50 text-danger-600 dark:bg-danger-950/40">
                           <LogOut className="size-4" />
                         </span>
                         {t("nav.logout")}
@@ -612,8 +612,8 @@ export function AppShell({ user, children }: AppShellProps) {
                 <div className="border-t border-navy-200/50 dark:border-white/10 p-3">
                   <div className="rounded-3xl border border-white/40 bg-white/50 p-3 text-navy-900 shadow-sm  dark:border-white/10 dark:bg-white/5 dark:text-white dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]">
                     <div className="flex items-center gap-3">
-                      <Avatar className="size-8 rounded-2xl shadow-sm dark:shadow-[0_10px_20px_rgba(217,166,28,0.25)]">
-                        <AvatarFallback className="rounded-2xl text-micro">
+                      <Avatar className="size-8 rounded-[24px] shadow-sm dark:shadow-[0_10px_20px_rgba(217,166,28,0.25)]">
+                        <AvatarFallback className="rounded-[24px] text-micro">
                           {initials}
                         </AvatarFallback>
                       </Avatar>

@@ -15,6 +15,14 @@ export default async function AppLayout({
     redirect("/login");
   }
 
+  const mustChangePassword =
+    "mustChangePassword" in session.user &&
+    session.user.mustChangePassword === true;
+
+  if (mustChangePassword) {
+    redirect("/change-password?forced=1");
+  }
+
   return (
     <AuthSessionProvider session={session}>
       <UserProvider user={session.user}>

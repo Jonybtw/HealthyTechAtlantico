@@ -232,6 +232,7 @@ export default function DispensasClient() {
     return (
       <PageScaffold
         headerProps={{
+          eyebrow: t("eyebrow"),
           title: t("title"),
           description: t("description"),
         }}
@@ -250,6 +251,7 @@ export default function DispensasClient() {
       className="gap-4"
       contentClassName="gap-4"
       headerProps={{
+        eyebrow: t("eyebrow"),
         title: t("title"),
         description: selectedStudent ? selectedSummary : t("description"),
         meta: selectedStudent?.className ?? undefined,

@@ -98,10 +98,10 @@ export function KpiCard({
   return (
     <Card
       className={cn(
-        "group relative overflow-hidden rounded-2xl transition-all duration-300 hover:-translate-y-1 hover:shadow-card-hover",
+        "group relative overflow-hidden rounded-[24px] transition-all duration-300 hover:-translate-y-1 hover:shadow-card-hover",
         heroCard
           ? "border border-white/16 bg-gradient-to-br from-navy-950 via-navy-900 to-navy-800 text-white shadow-float"
-          : "surface-primary",
+          : "rounded-[24px] border border-white/20 bg-white/60 shadow-lg backdrop-blur-md dark:border-white/10 dark:bg-navy-950/60 text-foreground dark:text-white",
         reducedEffects && "transition-none hover:translate-y-0 hover:shadow-float",
       )}
     >
@@ -111,7 +111,7 @@ export function KpiCard({
         <div className="mb-5 flex items-start justify-between">
           <div
             className={cn(
-              "rounded-2xl p-3 transition-transform duration-300 group-hover:scale-110",
+              "rounded-[24px] p-3 transition-transform duration-300 group-hover:scale-110",
               styles.iconBg,
             )}
           >

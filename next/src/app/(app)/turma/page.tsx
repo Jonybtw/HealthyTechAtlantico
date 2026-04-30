@@ -12,6 +12,6 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function TurmaPage() {
-  await requireAnyRole(["ADMIN", "PROFESSOR"]);
+  await requireAnyRole(["ADMIN", "PROFESSOR", "PSICOLOGO"]);
   return <TurmaClient />;
 }

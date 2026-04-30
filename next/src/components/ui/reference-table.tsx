@@ -16,7 +16,7 @@ export function ReferenceTable({
       {title ? (
         <h3 className="section-title text-foreground">{title}</h3>
       ) : null}
-      <div className="surface-secondary overflow-x-auto rounded-2xl border border-border/60 shadow-[0_8px_22px_-20px_rgb(9_21_35_/_0.35)]">
+      <div className="surface-secondary overflow-x-auto rounded-[24px] border border-border/60 shadow-[0_8px_22px_-20px_rgb(9_21_35_/_0.35)]">
         <table className="w-full min-w-[340px] table-fixed text-sm sm:min-w-[360px]">
           {caption ? <caption className="sr-only">{caption}</caption> : null}
           <colgroup>

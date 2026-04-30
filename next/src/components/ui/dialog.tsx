@@ -40,7 +40,7 @@ const DialogContent = React.forwardRef<
       aria-describedby={props["aria-describedby"] ?? undefined}
       className={cn(
         "fixed left-1/2 top-1/2 z-50 w-full max-w-md -translate-x-1/2 -translate-y-1/2",
-        "overflow-hidden rounded-2xl border border-border/70 bg-card/95 p-4 shadow-float sm:p-5",
+        "overflow-hidden rounded-[24px] border border-border/70 bg-card/95 p-4 shadow-float sm:p-5",
         "animate-scale-in",
         "duration-200",
         className,

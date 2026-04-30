@@ -1,4 +1,5 @@
 import { type NextRequest } from "next/server";
+import { getTranslations } from "next-intl/server";
 import { z } from "zod";
 import type { Role } from "@prisma/client";
 import { auth } from "@/lib/auth";
@@ -153,6 +154,7 @@ export async function POST(
       targetId: alert.id,
     }).catch(console.error);
 
+    const t = await getTranslations("sos");
     const emails = [data.psychEmail, data.teacherEmail].filter(
       Boolean,
     ) as string[];
@@ -166,7 +168,7 @@ export async function POST(
           sendMail({
             to,
             subject: `SOS alert - ${student.name}`,
-        html: `<p>Foi ativado um alerta SOS para o/a aluno/a <strong>${escapeHtml(student.name)}</strong>${classLabel}.</p><p>Por favor verifique a situação na plataforma HealthyTech Atlântico.</p>`,
+        html: `<p>${t("emailLine1")} <strong>${escapeHtml(student.name)}</strong>${classLabel}.</p><p>${t("emailLine2")}</p>`,
           }),
         ),
       );

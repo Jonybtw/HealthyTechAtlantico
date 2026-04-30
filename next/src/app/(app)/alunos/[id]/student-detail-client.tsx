@@ -327,7 +327,7 @@ export function StudentDetailClient({ student }: Props) {
               ) : null}
             </div>
 
-            <div className="hidden items-center gap-2 rounded-2xl border border-white/14 bg-white/9 p-1.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.18)] backdrop-blur-md lg:flex">
+            <div className="hidden items-center gap-2 rounded-[24px] border border-white/14 bg-white/9 p-1.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.18)] backdrop-blur-md lg:flex">
               <Button
                 type="button"
                 variant="secondary"
@@ -530,7 +530,7 @@ export function StudentDetailClient({ student }: Props) {
                 </div>
 
                 {student.biometrics.length > 0 ? (
-                  <div className="rounded-2xl border border-border bg-surface-utility p-4">
+                  <div className="rounded-[24px] border border-border bg-surface-utility p-4">
                     <div className="mb-3 flex items-center gap-2">
                       <TrendingUp className="size-4 text-gold-500" />
                       <p className="text-tiny font-semibold uppercase tracking-[0.2em] text-muted-foreground">
@@ -576,7 +576,7 @@ export function StudentDetailClient({ student }: Props) {
                   return (
                     <div
                       key={`${test.testId}-${test.recordedAt}`}
-                      className={`group relative overflow-hidden rounded-2xl border p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.65),0_10px_24px_-20px_rgba(9,21,35,0.35)] backdrop-blur-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.75),0_16px_30px_-20px_rgba(9,21,35,0.45)] ${cardStateClass}`}
+                      className={`group relative overflow-hidden rounded-[24px] border p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.65),0_10px_24px_-20px_rgba(9,21,35,0.35)] backdrop-blur-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.75),0_16px_30px_-20px_rgba(9,21,35,0.45)] ${cardStateClass}`}
                     >
                       <div className="flex min-w-0 items-center gap-2.5">
                           <span className="flex size-8 shrink-0 items-center justify-center rounded-xl border border-white/45 bg-white/80 text-navy-700 shadow-[inset_0_1px_0_rgba(255,255,255,0.9)] dark:border-white/10 dark:bg-white/8 dark:text-gold-200 dark:shadow-none">
@@ -624,7 +624,7 @@ export function StudentDetailClient({ student }: Props) {
                 {student.questionnaires.map((questionnaire, index) => (
                   <li
                     key={`${questionnaire.type}-${questionnaire.submittedAt}-${index}`}
-                    className="group relative overflow-hidden rounded-2xl border border-white/28 bg-gradient-to-br from-white/78 via-white/62 to-white/48 p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.65),0_10px_24px_-20px_rgba(9,21,35,0.35)] backdrop-blur-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-gold-300/35 hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.75),0_16px_30px_-20px_rgba(9,21,35,0.45)] dark:border-white/10 dark:from-navy-950/50 dark:via-navy-950/38 dark:to-navy-950/28 dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]"
+                    className="group relative overflow-hidden rounded-[24px] border border-white/28 bg-gradient-to-br from-white/78 via-white/62 to-white/48 p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.65),0_10px_24px_-20px_rgba(9,21,35,0.35)] backdrop-blur-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-gold-300/35 hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.75),0_16px_30px_-20px_rgba(9,21,35,0.45)] dark:border-white/10 dark:from-navy-950/50 dark:via-navy-950/38 dark:to-navy-950/28 dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]"
                   >
                     <span className="pointer-events-none absolute -right-10 -top-10 size-24 rounded-full bg-gold-300/14 blur-2xl opacity-70 transition-opacity duration-300 group-hover:opacity-100 dark:bg-gold-400/10" />
 
@@ -861,7 +861,7 @@ function StatTile({
   badge?: ReactNode;
 }) {
   return (
-    <div className="group relative flex min-h-[114px] w-full flex-col justify-between overflow-hidden rounded-2xl border border-border bg-surface-secondary px-4 py-4 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-card-hover hover:border-gold-300/35">
+    <div className="group relative flex min-h-[114px] w-full flex-col justify-between overflow-hidden rounded-[24px] border border-border bg-surface-secondary px-4 py-4 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-card-hover hover:border-gold-300/35">
       <div className="pointer-events-none absolute -right-8 -top-8 size-24 rounded-full bg-gold-300/12 blur-2xl transition-opacity duration-300 group-hover:opacity-100 dark:bg-gold-400/10" />
 
       <div className="flex items-center gap-2.5">

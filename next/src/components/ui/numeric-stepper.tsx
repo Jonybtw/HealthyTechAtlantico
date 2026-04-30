@@ -68,7 +68,7 @@ export function NumericStepper({
   return (
     <div
       className={cn(
-        "grid gap-3 rounded-2xl border bg-background/70 p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]",
+        "grid gap-3 rounded-[24px] border bg-background/70 p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]",
         accentClasses[accent],
       )}
     >
@@ -96,7 +96,7 @@ export function NumericStepper({
                 type="button"
                 onClick={() => onChange(clampValue(preset.value))}
                 className={cn(
-                  "flex min-h-11 items-center justify-center gap-2 rounded-2xl border px-3 py-2 text-sm font-semibold transition-all duration-300",
+                  "flex min-h-11 items-center justify-center gap-2 rounded-[24px] border px-3 py-2 text-sm font-semibold transition-all duration-300",
                   active
                     ? "border-navy-900/75 bg-navy-950 text-white shadow-card"
                     : "border-border/70 bg-background/70 text-foreground hover:-translate-y-0.5 hover:border-gold-300/55 hover:shadow-card-hover",
@@ -113,7 +113,7 @@ export function NumericStepper({
       ) : null}
 
       <div
-        className="grid gap-3 rounded-2xl border border-border/70 bg-background/80 p-3 sm:grid-cols-[auto_minmax(0,1fr)_auto] sm:items-center"
+        className="grid gap-3 rounded-[24px] border border-border/70 bg-background/80 p-3 sm:grid-cols-[auto_minmax(0,1fr)_auto] sm:items-center"
         aria-label={label}
         aria-valuetext={unit ? `${safeValue} ${unit}` : String(safeValue)}
       >
@@ -122,12 +122,12 @@ export function NumericStepper({
           onClick={dec}
           disabled={safeValue <= min}
           aria-label={label ? `${decreaseLabel} ${label}` : decreaseLabel}
-          className="flex h-12 w-full items-center justify-center rounded-2xl border border-border/70 bg-card/85 text-foreground transition-all duration-300 hover:-translate-y-0.5 hover:border-navy-300/55 hover:shadow-card-hover disabled:cursor-not-allowed disabled:opacity-35 disabled:hover:translate-y-0 sm:w-12"
+          className="flex h-12 w-full items-center justify-center rounded-[24px] border border-border/70 bg-card/85 text-foreground transition-all duration-300 hover:-translate-y-0.5 hover:border-navy-300/55 hover:shadow-card-hover disabled:cursor-not-allowed disabled:opacity-35 disabled:hover:translate-y-0 sm:w-12"
         >
           <Minus className="size-4" />
         </button>
 
-        <div className="rounded-2xl border border-border/60 bg-card/95 px-4 py-3 text-center shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]">
+        <div className="rounded-[24px] border border-border/60 bg-card/95 px-4 py-3 text-center shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]">
           <div className="flex items-end justify-center gap-2">
             <span className="text-3xl font-black tabular-nums tracking-[-0.06em] text-foreground">
               {safeValue}
@@ -152,7 +152,7 @@ export function NumericStepper({
           onClick={inc}
           disabled={safeValue >= max}
           aria-label={label ? `${increaseLabel} ${label}` : increaseLabel}
-          className="flex h-12 w-full items-center justify-center rounded-2xl border border-border/70 bg-card/85 text-foreground transition-all duration-300 hover:-translate-y-0.5 hover:border-gold-300/60 hover:shadow-card-hover disabled:cursor-not-allowed disabled:opacity-35 disabled:hover:translate-y-0 sm:w-12"
+          className="flex h-12 w-full items-center justify-center rounded-[24px] border border-border/70 bg-card/85 text-foreground transition-all duration-300 hover:-translate-y-0.5 hover:border-gold-300/60 hover:shadow-card-hover disabled:cursor-not-allowed disabled:opacity-35 disabled:hover:translate-y-0 sm:w-12"
         >
           <Plus className="size-4" />
         </button>

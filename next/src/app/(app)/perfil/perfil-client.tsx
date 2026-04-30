@@ -25,6 +25,7 @@ import { Input } from "@/components/ui/input";
 import { PageScaffold } from "@/components/ui/page-scaffold";
 import { PageSection } from "@/components/ui/page-section";
 import { Form, FormField, FormItem, FormControl } from "@/components/ui/form";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { readApiResponse } from "@/lib/api-client";
 import { cn } from "@/lib/utils";
 
@@ -74,21 +75,21 @@ const ROLE_STYLES: Record<
 };
 
 function UserAvatar({ name, email }: { name?: string | null; email?: string }) {
-  const initials = name
-    ? name
-        .split(" ")
-        .slice(0, 2)
-        .map((word) => word[0])
-        .join("")
-        .toUpperCase()
-    : (email?.[0] ?? "?").toUpperCase();
+  const displayName = name?.trim() || email || "?";
+  const initials =
+    displayName
+      .split(" ")
+      .filter((chunk) => Boolean(chunk) && !/^(prof|dr|dra|sr|sra)\.*$/i.test(chunk))
+      .slice(0, 2)
+      .map((chunk) => chunk[0]?.toUpperCase())
+      .join("") || (email?.[0] ?? "?").toUpperCase();
 
   return (
-    <div className="flex size-14 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-navy-700 via-navy-800 to-navy-900 shadow-card ring-2 ring-white/10 dark:ring-white/5">
-      <span className="font-display text-lg font-bold tracking-tight text-white">
+    <Avatar className="size-14 shadow-card ring-2 ring-white/10 dark:ring-white/5">
+      <AvatarFallback className="font-display text-lg font-bold tracking-tight">
         {initials}
-      </span>
-    </div>
+      </AvatarFallback>
+    </Avatar>
   );
 }
 
@@ -112,7 +113,7 @@ function ConsentCard({
   onRevoke: () => void;
 }) {
   return (
-    <div className="rounded-2xl border border-border bg-surface-secondary p-4 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-card sm:p-5">
+    <div className="rounded-[24px] border border-border bg-surface-secondary p-4 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-card sm:p-5">
       <div className="flex items-start gap-3.5">
         <div
           className={cn(
@@ -285,7 +286,7 @@ export default function PerfilPage() {
           actions={<UserAvatar name={user?.name} email={user?.email} />}
         >
           {/* Role badge */}
-          <div className="rounded-2xl border border-border bg-surface-secondary px-4 py-3.5 shadow-sm">
+          <div className="rounded-[24px] border border-border bg-surface-secondary px-4 py-3.5 shadow-sm">
             <div className="flex items-center justify-between gap-3">
               <div className="flex items-center gap-2.5">
                 <BadgeCheck className="size-4 text-muted-foreground" />

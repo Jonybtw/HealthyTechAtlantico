@@ -77,7 +77,10 @@
     "strengthWeak": "Weak",
     "strengthFair": "Fair",
     "strengthGood": "Good",
-    "strengthStrong": "Strong"
+    "strengthStrong": "Strong",
+    "verifiedSuccess": "Email verified successfully! Sign in to continue.",
+    "passwordChangedSuccess": "Password changed successfully! Sign in.",
+    "emailNotVerified": "Email not yet verified. Check your inbox."
   },
   "common": {
     "save": "Save",
@@ -127,6 +130,9 @@
     "evaluationsDone": "Evaluations done",
     "alertsPending": "Alerts pending",
     "activeClasses": "Active classes",
+    "platformIndicatorsEyebrow": "Platform indicators",
+    "platformIndicatorsTitle": "Platform indicators",
+    "platformIndicatorsDescription": "A consolidated view of students, classes, evaluations, and alerts.",
     "psychologistOverview": "Support queue summary.",
     "parentOverview": "Students linked to your account.",
     "psychologistQueueTitle": "Priority follow-up queue",
@@ -199,6 +205,7 @@
     "studentsUnit": "students"
   },
   "biometria": {
+    "eyebrow": "Biometrics",
     "title": "Biometrics",
     "description": "Record anthropometric measurements and ZAF classification",
     "selectedStudentLabel": "Student in focus",
@@ -271,6 +278,7 @@
     "enterValuesHint": "Enter height and weight to see live classification."
   },
   "testes": {
+    "eyebrow": "Fitness Tests",
     "title": "Fitness Tests",
     "description": "Record fitness test results",
     "selectTest": "Test",
@@ -615,6 +623,7 @@
     "staffPendingHint": "This alert is still unresolved and should be followed up with priority."
   },
   "relatorio": {
+    "eyebrow": "Report",
     "title": "Report",
     "description": "Export health report as PDF",
     "generate": "Generate PDF",
@@ -690,6 +699,7 @@
     "unlinkedDescription": "Your account is not linked to a student profile yet. Contact the school to complete the setup."
   },
   "turma": {
+    "eyebrow": "Class",
     "title": "Class",
     "description": "Student roster, biometric coverage, and priorities for the selected class.",
     "accessDeniedTitle": "No access",
@@ -751,6 +761,7 @@
     "insightHealthyLow": "Most of the class is outside the healthy zone; prioritised intervention and a new follow-up measurement are recommended."
   },
   "exemptions": {
+    "eyebrow": "Exemptions",
     "title": "Exemptions",
     "description": "Record PE exemptions",
     "workspaceEyebrow": "Exemptions",
@@ -803,6 +814,7 @@
     "historyLoadErrorDescription": "There was a problem fetching exemptions."
   },
   "analise": {
+    "eyebrow": "Analysis",
     "title": "Analysis",
     "description": "Health and fitness indicators evolution",
     "descriptionStudent": "Your health data evolution",
@@ -1209,6 +1221,49 @@
     "allClear": "All clear — no pending alerts.",
     "pendingAlerts": "{count, plural, one {# pending SOS alert} other {# pending SOS alerts}}",
     "pendingDescription": "Visit the SOS page to resolve."
+  },
+  "registerLanding": {
+    "eyebrow": "Register · Colégio Atlântico",
+    "title": "Create a new account",
+    "description": "Select the account type that best describes your relationship with the school. You can register as a Student or as a Guardian.",
+    "studentTitle": "Student",
+    "studentDescription": "Access your physical assessment history, well-being questionnaires and progress reports.",
+    "guardianTitle": "Guardian",
+    "guardianDescription": "Track your children's progress and view reports shared by the school.",
+    "backToLogin": "Already have an account — Sign In"
+  },
+  "registerStudent": {
+    "eyebrow": "Student Registration",
+    "title": "Create student account",
+    "description": "Fill in the fields below to create your account. You will need your process number to confirm the school association.",
+    "nameLabel": "Full name",
+    "emailLabel": "Institutional email",
+    "emailHint": "Use the email provided by the school.",
+    "processNumberLabel": "Process number",
+    "processNumberHint": "The process number is on your student card or available at the school office.",
+    "passwordLabel": "Password",
+    "passwordRules": "Minimum 8 characters. Use uppercase, lowercase and numbers.",
+    "confirmPasswordLabel": "Confirm password",
+    "consentLabel": "I accept that my health data will be stored and processed for physical fitness assessment purposes, under GDPR.",
+    "submit": "Create student account",
+    "back": "← Back to selection",
+    "loginLink": "Already have an account"
+  },
+  "registerGuardian": {
+    "eyebrow": "Guardian Registration",
+    "title": "Create guardian account",
+    "description": "Fill in the fields below to create your account. Your child's process number is required to complete the association.",
+    "nameLabel": "Full name",
+    "emailLabel": "Email",
+    "processNumberLabel": "Student's process number",
+    "processNumberHint": "The process number is on your student card or available at the school office.",
+    "passwordLabel": "Password",
+    "passwordRules": "Minimum 8 characters. Use uppercase, lowercase and numbers.",
+    "confirmPasswordLabel": "Confirm password",
+    "consentLabel": "I accept that my child's health data will be stored and processed for physical fitness assessment purposes, under GDPR.",
+    "submit": "Create guardian account",
+    "back": "← Back to selection",
+    "loginLink": "Already have an account"
   },
   "authLayout": {
     "department": "Physical Education Department — Colégio Atlântico",

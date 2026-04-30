@@ -1,17 +1,19 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, useWatch } from "react-hook-form";
 import { toast } from "sonner";
 import {
+  KeyRound,
   Lock,
   RefreshCw,
   Settings,
   ShieldOff,
   Trash2,
   UserPlus,
+  Users,
 } from "lucide-react";
 import type { z } from "zod";
 import { FadeIn } from "@/components/ui/motion";
@@ -22,7 +24,14 @@ import { Input } from "@/components/ui/input";
 import { PillSelect } from "@/components/ui/pill-select";
 import { ConfirmModal } from "@/components/ui/confirm-modal";
 import { useUser } from "@/components/user-context";
-import { useDeleteStaff, useStaff, type StaffUser } from "@/hooks/use-queries";
+import {
+  useAdminUsers,
+  useDeleteStaff,
+  useForceResetPassword,
+  useStaff,
+  type AdminUser,
+  type StaffUser,
+} from "@/hooks/use-queries";
 import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/ui/empty-state";
 import { readApiResponse } from "@/lib/api-client";
@@ -33,20 +42,43 @@ type StaffValues = z.infer<typeof createStaffSchema>;
 
 const ROLE_VALUES = ["PROFESSOR", "PSICOLOGO"] as const;
 
+function getRoleBadgeClass(role: AdminUser["role"] | StaffUser["role"]) {
+  switch (role) {
+    case "ADMIN":
+      return "bg-danger-100 text-danger-700 dark:bg-danger-900/30 dark:text-danger-300";
+    case "ALUNO":
+      return "bg-sky-100 text-sky-700 dark:bg-sky-900/30 dark:text-sky-300";
+    case "PAIS":
+      return "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300";
+    case "PROFESSOR":
+      return "bg-navy-100 text-navy-800 dark:bg-navy-800/40 dark:text-navy-200";
+    case "PSICOLOGO":
+      return "bg-gold-100 text-gold-800 dark:bg-gold-900/30 dark:text-gold-300";
+    default:
+      return "bg-muted text-foreground";
+  }
+}
+
 export default function AdminPage() {
   const t = useTranslations("admin");
   const auth = useTranslations("auth");
   const common = useTranslations("common");
   const roles = useTranslations("roles");
   const locale = useLocale();
-  const { role } = useUser();
+  const { role, id: currentUserId } = useUser();
 
   const {
     data: staff = [],
-    isLoading: loading,
+    isLoading: loadingStaff,
     refetch: loadStaff,
   } = useStaff();
+  const {
+    data: users = [],
+    isLoading: loadingUsers,
+    refetch: loadUsers,
+  } = useAdminUsers();
   const deleteStaffMutation = useDeleteStaff();
+  const forceResetMutation = useForceResetPassword();
 
   const form = useForm<StaffValues>({
     resolver: zodResolver(createStaffSchema),
@@ -56,6 +88,28 @@ export default function AdminPage() {
     useWatch({ control: form.control, name: "role" }) ?? "PROFESSOR";
 
   const [deleteTarget, setDeleteTarget] = useState<StaffUser | null>(null);
+  const [resetTarget, setResetTarget] = useState<AdminUser | null>(null);
+  const [userSearch, setUserSearch] = useState("");
+
+  const filteredUsers = useMemo(() => {
+    const normalizedQuery = userSearch.trim().toLowerCase();
+
+    if (!normalizedQuery) {
+      return users;
+    }
+
+    return users.filter((user) => {
+      const haystack = [
+        user.name ?? "",
+        user.email,
+        roles(user.role),
+      ]
+        .join(" ")
+        .toLowerCase();
+
+      return haystack.includes(normalizedQuery);
+    });
+  }, [roles, userSearch, users]);
 
   async function handleCreate(values: StaffValues) {
     try {
@@ -74,6 +128,7 @@ export default function AdminPage() {
       toast.success(t("createSuccess"));
       form.reset();
       loadStaff();
+      loadUsers();
     } catch (error) {
       toast.error(
         error instanceof Error ? error.message : common("connectionError"),
@@ -90,6 +145,27 @@ export default function AdminPage() {
       await deleteStaffMutation.mutateAsync(deleteTarget.id);
       toast.success(t("deleteSuccess"));
       setDeleteTarget(null);
+      loadUsers();
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : common("connectionError"),
+      );
+    }
+  }
+
+  async function handleForceReset() {
+    if (!resetTarget) {
+      return;
+    }
+
+    try {
+      await forceResetMutation.mutateAsync(resetTarget.id);
+      toast.success(
+        t("forceResetSuccess", {
+          email: resetTarget.email,
+        }),
+      );
+      setResetTarget(null);
     } catch (error) {
       toast.error(
         error instanceof Error ? error.message : common("connectionError"),
@@ -126,7 +202,7 @@ export default function AdminPage() {
       <FadeIn delay={0.1}>
         <PageSection
           title={t("createTitle")}
-          description={t("description")}
+          description={t("staffCreateDescription")}
           tone="primary"
         >
           <Form {...form}>
@@ -228,13 +304,13 @@ export default function AdminPage() {
               size="icon"
               variant="ghost"
               icon={<RefreshCw size={15} />}
-              loading={loading}
+              loading={loadingStaff}
               aria-label={t("refreshList")}
               onClick={() => loadStaff()}
             />
           }
         >
-          {loading ? (
+          {loadingStaff ? (
             <div className="flex flex-col gap-2">
               <Skeleton className="h-12 w-full rounded-xl" />
               <Skeleton className="h-12 w-full rounded-xl" />
@@ -242,7 +318,7 @@ export default function AdminPage() {
             </div>
           ) : null}
 
-          {!loading && staff.length === 0 ? (
+          {!loadingStaff && staff.length === 0 ? (
             <EmptyState
               icon={Settings}
               title={t("noStaff")}
@@ -250,11 +326,11 @@ export default function AdminPage() {
             />
           ) : null}
 
-          {!loading && staff.length > 0 ? (
-            <div className="surface-utility overflow-x-auto rounded-2xl p-1">
+          {!loadingStaff && staff.length > 0 ? (
+            <div className="surface-utility overflow-x-auto rounded-[24px] p-1">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="border-b border-white/20 dark:border-white/10 bg-muted/30">
+                  <tr className="border-b border-white/20 bg-muted/30 dark:border-white/10">
                     <th className="px-4 py-3 text-left font-semibold text-muted-foreground">
                       {t("nameLabel")}
                     </th>
@@ -274,7 +350,7 @@ export default function AdminPage() {
                   {staff.map((staffUser) => (
                     <tr
                       key={staffUser.id}
-                      className="border-b border-white/20 dark:border-white/10 transition-colors hover:bg-muted/30"
+                      className="border-b border-white/20 transition-colors hover:bg-muted/30 dark:border-white/10"
                     >
                       <td className="px-4 py-3">{staffUser.name ?? "-"}</td>
                       <td className="px-4 py-3 text-muted-foreground">
@@ -282,11 +358,9 @@ export default function AdminPage() {
                       </td>
                       <td className="px-4 py-3">
                         <span
-                          className={`inline-block rounded-xl px-2.5 py-1 text-xs font-medium ${
-                            staffUser.role === "PROFESSOR"
-                              ? "bg-navy-100 text-navy-800 dark:bg-navy-800/40 dark:text-navy-200"
-                              : "bg-gold-100 text-gold-800 dark:bg-gold-900/30 dark:text-gold-300"
-                          }`}
+                          className={`inline-block rounded-xl px-2.5 py-1 text-xs font-medium ${getRoleBadgeClass(
+                            staffUser.role,
+                          )}`}
                         >
                           {roles(staffUser.role)}
                         </span>
@@ -314,6 +388,136 @@ export default function AdminPage() {
         </PageSection>
       </FadeIn>
 
+      <FadeIn delay={0.3}>
+        <PageSection
+          title={t("userListTitle")}
+          description={t("userListDescription", { count: filteredUsers.length })}
+          tone="secondary"
+          actions={
+            <Button
+              size="icon"
+              variant="ghost"
+              icon={<RefreshCw size={15} />}
+              loading={loadingUsers}
+              aria-label={t("refreshUsers")}
+              onClick={() => loadUsers()}
+            />
+          }
+        >
+          <div className="mb-4">
+            <Input
+              label={t("searchLabel")}
+              value={userSearch}
+              onChange={(event) => setUserSearch(event.target.value)}
+              placeholder={t("searchPlaceholder")}
+            />
+          </div>
+
+          {loadingUsers ? (
+            <div className="flex flex-col gap-2">
+              <Skeleton className="h-12 w-full rounded-xl" />
+              <Skeleton className="h-12 w-full rounded-xl" />
+              <Skeleton className="h-12 w-full rounded-xl" />
+            </div>
+          ) : null}
+
+          {!loadingUsers && filteredUsers.length === 0 ? (
+            <EmptyState
+              icon={Users}
+              title={t("noUsers")}
+              description={t("noUsersDesc")}
+            />
+          ) : null}
+
+          {!loadingUsers && filteredUsers.length > 0 ? (
+            <div className="surface-utility overflow-x-auto rounded-[24px] p-1">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-white/20 bg-muted/30 dark:border-white/10">
+                    <th className="px-4 py-3 text-left font-semibold text-muted-foreground">
+                      {t("nameLabel")}
+                    </th>
+                    <th className="px-4 py-3 text-left font-semibold text-muted-foreground">
+                      {t("emailLabel")}
+                    </th>
+                    <th className="px-4 py-3 text-left font-semibold text-muted-foreground">
+                      {t("roleLabel")}
+                    </th>
+                    <th className="px-4 py-3 text-left font-semibold text-muted-foreground">
+                      {t("statusLabel")}
+                    </th>
+                    <th className="px-4 py-3 text-left font-semibold text-muted-foreground">
+                      {t("createdAtLabel")}
+                    </th>
+                    <th className="px-4 py-3" />
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredUsers.map((user) => (
+                    <tr
+                      key={user.id}
+                      className="border-b border-white/20 transition-colors hover:bg-muted/30 dark:border-white/10"
+                    >
+                      <td className="px-4 py-3">{user.name ?? "-"}</td>
+                      <td className="px-4 py-3 text-muted-foreground">
+                        {user.email}
+                      </td>
+                      <td className="px-4 py-3">
+                        <span
+                          className={`inline-block rounded-xl px-2.5 py-1 text-xs font-medium ${getRoleBadgeClass(
+                            user.role,
+                          )}`}
+                        >
+                          {roles(user.role)}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3">
+                        <div className="flex flex-wrap gap-2">
+                          <span
+                            className={`inline-block rounded-xl px-2.5 py-1 text-xs font-medium ${
+                              user.emailVerified
+                                ? "bg-success-100 text-success-700 dark:bg-success-900/30 dark:text-success-300"
+                                : "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300"
+                            }`}
+                          >
+                            {user.emailVerified
+                              ? t("verifiedStatus")
+                              : t("pendingVerification")}
+                          </span>
+                          {user.mustChangePassword ? (
+                            <span className="inline-block rounded-xl bg-danger-100 px-2.5 py-1 text-xs font-medium text-danger-700 dark:bg-danger-900/30 dark:text-danger-300">
+                              {t("needsResetStatus")}
+                            </span>
+                          ) : null}
+                        </div>
+                      </td>
+                      <td className="px-4 py-3 text-muted-foreground">
+                        {new Date(user.createdAt).toLocaleDateString(locale)}
+                      </td>
+                      <td className="px-4 py-3 text-right">
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          icon={<KeyRound size={15} />}
+                          disabled={
+                            forceResetMutation.isPending ||
+                            user.id === currentUserId
+                          }
+                          onClick={() => setResetTarget(user)}
+                        >
+                          {t("forceResetButton")}
+                        </Button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          ) : null}
+        </PageSection>
+      </FadeIn>
+
       <ConfirmModal
         open={!!deleteTarget}
         title={t("deleteTitle")}
@@ -322,6 +526,17 @@ export default function AdminPage() {
         onConfirm={handleDelete}
         onCancel={() => setDeleteTarget(null)}
         variant="danger"
+      />
+
+      <ConfirmModal
+        open={!!resetTarget}
+        title={t("forceResetTitle")}
+        message={t("forceResetDescription", {
+          email: resetTarget?.email ?? "",
+        })}
+        confirmLabel={t("forceResetButton")}
+        onConfirm={handleForceReset}
+        onCancel={() => setResetTarget(null)}
       />
     </PageScaffold>
   );

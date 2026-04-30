@@ -13,7 +13,6 @@ const eslintConfig = defineConfig([
     "next-env.d.ts",
     "node_modules/**",
     "prisma/seed.ts",
-    "scripts/**",
   ]),
   {
     rules: {

@@ -1,9 +1,6 @@
 /**
  * Shared TypeScript types barrel.
  * Import domain types from here instead of reaching into lib/ internals.
-/**
- * Shared TypeScript types barrel.
- * Import domain types from here instead of reaching into lib/ internals.
  *
  * @example
  *   import type { SessionUser, Permission } from "@/types";

@@ -43,5 +43,8 @@ jobs:
       - name: Type-check
         run: npm run typecheck
 
+      - name: Run Tests
+        run: npx vitest run --coverage
+
       - name: Build
         run: npm run build

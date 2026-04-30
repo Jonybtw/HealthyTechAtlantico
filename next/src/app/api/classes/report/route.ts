@@ -54,15 +54,27 @@ export async function GET(req: NextRequest) {
       },
     });
 
-    const report = students.map((student) => ({
-      id: student.id,
-      name: student.name,
-      sex: student.sex,
-      className: student.className,
-      birthDate: student.birthDate,
-      latestBiometric: student.biometrics[0] ?? null,
-      testCount: student.tests.length,
-    }));
+    const report = students.map((student) => {
+      const bio = student.biometrics[0];
+      return {
+        id: student.id,
+        name: student.name,
+        sex: student.sex,
+        className: student.className,
+        birthDate: student.birthDate,
+        latestBiometric: bio
+          ? {
+              ...bio,
+              heightM: Number(bio.heightM),
+              weightKg: Number(bio.weightKg),
+              imc: Number(bio.imc),
+              fatPct: bio.fatPct ? Number(bio.fatPct) : null,
+              waistCm: bio.waistCm ? Number(bio.waistCm) : null,
+            }
+          : null,
+        testCount: student.tests.length,
+      };
+    });
 
     return ok(report);
   } catch (error) {

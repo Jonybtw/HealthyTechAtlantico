@@ -346,6 +346,7 @@ export default function TurmaPage() {
     return (
       <PageScaffold
         headerProps={{
+          eyebrow: t("eyebrow"),
           title: t("title"),
           description: t("description"),
         }}
@@ -363,6 +364,7 @@ export default function TurmaPage() {
     <PageScaffold
       className="gap-5"
       headerProps={{
+        eyebrow: t("eyebrow"),
         title: t("title"),
         description: t("description"),
       }}
@@ -401,7 +403,7 @@ export default function TurmaPage() {
         layout="analytics"
       >
         {loadingClasses ? (
-          <Skeleton className="h-28 rounded-2xl" />
+          <Skeleton className="h-28 rounded-[24px]" />
         ) : classesError ? (
           <EmptyState
             icon={Users}
@@ -483,8 +485,8 @@ export default function TurmaPage() {
       {!classId ? null : loading ? (
         <div className="space-y-5">
           <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_320px]">
-            <Skeleton className="h-[640px] rounded-2xl" />
-            <Skeleton className="h-[320px] rounded-2xl" />
+            <Skeleton className="h-[640px] rounded-[24px]" />
+            <Skeleton className="h-[320px] rounded-[24px]" />
           </div>
         </div>
       ) : (
@@ -573,7 +575,7 @@ export default function TurmaPage() {
                       key={student.id}
                       type="button"
                       onClick={() => router.push(`/alunos/${student.id}`)}
-                      className="flex w-full items-center gap-3 rounded-2xl border border-border/70 bg-background/72 px-4 py-3 text-left transition-all duration-200 hover:-translate-y-0.5 hover:border-gold-300/40 hover:shadow-card"
+                      className="flex w-full items-center gap-3 rounded-[24px] border border-border/70 bg-background/72 px-4 py-3 text-left transition-all duration-200 hover:-translate-y-0.5 hover:border-gold-300/40 hover:shadow-card"
                     >
                       <div className="min-w-0 flex-1">
                         <StudentIdentity
@@ -721,7 +723,7 @@ function MetricChip({
   meta: string;
 }) {
   return (
-    <div className="rounded-2xl border border-border/70 bg-background/58 px-4 py-3">
+    <div className="rounded-[24px] border border-border/70 bg-background/58 px-4 py-3">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <p className="text-tiny font-semibold uppercase tracking-[0.16em] text-muted-foreground">

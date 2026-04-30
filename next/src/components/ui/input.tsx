@@ -55,7 +55,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
                 error ? `${uid}-error` : hint ? `${uid}-hint` : undefined
               }
               className={cn(
-                "peer flex h-12 w-full rounded-2xl border border-input bg-background px-4 pt-4 pb-2 text-sm text-foreground shadow-sm",
+                "peer flex h-12 w-full rounded-[24px] border border-input bg-background px-4 pt-4 pb-2 text-sm text-foreground shadow-sm",
                 "transition-all duration-300",
                 "focus:border-gold-400 focus:bg-background focus:outline-none focus:ring-4 focus:ring-gold-400/20",
                 "hover:border-input-hover hover:bg-background/90",
@@ -150,7 +150,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
               error ? `${uid}-error` : hint ? `${uid}-hint` : undefined
             }
             className={cn(
-              "flex h-12 w-full rounded-2xl border border-input bg-background px-4 py-2 text-sm text-foreground shadow-sm",
+              "flex h-12 w-full rounded-[24px] border border-input bg-background px-4 py-2 text-sm text-foreground shadow-sm",
               "placeholder:text-muted-foreground transition-all duration-300",
               "focus:border-gold-400 focus:bg-background focus:outline-none focus:ring-4 focus:ring-gold-400/20",
               "hover:border-input-hover hover:bg-background/90",

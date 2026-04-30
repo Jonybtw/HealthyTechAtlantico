@@ -3,10 +3,12 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { NextRequest } from "next/server";
 
-const { authMock, auditLogMock, updateMock } = vi.hoisted(() => ({
+const { authMock, auditLogMock, updateMock, accessMock, findUniqueMock } = vi.hoisted(() => ({
   authMock: vi.fn(),
   auditLogMock: vi.fn(),
   updateMock: vi.fn(),
+  accessMock: vi.fn(),
+  findUniqueMock: vi.fn(),
 }));
 
 vi.mock("@/lib/auth", () => ({
@@ -17,9 +19,14 @@ vi.mock("@/lib/audit", () => ({
   auditLog: auditLogMock,
 }));
 
+vi.mock("@/lib/student-access", () => ({
+  getStudentAccessContext: accessMock,
+}));
+
 vi.mock("@/lib/prisma", () => ({
   prisma: {
     student: {
+      findUnique: findUniqueMock,
       update: updateMock,
     },
   },
@@ -32,7 +39,14 @@ describe("PUT /api/students/[id]", () => {
     authMock.mockReset();
     auditLogMock.mockReset();
     updateMock.mockReset();
+    accessMock.mockReset();
+    findUniqueMock.mockReset();
 
+    accessMock.mockResolvedValue({ ok: true });
+    findUniqueMock.mockResolvedValue({
+      id: "student-1",
+      name: "Maria",
+    });
     authMock.mockResolvedValue({
       user: { id: "teacher-1", role: "PROFESSOR" },
     });

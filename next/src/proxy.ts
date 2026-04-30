@@ -14,7 +14,7 @@ const SECURITY_HEADERS: Record<string, string> = {
     "default-src 'self'; " +
     "base-uri 'self'; " +
     "object-src 'none'; " +
-    "script-src 'self' 'unsafe-inline' 'unsafe-eval'; " +
+    `script-src 'self' 'unsafe-inline' ${process.env.NODE_ENV === "development" ? "'unsafe-eval'" : ""}; ` +
     "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; " +
     "font-src 'self' https://fonts.gstatic.com; " +
     "img-src 'self' data: blob:; " +
@@ -97,15 +97,20 @@ export function proxy(request: NextRequest) {
   if (request.nextUrl.pathname.startsWith("/api")) {
     const pathname = request.nextUrl.pathname;
     const isAuthSignin =
-      pathname === "/api/auth/signin" && request.method === "POST";
+      (pathname === "/api/auth/signin" || pathname === "/api/auth/change-password") &&
+      request.method === "POST";
     const isImportEndpoint =
       pathname.includes("/import") && request.method === "POST";
+    const isSosEndpoint =
+      pathname.includes("/sos") && request.method === "POST";
 
     const limit = isAuthSignin
       ? rateLimit(`auth:${ip}`, 8, 15 * 60 * 1000)
       : isImportEndpoint
         ? rateLimit(`import:${ip}`, 10, 60 * 60 * 1000)
-        : rateLimit(`api:${ip}`, 120, 60 * 1000);
+        : isSosEndpoint
+          ? rateLimit(`sos:${ip}`, 5, 5 * 60 * 1000)
+          : rateLimit(`api:${ip}`, 120, 60 * 1000);
 
     if (!limit.allowed) {
       return applySecurityHeaders(
@@ -115,7 +120,9 @@ export function proxy(request: NextRequest) {
               ? "Demasiadas tentativas de autenticação. Tente mais tarde."
               : isImportEndpoint
                 ? "Limite de importações excedido. Tente novamente mais tarde."
-                : "Limite de pedidos excedido.",
+                : isSosEndpoint
+                  ? "Aguarde antes de enviar novo alerta SOS."
+                  : "Limite de pedidos excedido.",
           }),
           {
             status: 429,

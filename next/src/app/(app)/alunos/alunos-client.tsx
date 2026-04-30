@@ -447,7 +447,7 @@ export function AlunosClient({
             }
           />
         ) : studentsQuery.isLoading && !studentsQuery.data ? (
-          <div className="rounded-2xl border border-white/20 bg-white/72 p-5 shadow-card">
+          <div className="rounded-[24px] border border-white/20 bg-white/72 p-5 shadow-card">
             <div className="flex flex-col gap-4 border-b border-border/60 pb-4 sm:flex-row sm:items-center sm:justify-between">
               <div className="space-y-2">
                 <Skeleton className="h-3 w-24" />

@@ -308,7 +308,7 @@ export default function AuditoriaPage() {
               <p>{t("showingCount", { count: logs.length })}</p>
             </div>
 
-            <div className="surface-utility overflow-x-auto rounded-2xl p-1">
+            <div className="surface-utility overflow-x-auto rounded-[24px] p-1">
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-white/20 dark:border-white/10 bg-navy-50/50 dark:bg-navy-900/30">

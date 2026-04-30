@@ -22,6 +22,7 @@ export const AUDIT_ACTIONS = {
   ADD_GUARDIAN: "add_guardian",
   REMOVE_GUARDIAN: "remove_guardian",
   CHANGE_PASSWORD: "change_password",
+  FORCE_PASSWORD_RESET: "force_password_reset",
   UPDATE_CONSENT: "update_consent",
 } as const;
 

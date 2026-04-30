@@ -67,19 +67,19 @@ export type DashboardSummary =
       cards: DashboardCardData[];
       zafByYear: ZafYearStat[];
     }
-  | {
-      variant: "psychologist";
-      studentSummary: null;
-      cards: DashboardCardData[];
-      zafByYear: null;
-      openAlerts: DashboardPsychologistAlertItem[];
-      recentQuestionnaires: DashboardPsychologistQuestionnaireItem[];
-    }
+    | {
+        variant: "psychologist";
+        studentSummary: null;
+        cards: DashboardCardData[];
+        zafByYear: ZafYearStat[];
+        openAlerts: DashboardPsychologistAlertItem[];
+        recentQuestionnaires: DashboardPsychologistQuestionnaireItem[];
+      }
   | {
       variant: "parent";
       studentSummary: null;
       cards: DashboardCardData[];
-      zafByYear: null;
+      zafByYear: ZafYearStat[];
       linkedStudents: DashboardParentStudentItem[];
       recentReports: DashboardParentReportItem[];
     };
@@ -157,6 +157,7 @@ export async function getDashboardSummaryForUser(user: {
       followedStudents,
       recentAlerts,
       recentQuestionnaires,
+      zafByYear,
     ] = await Promise.all([
       prisma.sosAlert.count({ where: { resolved: false } }),
       prisma.questionnaire.count(),
@@ -196,12 +197,13 @@ export async function getDashboardSummaryForUser(user: {
           },
         },
       }),
+      getRecentZafStats(),
     ]);
 
     return {
       variant: "psychologist",
       studentSummary: null,
-      zafByYear: null,
+      zafByYear,
       cards: [
         {
           id: "open-sos",
@@ -251,7 +253,7 @@ export async function getDashboardSummaryForUser(user: {
       select: { studentId: true },
     });
     const linkedStudentIds = guardianLinks.map((link) => link.studentId);
-    const [reportCount, questionnaireCount, linkedStudents, recentReports] =
+    const [reportCount, questionnaireCount, linkedStudents, recentReports, zafByYear] =
       linkedStudentIds.length
         ? await Promise.all([
             prisma.report.count({
@@ -295,13 +297,14 @@ export async function getDashboardSummaryForUser(user: {
                 },
               },
             }),
+            getRecentZafStats(),
           ])
-        : [0, 0, [], []];
+        : [0, 0, [], [], []];
 
     return {
       variant: "parent",
       studentSummary: null,
-      zafByYear: null,
+      zafByYear: zafByYear as ZafYearStat[],
       cards: [
         {
           id: "linked-students",

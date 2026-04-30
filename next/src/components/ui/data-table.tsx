@@ -156,7 +156,7 @@ export function DataTable<T extends object>({
 
   return (
     <div className="animate-fade-in-up flex flex-col gap-4">
-      <div className="overflow-hidden rounded-2xl border border-border bg-surface-secondary shadow-card">
+      <div className="overflow-hidden rounded-[24px] border border-border bg-surface-secondary shadow-card">
         {searchable || toolbarTitle || toolbarSummary || toolbarActions ? (
           <div className="flex flex-col gap-4 border-b border-border/60 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
             <div className="space-y-0.5">

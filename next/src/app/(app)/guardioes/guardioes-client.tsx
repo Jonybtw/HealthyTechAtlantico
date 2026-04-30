@@ -257,7 +257,7 @@ export default function GuardioesPage() {
             layout="form"
             className="overflow-visible z-10"
           >
-            <div className="rounded-2xl border border-border bg-surface-secondary p-4 shadow-sm sm:p-5">
+            <div className="rounded-[24px] border border-border bg-surface-secondary p-4 shadow-sm sm:p-5">
               <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_180px] lg:items-end">
                 <div className="min-w-0">
                   <p className="section-kicker whitespace-normal break-words sm:whitespace-nowrap sm:truncate">{t("selectStudent")}</p>
@@ -370,7 +370,7 @@ export default function GuardioesPage() {
                   )?.labelKey;
                   return (
                     <StaggerItem key={g.id}>
-                      <div className="surface-secondary group flex h-full flex-col rounded-2xl p-5 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-card-hover">
+                      <div className="surface-secondary group flex h-full flex-col rounded-[24px] p-5 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-card-hover">
                         <div className="flex items-start justify-between mb-5">
                           <div className="flex items-center gap-3">
                             <div className="flex size-11 shrink-0 items-center justify-center rounded-xl border border-gold-400/22 bg-gold-400/10 font-black text-base text-gold-700 shadow-sm transition-transform duration-300 group-hover:scale-105 dark:border-gold-300/18 dark:bg-gold-300/10 dark:text-gold-300">
@@ -486,7 +486,7 @@ export default function GuardioesPage() {
               </FadeIn>
             ) : selectedStudentId ? (
               <FadeIn key="add-action" className="w-full">
-                <div className="surface-secondary rounded-2xl p-6 sm:p-8 flex flex-col items-center justify-center text-center gap-5 border border-white/10 shadow-sm relative overflow-hidden">
+                <div className="surface-secondary rounded-[24px] p-6 sm:p-8 flex flex-col items-center justify-center text-center gap-5 border border-white/10 shadow-sm relative overflow-hidden">
                   <div className="size-14 rounded-full bg-primary-500/10 flex items-center justify-center relative z-10 border border-primary-500/20">
                     <UserPlus className="size-6 text-primary-400" />
                   </div>

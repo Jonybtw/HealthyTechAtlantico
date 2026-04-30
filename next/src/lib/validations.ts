@@ -4,9 +4,31 @@ import {
   isAllowedEmailForRole,
   isInternalEmail,
 } from "@/lib/email-rules";
+import {
+  getPasswordPolicyIssues,
+  PASSWORD_POLICY_MESSAGES,
+} from "@/lib/password-policy";
 import { QUESTIONNAIRE_TYPES } from "@/lib/questionnaires";
 
-const emailSchema = z.string().trim().toLowerCase().email("Email invalido");
+const emailSchema = z.string().trim().toLowerCase().email("E-mail inválido");
+
+const nameSchema = z.string().trim().min(2, "Nome obrigatório").max(100);
+
+function applyPasswordPolicy(
+  password: string,
+  ctx: z.RefinementCtx,
+  path: (string | number)[] = ["password"],
+) {
+  const issues = getPasswordPolicyIssues(password);
+
+  for (const message of issues) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path,
+      message,
+    });
+  }
+}
 
 function validateRoleEmailRule(
   data: { email: string; role: string },
@@ -16,7 +38,7 @@ function validateRoleEmailRule(
     ctx.addIssue({
       code: z.ZodIssueCode.custom,
       path: ["email"],
-      message: getEmailRuleMessage(data.role),
+      message: getEmailRuleMessage(),
     });
   }
 }
@@ -25,29 +47,30 @@ function validateRegisterRule(
   data: { email: string; role: string; consentRgpd: boolean },
   ctx: z.RefinementCtx,
 ) {
+  // Always trigger the email rule validation
   validateRoleEmailRule(data, ctx);
 
   if (!data.consentRgpd) {
     ctx.addIssue({
       code: z.ZodIssueCode.custom,
       path: ["consentRgpd"],
-      message: "Consentimento RGPD obrigatorio",
+      message: "Consentimento RGPD obrigatório",
     });
   }
 }
 
 const registerBaseSchema = z.object({
-  name: z.string().min(2, "Nome obrigatorio").max(100).optional(),
+  name: nameSchema.optional(),
   email: emailSchema,
-  password: z.string().min(6, "Minimo 6 caracteres"),
+  password: z.string().min(1, "A palavra-passe é obrigatória"),
   role: z.enum(["ALUNO", "PAIS"]),
   consentRgpd: z.boolean(),
 });
 
 const createStaffBaseSchema = z.object({
-  name: z.string().min(2, "Nome obrigatorio").max(100),
+  name: z.string().min(2, "Nome obrigatório").max(100),
   email: emailSchema,
-  password: z.string().min(6, "Minimo 6 caracteres"),
+  password: z.string().min(1, "Palavra-passe obrigatória"),
   role: z.enum(["PROFESSOR", "PSICOLOGO"]),
 });
 
@@ -56,7 +79,7 @@ const optionalInternalEmailSchema = z
   .optional()
   .transform((value) => (value ? value : undefined))
   .refine((value) => !value || isInternalEmail(value), {
-    message: getEmailRuleMessage("PROFESSOR"),
+    message: getEmailRuleMessage(),
   });
 
 export const loginSchema = z.object({
@@ -65,15 +88,21 @@ export const loginSchema = z.object({
 });
 
 export const registerSchema =
-  registerBaseSchema.superRefine(validateRegisterRule);
+  registerBaseSchema.superRefine((data, ctx) => {
+    validateRegisterRule(data, ctx);
+    applyPasswordPolicy(data.password, ctx);
+  });
 
 export const registerFormSchema = registerBaseSchema
   .extend({
-    confirmPassword: z.string().min(1, "Confirmacao obrigatoria"),
+    confirmPassword: z.string().min(1, "Confirmação obrigatória"),
   })
-  .superRefine(validateRegisterRule)
+  .superRefine((data, ctx) => {
+    validateRegisterRule(data, ctx);
+    applyPasswordPolicy(data.password, ctx);
+  })
   .refine((data) => data.password === data.confirmPassword, {
-    message: "As palavras-passe nao coincidem",
+    message: "As palavras-passe não coincidem",
     path: ["confirmPassword"],
   });
 
@@ -86,20 +115,45 @@ export const updateConsentSchema = z.object({
   consentShare: z.boolean().optional(),
 });
 
-export const changePasswordSchema = z.object({
-  currentPassword: z.string().min(1, "Palavra-passe atual obrigatoria"),
-  newPassword: z.string().min(6, "Minimo 6 caracteres"),
+const changePasswordBaseSchema = z.object({
+  currentPassword: z.string().min(1, "Palavra-passe atual obrigatória"),
+  newPassword: z.string().min(1, "A nova palavra-passe é obrigatória"),
 });
 
-export const changePasswordFormSchema = changePasswordSchema
-  .extend({ confirmPassword: z.string().min(1, "Confirmacao obrigatoria") })
+export const changePasswordSchema = changePasswordBaseSchema.superRefine(
+  (data, ctx) => {
+    applyPasswordPolicy(data.newPassword, ctx, ["newPassword"]);
+
+    if (data.currentPassword === data.newPassword) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["newPassword"],
+        message: PASSWORD_POLICY_MESSAGES.sameAsCurrent,
+      });
+    }
+  },
+);
+
+export const changePasswordFormSchema = changePasswordBaseSchema
+  .extend({ confirmPassword: z.string().min(1, "Confirmação obrigatória") })
+  .superRefine((data, ctx) => {
+    applyPasswordPolicy(data.newPassword, ctx, ["newPassword"]);
+
+    if (data.currentPassword === data.newPassword) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["newPassword"],
+        message: PASSWORD_POLICY_MESSAGES.sameAsCurrent,
+      });
+    }
+  })
   .refine((data) => data.newPassword === data.confirmPassword, {
-    message: "As palavras-passe nao coincidem",
+    message: "As palavras-passe não coincidem",
     path: ["confirmPassword"],
   });
 
 export const createStudentSchema = z.object({
-  name: z.string().min(2, "Nome obrigatorio").max(100),
+  name: z.string().min(2, "Nome obrigatório").max(100),
   sex: z.enum(["M", "F"]),
   birthDate: z.string().optional(),
   age: z.number().int().min(5).max(25).optional(),
@@ -195,14 +249,14 @@ export const questionnaireSchema = z.discriminatedUnion("type", [
 ]);
 
 export const sosSchema = z.object({
-  psych: z.string().trim().min(1, "Psicologo obrigatorio").max(120),
-  teacher: z.string().trim().min(1, "Professor obrigatorio").max(120),
+  psych: z.string().trim().min(1, "Psicólogo obrigatório").max(120),
+  teacher: z.string().trim().min(1, "Professor obrigatório").max(120),
   psychEmail: optionalInternalEmailSchema,
   teacherEmail: optionalInternalEmailSchema,
 });
 
 export const exemptionSchema = z.object({
-  reason: z.string().min(1, "Motivo obrigatorio"),
+  reason: z.string().min(1, "Motivo obrigatório"),
   startDate: z.string(),
   endDate: z.string(),
   medicalCertificate: z.boolean().default(false),
@@ -210,16 +264,149 @@ export const exemptionSchema = z.object({
 
 export const reportEmailSchema = z.object({
   guardianUserId: z.string().min(1),
-  title: z.string().default("Relatorio HealthyTechAtlantico"),
+  title: z.string().default("Relatório HealthyTechAtlantico"),
   schoolYear: z.string().optional(),
 });
 
 export const guardianSchema = z.object({
-  guardianEmail: emailSchema.refine((email) => !isInternalEmail(email), {
-    message: getEmailRuleMessage("PAIS"),
-  }),
+  guardianEmail: emailSchema,
   relationship: z.string().default("encarregado"),
 });
+
+const consentRequiredMessage = "Consentimento RGPD obrigatório";
+const studentDomainMessage = `O e-mail deve terminar exatamente em @colegioatlantico.pt`;
+
+function validateSelfRegistrationConsent(
+  data: { consentRgpd: boolean },
+  ctx: z.RefinementCtx,
+) {
+  if (!data.consentRgpd) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ["consentRgpd"],
+      message: consentRequiredMessage,
+    });
+  }
+}
+
+const studentSelfRegisterBaseSchema = z.object({
+  name: nameSchema,
+  email: emailSchema,
+  password: z.string().min(1, "A palavra-passe é obrigatória"),
+  studentProcessNumber: z
+    .string()
+    .trim()
+    .min(1, "Número de processo obrigatório")
+    .max(50, "Número de processo inválido"),
+  consentRgpd: z.boolean(),
+});
+
+export const studentSelfRegisterSchema = studentSelfRegisterBaseSchema.superRefine(
+  (data, ctx) => {
+    validateSelfRegistrationConsent(data, ctx);
+    applyPasswordPolicy(data.password, ctx);
+
+    if (!isInternalEmail(data.email)) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["email"],
+        message: studentDomainMessage,
+      });
+    }
+  },
+);
+
+export const studentSelfRegisterFormSchema = studentSelfRegisterBaseSchema
+  .extend({
+    confirmPassword: z.string().min(1, "Confirmação obrigatória"),
+  })
+  .superRefine((data, ctx) => {
+    validateSelfRegistrationConsent(data, ctx);
+    applyPasswordPolicy(data.password, ctx);
+
+    if (!isInternalEmail(data.email)) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["email"],
+        message: studentDomainMessage,
+      });
+    }
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "As palavras-passe não coincidem",
+    path: ["confirmPassword"],
+  });
+
+const guardianSelfRegisterBaseSchema = z.object({
+  name: nameSchema,
+  email: emailSchema,
+  password: z.string().min(1, "A palavra-passe é obrigatória"),
+  studentProcessNumber: z
+    .string()
+    .trim()
+    .min(1, "Número de processo obrigatório")
+    .max(50, "Número de processo inválido"),
+  consentRgpd: z.boolean(),
+});
+
+export const guardianSelfRegisterSchema = guardianSelfRegisterBaseSchema.superRefine(
+  (data, ctx) => {
+    validateSelfRegistrationConsent(data, ctx);
+    applyPasswordPolicy(data.password, ctx);
+  },
+);
+
+export const guardianSelfRegisterFormSchema = guardianSelfRegisterBaseSchema
+  .extend({
+    confirmPassword: z.string().min(1, "Confirmação obrigatória"),
+  })
+  .superRefine((data, ctx) => {
+    validateSelfRegistrationConsent(data, ctx);
+    applyPasswordPolicy(data.password, ctx);
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "As palavras-passe não coincidem",
+    path: ["confirmPassword"],
+  });
+
+export const publicChangePasswordSchema = changePasswordBaseSchema
+  .extend({
+    email: emailSchema.optional(),
+    token: z.string().trim().min(1, "Token obrigatório").optional(),
+  })
+  .superRefine((data, ctx) => {
+    applyPasswordPolicy(data.newPassword, ctx, ["newPassword"]);
+
+    if (data.currentPassword === data.newPassword) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["newPassword"],
+        message: PASSWORD_POLICY_MESSAGES.sameAsCurrent,
+      });
+    }
+  });
+
+export const publicChangePasswordFormSchema = changePasswordBaseSchema
+  .extend({
+    email: emailSchema.optional(),
+    token: z.string().trim().min(1, "Token obrigatório").optional(),
+    confirmPassword: z.string().min(1, "Confirmação obrigatória"),
+  })
+  .superRefine((data, ctx) => {
+    applyPasswordPolicy(data.newPassword, ctx, ["newPassword"]);
+
+    if (data.currentPassword === data.newPassword) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["newPassword"],
+        message: PASSWORD_POLICY_MESSAGES.sameAsCurrent,
+      });
+    }
+  })
+  .refine((data) => data.newPassword === data.confirmPassword, {
+    message: "As palavras-passe não coincidem",
+    path: ["confirmPassword"],
+  });
 
 function queryNumberSchema(schema: z.ZodNumber) {
   return z.preprocess(

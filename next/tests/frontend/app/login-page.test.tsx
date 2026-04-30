@@ -59,23 +59,17 @@ describe("LoginClient", () => {
     signInMock.mockReset();
   });
 
-  it("switches between login and register modes", async () => {
+  it("navigates to register page when clicking create account", async () => {
     const user = userEvent.setup();
 
     render(<LoginClient />);
 
     expect(screen.getByRole("heading", { name: "Entrar" })).toBeInTheDocument();
 
-    await user.click(screen.getByRole("button", { name: "Criar conta" }));
+    const createAccountButton = screen.getByRole("button", { name: /Criar conta/i });
+    await user.click(createAccountButton);
 
-    await waitFor(() => {
-      expect(
-        screen.getByRole("heading", { name: "Criar conta" }),
-      ).toBeInTheDocument();
-    });
-
-    expect(screen.getByLabelText("Nome")).toBeInTheDocument();
-    expect(screen.getByText("Aceito a politica RGPD.")).toBeInTheDocument();
+    expect(routerPush).toHaveBeenCalledWith("/register");
   });
 
   it("submits login credentials and redirects on success", async () => {

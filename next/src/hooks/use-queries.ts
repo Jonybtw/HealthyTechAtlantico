@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import type { Sex } from "@prisma/client";
+import type { Role, Sex } from "@prisma/client";
 import { readApiResponse } from "@/lib/api-client";
 
 async function fetchJson<T>(url: string): Promise<T> {
@@ -47,6 +47,16 @@ export interface StaffUser {
   createdAt: string;
 }
 
+export interface AdminUser {
+  id: string;
+  name: string | null;
+  email: string;
+  role: Role;
+  emailVerified: string | null;
+  mustChangePassword: boolean;
+  createdAt: string;
+}
+
 interface SosAlertSummary {
   id: string;
   resolved: boolean;
@@ -64,6 +74,7 @@ const queryKeys = {
   ) =>
     ["students-list", { page, limit, search, className, schoolYear }] as const,
   staff: () => ["staff"] as const,
+  adminUsers: () => ["admin-users"] as const,
   dispensas: (studentId: string) => ["dispensas", studentId] as const,
   sosAlerts: () => ["sos-alerts"] as const,
   studentSos: (studentId: string) => ["student-sos", studentId] as const,
@@ -115,6 +126,14 @@ export function useStaff() {
     queryKey: queryKeys.staff(),
     queryFn: () => fetchJson<StaffUser[]>("/api/admin/staff"),
     staleTime: 5 * 60 * 1000,
+  });
+}
+
+export function useAdminUsers() {
+  return useQuery({
+    queryKey: queryKeys.adminUsers(),
+    queryFn: () => fetchJson<AdminUser[]>("/api/admin/users"),
+    staleTime: 60 * 1000,
   });
 }
 
@@ -200,6 +219,25 @@ export function useDeleteStaff() {
       mutateJson<void>("/api/admin/staff", "DELETE", { userId }),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: queryKeys.staff() });
+      void queryClient.invalidateQueries({
+        queryKey: queryKeys.adminUsers(),
+      });
+    },
+  });
+}
+
+export function useForceResetPassword() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (userId: string) =>
+      mutateJson<{ email: string }>(
+        `/api/admin/users/${encodeURIComponent(userId)}/force-reset-password`,
+        "POST",
+      ),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({
+        queryKey: queryKeys.adminUsers(),
+      });
     },
   });
 }

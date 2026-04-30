@@ -76,8 +76,27 @@ export async function PUT(
     }
 
     const { id } = await params;
+    const access = await getStudentAccessContext(
+      id,
+      session.user.id,
+      session.user.role as Role,
+      PERMISSIONS.UPDATE_STUDENT
+    );
+
+    if (!access.ok) {
+      return err(access.error, access.status);
+    }
+
     const body = await req.json();
     const data = updateStudentSchema.parse(body);
+
+    const existingStudent = await prisma.student.findUnique({
+      where: { id },
+    });
+    if (!existingStudent) {
+      return notFound("Aluno não encontrado");
+    }
+
     const shouldLogStudentUpdate =
       data.name !== undefined ||
       data.sex !== undefined ||

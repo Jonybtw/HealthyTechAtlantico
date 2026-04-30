@@ -642,6 +642,7 @@ export default function TestesPage() {
     return (
       <PageScaffold
         headerProps={{
+          eyebrow: t("eyebrow"),
           title: t("title"),
           description: t("description"),
         }}
@@ -659,6 +660,7 @@ export default function TestesPage() {
     <PageScaffold
       className="gap-6"
       headerProps={{
+        eyebrow: t("eyebrow"),
         title: t("title"),
         description: t("description"),
       }}
@@ -696,7 +698,7 @@ export default function TestesPage() {
             description="Regista a sessao por familias de prova e confirma a leitura ZAF em tempo real."
           >
             <form onSubmit={handleSubmit} className="grid gap-5">
-              <div className="rounded-2xl border border-border bg-surface-secondary p-4 shadow-sm sm:p-5">
+              <div className="rounded-[24px] border border-border bg-surface-secondary p-4 shadow-sm sm:p-5">
                 <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_240px] xl:items-end">
                   <div className="min-w-0">
                     <p className="text-tiny font-semibold uppercase tracking-[0.22em] text-muted-foreground">
@@ -714,7 +716,7 @@ export default function TestesPage() {
                     </div>
                   </div>
 
-                  <div className="rounded-2xl border border-border bg-surface-utility px-4 py-4 shadow-sm">
+                  <div className="rounded-[24px] border border-border bg-surface-utility px-4 py-4 shadow-sm">
                     <div className="flex items-start justify-between gap-3">
                       <div>
                         <p className="text-tiny font-semibold uppercase tracking-[0.18em] text-muted-foreground">
@@ -745,7 +747,7 @@ export default function TestesPage() {
                 </div>
               </div>
 
-              <div className="overflow-hidden rounded-2xl border border-border bg-surface-secondary shadow-sm">
+              <div className="overflow-hidden rounded-[24px] border border-border bg-surface-secondary shadow-sm">
                 {CATEGORY_SECTIONS.map((section, index) => (
                   <WorkbenchFamilyRow
                     key={section.id}
@@ -782,7 +784,7 @@ export default function TestesPage() {
                 <div className="grid gap-4 border-t border-white/18 p-5 dark:border-white/8 xl:grid-cols-[220px_minmax(0,1fr)]">
                   <div className="space-y-2">
                     <div className="flex items-center gap-2">
-                      <span className="flex size-10 items-center justify-center rounded-2xl bg-surface-utility text-foreground shadow-sm">
+                      <span className="flex size-10 items-center justify-center rounded-[24px] bg-surface-utility text-foreground shadow-sm">
                         <Scale className="size-5" />
                       </span>
                       <p className="text-sm font-semibold text-foreground">
@@ -936,7 +938,7 @@ export default function TestesPage() {
                 )}
 
                 {lastSubmission?.zone ? (
-                  <div className="rounded-2xl border border-gold-400/18 bg-gold-400/10 px-4 py-3">
+                  <div className="rounded-[24px] border border-gold-400/18 bg-gold-400/10 px-4 py-3">
                     <p className="text-tiny font-semibold uppercase tracking-[0.18em] text-muted-foreground">
                       Zona principal do ultimo envio
                     </p>
@@ -981,7 +983,7 @@ export default function TestesPage() {
               ) : loadingLatestTests ? (
                 <div className="grid gap-3 md:grid-cols-2">
                   {Array.from({ length: 6 }).map((_, index) => (
-                    <Skeleton key={index} className="h-28 rounded-2xl" />
+                    <Skeleton key={index} className="h-28 rounded-[24px]" />
                   ))}
                 </div>
               ) : latestTests.length > 0 ? (
@@ -1017,8 +1019,8 @@ function TestsLoadingState() {
       </PageSection>
 
       <div className="grid gap-6 xl:grid-cols-[360px_minmax(0,1fr)]">
-        <Skeleton className="h-[540px] rounded-2xl" />
-        <Skeleton className="h-[540px] rounded-2xl" />
+        <Skeleton className="h-[540px] rounded-[24px]" />
+        <Skeleton className="h-[540px] rounded-[24px]" />
       </div>
     </div>
   );
@@ -1044,7 +1046,7 @@ function WorkbenchFamilyRow({
     >
       <div className="space-y-2">
         <div className="flex items-center gap-2">
-          <span className="flex size-10 items-center justify-center rounded-2xl bg-surface-utility text-foreground shadow-sm">
+          <span className="flex size-10 items-center justify-center rounded-[24px] bg-surface-utility text-foreground shadow-sm">
             <Icon className="size-5" />
           </span>
           <p className="text-sm font-semibold text-foreground">
@@ -1063,7 +1065,7 @@ function WorkbenchFamilyRow({
 
 function MetaRow({ label, value }: { label: string; value: string }) {
   return (
-    <div className="flex items-center justify-between gap-3 rounded-2xl border border-border/70 bg-background/65 px-4 py-3 shadow-sm">
+    <div className="flex items-center justify-between gap-3 rounded-[24px] border border-border/70 bg-background/65 px-4 py-3 shadow-sm">
       <span className="text-tiny font-semibold uppercase tracking-[0.18em] text-muted-foreground">
         {label}
       </span>
@@ -1084,7 +1086,7 @@ function SessionMetric({
   highlight?: boolean;
 }) {
   return (
-    <div className="flex items-center justify-between gap-3 rounded-2xl border border-border/70 bg-background/65 px-4 py-3 shadow-sm">
+    <div className="flex items-center justify-between gap-3 rounded-[24px] border border-border/70 bg-background/65 px-4 py-3 shadow-sm">
       <span className="text-tiny font-semibold uppercase tracking-[0.18em] text-muted-foreground">
         {label}
       </span>
@@ -1102,7 +1104,7 @@ function SessionMetric({
 
 function EmptyPanelMessage({ children }: { children: React.ReactNode }) {
   return (
-    <div className="rounded-2xl border border-dashed border-border/70 bg-background/40 px-4 py-8 text-center">
+    <div className="rounded-[24px] border border-dashed border-border/70 bg-background/40 px-4 py-8 text-center">
       <Timer className="mx-auto size-8 text-muted-foreground/35" />
       <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
         {children}
@@ -1121,7 +1123,7 @@ function LiveResultRow({
   zone: string | null;
 }) {
   return (
-    <div className="flex items-center justify-between gap-3 rounded-2xl border border-border/60 bg-background/55 px-4 py-3">
+    <div className="flex items-center justify-between gap-3 rounded-[24px] border border-border/60 bg-background/55 px-4 py-3">
       <div className="min-w-0">
         <p className="truncate text-sm font-semibold text-foreground">{label}</p>
         <p className="mt-1 truncate text-xs text-muted-foreground">{value}</p>
@@ -1149,7 +1151,7 @@ function FamilyProgressRow({
   percentage: number;
 }) {
   return (
-    <div className="rounded-2xl border border-border/70 bg-background/65 px-4 py-4 shadow-sm">
+    <div className="rounded-[24px] border border-border/70 bg-background/65 px-4 py-4 shadow-sm">
       <div className="flex items-center justify-between gap-3">
         <p className="text-sm font-semibold text-foreground">{title}</p>
         <span className="text-xs font-semibold text-muted-foreground">
@@ -1180,7 +1182,7 @@ function RecentTestCard({
     <div className="rounded-[1.35rem] border border-border/70 bg-background/65 p-4 shadow-sm">
       <div className="flex items-start justify-between gap-3">
         <div className="flex min-w-0 items-center gap-2.5">
-          <span className="flex size-10 shrink-0 items-center justify-center rounded-2xl bg-surface-utility text-foreground shadow-sm">
+          <span className="flex size-10 shrink-0 items-center justify-center rounded-[24px] bg-surface-utility text-foreground shadow-sm">
             <Icon className="size-5" />
           </span>
           <div className="min-w-0">

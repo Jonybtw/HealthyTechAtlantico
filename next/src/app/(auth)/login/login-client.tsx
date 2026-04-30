@@ -77,12 +77,20 @@ export default function LoginClient() {
   const [isLoading, setIsLoading] = useState(false);
   const nameRef = useRef<HTMLInputElement>(null);
   const registeredSuccess = searchParams.get("registered") === "1";
+  const verifiedSuccess = searchParams.get("verified") === "1";
+  const passwordChangedSuccess = searchParams.get("passwordChanged") === "1";
+  const prefilledEmail = searchParams.get("email") ?? "";
 
   useEffect(() => {
     const requestedMode = searchParams.get("mode");
-    setMode(requestedMode === "register" ? "register" : "login");
+    if (requestedMode === "register") {
+      router.replace("/register");
+      return;
+    }
+
+    setMode("login");
     setApiError(null);
-  }, [searchParams]);
+  }, [router, searchParams]);
 
   useEffect(() => {
     document.title = `${mode === "login" ? t("login") : t("register")} · HTA`;
@@ -131,18 +139,16 @@ export default function LoginClient() {
     },
   ];
   const strengthInfo = strengthData[strength];
+  const statusMessage = verifiedSuccess
+    ? t("verifiedSuccess")
+    : passwordChangedSuccess
+      ? t("passwordChangedSuccess")
+      : registeredSuccess
+        ? t("registeredSuccess")
+        : null;
 
   const switchToRegister = () => {
-    form.reset({
-      name: "",
-      email: form.getValues("email"),
-      password: "",
-      confirmPassword: "",
-      role: "ALUNO",
-      consentRgpd: false,
-    });
-    setApiError(null);
-    setMode("register");
+    router.push("/register");
   };
 
   const switchToLogin = () => {
@@ -158,6 +164,12 @@ export default function LoginClient() {
       return () => window.clearTimeout(id);
     }
   }, [mode]);
+
+  useEffect(() => {
+    if (prefilledEmail) {
+      form.setValue("email", prefilledEmail, { shouldDirty: false });
+    }
+  }, [form, prefilledEmail]);
 
   const handleLogin = async () => {
     setApiError(null);
@@ -185,6 +197,18 @@ export default function LoginClient() {
         redirect: false,
       });
       if (result?.error) {
+        if (result.code === "must_change_password") {
+          router.push(
+            `/change-password?forced=1&email=${encodeURIComponent(email)}`,
+          );
+          return;
+        }
+
+        if (result.code === "email_not_verified") {
+          setApiError(t("emailNotVerified"));
+          return;
+        }
+
         setApiError(t("wrongCredentials"));
         return;
       }
@@ -322,13 +346,13 @@ export default function LoginClient() {
           }}
           className="space-y-4 p-5 sm:space-y-5 sm:p-6"
         >
-          {registeredSuccess && !apiError ? (
+          {statusMessage && !apiError ? (
             <div
               role="status"
               className="flex items-center gap-2.5 rounded-2xl border border-success-200 bg-success-50 px-4 py-3 text-sm font-medium text-success-800 shadow-sm dark:border-success-900/50 dark:bg-success-950/40 dark:text-success-200"
             >
               <CheckCircle2 className="size-4 shrink-0" />
-              {t("registeredSuccess")}
+              {statusMessage}
             </div>
           ) : null}
 

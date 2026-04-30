@@ -3,18 +3,21 @@
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
+  AlertTriangle,
   CheckCircle2,
   Clock3,
   ExternalLink,
+  HeartHandshake,
   ListFilter,
   RefreshCw,
+  Send,
   ShieldAlert,
+  UserRound,
   XCircle,
 } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
+import { motion } from "motion/react";
 import { toast } from "sonner";
-import { PageScaffold } from "@/components/ui/page-scaffold";
-import { PageSection } from "@/components/ui/page-section";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -23,9 +26,12 @@ import { FieldShell } from "@/components/ui/field-shell";
 import { DataTable, type Column } from "@/components/ui/data-table";
 import { Skeleton } from "@/components/ui/skeleton";
 import { StudentIdentity } from "@/components/ui/student-identity";
+import { PageHeader } from "@/components/ui/page-header";
 import { useUser } from "@/components/user-context";
 import { readApiResponse } from "@/lib/api-client";
 import { cn } from "@/lib/utils";
+
+// ─── Types ────────────────────────────────────────────────────────────────────
 
 type SosAlert = {
   id: string;
@@ -50,15 +56,17 @@ type SosAlert = {
   } | null;
 };
 
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+
 function getStudentHref(role: string, studentId: string) {
-  return role === "PSICOLOGO"
-    ? `/acompanhamento/${studentId}`
-    : `/alunos/${studentId}`;
+  return role === "PSICOLOGO" ? `/acompanhamento/${studentId}` : `/alunos/${studentId}`;
 }
 
 function getStudentMeta(student: SosAlert["student"]) {
   return [student.className, student.schoolYear].filter(Boolean).join(" · ");
 }
+
+// ─── Main Component ───────────────────────────────────────────────────────────
 
 export default function SosClient() {
   const t = useTranslations("sos");
@@ -67,16 +75,16 @@ export default function SosClient() {
   const isStudent = role === "ALUNO";
   const isStaff = !isStudent;
 
+  // Staff state
   const [alerts, setAlerts] = useState<SosAlert[]>([]);
-  const [statusFilter, setStatusFilter] = useState<
-    "all" | "pending" | "resolved"
-  >("all");
+  const [statusFilter, setStatusFilter] = useState<"all" | "pending" | "resolved">("all");
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [lastUpdatedAt, setLastUpdatedAt] = useState<string | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [resolvingIds, setResolvingIds] = useState<Set<string>>(new Set());
 
+  // Student state
   const [studentAlerts, setStudentAlerts] = useState<SosAlert[]>([]);
   const [studentLoading, setStudentLoading] = useState(true);
   const [studentLoadError, setStudentLoadError] = useState<string | null>(null);
@@ -88,934 +96,699 @@ export default function SosClient() {
 
   const formatDate = useCallback(
     (value: string | null) => {
-      if (!value) {
-        return "-";
-      }
-
+      if (!value) return "—";
       return new Intl.DateTimeFormat(locale, {
-        day: "2-digit",
-        month: "2-digit",
-        year: "numeric",
-        hour: "2-digit",
-        minute: "2-digit",
+        day: "2-digit", month: "2-digit", year: "numeric",
+        hour: "2-digit", minute: "2-digit",
       }).format(new Date(value));
     },
     [locale],
   );
 
-  const fetchAlerts = useCallback(
-    async (mode: "initial" | "refresh" = "initial") => {
-      if (!isStaff) {
-        return;
-      }
+  // ── Data loading ───────────────────────────────────────────────────────────
 
+  const fetchAlerts = useCallback(async (mode: "initial" | "refresh" = "initial") => {
+    if (!isStaff) return;
+    if (mode === "initial") {
+      setLoading(true);
+    } else {
+      setRefreshing(true);
+    }
+    setLoadError(null);
+    try {
+      const data = await readApiResponse<SosAlert[]>(await fetch("/api/stats/sos-alerts"));
+      setAlerts(data);
+      setLastUpdatedAt(new Date().toISOString());
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : t("loadError");
+      setLoadError(msg);
+      toast.error(msg);
+    } finally {
       if (mode === "initial") {
-        setLoading(true);
+        setLoading(false);
       } else {
-        setRefreshing(true);
+        setRefreshing(false);
       }
-      setLoadError(null);
-
-      try {
-        const data = await readApiResponse<SosAlert[]>(
-          await fetch("/api/stats/sos-alerts"),
-        );
-        setAlerts(data);
-        setLastUpdatedAt(new Date().toISOString());
-      } catch (error) {
-        const message =
-          error instanceof Error ? error.message : t("loadError");
-        setLoadError(message);
-        toast.error(message);
-      } finally {
-        if (mode === "initial") {
-          setLoading(false);
-        } else {
-          setRefreshing(false);
-        }
-      }
-    },
-    [isStaff, t],
-  );
-
-  useEffect(() => {
-    void fetchAlerts("initial");
-  }, [fetchAlerts]);
+    }
+  }, [isStaff, t]);
 
   const fetchStudentAlerts = useCallback(async () => {
     setStudentLoading(true);
     setStudentLoadError(null);
-
     try {
       const data = await readApiResponse<SosAlert[]>(await fetch("/api/me/sos"));
       setStudentAlerts(data);
-    } catch (error) {
-      const message = error instanceof Error ? error.message : t("loadError");
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : t("loadError");
       setStudentAlerts([]);
-      setStudentLoadError(message);
-      toast.error(message);
+      setStudentLoadError(msg);
+      toast.error(msg);
     } finally {
       setStudentLoading(false);
     }
   }, [t]);
 
-  useEffect(() => {
-    if (!isStudent) {
-      return;
+  useEffect(() => { void fetchAlerts("initial"); }, [fetchAlerts]);
+  useEffect(() => { if (isStudent) void fetchStudentAlerts(); }, [fetchStudentAlerts, isStudent]);
+
+  // ── Resolve ────────────────────────────────────────────────────────────────
+
+  const resolveAlert = useCallback(async (alertId: string) => {
+    setResolvingIds((cur) => new Set(cur).add(alertId));
+    try {
+      await readApiResponse<SosAlert>(await fetch(`/api/sos/${alertId}`, { method: "PATCH" }));
+      toast.success(t("resolvedSuccess"));
+      await fetchAlerts("refresh");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : t("resolveError"));
+    } finally {
+      setResolvingIds((cur) => { const n = new Set(cur); n.delete(alertId); return n; });
     }
+  }, [fetchAlerts, t]);
 
-    void fetchStudentAlerts();
-  }, [fetchStudentAlerts, isStudent]);
-
-  const resolveAlert = useCallback(
-    async (alertId: string) => {
-      setResolvingIds((current) => new Set(current).add(alertId));
-
-      try {
-        await readApiResponse<SosAlert>(
-          await fetch(`/api/sos/${alertId}`, { method: "PATCH" }),
-        );
-
-        toast.success(t("resolvedSuccess"));
-        await fetchAlerts("refresh");
-      } catch (error) {
-        const message =
-          error instanceof Error ? error.message : t("resolveError");
-        toast.error(message);
-      } finally {
-        setResolvingIds((current) => {
-          const next = new Set(current);
-          next.delete(alertId);
-          return next;
-        });
-      }
-    },
-    [fetchAlerts, t],
-  );
+  // ── Derived data ───────────────────────────────────────────────────────────
 
   const pendingAlerts = useMemo(
-    () =>
-      alerts
-        .filter((alert) => !alert.resolved)
-        .sort(
-          (left, right) =>
-            new Date(left.createdAt).getTime() -
-            new Date(right.createdAt).getTime(),
-        ),
+    () => alerts.filter((a) => !a.resolved).sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()),
     [alerts],
   );
-
-  const resolvedAlerts = useMemo(
-    () => alerts.filter((alert) => alert.resolved),
-    [alerts],
-  );
-
+  const resolvedAlerts = useMemo(() => alerts.filter((a) => a.resolved), [alerts]);
   const visibleAlerts = useMemo(() => {
-    if (statusFilter === "pending") {
-      return pendingAlerts;
-    }
-
-    if (statusFilter === "resolved") {
-      return resolvedAlerts;
-    }
-
+    if (statusFilter === "pending") return pendingAlerts;
+    if (statusFilter === "resolved") return resolvedAlerts;
     return alerts;
   }, [alerts, pendingAlerts, resolvedAlerts, statusFilter]);
 
-  const priorityAlerts = pendingAlerts.slice(1, 4);
   const oldestPending = pendingAlerts[0] ?? null;
+  const priorityAlerts = pendingAlerts.slice(1, 4);
 
-  const hasOpenStudentAlert = studentAlerts.some((alert) => !alert.resolved);
-  const activeStudentAlert = studentAlerts.find((alert) => !alert.resolved);
+  const hasOpenStudentAlert = studentAlerts.some((a) => !a.resolved);
+  const activeStudentAlert = studentAlerts.find((a) => !a.resolved);
+
+  // ── Student trigger ────────────────────────────────────────────────────────
 
   const triggerSos = useCallback(async () => {
-    if (hasOpenStudentAlert) {
-      toast.error(t("alreadyOpen"));
-      return;
-    }
-
+    if (hasOpenStudentAlert) { toast.error(t("alreadyOpen")); return; }
     setTriggeringSos(true);
-
     try {
-      const response = await fetch("/api/me/sos", {
+      const result = await fetch("/api/me/sos", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          psych: psych.trim(),
-          teacher: teacher.trim(),
+          psych: psych.trim(), teacher: teacher.trim(),
           psychEmail: psychEmail.trim() || undefined,
           teacherEmail: teacherEmail.trim() || undefined,
         }),
-      });
-
-      const result = await readApiResponse<SosAlert>(response);
+      }).then((r) => readApiResponse<SosAlert>(r));
       toast.success(t("success"));
-      setStudentAlerts((current) => [result, ...current]);
-      setPsych("");
-      setTeacher("");
-      setPsychEmail("");
-      setTeacherEmail("");
-    } catch (error) {
-      const message = error instanceof Error ? error.message : t("sendError");
-      toast.error(message);
+      setStudentAlerts((cur) => [result, ...cur]);
+      setPsych(""); setTeacher(""); setPsychEmail(""); setTeacherEmail("");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : t("sendError"));
     } finally {
       setTriggeringSos(false);
     }
   }, [hasOpenStudentAlert, psych, psychEmail, t, teacher, teacherEmail]);
 
-  const columns = useMemo<Column<SosAlert>[]>(
-    () => [
-      {
-        key: "student",
-        header: t("studentLabel"),
-        render: (alert) => (
-          <StudentIdentity
-            student={alert.student}
-            subtitle={getStudentMeta(alert.student)}
-          />
-        ),
-        className: "min-w-[220px]",
-      },
-      {
-        key: "psych",
-        header: t("psychLabel"),
-        render: (alert) => (
-          <div className="flex flex-col gap-1">
-            <span>{alert.psych}</span>
-            {alert.psychEmail ? (
-              <span className="text-tiny text-slate-500">
-                {alert.psychEmail}
-              </span>
-            ) : null}
-          </div>
-        ),
-      },
-      {
-        key: "teacher",
-        header: t("teacherLabel"),
-        render: (alert) => (
-          <div className="flex flex-col gap-1">
-            <span>{alert.teacher}</span>
-            {alert.teacherEmail ? (
-              <span className="text-tiny text-slate-500">
-                {alert.teacherEmail}
-              </span>
-            ) : null}
-          </div>
-        ),
-      },
-      {
-        key: "createdAt",
-        header: t("createdAt"),
-        render: (alert) => formatDate(alert.createdAt),
-      },
-      {
-        key: "resolved",
-        header: t("activeAlertTitle"),
-        render: (alert) => (
-          <Badge variant={alert.resolved ? "success" : "warning"}>
-            {alert.resolved ? t("resolved") : t("pending")}
-          </Badge>
-        ),
-      },
-      {
-        key: "resolvedBy",
-        header: t("resolvedBy"),
-        render: (alert) =>
-          alert.resolvedBy
-            ? (alert.resolvedBy.name ?? alert.resolvedBy.email)
-            : "-",
-      },
-      {
-        key: "actions",
-        header: "",
-        render: (alert) => {
-          const studentHref = getStudentHref(role, alert.student.id);
+  // ── Table columns ──────────────────────────────────────────────────────────
 
-          return (
-            <div className="flex flex-wrap items-center justify-end gap-2">
-              <Link
-                href={studentHref}
-                className={buttonVariants({ variant: "secondary", size: "sm" })}
-              >
-                <ExternalLink className="size-4" />
-                {t("openStudentProfile")}
-              </Link>
-              {!alert.resolved ? (
-                <Button
-                  variant="primary"
-                  size="sm"
-                  onClick={() => void resolveAlert(alert.id)}
-                  loading={resolvingIds.has(alert.id)}
-                  icon={<CheckCircle2 className="size-4" />}
-                >
-                  {t("resolve")}
-                </Button>
-              ) : (
-                <span className="text-sm text-slate-500">
-                  {formatDate(alert.resolvedAt)}
-                </span>
-              )}
-            </div>
-          );
-        },
+  const columns = useMemo<Column<SosAlert>[]>(() => [
+    {
+      key: "student", header: t("studentLabel"),
+      render: (a) => <StudentIdentity student={a.student} subtitle={getStudentMeta(a.student)} />,
+      className: "min-w-[200px]",
+    },
+    {
+      key: "psych", header: t("psychLabel"),
+      render: (a) => (
+        <div className="flex flex-col gap-0.5">
+          <span className="text-sm font-medium">{a.psych}</span>
+          {a.psychEmail && <span className="text-xs text-muted-foreground">{a.psychEmail}</span>}
+        </div>
+      ),
+    },
+    {
+      key: "teacher", header: t("teacherLabel"),
+      render: (a) => (
+        <div className="flex flex-col gap-0.5">
+          <span className="text-sm font-medium">{a.teacher}</span>
+          {a.teacherEmail && <span className="text-xs text-muted-foreground">{a.teacherEmail}</span>}
+        </div>
+      ),
+    },
+    { key: "createdAt", header: t("createdAt"), render: (a) => <span className="text-sm">{formatDate(a.createdAt)}</span> },
+    {
+      key: "resolved", header: "Estado",
+      render: (a) => <Badge variant={a.resolved ? "success" : "warning"}>{a.resolved ? t("resolved") : t("pending")}</Badge>,
+    },
+    {
+      key: "resolvedBy", header: t("resolvedBy"),
+      render: (a) => <span className="text-sm text-muted-foreground">{a.resolvedBy ? (a.resolvedBy.name ?? a.resolvedBy.email) : "—"}</span>,
+    },
+    {
+      key: "actions", header: "",
+      render: (a) => {
+        const href = getStudentHref(role, a.student.id);
+        return (
+          <div className="flex flex-wrap items-center justify-end gap-2">
+            <Link href={href} className={buttonVariants({ variant: "secondary", size: "sm" })}>
+              <ExternalLink className="size-4" />
+              {t("openStudentProfile")}
+            </Link>
+            {!a.resolved ? (
+              <Button variant="primary" size="sm" onClick={() => void resolveAlert(a.id)} loading={resolvingIds.has(a.id)} icon={<CheckCircle2 className="size-4" />}>
+                {t("resolve")}
+              </Button>
+            ) : (
+              <span className="text-xs text-muted-foreground">{formatDate(a.resolvedAt)}</span>
+            )}
+          </div>
+        );
       },
-    ],
-    [formatDate, resolveAlert, resolvingIds, role, t],
-  );
+    },
+  ], [formatDate, resolveAlert, resolvingIds, role, t]);
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // STUDENT VIEW
+  // ─────────────────────────────────────────────────────────────────────────
 
   if (isStudent) {
     return (
-      <PageScaffold
-        headerProps={{
-          title: t("title"),
-          description: t("descriptionStudent"),
-          eyebrow: "S.O.S.",
-        }}
-      >
-        <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_360px]">
-          <PageSection
-            title={t("contactTitle")}
-            description={t("contactDescription")}
-            tone="secondary"
-            layout="form"
-          >
-            <div className="grid gap-6">
-              <div className="grid gap-4 lg:grid-cols-2">
-                <FieldShell label={t("psych")}>
-                  <Input
-                    value={psych}
-                    onChange={(event) => setPsych(event.target.value)}
-                    placeholder={t("psych")}
-                    disabled={
-                      studentLoading || triggeringSos || hasOpenStudentAlert
-                    }
-                  />
-                </FieldShell>
-                <FieldShell label={t("teacher")}>
-                  <Input
-                    value={teacher}
-                    onChange={(event) => setTeacher(event.target.value)}
-                    placeholder={t("teacher")}
-                    disabled={
-                      studentLoading || triggeringSos || hasOpenStudentAlert
-                    }
-                  />
-                </FieldShell>
-              </div>
+      <div className="flex flex-col gap-6">
+        <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
+          <PageHeader
+            eyebrow="S.O.S."
+            title={t("title")}
+            description={t("descriptionStudent")}
+          />
+        </motion.div>
 
-              <div className="grid gap-4 lg:grid-cols-2">
-                <FieldShell
-                  label={t("psychEmailLabel")}
-                  hint={t("emailOptional")}
-                >
-                  <Input
-                    type="email"
-                    value={psychEmail}
-                    onChange={(event) => setPsychEmail(event.target.value)}
-                    placeholder="nome@escola.pt"
-                    disabled={
-                      studentLoading || triggeringSos || hasOpenStudentAlert
-                    }
-                  />
-                </FieldShell>
-                <FieldShell
-                  label={t("teacherEmailLabel")}
-                  hint={t("emailOptional")}
-                >
-                  <Input
-                    type="email"
-                    value={teacherEmail}
-                    onChange={(event) => setTeacherEmail(event.target.value)}
-                    placeholder="nome@escola.pt"
-                    disabled={
-                      studentLoading || triggeringSos || hasOpenStudentAlert
-                    }
-                  />
-                </FieldShell>
-              </div>
+        <div className="grid gap-6 xl:grid-cols-[1fr_360px]">
+          {/* Panic button area */}
+          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.06 }}>
+            <div className="relative overflow-hidden rounded-[24px] border border-danger-300/40 bg-danger-50/60 p-6 backdrop-blur-md shadow-[0_8px_32px_rgba(220,38,38,0.12)] dark:border-danger-500/25 dark:bg-danger-950/40">
+              <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-danger-400/60 to-transparent" />
+              <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_10%_0%,rgba(220,38,38,0.06),transparent_50%)]" />
 
-              {activeStudentAlert ? (
-                <div className="rounded-2xl border border-warning-200 bg-warning-50 p-4 text-sm text-warning-900">
-                  <p className="font-semibold">{t("alreadyOpen")}</p>
-                  <p>{t("alreadyOpenHint")}</p>
+              <div className="relative mb-6 flex items-center gap-3">
+                <span className="flex size-10 items-center justify-center rounded-xl bg-danger-100 dark:bg-danger-900/60">
+                  <ShieldAlert className="size-5 text-danger-700 dark:text-danger-300" />
+                </span>
+                <div>
+                  <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-danger-600 dark:text-danger-400">
+                    Pedido de apoio
+                  </p>
+                  <p className="font-display font-semibold text-foreground dark:text-white">
+                    {t("contactTitle")}
+                  </p>
                 </div>
-              ) : null}
-
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                <Button
-                  onClick={() => void triggerSos()}
-                  loading={triggeringSos}
-                  disabled={studentLoading || hasOpenStudentAlert}
-                  icon={<ShieldAlert className="size-4" />}
-                  className="w-full sm:w-auto"
-                >
-                  {hasOpenStudentAlert ? t("alreadyOpenButton") : t("trigger")}
-                </Button>
-                {studentLoading ? (
-                  <p className="text-sm text-muted-foreground">{t("loading")}</p>
-                ) : null}
               </div>
 
-              {studentLoadError ? (
-                <EmptyState
-                  icon={XCircle}
-                  title={t("loadError")}
-                  description={studentLoadError}
-                />
-              ) : null}
-            </div>
-          </PageSection>
-
-          <PageSection
-            title={t("historyTitle")}
-            description={t("historyDescription")}
-            tone="utility"
-            layout="list"
-          >
-            {studentLoading ? (
-              <div className="grid gap-3">
-                <Skeleton className="h-24 rounded-2xl" />
-                <Skeleton className="h-24 rounded-2xl" />
-              </div>
-            ) : studentLoadError ? (
-              <EmptyState
-                icon={XCircle}
-                title={t("loadError")}
-                description={studentLoadError}
-              />
-            ) : studentAlerts.length === 0 ? (
-              <EmptyState
-                icon={ShieldAlert}
-                title={t("noActiveTitle")}
-                description={t("noHistoryDescription")}
-              />
-            ) : (
-              <div className="grid gap-4">
-                {studentAlerts.map((alert) => (
-                  <div
-                    key={alert.id}
-                    className="rounded-2xl border border-border bg-surface-secondary p-4 shadow-sm"
-                  >
-                    <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                      <div className="min-w-0">
-                        <StudentIdentity
-                          student={alert.student}
-                          subtitle={getStudentMeta(alert.student)}
-                          size="sm"
-                        />
-                        <p className="text-xs text-muted-foreground">
-                          {formatDate(alert.createdAt)}
-                        </p>
-                      </div>
-                      <Badge variant={alert.resolved ? "success" : "warning"}>
-                        {alert.resolved ? t("resolved") : t("pending")}
-                      </Badge>
-                    </div>
-
-                    <div className="mt-4 grid gap-3 sm:grid-cols-2">
-                      <div className="rounded-2xl bg-navy-950/5 p-3">
-                        <p className="text-tiny uppercase tracking-[0.18em] text-muted-foreground">
-                          {t("psychLabel")}
-                        </p>
-                        <p className="mt-2 font-medium text-foreground">
-                          {alert.psych}
-                        </p>
-                        <p className="mt-1 text-sm text-muted-foreground">
-                          {alert.psychEmail ?? "-"}
-                        </p>
-                      </div>
-                      <div className="rounded-2xl bg-navy-950/5 p-3">
-                        <p className="text-tiny uppercase tracking-[0.18em] text-muted-foreground">
-                          {t("teacherLabel")}
-                        </p>
-                        <p className="mt-2 font-medium text-foreground">
-                          {alert.teacher}
-                        </p>
-                        <p className="mt-1 text-sm text-muted-foreground">
-                          {alert.teacherEmail ?? "-"}
-                        </p>
-                      </div>
-                    </div>
-
-                    {alert.resolved ? (
-                      <p className="mt-4 text-sm text-muted-foreground">
-                        {t("resolvedAt")}: {formatDate(alert.resolvedAt)}
-                      </p>
-                    ) : null}
+              {activeStudentAlert && (
+                <div className="mb-5 flex items-start gap-3 rounded-[24px] border border-warning-300/40 bg-warning-50/80 p-4 dark:border-warning-500/25 dark:bg-warning-950/40">
+                  <AlertTriangle className="mt-0.5 size-4 shrink-0 text-warning-600 dark:text-warning-300" />
+                  <div>
+                    <p className="text-sm font-semibold text-warning-900 dark:text-warning-100">{t("alreadyOpen")}</p>
+                    <p className="mt-0.5 text-xs text-warning-700 dark:text-warning-300">{t("alreadyOpenHint")}</p>
                   </div>
-                ))}
+                </div>
+              )}
+
+              <div className="relative grid gap-4">
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <FieldShell label={t("psych")}>
+                    <Input value={psych} onChange={(e) => setPsych(e.target.value)} placeholder={t("psych")} disabled={studentLoading || triggeringSos || hasOpenStudentAlert} />
+                  </FieldShell>
+                  <FieldShell label={t("teacher")}>
+                    <Input value={teacher} onChange={(e) => setTeacher(e.target.value)} placeholder={t("teacher")} disabled={studentLoading || triggeringSos || hasOpenStudentAlert} />
+                  </FieldShell>
+                </div>
+
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <FieldShell label={t("psychEmailLabel")} hint={t("emailOptional")}>
+                    <Input type="email" value={psychEmail} onChange={(e) => setPsychEmail(e.target.value)} placeholder="nome@escola.pt" disabled={studentLoading || triggeringSos || hasOpenStudentAlert} />
+                  </FieldShell>
+                  <FieldShell label={t("teacherEmailLabel")} hint={t("emailOptional")}>
+                    <Input type="email" value={teacherEmail} onChange={(e) => setTeacherEmail(e.target.value)} placeholder="nome@escola.pt" disabled={studentLoading || triggeringSos || hasOpenStudentAlert} />
+                  </FieldShell>
+                </div>
+
+                <div className="flex items-center justify-end pt-2">
+                  <Button
+                    onClick={() => void triggerSos()}
+                    loading={triggeringSos}
+                    disabled={studentLoading || hasOpenStudentAlert}
+                    icon={<Send className="size-4" />}
+                    className="h-12 w-full justify-center bg-danger-600 px-8 text-base text-white hover:bg-danger-700 sm:w-auto dark:bg-danger-700 dark:hover:bg-danger-600"
+                  >
+                    {hasOpenStudentAlert ? t("alreadyOpenButton") : t("trigger")}
+                  </Button>
+                </div>
               </div>
-            )}
-          </PageSection>
+            </div>
+          </motion.div>
+
+          {/* History sidebar */}
+          <motion.div initial={{ opacity: 0, x: 12 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.4, delay: 0.12 }}>
+            <div className="relative overflow-hidden rounded-[24px] border border-white/20 bg-white/55 p-5 backdrop-blur-md shadow-[0_8px_32px_rgba(9,21,35,0.07)] dark:border-white/10 dark:bg-navy-950/60">
+              <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-gold-400/40 to-transparent" />
+              <div className="relative">
+                <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-gold-600 dark:text-gold-300">{t("historyTitle")}</p>
+                <p className="mt-1 text-sm text-muted-foreground dark:text-white/60">{t("historyDescription")}</p>
+
+                <div className="mt-4">
+                  {studentLoading ? (
+                    <div className="flex flex-col gap-3">
+                      <Skeleton className="h-24 rounded-[24px]" />
+                      <Skeleton className="h-24 rounded-[24px]" />
+                    </div>
+                  ) : studentLoadError ? (
+                    <EmptyState icon={XCircle} title={t("loadError")} description={studentLoadError} />
+                  ) : studentAlerts.length === 0 ? (
+                    <EmptyState icon={HeartHandshake} title={t("noActiveTitle")} description={t("noHistoryDescription")} />
+                  ) : (
+                    <div className="flex flex-col gap-3">
+                      {studentAlerts.map((alert) => (
+                        <StudentAlertCard key={alert.id} alert={alert} formatDate={formatDate} t={t} />
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </motion.div>
         </div>
-      </PageScaffold>
+      </div>
     );
   }
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // STAFF VIEW — Loading
+  // ─────────────────────────────────────────────────────────────────────────
 
   if (loading && alerts.length === 0 && !loadError) {
     return (
-      <PageScaffold
-        headerProps={{
-          title: t("staffTitle"),
-          description: t("staffDescription"),
-          eyebrow: "S.O.S.",
-        }}
-      >
-        <SosStaffLoadingState />
-      </PageScaffold>
+      <div className="flex flex-col gap-6">
+        <Skeleton className="h-[100px] rounded-[24px]" />
+        <div className="grid gap-4 sm:grid-cols-3">
+          {[1, 2, 3].map((i) => <Skeleton key={i} className="h-[100px] rounded-[24px]" />)}
+        </div>
+        <Skeleton className="h-[160px] rounded-[24px]" />
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+          {[1, 2, 3].map((i) => <Skeleton key={i} className="h-[160px] rounded-[24px]" />)}
+        </div>
+        <Skeleton className="h-[380px] rounded-[24px]" />
+      </div>
     );
   }
 
+  // ─────────────────────────────────────────────────────────────────────────
+  // STAFF VIEW — Load error
+  // ─────────────────────────────────────────────────────────────────────────
+
   if (loadError && alerts.length === 0) {
     return (
-      <PageScaffold
-        headerProps={{
-          title: t("staffTitle"),
-          description: t("staffDescription"),
-          eyebrow: "S.O.S.",
-        }}
-      >
-        <PageSection tone="secondary" layout="list">
+      <div className="flex flex-col gap-6">
+        <PageHeader eyebrow="S.O.S." title={t("staffTitle")} description={t("staffDescription")} />
+        <div className="rounded-[24px] border border-danger-300/40 bg-danger-50/60 p-6 dark:border-danger-500/20 dark:bg-danger-950/30">
           <EmptyState
             icon={XCircle}
             title={t("loadError")}
             description={loadError}
             action={
-              <Button
-                variant="outline"
-                onClick={() => void fetchAlerts("refresh")}
-                icon={<RefreshCw className="size-4" />}
-              >
+              <Button variant="outline" onClick={() => void fetchAlerts("refresh")} icon={<RefreshCw className="size-4" />}>
                 {t("refresh")}
               </Button>
             }
           />
-        </PageSection>
-      </PageScaffold>
+        </div>
+      </div>
     );
   }
 
+  // ─────────────────────────────────────────────────────────────────────────
+  // STAFF VIEW — Main
+  // ─────────────────────────────────────────────────────────────────────────
+
   return (
-    <PageScaffold
-      headerProps={{
-        title: t("staffTitle"),
-        description: t("staffDescription"),
-        eyebrow: "S.O.S.",
-      }}
-    >
-      <div className="grid gap-6">
-        <PageSection
-          tone="primary"
-          layout="analytics"
-          eyebrow={t("radarEyebrow")}
-          title={t("radarTitle")}
-          description={t("radarDescription")}
-          actions={
-            <div className="flex flex-col gap-2 sm:items-end">
-              <span className="text-sm text-muted-foreground">
-                {refreshing
-                  ? t("refreshing")
-                  : lastUpdatedAt
-                    ? t("lastUpdated", { time: formatDate(lastUpdatedAt) })
-                    : t("neverUpdated")}
+    <div className="flex flex-col gap-6">
+
+      {/* Header */}
+      <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
+        <PageHeader eyebrow="S.O.S." title={t("staffTitle")} description={t("staffDescription")}>
+          <div className="flex items-center gap-3">
+            {lastUpdatedAt && !refreshing && (
+              <span className="hidden text-xs text-muted-foreground sm:inline">
+                {t("lastUpdated", { time: formatDate(lastUpdatedAt) })}
               </span>
-              <Button
-                variant="outline"
-                onClick={() => void fetchAlerts("refresh")}
-                loading={refreshing}
-                disabled={refreshing}
-                icon={<RefreshCw className="size-4" />}
-              >
-                {t("refresh")}
-              </Button>
-            </div>
-          }
-        >
-          <div className="grid gap-4">
-            <div className="grid gap-4 sm:grid-cols-3">
-              <SosStatCard
-                label={t("totalAlerts")}
-                value={String(alerts.length)}
-                description={t("totalAlertsDescription")}
-              />
-              <SosStatCard
-                label={t("pendingAlerts")}
-                value={String(pendingAlerts.length)}
-                description={t("pendingAlertsDescription")}
-                accent="warning"
-              />
-              <SosStatCard
-                label={t("resolvedAlerts")}
-                value={String(resolvedAlerts.length)}
-                description={t("resolvedAlertsDescription")}
-                accent="success"
-              />
-            </div>
-
-            <SosFocusCard
-              alert={oldestPending}
-              role={role}
-              label={t("oldestPendingLabel")}
-              statusLabel={t("pending")}
-              formatDate={formatDate}
-              openLabel={t("openStudentProfile")}
-              resolveLabel={t("resolve")}
-              psychLabel={t("psychLabel")}
-              teacherLabel={t("teacherLabel")}
-              emptyTitle={t("priorityEmptyTitle")}
-              emptyDescription={t("priorityEmptyDescription")}
-              onResolve={
-                oldestPending ? () => void resolveAlert(oldestPending.id) : undefined
-              }
-              resolving={
-                oldestPending ? resolvingIds.has(oldestPending.id) : false
-              }
-            />
+            )}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => void fetchAlerts("refresh")}
+              loading={refreshing}
+              disabled={refreshing}
+              icon={<RefreshCw className="size-4" />}
+            >
+              {t("refresh")}
+            </Button>
           </div>
-        </PageSection>
+        </PageHeader>
+      </motion.div>
 
-        <PageSection
-          tone="secondary"
-          layout="list"
-          eyebrow={t("priorityEyebrow")}
-          title={t("priorityTitle")}
-          description={t("priorityDescription")}
-        >
-          {priorityAlerts.length === 0 ? (
-            <EmptyState
-              icon={CheckCircle2}
-              title={
-                oldestPending
-                  ? t("priorityOnlyOldestTitle")
-                  : t("priorityEmptyTitle")
-              }
-              description={
-                oldestPending
-                  ? t("priorityOnlyOldestDescription")
-                  : t("priorityEmptyDescription")
-              }
-            />
-          ) : (
-            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-              {priorityAlerts.map((alert) => (
-                <PriorityAlertCard
-                  key={alert.id}
-                  alert={alert}
-                  role={role}
-                  onResolve={() => void resolveAlert(alert.id)}
-                  resolving={resolvingIds.has(alert.id)}
-                  formatDate={formatDate}
-                  openLabel={t("openStudentProfile")}
-                  resolveLabel={t("resolve")}
-                  statusLabel={t("pending")}
-                />
-              ))}
-            </div>
-          )}
-        </PageSection>
+      {/* Stats strip */}
+      <motion.div
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4, delay: 0.06 }}
+        className="grid gap-4 sm:grid-cols-3"
+      >
+        <StaffStatCard
+          label={t("totalAlerts")}
+          value={String(alerts.length)}
+          description={t("totalAlertsDescription")}
+          accent="neutral"
+        />
+        <StaffStatCard
+          label={t("pendingAlerts")}
+          value={String(pendingAlerts.length)}
+          description={t("pendingAlertsDescription")}
+          accent={pendingAlerts.length > 0 ? "danger" : "neutral"}
+        />
+        <StaffStatCard
+          label={t("resolvedAlerts")}
+          value={String(resolvedAlerts.length)}
+          description={t("resolvedAlertsDescription")}
+          accent="success"
+        />
+      </motion.div>
 
-        <PageSection
-          tone="utility"
-          layout="list"
-          eyebrow={t("queueEyebrow")}
-          title={t("queueTitle")}
-          description={t("queueDescription")}
-        >
-          <DataTable
-            columns={columns}
-            data={visibleAlerts}
-            pageSize={10}
-            searchable
-            toolbarTitle={t("filterLabel")}
-            toolbarSummary={
-              <>
-                <span className="block">{t("visibleAlertsCount", { count: visibleAlerts.length })}</span>
-                <span className="mt-0.5 block text-xs font-medium text-muted-foreground">
-                  {refreshing
-                    ? t("refreshing")
-                    : lastUpdatedAt
-                      ? t("lastUpdated", { time: formatDate(lastUpdatedAt) })
-                      : t("neverUpdated")}
-                </span>
-              </>
-            }
-            toolbarActions={
-              <>
-                <Button
-                  variant={statusFilter === "all" ? "primary" : "outline"}
-                  size="sm"
-                  onClick={() => setStatusFilter("all")}
-                  icon={<ListFilter className="size-4" />}
-                >
-                  {t("filterAll")}
-                </Button>
-                <Button
-                  variant={statusFilter === "pending" ? "primary" : "outline"}
-                  size="sm"
-                  onClick={() => setStatusFilter("pending")}
-                  icon={<Clock3 className="size-4" />}
-                >
-                  {t("pending")}
-                </Button>
-                <Button
-                  variant={statusFilter === "resolved" ? "primary" : "outline"}
-                  size="sm"
-                  onClick={() => setStatusFilter("resolved")}
-                  icon={<CheckCircle2 className="size-4" />}
-                >
-                  {t("resolved")}
-                </Button>
-              </>
-            }
-            emptyMessage={
-              statusFilter === "all"
-                ? t("emptyInboxDescription")
-                : t("noFilteredDescription")
-            }
-            emptyStateIcon={ShieldAlert}
-            rowKey={(alert) => alert.id}
+      {/* Oldest pending — high-urgency focus card */}
+      <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.1 }}>
+        {oldestPending ? (
+          <PriorityFocusCard
+            alert={oldestPending}
+            role={role}
+            resolving={resolvingIds.has(oldestPending.id)}
+            onResolve={() => void resolveAlert(oldestPending.id)}
+            formatDate={formatDate}
+            t={t}
           />
-        </PageSection>
-      </div>
-    </PageScaffold>
-  );
-}
-
-function SosStaffLoadingState() {
-  return (
-    <div className="grid gap-6">
-      <PageSection tone="primary" layout="analytics">
-        <div className="grid gap-4">
-          <div className="grid gap-4 sm:grid-cols-3">
-            {[1, 2, 3].map((item) => (
-              <Skeleton key={item} className="h-28 rounded-2xl" />
-            ))}
+        ) : (
+          <div className="flex items-center gap-4 rounded-[24px] border border-success-300/40 bg-success-50/60 p-5 shadow-sm dark:border-success-500/25 dark:bg-success-950/40">
+            <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-success-100 dark:bg-success-900/60">
+              <CheckCircle2 className="size-5 text-success-700 dark:text-success-300" />
+            </span>
+            <div>
+              <p className="font-semibold text-success-900 dark:text-success-100">{t("priorityEmptyTitle")}</p>
+              <p className="mt-0.5 text-sm text-success-700 dark:text-success-300">{t("priorityEmptyDescription")}</p>
+            </div>
           </div>
-          <Skeleton className="h-36 rounded-[1.35rem]" />
-        </div>
-      </PageSection>
+        )}
+      </motion.div>
 
-      <PageSection tone="secondary" layout="list">
-        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-          {[1, 2, 3].map((item) => (
-            <Skeleton key={item} className="h-44 rounded-[1.35rem]" />
-          ))}
-        </div>
-      </PageSection>
+      {/* Priority queue (2nd, 3rd, 4th oldest pending) */}
+      {priorityAlerts.length > 0 && (
+        <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.14 }}>
+          <div className="relative overflow-hidden rounded-[24px] border border-white/20 bg-white/55 p-5 backdrop-blur-md shadow-[0_8px_32px_rgba(9,21,35,0.07)] dark:border-white/10 dark:bg-navy-950/60">
+            <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-warning-400/50 to-transparent" />
+            <div className="relative">
+              <p className="mb-1 text-[10px] font-bold uppercase tracking-[0.22em] text-warning-600 dark:text-warning-300">
+                {t("priorityEyebrow")}
+              </p>
+              <div className="flex items-center justify-between gap-2">
+                <h2 className="font-display font-semibold text-foreground dark:text-white">{t("priorityTitle")}</h2>
+                <span className="rounded-full border border-warning-300/40 bg-warning-100/60 px-2.5 py-1 text-xs font-semibold text-warning-700 dark:border-warning-500/25 dark:bg-warning-950/40 dark:text-warning-300">
+                  {priorityAlerts.length}
+                </span>
+              </div>
+              <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+                {priorityAlerts.map((alert) => (
+                  <QueueAlertCard
+                    key={alert.id}
+                    alert={alert}
+                    role={role}
+                    onResolve={() => void resolveAlert(alert.id)}
+                    resolving={resolvingIds.has(alert.id)}
+                    formatDate={formatDate}
+                    t={t}
+                  />
+                ))}
+              </div>
+            </div>
+          </div>
+        </motion.div>
+      )}
 
-      <PageSection tone="utility" layout="list">
-        <div className="grid gap-3">
-          {[1, 2, 3, 4].map((item) => (
-            <Skeleton key={item} className="h-16 rounded-2xl" />
-          ))}
+      {/* Full alert log with filter + table */}
+      <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.18 }}>
+        <div className="relative overflow-hidden rounded-[24px] border border-white/20 bg-white/55 p-5 backdrop-blur-md shadow-[0_8px_32px_rgba(9,21,35,0.07)] dark:border-white/10 dark:bg-navy-950/60">
+          <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-gold-400/40 to-transparent" />
+          <div className="relative">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-gold-600 dark:text-gold-300">
+                  {t("queueEyebrow")}
+                </p>
+                <h2 className="mt-1 font-display font-semibold text-foreground dark:text-white">{t("queueTitle")}</h2>
+              </div>
+              <div className="flex flex-wrap items-center gap-2">
+                {(["all", "pending", "resolved"] as const).map((f) => (
+                  <button
+                    key={f}
+                    onClick={() => setStatusFilter(f)}
+                    className={cn(
+                      "inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-semibold transition-colors",
+                      statusFilter === f
+                        ? "border-navy-700 bg-navy-700 text-white dark:border-navy-400 dark:bg-navy-800 dark:text-white"
+                        : "border-border/60 bg-background/60 text-muted-foreground hover:border-border dark:border-white/10 dark:bg-white/6 dark:hover:border-white/20",
+                    )}
+                  >
+                    {f === "all" && <ListFilter className="size-3" />}
+                    {f === "pending" && <Clock3 className="size-3" />}
+                    {f === "resolved" && <CheckCircle2 className="size-3" />}
+                    {f === "all" ? t("filterAll") : f === "pending" ? t("pending") : t("resolved")}
+                    {f === "pending" && pendingAlerts.length > 0 && (
+                      <span className="ml-0.5 rounded-full bg-danger-500 px-1.5 py-0.5 text-[9px] font-bold text-white leading-none">
+                        {pendingAlerts.length}
+                      </span>
+                    )}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="mt-4">
+              <DataTable
+                columns={columns}
+                data={visibleAlerts}
+                pageSize={10}
+                searchable
+                toolbarTitle={t("filterLabel")}
+                toolbarSummary={
+                  <span>{t("visibleAlertsCount", { count: visibleAlerts.length })}</span>
+                }
+                emptyMessage={statusFilter === "all" ? t("emptyInboxDescription") : t("noFilteredDescription")}
+                emptyStateIcon={ShieldAlert}
+                rowKey={(a) => a.id}
+              />
+            </div>
+          </div>
         </div>
-      </PageSection>
+      </motion.div>
     </div>
   );
 }
 
-function SosFocusCard({
-  alert,
-  role,
-  label,
-  statusLabel,
-  formatDate,
-  openLabel,
-  resolveLabel,
-  psychLabel,
-  teacherLabel,
-  emptyTitle,
-  emptyDescription,
-  onResolve,
-  resolving,
-}: {
-  alert: SosAlert | null;
-  role: string;
-  label: string;
-  statusLabel: string;
-  formatDate: (value: string | null) => string;
-  openLabel: string;
-  resolveLabel: string;
-  psychLabel: string;
-  teacherLabel: string;
-  emptyTitle: string;
-  emptyDescription: string;
-  onResolve?: () => void;
-  resolving?: boolean;
-}) {
-  if (!alert) {
-    return (
-      <div className="rounded-[1.35rem] border border-emerald-300/25 bg-gradient-to-br from-emerald-100/70 via-white/72 to-white/55 p-4 shadow-card dark:border-emerald-500/20 dark:from-emerald-500/10 dark:via-navy-950/50 dark:to-navy-950/45 sm:p-5">
-        <p className="text-tiny font-semibold uppercase tracking-[0.2em] text-muted-foreground">
-          {label}
-        </p>
-        <div className="mt-4 flex items-start gap-3 rounded-2xl border border-border bg-surface-utility p-4">
-          <CheckCircle2 className="mt-0.5 size-5 text-emerald-600 dark:text-emerald-300" />
-          <div>
-            <p className="text-sm font-semibold text-foreground">{emptyTitle}</p>
-            <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
-              {emptyDescription}
-            </p>
-          </div>
-        </div>
-      </div>
-    );
-  }
+// ─── Sub-components ───────────────────────────────────────────────────────────
 
+function StaffStatCard({
+  label, value, description, accent,
+}: {
+  label: string; value: string; description: string; accent: "neutral" | "danger" | "success";
+}) {
+  return (
+    <div className={cn(
+      "relative overflow-hidden rounded-[24px] border p-5 shadow-sm",
+      accent === "danger"
+        ? "border-danger-300/40 bg-danger-50/60 dark:border-danger-500/25 dark:bg-danger-950/40"
+        : accent === "success"
+        ? "border-success-300/30 bg-success-50/40 dark:border-success-500/20 dark:bg-success-950/30"
+        : "border-white/20 bg-white/55 backdrop-blur-md dark:border-white/10 dark:bg-navy-950/60",
+    )}>
+      {accent === "danger" && <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-danger-400/50 to-transparent" />}
+      {accent === "success" && <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-success-400/40 to-transparent" />}
+      <div className="relative">
+        <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-muted-foreground">{label}</p>
+        <p className={cn(
+          "mt-2 font-display text-4xl font-black leading-none tracking-[-0.05em] tabular-nums",
+          accent === "danger" ? "text-danger-700 dark:text-danger-300"
+            : accent === "success" ? "text-success-700 dark:text-success-300"
+            : "text-foreground dark:text-white",
+        )}>
+          {value}
+        </p>
+        <p className="mt-2 text-xs text-muted-foreground">{description}</p>
+      </div>
+    </div>
+  );
+}
+
+function PriorityFocusCard({
+  alert, role, resolving, onResolve, formatDate, t,
+}: {
+  alert: SosAlert; role: string; resolving: boolean; onResolve: () => void;
+  formatDate: (v: string | null) => string; t: ReturnType<typeof useTranslations>;
+}) {
   const studentHref = getStudentHref(role, alert.student.id);
 
   return (
-    <div className="rounded-[1.35rem] border border-gold-400/18 bg-gradient-to-br from-gold-400/12 via-white/72 to-white/55 p-4 shadow-card dark:border-gold-400/12 dark:from-gold-400/10 dark:via-navy-950/55 dark:to-navy-950/45 sm:p-5">
-      <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
+    <div className="relative overflow-hidden rounded-[24px] border border-danger-300/50 bg-danger-50/60 p-5 shadow-[0_8px_32px_rgba(220,38,38,0.12)] backdrop-blur-md dark:border-danger-500/30 dark:bg-danger-950/50 sm:p-6">
+      <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-danger-400/70 to-transparent" />
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_5%_0%,rgba(220,38,38,0.08),transparent_45%)]" />
+
+      <div className="relative flex flex-col gap-5 xl:flex-row xl:items-center xl:justify-between">
+        {/* Left — student identity + timing */}
         <div className="min-w-0">
-          <div className="flex flex-wrap items-center gap-2">
-            <p className="text-tiny font-semibold uppercase tracking-[0.2em] text-muted-foreground">
-              {label}
-            </p>
-            <Badge variant="warning">{statusLabel}</Badge>
+          <div className="mb-3 flex flex-wrap items-center gap-2">
+            <span className="flex items-center gap-1.5 rounded-full border border-danger-300/50 bg-danger-100/70 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.18em] text-danger-700 dark:border-danger-500/30 dark:bg-danger-950/60 dark:text-danger-300">
+              <ShieldAlert className="size-3" />
+              {t("oldestPendingLabel")}
+            </span>
+            <Badge variant="warning">{t("pending")}</Badge>
           </div>
-          <StudentIdentity
-            student={alert.student}
-            subtitle={getStudentMeta(alert.student)}
-            className="mt-3"
-            nameClassName="text-lg tracking-[-0.03em]"
-          />
-          <p className="mt-1 text-sm text-muted-foreground">
-            {formatDate(alert.createdAt)}
+
+          <div className="flex items-center gap-3">
+            <span className="flex size-11 shrink-0 items-center justify-center rounded-[24px] border border-danger-200/50 bg-danger-100/70 dark:border-danger-500/20 dark:bg-danger-900/50">
+              <UserRound className="size-5 text-danger-700 dark:text-danger-300" />
+            </span>
+            <div>
+              <p className="font-display text-lg font-bold leading-tight text-foreground dark:text-white">
+                {alert.student.name}
+              </p>
+              <p className="text-sm text-muted-foreground dark:text-white/60">
+                {getStudentMeta(alert.student)}
+              </p>
+            </div>
+          </div>
+
+          <p className="mt-2 flex items-center gap-1.5 text-xs text-danger-700/80 dark:text-danger-300/80">
+            <Clock3 className="size-3.5" />
+            Alerta aberto em {formatDate(alert.createdAt)}
           </p>
         </div>
 
-        <div className="grid gap-3 sm:grid-cols-2 xl:min-w-[340px]">
-          <div className="rounded-2xl border border-border bg-surface-utility px-3 py-3">
-            <p className="text-tiny font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-              {psychLabel}
-            </p>
-            <p className="mt-1 text-sm font-medium text-foreground">{alert.psych}</p>
+        {/* Centre — contacts */}
+        <div className="grid gap-2 sm:grid-cols-2 xl:min-w-[320px]">
+          <div className="rounded-xl border border-danger-200/40 bg-white/60 px-5 py-3 dark:border-danger-500/15 dark:bg-navy-950/40">
+            <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">{t("psychLabel")}</p>
+            <p className="mt-1 text-sm font-semibold text-foreground dark:text-white truncate">{alert.psych}</p>
+            {alert.psychEmail && <p className="mt-0.5 text-xs text-muted-foreground truncate">{alert.psychEmail}</p>}
           </div>
-          <div className="rounded-2xl border border-border bg-surface-utility px-3 py-3">
-            <p className="text-tiny font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-              {teacherLabel}
-            </p>
-            <p className="mt-1 text-sm font-medium text-foreground">{alert.teacher}</p>
+          <div className="rounded-xl border border-danger-200/40 bg-white/60 px-5 py-3 dark:border-danger-500/15 dark:bg-navy-950/40">
+            <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">{t("teacherLabel")}</p>
+            <p className="mt-1 text-sm font-semibold text-foreground dark:text-white truncate">{alert.teacher}</p>
+            {alert.teacherEmail && <p className="mt-0.5 text-xs text-muted-foreground truncate">{alert.teacherEmail}</p>}
           </div>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2 xl:justify-end">
+        {/* Right — actions */}
+        <div className="flex flex-wrap items-center gap-2 xl:justify-end xl:shrink-0">
           <Link
             href={studentHref}
-            className={buttonVariants({ variant: "secondary", size: "sm" })}
+            className={cn(buttonVariants({ variant: "secondary", size: "sm" }), "border-danger-200/60 dark:border-danger-500/20")}
           >
             <ExternalLink className="size-4" />
-            {openLabel}
+            {t("openStudentProfile")}
           </Link>
-          {onResolve ? (
-            <Button
-              variant="primary"
-              size="sm"
-              onClick={onResolve}
-              loading={resolving}
-              icon={<CheckCircle2 className="size-4" />}
-            >
-              {resolveLabel}
-            </Button>
-          ) : null}
+          <Button
+            variant="primary"
+            onClick={onResolve}
+            loading={resolving}
+            icon={<CheckCircle2 className="size-4" />}
+            className="bg-danger-600 hover:bg-danger-700 dark:bg-danger-700 dark:hover:bg-danger-600"
+          >
+            {t("resolve")}
+          </Button>
         </div>
       </div>
     </div>
   );
 }
 
-function SosStatCard({
-  label,
-  value,
-  description,
-  accent = "default",
+function QueueAlertCard({
+  alert, role, onResolve, resolving, formatDate, t,
 }: {
-  label: string;
-  value: string;
-  description: string;
-  accent?: "default" | "warning" | "success";
-}) {
-  return (
-    <div className="rounded-2xl border border-border bg-surface-secondary p-4 shadow-sm">
-      <p className="text-tiny font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-        {label}
-      </p>
-      <p
-        className={cn(
-          "mt-2 text-[2rem] font-black leading-none tracking-[-0.05em]",
-          accent === "warning"
-            ? "text-warning-700 dark:text-warning-400"
-            : accent === "success"
-              ? "text-emerald-700 dark:text-emerald-300"
-              : "text-foreground",
-        )}
-      >
-        {value}
-      </p>
-      <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-        {description}
-      </p>
-    </div>
-  );
-}
-
-function PriorityAlertCard({
-  alert,
-  role,
-  onResolve,
-  resolving,
-  formatDate,
-  openLabel,
-  resolveLabel,
-  statusLabel,
-}: {
-  alert: SosAlert;
-  role: string;
-  onResolve: () => void;
-  resolving: boolean;
-  formatDate: (value: string | null) => string;
-  openLabel: string;
-  resolveLabel: string;
-  statusLabel: string;
+  alert: SosAlert; role: string; onResolve: () => void; resolving: boolean;
+  formatDate: (v: string | null) => string; t: ReturnType<typeof useTranslations>;
 }) {
   const studentHref = getStudentHref(role, alert.student.id);
 
   return (
-    <div className="rounded-2xl border border-border bg-surface-secondary p-4 shadow-sm">
-      <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0">
-          <StudentIdentity
-            student={alert.student}
-            subtitle={getStudentMeta(alert.student)}
-            size="sm"
-          />
-          <p className="mt-1 text-xs text-muted-foreground">
-            {formatDate(alert.createdAt)}
-          </p>
-        </div>
-        <Badge variant="warning">{statusLabel}</Badge>
+    <div className="rounded-[24px] border border-warning-300/40 bg-warning-50/50 p-4 shadow-sm dark:border-warning-500/20 dark:bg-warning-950/30">
+      <div className="flex items-start justify-between gap-2">
+        <StudentIdentity student={alert.student} subtitle={getStudentMeta(alert.student)} size="sm" />
+        <Badge variant="warning" className="shrink-0">{t("pending")}</Badge>
       </div>
 
-      <div className="mt-4 flex flex-wrap items-center gap-2">
-        <Link
-          href={studentHref}
-          className={buttonVariants({ variant: "secondary", size: "sm" })}
-        >
-          <ExternalLink className="size-4" />
-          {openLabel}
+      <p className="mt-2 flex items-center gap-1 text-xs text-muted-foreground">
+        <Clock3 className="size-3 text-warning-600 dark:text-warning-400" />
+        {formatDate(alert.createdAt)}
+      </p>
+
+      <div className="mt-3 flex flex-wrap items-center gap-2">
+        <Link href={studentHref} className={buttonVariants({ variant: "secondary", size: "sm" })}>
+          <ExternalLink className="size-3.5" />
+          {t("openStudentProfile")}
         </Link>
-        <Button
-          variant="primary"
-          size="sm"
-          onClick={onResolve}
-          loading={resolving}
-          icon={<CheckCircle2 className="size-4" />}
-        >
-          {resolveLabel}
+        <Button variant="primary" size="sm" onClick={onResolve} loading={resolving} icon={<CheckCircle2 className="size-4" />}>
+          {t("resolve")}
         </Button>
       </div>
+    </div>
+  );
+}
+
+function StudentAlertCard({
+  alert, formatDate, t,
+}: {
+  alert: SosAlert; formatDate: (v: string | null) => string;
+  t: ReturnType<typeof useTranslations>;
+}) {
+  const resolved = alert.resolved;
+
+  return (
+    <div className={cn(
+      "rounded-[24px] border p-4 shadow-sm",
+      resolved
+        ? "border-success-300/30 bg-success-50/40 dark:border-success-500/20 dark:bg-success-950/25"
+        : "border-warning-300/40 bg-warning-50/50 dark:border-warning-500/20 dark:bg-warning-950/30",
+    )}>
+      <div className="flex items-center justify-between gap-2">
+        <p className="text-xs text-muted-foreground">{formatDate(alert.createdAt)}</p>
+        <Badge variant={resolved ? "success" : "warning"}>
+          {resolved ? t("resolved") : t("pending")}
+        </Badge>
+      </div>
+
+      <div className="mt-3 grid gap-2 sm:grid-cols-2">
+        <div className="rounded-xl bg-white/70 px-5 py-3 dark:bg-navy-950/40">
+          <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">{t("psychLabel")}</p>
+          <p className="mt-1 text-sm font-medium text-foreground dark:text-white truncate">{alert.psych}</p>
+          {alert.psychEmail && <p className="mt-0.5 text-xs text-muted-foreground truncate">{alert.psychEmail}</p>}
+        </div>
+        <div className="rounded-xl bg-white/70 px-5 py-3 dark:bg-navy-950/40">
+          <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">{t("teacherLabel")}</p>
+          <p className="mt-1 text-sm font-medium text-foreground dark:text-white truncate">{alert.teacher}</p>
+          {alert.teacherEmail && <p className="mt-0.5 text-xs text-muted-foreground truncate">{alert.teacherEmail}</p>}
+        </div>
+      </div>
+
+      {resolved && alert.resolvedAt && (
+        <p className="mt-3 text-xs text-success-700 dark:text-success-300">
+          {t("resolvedAt")}: {formatDate(alert.resolvedAt)}
+        </p>
+      )}
     </div>
   );
 }

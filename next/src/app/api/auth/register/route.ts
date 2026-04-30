@@ -1,9 +1,13 @@
 import { type NextRequest } from "next/server";
 import { hash } from "bcryptjs";
 import { z } from "zod";
+import { type Role } from "@prisma/client";
+import { auth } from "@/lib/auth";
+import { isStaffRole } from "@/lib/rbac";
 import {
   conflict,
   created,
+  forbidden,
   serverError,
   validationError,
 } from "@/lib/api-response";
@@ -17,6 +21,13 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const data = registerSchema.parse(body);
 
+    if (data.role === "ALUNO" || data.role === "PAIS") {
+      const session = await auth();
+      if (!session?.user?.id || !isStaffRole(session.user.role as Role)) {
+        return forbidden("A criação de contas ALUNO/PAIS requer privilégios na plataforma.");
+      }
+    }
+
     const existing = await prisma.user.findUnique({
       where: { email: data.email },
     });
@@ -29,6 +40,7 @@ export async function POST(req: NextRequest) {
     const user = await prisma.user.create({
       data: {
         email: data.email,
+        emailVerified: new Date(),
         name: data.name,
         passwordHash,
         role: data.role,

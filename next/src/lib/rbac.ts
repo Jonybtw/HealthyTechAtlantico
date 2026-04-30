@@ -4,6 +4,7 @@ import type { Role } from "@prisma/client";
 
 export const PERMISSIONS = {
   CREATE_STUDENT: "create_student",
+  UPDATE_STUDENT: "update_student",
   LIST_STUDENTS: "list_students",
   READ_STUDENT_PROFILE: "read_student_profile",
   RECORD_BIOMETRICS: "record_biometrics",
@@ -46,6 +47,7 @@ const ROLE_PERMISSIONS: Record<Role, Set<Permission>> = {
   ]),
   PROFESSOR: new Set([
     PERMISSIONS.CREATE_STUDENT,
+    PERMISSIONS.UPDATE_STUDENT,
     PERMISSIONS.LIST_STUDENTS,
     PERMISSIONS.READ_STUDENT_PROFILE,
     PERMISSIONS.RECORD_BIOMETRICS,

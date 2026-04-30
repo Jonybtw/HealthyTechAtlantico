@@ -14,7 +14,7 @@ export function EmptyState({
   action,
 }: EmptyStateProps) {
   return (
-    <section className="animate-fade-in-up relative overflow-hidden rounded-2xl border border-border bg-surface-secondary px-5 py-8 text-center sm:py-12">
+    <section className="animate-fade-in-up relative overflow-hidden rounded-[24px] border border-border bg-surface-secondary px-5 py-8 text-center sm:py-12">
       <div className="absolute inset-x-12 top-0 h-px bg-gradient-to-r from-transparent via-gold-400/40 to-transparent" />
       <div className="absolute right-0 top-0 h-28 w-28 rounded-full bg-gold-300/8 blur-3xl" />
       <div className="absolute bottom-0 left-0 h-28 w-28 rounded-full bg-navy-400/10 blur-3xl" />

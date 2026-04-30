@@ -42,7 +42,7 @@ export function ChartFrame({
       {ready
         ? children
         : (fallback ?? (
-            <div className="h-full w-full animate-pulse rounded-2xl bg-muted/30" />
+            <div className="h-full w-full animate-pulse rounded-[24px] bg-muted/30" />
           ))}
     </div>
   );

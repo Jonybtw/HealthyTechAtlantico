@@ -1,0 +1,39 @@
+# Version control
+.git
+.github
+.gitignore
+.husky
+
+# IDE
+.vscode
+.idea
+
+# Build and dependencies
+.next
+node_modules
+tests
+scripts
+coverage
+
+# Environment
+.env
+.env.*
+!.env.example
+
+# Documentation
+README.md
+TECH_AUDIT.md
+docs
+
+# Logs and temp
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+.pnpm-store
+
+# Root artifacts
+implementation_plan.md
+task.md
+walkthrough.md

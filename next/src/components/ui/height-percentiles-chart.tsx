@@ -10,6 +10,7 @@ import {
   CartesianGrid,
   ComposedChart,
 } from "recharts";
+import { useTranslations } from "next-intl";
 
 const WHO_HEIGHT_M: Record<number, { p5: number; p50: number; p95: number }> = {
   10: { p5: 125, p50: 138, p95: 151 },
@@ -44,15 +45,26 @@ export function HeightPercentilesChart({
   sex: string;
   birthDate: string | null;
 }) {
+  const t = useTranslations("biometria");
   const whoTable = sex === "M" ? WHO_HEIGHT_M : WHO_HEIGHT_F;
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const chartData: any[] = [10, 11, 12, 13, 14, 15, 16, 17, 18].map((age) => ({
-    age,
-    range: [whoTable[age].p5, whoTable[age].p95],
-    p50: whoTable[age].p50,
-    studentHeight: null,
-  }));
+  type ChartDataPoint = {
+    age: number;
+    range: [number, number] | null;
+    p50: number | null;
+    studentHeight: number | null;
+  };
+
+  const chartData: ChartDataPoint[] = [10, 11, 12, 13, 14, 15, 16, 17, 18].map((age) => {
+    const bounds = whoTable[age];
+    if (!bounds) throw new Error("Invalid age bound");
+    return {
+      age,
+      range: [bounds.p5, bounds.p95],
+      p50: bounds.p50,
+      studentHeight: null,
+    };
+  });
 
   if (birthDate) {
     const bDate = new Date(birthDate);
@@ -113,20 +125,22 @@ export function HeightPercentilesChart({
               const data = payload[0].payload;
               return (
                 <div className="rounded-lg border border-border/60 bg-background p-2.5 text-xs shadow-sm">
-                  <p className="font-semibold mb-1">Idade: {data.age} anos</p>
+                  <p className="font-semibold mb-1">
+                    {t("chartAge")}: {data.age} {t("chartYears")}
+                  </p>
                   {data.studentHeight !== null && (
                     <p className="text-success-600 font-bold mt-1">
-                      Aluno: {data.studentHeight} cm
+                      {t("chartStudent")}: {data.studentHeight} cm
                     </p>
                   )}
                   {data.p50 !== null && (
                     <p className="text-muted-foreground mt-1">
-                      P50 (Médio): {data.p50} cm
+                      P50 ({t("chartAverage")}): {data.p50} cm
                     </p>
                   )}
                   {data.range && (
                     <p className="text-muted-foreground">
-                      P5-P95: {data.range[0]} - {data.range[1]} cm
+                      {t("chartRange")}: {data.range[0]} - {data.range[1]} cm
                     </p>
                   )}
                 </div>

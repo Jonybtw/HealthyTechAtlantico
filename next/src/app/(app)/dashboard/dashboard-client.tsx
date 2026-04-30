@@ -12,12 +12,12 @@ import {
   FileText,
   Link2,
   School,
+  Sparkles,
   Users,
 } from "lucide-react";
 import { PieChart, Pie, Cell, Tooltip } from "recharts";
 import { EmptyState } from "@/components/ui/empty-state";
 import { KpiCard } from "@/components/ui/kpi-card";
-import { PageHeader } from "@/components/ui/page-header";
 import { PageScaffold } from "@/components/ui/page-scaffold";
 import { PageSection } from "@/components/ui/page-section";
 import { Badge } from "@/components/ui/badge";
@@ -68,6 +68,10 @@ const FALLBACK_MESSAGES: {
     activeClasses: "Turmas ativas",
     evaluationsDone: "Avaliações realizadas",
     alertsPending: "Alertas por resolver",
+    platformIndicatorsEyebrow: "Indicadores da plataforma",
+    platformIndicatorsTitle: "Indicadores da plataforma",
+    platformIndicatorsDescription:
+      "Visao consolidada de alunos, turmas, avaliacoes e alertas.",
     zafDistribution: "Distribuição ZAF por Ano Letivo",
     zsaf: "Z. Saudável",
     zmf: "Z. Melhoria",
@@ -602,20 +606,36 @@ function StaffDashboardHeader({
   username: string;
 }) {
   return (
-    <PageHeader
-      title={`${greeting}, ${username}!`}
-      description={description}
-      eyebrow={t("title")}
-      actionsClassName="items-start lg:items-center"
-    >
-      <span className="inline-flex items-center gap-2 rounded-md border border-border bg-muted/40 px-3 py-1.5 text-sm text-foreground">
-        <CalendarDays className="size-4 text-muted-foreground" />
-        {todayLabel}
-      </span>
-      <span className="inline-flex items-center rounded-md border border-border bg-muted/30 px-3 py-1.5 text-sm font-medium text-muted-foreground">
-        {t("dashboardStatus")}
-      </span>
-    </PageHeader>
+    <section className="relative overflow-hidden rounded-[2rem] border border-white/55 bg-white/72 px-6 py-7 shadow-[0_24px_70px_rgba(5,14,24,0.12)] backdrop-blur-xl dark:border-white/10 dark:bg-navy-950/72 dark:shadow-[0_28px_80px_rgba(0,0,0,0.36)] sm:px-8 sm:py-8">
+      <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-gold-400/70 to-transparent" />
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_78%_-18%,rgba(216,173,52,0.18),transparent_46%),radial-gradient(circle_at_8%_110%,rgba(16,36,58,0.08),transparent_40%)] dark:bg-[radial-gradient(circle_at_78%_-18%,rgba(232,199,102,0.2),transparent_46%),radial-gradient(circle_at_8%_110%,rgba(20,48,76,0.45),transparent_40%)]" />
+
+      <div className="relative flex flex-col gap-7 lg:flex-row lg:items-end lg:justify-between">
+        <div>
+          <div className="inline-flex items-center gap-2">
+            <span className="flex size-6 items-center justify-center rounded-full bg-gold-400/16 text-gold-700 ring-1 ring-gold-400/25 dark:text-gold-200">
+              <Sparkles className="size-3.5" />
+            </span>
+            <span className="text-[11px] font-bold uppercase tracking-[0.28em] text-gold-700 dark:text-gold-200">
+              {t("title")}
+            </span>
+          </div>
+
+          <h1 className="mt-4 font-display text-[2.4rem] font-black leading-none tracking-[-0.055em] text-navy-950 dark:text-white sm:text-[3.25rem]">
+            {greeting},{" "}
+            <span className="text-gradient-gold">{username}</span>!
+          </h1>
+          <p className="mt-4 max-w-2xl text-base leading-relaxed text-muted-foreground sm:text-lg">
+            {description}
+          </p>
+        </div>
+
+        <span className="inline-flex w-fit items-center gap-2 rounded-full border border-border/70 bg-white/70 px-4 py-2 text-sm font-medium text-muted-foreground shadow-sm dark:border-white/10 dark:bg-white/8 dark:text-white/70">
+          <CalendarDays className="size-4 text-gold-600 dark:text-gold-200" />
+          {todayLabel}
+        </span>
+      </div>
+    </section>
   );
 }
 
@@ -646,6 +666,16 @@ function StaffOverview({
           accent: studentsCard.accent,
         }
       : null,
+    classesCard
+      ? {
+        id: classesCard.id,
+        icon: School,
+          title: t(classesCard.titleKey),
+          value: formatNumberValue(classesCard.value, locale),
+          description: t(classesCard.descriptionKey),
+          accent: classesCard.accent,
+        }
+      : null,
     sessionsCard
       ? {
           id: sessionsCard.id,
@@ -654,16 +684,6 @@ function StaffOverview({
           value: formatNumberValue(sessionsCard.value, locale),
           description: t(sessionsCard.descriptionKey),
           accent: sessionsCard.accent,
-        }
-      : null,
-    classesCard
-      ? {
-          id: classesCard.id,
-          icon: School,
-          title: t(classesCard.titleKey),
-          value: formatNumberValue(classesCard.value, locale),
-          description: t(classesCard.descriptionKey),
-          accent: classesCard.accent,
         }
       : null,
     pendingSosCard
@@ -688,24 +708,25 @@ function StaffOverview({
   }>;
 
   return (
-    <section className="surface-secondary rounded-2xl p-6 sm:p-7">
-      <div className="flex flex-col gap-6">
-        <div className="grid gap-3 xl:grid-cols-[minmax(0,0.82fr)_minmax(0,1.18fr)] xl:items-end">
-          <div>
-            <p className="section-kicker">
-              {t("overviewEyebrow")}
-            </p>
-            <h2 className="section-title mt-1">
-              {t("overviewTitle")}
-            </h2>
-          </div>
-          <p className="section-copy max-w-2xl">
-            {t("overviewDescription")}
+    <section className="relative overflow-hidden rounded-[2rem] border border-white/50 bg-white/66 p-6 shadow-[0_22px_70px_rgba(5,14,24,0.1)] backdrop-blur-xl dark:border-white/10 dark:bg-navy-950/64 dark:shadow-[0_22px_70px_rgba(0,0,0,0.32)] sm:p-7">
+      <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-gold-400/60 to-transparent" />
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_86%_0%,rgba(216,173,52,0.1),transparent_42%)] dark:bg-[radial-gradient(circle_at_86%_0%,rgba(232,199,102,0.13),transparent_42%)]" />
+
+      <div className="relative flex flex-col gap-6">
+        <div>
+          <p className="text-[11px] font-bold uppercase tracking-[0.28em] text-gold-700 dark:text-gold-200">
+            {t("platformIndicatorsEyebrow")}
+          </p>
+          <h2 className="mt-2 font-display text-2xl font-bold tracking-[-0.04em] text-foreground">
+            {t("platformIndicatorsTitle")}
+          </h2>
+          <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted-foreground sm:text-base">
+            {t("platformIndicatorsDescription")}
           </p>
         </div>
 
-        <div className="overflow-hidden rounded-xl border border-border/70 shadow-sm">
-          <div className="grid gap-px bg-border/60 md:grid-cols-2 xl:grid-cols-4">
+        <div className="overflow-hidden rounded-[1.35rem] border border-border/70 bg-border/50 shadow-sm dark:border-white/10 dark:bg-white/10">
+          <div className="grid gap-px md:grid-cols-2 xl:grid-cols-4">
             {metrics.map((metric) => (
               <StaffMetricRailCell
                 key={metric.id}
@@ -756,12 +777,14 @@ function DashboardAnalytics({
       description={t("comparisonPanelDescription")}
       tone="secondary"
       layout="analytics"
+      className="rounded-[2rem] p-6 sm:p-7"
     >
       <div className="grid gap-4 xl:grid-cols-[minmax(0,1.02fr)_minmax(320px,0.98fr)]">
-        <section className="rounded-xl border border-border/70 bg-card p-5 shadow-sm dark:border-white/10 sm:p-6">
+        <section className="overflow-hidden rounded-[1.4rem] border border-border/70 bg-white/58 shadow-sm backdrop-blur-md dark:border-white/10 dark:bg-navy-950/45">
+          <div className="p-5 sm:p-6">
           <div className="flex items-start gap-4">
             <div>
-              <p className="text-sm font-medium text-muted-foreground dark:text-white/62">
+              <p className="text-[11px] font-bold uppercase tracking-[0.24em] text-gold-700 dark:text-gold-200">
                 {t("yearInFocus")}
               </p>
               <h3 className="mt-1 font-display text-[1.55rem] font-semibold tracking-[-0.04em] text-foreground dark:text-white sm:text-[1.8rem]">
@@ -847,12 +870,14 @@ function DashboardAnalytics({
               </div>
             </div>
           </div>
+          </div>
         </section>
 
-        <div className="surface-primary rounded-[1.65rem] p-5 sm:p-6">
+        <div className="overflow-hidden rounded-[1.4rem] border border-border/70 bg-white/58 shadow-sm backdrop-blur-md dark:border-white/10 dark:bg-navy-950/45">
+          <div className="border-b border-border/70 p-5 dark:border-white/10 sm:p-6">
           <div className="mb-6 flex items-start justify-between gap-3">
             <div>
-              <p className="text-sm font-medium text-muted-foreground">
+              <p className="text-[11px] font-bold uppercase tracking-[0.24em] text-gold-700 dark:text-gold-200">
                 {t("annualSeries")}
               </p>
               <h4 className="mt-1 font-display text-[1.35rem] font-semibold tracking-[-0.035em] text-foreground">
@@ -868,7 +893,9 @@ function DashboardAnalytics({
               </Badge>
             ) : null}
           </div>
+          </div>
 
+          <div className="p-5 sm:p-6">
           {timelineYears.length > 1 ? (
             <div className="space-y-4">
               {timelineYears.map((academicYear) => {
@@ -927,6 +954,7 @@ function DashboardAnalytics({
               description={t("annualSeriesPendingDescription")}
             />
           )}
+          </div>
         </div>
       </div>
     </PageSection>
@@ -950,28 +978,39 @@ function StaffMetricRailCell({
 }) {
   const accentClassName = {
     blue:
-      "border-navy-200 bg-navy-100 text-navy-900 dark:border-navy-700 dark:bg-navy-900 dark:text-white",
+      "border-navy-200 bg-navy-100 text-navy-800 dark:border-navy-700/60 dark:bg-navy-900/80 dark:text-white",
     green:
       "border-success-200 bg-success-50 text-success-700 dark:border-success-700/60 dark:bg-success-950/50 dark:text-success-200",
     gold:
       "border-gold-200 bg-gold-50 text-gold-800 dark:border-gold-500/40 dark:bg-gold-950/40 dark:text-gold-200",
     red: "border-danger-200 bg-danger-50 text-danger-700 dark:border-danger-700/50 dark:bg-danger-950/40 dark:text-danger-200",
   }[accent];
+  const valueClassName = {
+    blue: "text-navy-950 dark:text-white",
+    green: "text-success-700 dark:text-success-300",
+    gold: "text-gold-700 dark:text-gold-200",
+    red: "text-danger-600 dark:text-danger-300",
+  }[accent];
 
   return (
     <div
       className={cn(
-        "relative min-h-[144px] bg-background/92 px-5 py-5 dark:bg-navy-950/56",
+        "relative min-h-[146px] bg-white/62 px-6 py-6 dark:bg-navy-950/42",
         emphasis === "danger" &&
-          "bg-danger-500/[0.035] dark:bg-danger-500/[0.08]",
+          "bg-danger-500/[0.055] dark:bg-danger-500/[0.1]",
       )}
     >
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0">
-          <p className="text-sm font-medium text-muted-foreground">
+          <p className="text-sm font-semibold text-muted-foreground">
             {title}
           </p>
-          <p className="mt-4 text-[2.5rem] font-black leading-none tracking-tight text-foreground">
+          <p
+            className={cn(
+              "mt-8 text-[2.7rem] font-black leading-none tracking-[-0.045em]",
+              valueClassName,
+            )}
+          >
             {value}
           </p>
           <p className="mt-2 max-w-[18ch] text-sm leading-relaxed text-muted-foreground">
@@ -981,7 +1020,7 @@ function StaffMetricRailCell({
 
         <span
           className={cn(
-            "flex size-11 flex-shrink-0 items-center justify-center rounded-2xl border",
+            "flex size-12 flex-shrink-0 items-center justify-center rounded-full border shadow-sm",
             accentClassName,
           )}
         >
@@ -1091,7 +1130,7 @@ function DashboardPanel({
   href?: string;
 }) {
   const panelClassName = cn(
-    "relative overflow-hidden rounded-2xl border border-border bg-surface-secondary p-4 shadow-sm transition-all duration-300",
+    "relative overflow-hidden rounded-[24px] border border-border bg-surface-secondary p-4 shadow-sm transition-all duration-300",
     href &&
       "group hover:-translate-y-0.5 hover:border-gold-300/35 hover:shadow-card-hover",
     className,

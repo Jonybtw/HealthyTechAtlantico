@@ -572,6 +572,7 @@ export default function AnaliseClient() {
     return (
       <PageScaffold
         headerProps={{
+          eyebrow: t("eyebrow"),
           title: t("title"),
           description: t("description"),
         }}
@@ -588,6 +589,7 @@ export default function AnaliseClient() {
   return (
     <PageScaffold
       headerProps={{
+        eyebrow: t("eyebrow"),
         title: t("title"),
         description: t("description"),
       }}
@@ -633,7 +635,7 @@ export default function AnaliseClient() {
                         className="w-full"
                       />
                     ) : (
-                      <div className="rounded-2xl border border-dashed border-border/80 bg-background/55 px-4 py-3 text-sm text-muted-foreground">
+                      <div className="rounded-[24px] border border-dashed border-border/80 bg-background/55 px-4 py-3 text-sm text-muted-foreground">
                         {t("noClassesAvailableDescription")}
                       </div>
                     )
@@ -718,7 +720,7 @@ export default function AnaliseClient() {
                   {[1, 2, 3].map((item) => (
                     <div
                       key={item}
-                      className="h-24 animate-pulse rounded-2xl bg-muted/30"
+                      className="h-24 animate-pulse rounded-[24px] bg-muted/30"
                     />
                   ))}
                 </div>
@@ -993,7 +995,7 @@ export default function AnaliseClient() {
                   />
                 </div>
               ) : (
-                <div className="rounded-2xl border border-dashed border-border/80 bg-background/55 px-4 py-5 text-sm leading-relaxed text-muted-foreground">
+                <div className="rounded-[24px] border border-dashed border-border/80 bg-background/55 px-4 py-5 text-sm leading-relaxed text-muted-foreground">
                   {lens === "tests"
                     ? t("emptyTestsDataDescription")
                     : t("emptyStudentDataDescription")}
@@ -1017,7 +1019,7 @@ function AnalysisSummaryTile({
   support: string;
 }) {
   return (
-    <div className="rounded-2xl border border-border/70 bg-background/70 p-4">
+    <div className="rounded-[24px] border border-border/70 bg-background/70 p-4">
       <p className="text-tiny font-semibold uppercase tracking-[0.16em] text-muted-foreground">
         {label}
       </p>
@@ -1050,7 +1052,7 @@ function AnalysisMetricTile({
           : "bg-slate-300";
 
   return (
-    <div className="rounded-2xl border border-border/70 bg-background/72 p-4">
+    <div className="rounded-[24px] border border-border/70 bg-background/72 p-4">
       <div className="flex items-center gap-2">
         <span className={`size-2.5 rounded-full ${dotClassName}`} />
         <p className="text-tiny font-semibold uppercase tracking-[0.16em] text-muted-foreground">
@@ -1195,7 +1197,7 @@ function DistributionStat({
   value: number;
 }) {
   return (
-    <div className="rounded-2xl border border-border/70 bg-background/65 px-4 py-3">
+    <div className="rounded-[24px] border border-border/70 bg-background/65 px-4 py-3">
       <div className="flex items-center gap-2">
         <span className={`size-2.5 rounded-full ${color}`} />
         <p className="text-sm text-muted-foreground">{label}</p>
