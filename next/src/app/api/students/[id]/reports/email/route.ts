@@ -17,7 +17,7 @@ import { AUDIT_ACTIONS } from "@/lib/audit-actions";
 import { prisma } from "@/lib/prisma";
 import { isStaffRole, PERMISSIONS } from "@/lib/rbac";
 import { getStudentAccessContext } from "@/lib/student-access";
-import { sendMail } from "@/lib/mailer";
+import { sendReportMail365 } from "@/lib/microsoft-365-mailer";
 import { escapeHtml } from "@/lib/utils";
 import { reportEmailSchema } from "@/lib/validations";
 
@@ -149,8 +149,9 @@ export async function POST(
 
     let emailSent = false;
     try {
-      await sendMail({
+      await sendReportMail365({
         to: guardianLink.guardian.email,
+        recipientName: guardianLink.guardian.name,
         subject: `${data.title} - ${student.name}`,
         html: buildReportHtml({
           studentName: student.name,

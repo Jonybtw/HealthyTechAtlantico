@@ -18,13 +18,15 @@ import {
   Activity,
   CheckCircle2,
   LineChart as ChartIcon,
+  Mail,
   Ruler,
   Scale,
+  Send,
   ShieldAlert,
   Users,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { interactiveControlClasses } from "@/components/ui/button";
+import { Button, interactiveControlClasses } from "@/components/ui/button";
 import { ChartFrame } from "@/components/ui/chart-frame";
 import { ChartTooltip } from "@/components/ui/chart-tooltip";
 import { ClassPicker } from "@/components/ui/class-picker";
@@ -70,6 +72,14 @@ type ClassSummary = {
   improvement: number;
   noData: number;
   total: number;
+};
+
+type ClassEmailSummary = {
+  students: number;
+  sent: number;
+  failed: number;
+  skippedNoGuardian: number;
+  firstError: string | null;
 };
 
 type BioApiRecord = {
@@ -195,6 +205,9 @@ export default function AnaliseClient() {
   const [classId, setClassId] = useState("");
   const [classSummary, setClassSummary] = useState<ClassSummary | null>(null);
   const [loadingClassSummary, setLoadingClassSummary] = useState(false);
+  const [sendingClassReports, setSendingClassReports] = useState(false);
+  const [classEmailSummary, setClassEmailSummary] =
+    useState<ClassEmailSummary | null>(null);
   const { data: classes = [] } = useClasses({ enabled: canViewAnalysis });
 
   useEffect(() => {
@@ -568,6 +581,49 @@ export default function AnaliseClient() {
     [classSummary?.total, scopeSupport, scopeValue, t],
   );
 
+  const handleSendClassReports = async () => {
+    if (!classId) {
+      toast.error(t("noClassSelected"));
+      return;
+    }
+
+    setSendingClassReports(true);
+    setClassEmailSummary(null);
+
+    try {
+      const response = await fetch("/api/classes/reports/email", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          classId,
+          title: t("classEmailDefaultTitle"),
+        }),
+      });
+      const result = await readApiResponse<ClassEmailSummary>(response);
+
+      setClassEmailSummary(result);
+
+      if (result.sent > 0 && result.failed === 0) {
+        toast.success(t("classEmailSuccess", { count: result.sent }));
+      } else if (result.sent > 0) {
+        toast.warning(
+          t("classEmailPartial", {
+            sent: result.sent,
+            failed: result.failed,
+          }),
+        );
+      } else {
+        toast.error(result.firstError ?? t("classEmailNoneSent"));
+      }
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : t("classEmailError"),
+      );
+    } finally {
+      setSendingClassReports(false);
+    }
+  };
+
   if (!canViewAnalysis) {
     return (
       <PageScaffold
@@ -628,6 +684,7 @@ export default function AnaliseClient() {
                         onChange={(value) => {
                           setClassId(value);
                           setClassSummary(null);
+                          setClassEmailSummary(null);
                         }}
                         placeholder={t("classSelectionLabel")}
                         className="w-full"
@@ -941,6 +998,46 @@ export default function AnaliseClient() {
                   support={`${classCoveragePct}% ${t("withData")}`}
                   tone="success"
                 />
+                <div className="rounded-3xl border border-border/70 bg-background/75 p-4">
+                  <div className="flex items-start gap-3">
+                    <div className="flex size-10 shrink-0 items-center justify-center rounded-2xl bg-gold-100 text-gold-700 dark:bg-gold-500/10 dark:text-gold-300">
+                      <Mail className="size-5" />
+                    </div>
+                    <div className="space-y-1">
+                      <h3 className="text-sm font-semibold text-foreground">
+                        {t("classEmailTitle")}
+                      </h3>
+                      <p className="text-sm leading-relaxed text-muted-foreground">
+                        {t("classEmailDescription")}
+                      </p>
+                    </div>
+                  </div>
+
+                  <Button
+                    className="mt-4 h-12 w-full justify-center"
+                    icon={<Send className="size-4" />}
+                    loading={sendingClassReports}
+                    onClick={handleSendClassReports}
+                    disabled={!classId || classSummary.total === 0}
+                  >
+                    {t("classEmailButton")}
+                  </Button>
+
+                  {classEmailSummary ? (
+                    <div className="mt-4 rounded-2xl border border-border/70 bg-surface-secondary px-4 py-3 text-sm text-muted-foreground">
+                      <p className="font-semibold text-foreground">
+                        {t("classEmailSummaryTitle")}
+                      </p>
+                      <p className="mt-1">
+                        {t("classEmailSummary", {
+                          sent: classEmailSummary.sent,
+                          failed: classEmailSummary.failed,
+                          skipped: classEmailSummary.skippedNoGuardian,
+                        })}
+                      </p>
+                    </div>
+                  ) : null}
+                </div>
               </div>
             ) : (
               <EmptyState

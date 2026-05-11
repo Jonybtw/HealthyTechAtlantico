@@ -41,7 +41,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
         <div className="relative flex flex-col gap-1.5">
           <div className="relative flex items-center">
             {leftIcon ? (
-              <span className="pointer-events-none absolute left-4 z-10 text-muted-foreground transition-colors peer-focus:text-gold-500">
+              <span className="pointer-events-none absolute inset-y-0 left-4 z-10 flex items-center text-muted-foreground transition-colors peer-focus:text-gold-500">
                 {leftIcon}
               </span>
             ) : null}
@@ -55,7 +55,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
                 error ? `${uid}-error` : hint ? `${uid}-hint` : undefined
               }
               className={cn(
-                "peer flex h-12 w-full rounded-2xl border border-input bg-background px-4 pt-4 pb-2 text-sm text-foreground shadow-sm",
+                "peer flex h-14 w-full rounded-2xl border border-input bg-background px-4 pb-2.5 pt-6 text-sm text-foreground shadow-sm",
                 "transition-all duration-300",
                 "focus:border-gold-400 focus:bg-background focus:outline-none focus:ring-4 focus:ring-gold-400/20",
                 "hover:border-input-hover hover:bg-background/90",
@@ -76,9 +76,9 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
               <label
                 htmlFor={uid}
                 className={cn(
-                  "pointer-events-none absolute left-0 top-1/2 -translate-y-1/2 text-muted-foreground transition-all duration-200",
-                  "peer-focus:top-[0.9rem] peer-focus:-translate-y-0 peer-focus:text-micro peer-focus:font-semibold peer-focus:text-gold-500",
-                  "peer-[:not(:placeholder-shown)]:top-[0.9rem] peer-[:not(:placeholder-shown)]:-translate-y-0 peer-[:not(:placeholder-shown)]:text-micro peer-[:not(:placeholder-shown)]:font-semibold",
+                  "pointer-events-none absolute left-0 top-1/2 -translate-y-1/2 text-sm text-muted-foreground transition-all duration-200",
+                  "peer-focus:top-2 peer-focus:-translate-y-0 peer-focus:text-micro peer-focus:font-semibold peer-focus:text-gold-500",
+                  "peer-[:not(:placeholder-shown)]:top-2 peer-[:not(:placeholder-shown)]:-translate-y-0 peer-[:not(:placeholder-shown)]:text-micro peer-[:not(:placeholder-shown)]:font-semibold",
                   leftIcon ? "pl-11" : "pl-4",
                 )}
               >
