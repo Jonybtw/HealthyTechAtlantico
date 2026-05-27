@@ -127,6 +127,7 @@ export async function POST(req: NextRequest) {
         age: data.age ?? null,
         schoolYear: data.schoolYear ?? null,
         className: data.className ?? null,
+        processNumber: data.processNumber?.trim() || null,
         createdById: session.user.id,
       },
     });

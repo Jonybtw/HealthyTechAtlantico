@@ -3,10 +3,13 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { NextRequest } from "next/server";
 
-const { authMock, findManyMock, countMock } = vi.hoisted(() => ({
+const { authMock, findManyMock, countMock, createMock, auditLogMock } =
+vi.hoisted(() => ({
   authMock: vi.fn(),
   findManyMock: vi.fn(),
   countMock: vi.fn(),
+  createMock: vi.fn(),
+  auditLogMock: vi.fn(),
 }));
 
 vi.mock("@/lib/auth", () => ({
@@ -18,23 +21,32 @@ vi.mock("@/lib/prisma", () => ({
     student: {
       findMany: findManyMock,
       count: countMock,
+      create: createMock,
     },
   },
 }));
 
-import { GET } from "@/app/api/students/route";
+vi.mock("@/lib/audit", () => ({
+  auditLog: auditLogMock,
+}));
+
+import { GET, POST } from "@/app/api/students/route";
 
 describe("GET /api/students", () => {
   beforeEach(() => {
     authMock.mockReset();
     findManyMock.mockReset();
     countMock.mockReset();
+    createMock.mockReset();
+    auditLogMock.mockReset();
 
     authMock.mockResolvedValue({
       user: { id: "staff-1", role: "PROFESSOR" },
     });
     findManyMock.mockResolvedValue([]);
     countMock.mockResolvedValue(0);
+    createMock.mockResolvedValue({ id: "student-1", name: "Ana" });
+    auditLogMock.mockResolvedValue(undefined);
   });
 
   it("returns 401 when the request is not authenticated", async () => {
@@ -72,6 +84,7 @@ describe("GET /api/students", () => {
         age: null,
         schoolYear: "2025/2026",
         className: "8A",
+        processNumber: "1234",
         kidmedConsentAt: null,
         linkedUserId: "student-user-1",
       },
@@ -103,6 +116,7 @@ describe("GET /api/students", () => {
         age: true,
         schoolYear: true,
         className: true,
+        processNumber: true,
         kidmedConsentAt: true,
         linkedUserId: true,
       },
@@ -127,6 +141,7 @@ describe("GET /api/students", () => {
             age: null,
             schoolYear: "2025/2026",
             className: "8A",
+            processNumber: "1234",
             kidmedConsentAt: null,
             linkedUserId: "student-user-1",
           },
@@ -162,6 +177,36 @@ describe("GET /api/students", () => {
         guardians: {
           some: { guardianUserId: "guardian-1" },
         },
+      },
+    });
+  });
+
+  it("creates a student and persists the process number", async () => {
+    const response = await POST(
+      new NextRequest("http://localhost/api/students", {
+        method: "POST",
+        body: JSON.stringify({
+          name: "Joao Santos",
+          sex: "M",
+          birthDate: "2012-04-10",
+          schoolYear: "2025/2026",
+          className: "8A",
+          processNumber: "9876",
+        }),
+      }),
+    );
+
+    expect(response.status).toBe(201);
+    expect(createMock).toHaveBeenCalledWith({
+      data: {
+        name: "Joao Santos",
+        sex: "M",
+        birthDate: new Date("2012-04-10"),
+        age: null,
+        schoolYear: "2025/2026",
+        className: "8A",
+        processNumber: "9876",
+        createdById: "staff-1",
       },
     });
   });
