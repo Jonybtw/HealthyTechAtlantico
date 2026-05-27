@@ -176,8 +176,15 @@ export async function POST(
         }),
       });
       emailSent = true;
-    } catch {
+    } catch (error) {
       emailSent = false;
+      const message =
+        error instanceof Error ? error.message : "Erro desconhecido";
+      console.error("Report email failed:", {
+        studentId: id,
+        guardianEmail: guardianLink.guardian.email,
+        error: message,
+      });
     }
 
     if (emailSent) {

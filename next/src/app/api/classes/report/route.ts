@@ -59,6 +59,7 @@ export async function GET(req: NextRequest) {
       name: student.name,
       sex: student.sex,
       className: student.className,
+      processNumber: student.processNumber,
       birthDate: student.birthDate,
       latestBiometric: student.biometrics[0] ?? null,
       testCount: student.tests.length,
