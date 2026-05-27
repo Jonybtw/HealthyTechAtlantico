@@ -27,6 +27,19 @@ function hasMicrosoftGraphConfig() {
   );
 }
 
+function allowsSmtpFallback() {
+  return process.env.M365_REPORT_ALLOW_SMTP_FALLBACK === "true";
+}
+
+function getReportSender() {
+  return (
+    process.env.M365_REPORT_FROM?.trim() ||
+    process.env.M365_SHARED_MAILBOX?.trim() ||
+    process.env.M365_FROM?.trim() ||
+    DEFAULT_REPORT_FROM
+  );
+}
+
 async function getMicrosoftGraphAccessToken() {
   const tenantId = getRequiredEnv("M365_TENANT_ID");
   const clientId = getRequiredEnv("M365_CLIENT_ID");
@@ -71,7 +84,13 @@ export async function sendReportMail365(opts: {
   recipientName?: string | null;
 }) {
   if (!hasMicrosoftGraphConfig()) {
-    console.warn("Report email: using SMTP fallback.");
+    if (!allowsSmtpFallback()) {
+      throw new Error(
+        "Microsoft Graph nao configurado para a caixa partilhada Healthytec@colegioatlantico.pt",
+      );
+    }
+
+    console.warn("Report email: using explicit SMTP fallback.");
     return sendMail({
       to: opts.to,
       subject: opts.subject,
@@ -82,10 +101,7 @@ export async function sendReportMail365(opts: {
 
   console.warn("Report email: using Microsoft Graph.");
   const accessToken = await getMicrosoftGraphAccessToken();
-  const sender =
-    process.env.M365_REPORT_FROM?.trim() ||
-    process.env.M365_FROM?.trim() ||
-    DEFAULT_REPORT_FROM;
+  const sender = getReportSender();
   const recipient: GraphEmailAddress = {
     address: opts.to,
   };
