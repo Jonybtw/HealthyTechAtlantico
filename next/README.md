@@ -69,7 +69,19 @@ DATABASE_URL="postgresql://user:password@localhost:5432/healthytech"
 # NextAuth Configuration
 NEXTAUTH_URL="http://localhost:3000"
 NEXTAUTH_SECRET="your-super-secret-key"
+
+# Microsoft 365 report email delivery through the shared mailbox
+M365_TENANT_ID="your-tenant-id"
+M365_CLIENT_ID="your-app-client-id"
+M365_CLIENT_SECRET="your-app-client-secret"
+M365_SHARED_MAILBOX="Healthytec@colegioatlantico.pt"
 ```
+
+For report emails, `Healthytec@colegioatlantico.pt` is treated as a Microsoft
+365 shared mailbox. Configure the Entra app with Microsoft Graph application
+permission `Mail.Send` and admin consent, then restrict mailbox access in
+Exchange Online where appropriate. SMTP fallback is disabled by default; enable
+`M365_REPORT_ALLOW_SMTP_FALLBACK="true"` only for a deliberate legacy setup.
 
 ### 3. Database Setup (Prisma)
 Run Prisma migrations to set up your PostgreSQL database and generate the Prisma Client:

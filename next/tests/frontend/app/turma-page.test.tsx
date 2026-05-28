@@ -12,6 +12,7 @@ vi.mock("next/navigation", () => ({
 }));
 
 vi.mock("next-intl", () => ({
+  useLocale: () => "pt",
   useTranslations:
     (namespace?: string) =>
     (key: string) =>
@@ -24,6 +25,18 @@ vi.mock("next-intl", () => ({
           "turma.colBmi": "IMC",
           "turma.colZone": "Zona",
           "turma.colTests": "Testes",
+          "turma.colProcessNumber": "Nº Processo",
+          "turma.birthDateLabel": "Nascimento",
+          "turma.male": "Masc.",
+          "turma.female": "Fem.",
+          "turma.quickAddEyebrow": "Entrada manual",
+          "turma.quickAddTitle": "Adicionar aluno à turma",
+          "turma.quickAddButton": "Adicionar",
+          "turma.processNumberPlaceholder": "Opcional",
+          "turma.studentNamePlaceholder": "Nome completo",
+          "turma.selectClassBeforeCreate": "Seleciona uma turma antes de adicionar alunos.",
+          "turma.studentCreateSuccess": "Aluno adicionado à turma.",
+          "turma.studentCreateError": "Erro ao adicionar aluno.",
           "turma.className": "Turma",
           "turma.healthyZone": "Zona Saudável",
           "turma.improvementZone": "Zona de Melhoria",
@@ -60,6 +73,30 @@ vi.mock("@/components/user-context", () => ({
   }),
 }));
 
+vi.mock("@/components/ui/date-field", () => ({
+  DateField: ({
+    label,
+    value,
+    onChange,
+    disabled,
+  }: {
+    label?: string;
+    value?: string;
+    onChange?: (value: string) => void;
+    disabled?: boolean;
+  }) => (
+    <label>
+      {label}
+      <input
+        type="date"
+        value={value ?? ""}
+        disabled={disabled}
+        onChange={(event) => onChange?.(event.target.value)}
+      />
+    </label>
+  ),
+}));
+
 vi.mock("@/hooks/use-queries", () => ({
   useClasses: () => ({
     data: [
@@ -93,6 +130,7 @@ describe("TurmaPage", () => {
             name: "Maria Silva",
             sex: "F",
             className: "8A",
+            processNumber: "1234",
             latestBiometric: {
               imc: 21.4,
               imcZone: "ZSAF - Zona Saudável",

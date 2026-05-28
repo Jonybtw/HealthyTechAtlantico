@@ -10,6 +10,9 @@ import {
   Download,
   FileUp,
   LineChart as ChartIcon,
+  Mars,
+  UserPlus,
+  Venus,
   Target,
   Users,
 } from "lucide-react";
@@ -20,6 +23,9 @@ import { cn } from "@/lib/utils";
 import { DataTable, type Column } from "@/components/ui/data-table";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { DateField } from "@/components/ui/date-field";
+import { Input } from "@/components/ui/input";
+import { PillSelect } from "@/components/ui/pill-select";
 import { ZoneBadge } from "@/components/ui/zone-badge";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -33,6 +39,7 @@ interface StudentRow {
   name: string;
   sex: string;
   className: string | null;
+  processNumber: string | null;
   latestBiometric: { imc: number | string; imcZone: string } | null;
   testCount: number;
 }
@@ -80,6 +87,13 @@ export default function TurmaPage() {
   const [students, setStudents] = useState<StudentRow[]>([]);
   const [loading, setLoading] = useState(false);
   const [isImportingCsv, setIsImportingCsv] = useState(false);
+  const [isCreatingStudent, setIsCreatingStudent] = useState(false);
+  const [quickStudentForm, setQuickStudentForm] = useState({
+    processNumber: "",
+    name: "",
+    sex: "M",
+    birthDate: "",
+  });
   const importInputRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
@@ -148,6 +162,15 @@ export default function TurmaPage() {
       controller.abort();
     };
   }, [canViewClassReports, classId, t]);
+
+  useEffect(() => {
+    setQuickStudentForm({
+      processNumber: "",
+      name: "",
+      sex: "M",
+      birthDate: "",
+    });
+  }, [classId]);
 
   const exportCsv = () => {
     if (!students.length) {
@@ -246,6 +269,72 @@ export default function TurmaPage() {
   const reducedEffects = useReducedEffects();
   const selectedClass = classes.find((item) => item.id === classId) ?? null;
 
+  const refreshSelectedClassStudents = async () => {
+    if (!selectedClass) {
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      const response = await fetch(
+        `/api/classes/report?classId=${encodeURIComponent(selectedClass.id)}`,
+      );
+      const body = await readApiResponse<StudentRow[]>(response);
+      setStudents(body);
+    } catch {
+      setStudents([]);
+      toast.error(t("loadError"));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const createStudentInSelectedClass = async (
+    event: React.FormEvent<HTMLFormElement>,
+  ) => {
+    event.preventDefault();
+
+    if (!selectedClass) {
+      toast.error(t("selectClassBeforeCreate"));
+      return;
+    }
+
+    setIsCreatingStudent(true);
+
+    try {
+      const response = await fetch("/api/students", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          processNumber: quickStudentForm.processNumber.trim() || undefined,
+          name: quickStudentForm.name.trim(),
+          sex: quickStudentForm.sex,
+          birthDate: quickStudentForm.birthDate || undefined,
+          schoolYear: selectedClass.year,
+          className: selectedClass.name,
+        }),
+      });
+
+      await readApiResponse(response);
+
+      toast.success(t("studentCreateSuccess"));
+      setQuickStudentForm({
+        processNumber: "",
+        name: "",
+        sex: "M",
+        birthDate: "",
+      });
+      await refreshSelectedClassStudents();
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : t("studentCreateError"),
+      );
+    } finally {
+      setIsCreatingStudent(false);
+    }
+  };
+
   const stats = useMemo(() => {
     const total = students.length;
     let healthy = 0;
@@ -319,6 +408,19 @@ export default function TurmaPage() {
             {student.sex}
           </span>
         ),
+      },
+      {
+        key: "processNumber",
+        header: t("colProcessNumber"),
+        sortable: true,
+        render: (student) =>
+          student.processNumber ? (
+            <span className="text-sm font-semibold text-foreground">
+              {student.processNumber}
+            </span>
+          ) : (
+            <span className="text-muted-foreground">-</span>
+          ),
       },
       {
         key: "latestBiometric",
@@ -533,6 +635,91 @@ export default function TurmaPage() {
               withDataLabel={t("withDataLabel")}
               attentionEmptyLabel={t("attentionNoneTitle")}
             />
+            <form
+              onSubmit={createStudentInSelectedClass}
+              className="space-y-4 rounded-2xl border border-border/70 bg-background/60 p-4"
+            >
+              <div className="min-w-0">
+                <p className="text-tiny font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+                  {t("quickAddEyebrow")}
+                </p>
+                <h3 className="mt-1 text-lg font-semibold tracking-tight text-foreground">
+                  {t("quickAddTitle")}
+                </h3>
+              </div>
+
+              <div className="grid min-w-0 gap-3 sm:grid-cols-2 lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1.35fr)_minmax(0,1fr)] xl:grid-cols-[minmax(0,0.75fr)_minmax(0,1.45fr)_minmax(0,0.95fr)_minmax(0,0.95fr)_minmax(0,0.8fr)] xl:items-end">
+                <Input
+                  label={t("colProcessNumber")}
+                  value={quickStudentForm.processNumber}
+                  onChange={(event) =>
+                    setQuickStudentForm((current) => ({
+                      ...current,
+                      processNumber: event.target.value,
+                    }))
+                  }
+                  placeholder={t("processNumberPlaceholder")}
+                  disabled={isCreatingStudent}
+                />
+                <Input
+                  label={t("colName")}
+                  value={quickStudentForm.name}
+                  onChange={(event) =>
+                    setQuickStudentForm((current) => ({
+                      ...current,
+                      name: event.target.value,
+                    }))
+                  }
+                  placeholder={t("studentNamePlaceholder")}
+                  disabled={isCreatingStudent}
+                  required
+                />
+                <PillSelect
+                  label={t("colSex")}
+                  size="lg"
+                  options={[
+                    {
+                      value: "M",
+                      label: t("male"),
+                      icon: <Mars className="size-3.5" />,
+                    },
+                    {
+                      value: "F",
+                      label: t("female"),
+                      icon: <Venus className="size-3.5" />,
+                    },
+                  ]}
+                  value={quickStudentForm.sex}
+                  onChange={(value) =>
+                    setQuickStudentForm((current) => ({
+                      ...current,
+                      sex: value,
+                    }))
+                  }
+                />
+                <DateField
+                  label={t("birthDateLabel")}
+                  value={quickStudentForm.birthDate}
+                  onChange={(value) =>
+                    setQuickStudentForm((current) => ({
+                      ...current,
+                      birthDate: value,
+                    }))
+                  }
+                  disabled={isCreatingStudent}
+                />
+                <Button
+                  type="submit"
+                  size="xl"
+                  className="h-14 w-full sm:col-span-2 lg:col-span-1"
+                  icon={<UserPlus className="size-4" />}
+                  loading={isCreatingStudent}
+                  disabled={!selectedClass || !quickStudentForm.name.trim()}
+                >
+                  {t("quickAddButton")}
+                </Button>
+              </div>
+            </form>
             <DataTable
               columns={columns}
               data={students}

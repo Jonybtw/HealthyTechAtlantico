@@ -81,7 +81,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
             suppressHydrationWarning
           >
             {leftIcon ? (
-              <span className="pointer-events-none absolute left-4 z-10 text-muted-foreground transition-colors group-focus-within:text-gold-500">
+              <span className="pointer-events-none absolute inset-y-0 left-4 z-10 flex items-center text-muted-foreground transition-colors group-focus-within:text-gold-500">
                 {leftIcon}
               </span>
             ) : null}

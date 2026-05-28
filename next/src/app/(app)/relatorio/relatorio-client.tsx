@@ -4,7 +4,17 @@ import { useCallback, useEffect, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { toast } from "sonner";
 import {
+  Area,
+  AreaChart,
+  CartesianGrid,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from "recharts";
+import {
   Activity,
+  Dumbbell,
   CheckCircle2,
   FileCheck2,
   FileText,
@@ -21,6 +31,8 @@ import {
 import { useUser } from "@/components/user-context";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { ChartFrame } from "@/components/ui/chart-frame";
+import { ChartTooltip } from "@/components/ui/chart-tooltip";
 import { EmptyState } from "@/components/ui/empty-state";
 import { FieldShell } from "@/components/ui/field-shell";
 import { PageScaffold } from "@/components/ui/page-scaffold";
@@ -87,6 +99,20 @@ type GuardianOption = {
 };
 
 type PdfColor = [number, number, number];
+
+type HealthStatusKey = "lowWeight" | "normal" | "overweight" | "obesity";
+
+type HealthInsight = {
+  status: HealthStatusKey | "unknown";
+  label: string;
+  badgeVariant: "success" | "warning" | "danger";
+  tone: "success" | "warning" | "danger";
+  headline: string;
+  summary: string;
+  improvement: string;
+  exercises: string[];
+  maintain: string;
+};
 
 const TEST_LABEL_KEYS: Record<string, string> = {
   vai: "testVaiVem",
@@ -156,6 +182,73 @@ function normalizeTestEntry(raw: RawTestEntry): TestEntry {
 
 function formatNumber(value: number | null, digits = 1) {
   return typeof value === "number" ? value.toFixed(digits) : "-";
+}
+
+function formatAxisDate(value: string | null, locale: string) {
+  if (!value) {
+    return "-";
+  }
+
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return value;
+  }
+
+  return new Intl.DateTimeFormat(locale, {
+    month: "short",
+    year: "2-digit",
+  }).format(date);
+}
+
+function getHealthStatus(imc: number | null): HealthStatusKey | "unknown" {
+  if (imc === null) return "unknown";
+  if (imc < 18.5) return "lowWeight";
+  if (imc < 25) return "normal";
+  if (imc < 30) return "overweight";
+  return "obesity";
+}
+
+function getHealthInsight(
+  imc: number | null,
+  t: (key: string) => string,
+): HealthInsight {
+  const status = getHealthStatus(imc);
+
+  if (status === "unknown") {
+    return {
+      status,
+      label: "-",
+      badgeVariant: "warning",
+      tone: "warning",
+      headline: t("healthUnknownHeadline"),
+      summary: t("healthUnknownSummary"),
+      improvement: t("healthUnknownImprovement"),
+      exercises: [],
+      maintain: t("healthUnknownMaintain"),
+    };
+  }
+
+  const isHealthy = status === "normal";
+  const label = t(status);
+
+  return {
+    status,
+    label,
+    badgeVariant: isHealthy ? "success" : status === "obesity" ? "danger" : "warning",
+    tone: isHealthy ? "success" : status === "obesity" ? "danger" : "warning",
+    headline: isHealthy
+      ? t("healthHealthyHeadline")
+      : t("healthNeedsAttentionHeadline"),
+    summary: t(`health${status}Summary`),
+    improvement: t(`health${status}Improvement`),
+    exercises: [
+      t(`health${status}Exercise1`),
+      t(`health${status}Exercise2`),
+      t(`health${status}Exercise3`),
+    ],
+    maintain: t(`health${status}Maintain`),
+  };
 }
 
 function getPdfImcState(
@@ -395,6 +488,15 @@ export default function RelatorioClient() {
   const latestTestsDate = testData[0]?.date ?? null;
   const hasReportData = bioData.length > 0 || testData.length > 0;
   const imcState = getPdfImcState(latestBiometric?.imc ?? null, t);
+  const healthInsight = getHealthInsight(latestBiometric?.imc ?? null, t);
+  const biometricChartData = bioData
+    .filter((entry) => entry.imc !== null)
+    .map((entry) => ({
+      label: formatAxisDate(entry.date, locale),
+      date: entry.date,
+      imc: entry.imc ?? 0,
+    }))
+    .reverse();
 
   const formatDate = (value: string | null) => {
     if (!value) {
@@ -492,6 +594,7 @@ export default function RelatorioClient() {
 
       const biometrics = rawBiometrics.map(normalizeBiometricEntry);
       const tests = rawTests.map(normalizeTestEntry);
+      const pdfHealthInsight = getHealthInsight(biometrics[0]?.imc ?? null, t);
 
       if (biometrics.length === 0 && tests.length === 0) {
         toast.error(t("noData"));
@@ -686,6 +789,69 @@ export default function RelatorioClient() {
         doc.text(t("noBiometrics"), width / 2, y + 7, { align: "center" });
         y += 20;
       }
+
+      drawSection(t("healthInsightSection"));
+
+      fill(cardBackground);
+      doc.roundedRect(14, y, width - 28, 44, 3, 3, "F");
+      stroke(border);
+      doc.roundedRect(14, y, width - 28, 44, 3, 3, "S");
+
+      text(pdfHealthInsight.tone === "success" ? [16, 185, 129] : pdfHealthInsight.tone === "danger" ? [239, 68, 68] : [245, 158, 11]);
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(8);
+      doc.text(pdfHealthInsight.label.toUpperCase(), 18, y + 8);
+
+      text(foreground);
+      doc.setFontSize(10);
+      doc.text(pdfHealthInsight.headline, 18, y + 15);
+
+      text(mutedForeground);
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(7.2);
+      const summaryLines = doc.splitTextToSize(
+        `${pdfHealthInsight.summary} ${pdfHealthInsight.improvement}`,
+        width - 92,
+      );
+      doc.text(summaryLines.slice(0, 4), 18, y + 21);
+
+      const gaugeX = width - 66;
+      const gaugeY = y + 15;
+      const gaugeWidth = 42;
+      const gaugeHeight = 7;
+      fill([236, 230, 218]);
+      doc.roundedRect(gaugeX, gaugeY, gaugeWidth, gaugeHeight, 3, 3, "F");
+      fill([16, 185, 129]);
+      doc.roundedRect(gaugeX + gaugeWidth * 0.24, gaugeY, gaugeWidth * 0.28, gaugeHeight, 3, 3, "F");
+      const bmiValue = biometrics[0]?.imc;
+      const markerX =
+        typeof bmiValue === "number"
+          ? gaugeX + Math.min(1, Math.max(0, (bmiValue - 14) / 22)) * gaugeWidth
+          : gaugeX;
+      stroke(foreground);
+      doc.setLineWidth(0.8);
+      doc.line(markerX, gaugeY - 1.5, markerX, gaugeY + gaugeHeight + 1.5);
+      text(mutedForeground);
+      doc.setFontSize(6);
+      doc.text("18.5", gaugeX + gaugeWidth * 0.24, gaugeY + 14, { align: "center" });
+      doc.text("25", gaugeX + gaugeWidth * 0.52, gaugeY + 14, { align: "center" });
+
+      text(foreground);
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(7);
+      doc.text(t("recommendedExercises"), 18, y + 36);
+      text(mutedForeground);
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(7);
+      doc.text(
+        pdfHealthInsight.exercises.length > 0
+          ? pdfHealthInsight.exercises.join(" · ")
+          : pdfHealthInsight.maintain,
+        57,
+        y + 36,
+        { maxWidth: width - 76 },
+      );
+      y += 52;
 
       drawSection(t("testsSection"));
 
@@ -1046,6 +1212,96 @@ export default function RelatorioClient() {
                       {previewMeta.biometrics}
                     </p>
                   </div>
+
+                  <HealthInsightPanel insight={healthInsight} t={t} />
+
+                  {biometricChartData.length > 0 ? (
+                    <div className="rounded-3xl border border-border/70 bg-background/70 p-4">
+                      <div className="flex flex-wrap items-start justify-between gap-3">
+                        <div>
+                          <p className="text-tiny font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+                            {t("healthChartEyebrow")}
+                          </p>
+                          <h3 className="mt-1 text-lg font-semibold tracking-[-0.03em] text-foreground">
+                            {t("healthChartTitle")}
+                          </h3>
+                        </div>
+                        <Badge variant={healthInsight.badgeVariant}>
+                          {healthInsight.label}
+                        </Badge>
+                      </div>
+                      <ChartFrame className="mt-4 h-[260px] w-full">
+                        <ResponsiveContainer width="100%" height="100%">
+                          <AreaChart
+                            data={biometricChartData}
+                            margin={{ top: 8, right: 8, left: -18, bottom: 8 }}
+                          >
+                            <defs>
+                              <linearGradient
+                                id="report-bmi"
+                                x1="0"
+                                y1="0"
+                                x2="0"
+                                y2="1"
+                              >
+                                <stop
+                                  offset="5%"
+                                  stopColor="#d4a11e"
+                                  stopOpacity={0.28}
+                                />
+                                <stop
+                                  offset="95%"
+                                  stopColor="#d4a11e"
+                                  stopOpacity={0.02}
+                                />
+                              </linearGradient>
+                            </defs>
+                            <CartesianGrid
+                              strokeDasharray="4 4"
+                              stroke="rgba(9,21,35,0.08)"
+                              vertical={false}
+                            />
+                            <XAxis
+                              dataKey="label"
+                              axisLine={false}
+                              tickLine={false}
+                              dy={10}
+                              tick={{
+                                fill: "#5f6d7b",
+                                fontSize: 12,
+                                fontWeight: 600,
+                              }}
+                            />
+                            <YAxis
+                              axisLine={false}
+                              tickLine={false}
+                              dx={-8}
+                              tick={{
+                                fill: "#5f6d7b",
+                                fontSize: 12,
+                                fontWeight: 600,
+                              }}
+                              domain={["dataMin - 1", "dataMax + 1"]}
+                            />
+                            <Tooltip content={<ChartTooltip />} />
+                            <Area
+                              type="monotone"
+                              dataKey="imc"
+                              name={t("imcLabel")}
+                              stroke="#d4a11e"
+                              strokeWidth={3}
+                              fill="url(#report-bmi)"
+                              activeDot={{
+                                r: 5,
+                                fill: "#d4a11e",
+                                strokeWidth: 0,
+                              }}
+                            />
+                          </AreaChart>
+                        </ResponsiveContainer>
+                      </ChartFrame>
+                    </div>
+                  ) : null}
                 </div>
               ) : (
                 <ReportEmptyPanel
@@ -1254,6 +1510,79 @@ function SelectedStudentCard({
           </>
         )}
       </div>
+    </div>
+  );
+}
+
+function HealthInsightPanel({
+  insight,
+  t,
+}: {
+  insight: HealthInsight;
+  t: (key: string) => string;
+}) {
+  const toneClassName =
+    insight.tone === "success"
+      ? "border-emerald-200 bg-emerald-50/70 text-emerald-900 dark:border-emerald-500/20 dark:bg-emerald-500/10 dark:text-emerald-100"
+      : insight.tone === "danger"
+        ? "border-red-200 bg-red-50/70 text-red-950 dark:border-red-500/20 dark:bg-red-500/10 dark:text-red-100"
+        : "border-amber-200 bg-amber-50/70 text-amber-950 dark:border-amber-500/20 dark:bg-amber-500/10 dark:text-amber-100";
+
+  return (
+    <div className={`rounded-3xl border p-5 ${toneClassName}`}>
+      <div className="flex flex-wrap items-start justify-between gap-4">
+        <div className="flex items-start gap-3">
+          <div className="flex size-11 shrink-0 items-center justify-center rounded-2xl bg-white/70 text-current shadow-sm dark:bg-white/10">
+            <Dumbbell className="size-5" />
+          </div>
+          <div>
+            <p className="text-tiny font-semibold uppercase tracking-[0.16em] opacity-70">
+              {t("healthInsightSection")}
+            </p>
+            <h3 className="mt-1 text-xl font-semibold tracking-[-0.03em]">
+              {insight.headline}
+            </h3>
+          </div>
+        </div>
+        <Badge variant={insight.badgeVariant} size="md">
+          {insight.label}
+        </Badge>
+      </div>
+
+      <div className="mt-4 grid gap-3 lg:grid-cols-2">
+        <div className="rounded-2xl border border-white/60 bg-white/58 p-4 text-sm leading-relaxed text-current dark:border-white/10 dark:bg-white/8">
+          <p className="font-semibold">{t("healthCurrentReading")}</p>
+          <p className="mt-2 opacity-80">{insight.summary}</p>
+        </div>
+        <div className="rounded-2xl border border-white/60 bg-white/58 p-4 text-sm leading-relaxed text-current dark:border-white/10 dark:bg-white/8">
+          <p className="font-semibold">
+            {insight.status === "normal"
+              ? t("healthMaintainTitle")
+              : t("healthImproveTitle")}
+          </p>
+          <p className="mt-2 opacity-80">
+            {insight.status === "normal"
+              ? insight.maintain
+              : insight.improvement}
+          </p>
+        </div>
+      </div>
+
+      {insight.exercises.length > 0 ? (
+        <div className="mt-4">
+          <p className="text-sm font-semibold">{t("recommendedExercises")}</p>
+          <div className="mt-2 flex flex-wrap gap-2">
+            {insight.exercises.map((exercise) => (
+              <span
+                key={exercise}
+                className="rounded-full border border-white/70 bg-white/60 px-3 py-1.5 text-sm font-medium text-current dark:border-white/10 dark:bg-white/10"
+              >
+                {exercise}
+              </span>
+            ))}
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }
