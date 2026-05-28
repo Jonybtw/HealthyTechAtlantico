@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
+import { ClientOnly } from "@/components/client-only";
 import LoginClient from "./login-client";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -11,5 +12,9 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default function LoginPage() {
-  return <LoginClient />;
+  return (
+    <ClientOnly>
+      <LoginClient />
+    </ClientOnly>
+  );
 }

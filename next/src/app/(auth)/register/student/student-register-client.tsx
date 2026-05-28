@@ -66,28 +66,32 @@ export default function StudentRegisterClient() {
   });
 
   return (
-    <div className="mx-auto w-full max-w-xl rounded-[2rem] border border-white/12 bg-white/10 p-6 shadow-[0_28px_70px_rgba(5,14,24,0.34)] backdrop-blur-md sm:p-8">
-      <div className="flex items-start gap-4 text-white">
-        <span className="flex size-12 shrink-0 items-center justify-center rounded-2xl border border-white/15 bg-white/10 text-gold-200">
+    <div className="relative w-full overflow-hidden rounded-[24px] border border-white/20 bg-white/60 shadow-[0_20px_60px_rgba(5,14,24,0.09)] backdrop-blur-md dark:border-white/10 dark:bg-navy-950/60 dark:shadow-[0_20px_60px_rgba(5,14,24,0.32)]">
+      {/* Gold gradient top line */}
+      <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-gold-400/40 to-transparent" />
+      {/* Radial gold glow */}
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_80%_0%,rgba(244,211,94,0.08),transparent_44%)]" />
+      <div className="relative flex items-start gap-4 border-b border-white/20 px-5 py-5 dark:border-white/10 sm:px-6">
+        <span className="flex size-11 shrink-0 items-center justify-center rounded-[16px] border border-white/20 bg-white/40 text-gold-600 dark:border-white/10 dark:bg-black/20 dark:text-gold-400">
           <GraduationCap className="size-5" />
         </span>
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-gold-200/90">
+        <div className="min-w-0">
+          <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-gold-600 dark:text-gold-400">
             {t("eyebrow")}
           </p>
-          <h1 className="mt-2 font-display text-3xl font-semibold tracking-tight">
+          <h1 className="mt-1 font-display text-xl font-semibold tracking-tight text-foreground">
             {t("title")}
           </h1>
-          <p className="mt-2 text-sm leading-7 text-white/72">
+          <p className="mt-1 text-[12px] leading-relaxed text-muted-foreground sm:text-[13px]">
             {t("description")}
           </p>
         </div>
       </div>
 
       <Form {...form}>
-        <form onSubmit={handleSubmit} className="mt-8 space-y-4">
+        <form onSubmit={handleSubmit} className="relative flex flex-col gap-4 p-5 sm:p-6">
           {apiError ? (
-            <div className="rounded-2xl border border-danger-200 bg-danger-50 px-4 py-3 text-sm font-medium text-danger-900 shadow-sm">
+            <div className="rounded-[16px] border border-danger-200 bg-danger-50 px-4 py-3 text-sm font-medium text-danger-900 shadow-sm dark:border-danger-900/50 dark:bg-danger-950/40 dark:text-danger-200">
               {apiError}
             </div>
           ) : null}
@@ -197,7 +201,7 @@ export default function StudentRegisterClient() {
             name="consentRgpd"
             render={({ field }) => (
               <FormItem>
-                <div className="flex items-start gap-3 rounded-2xl border border-white/12 bg-white/8 px-4 py-3 text-sm leading-6 text-white/82">
+                <div className="flex items-start gap-3 rounded-[16px] border border-white/20 bg-white/30 px-4 py-3 text-sm leading-6 text-muted-foreground backdrop-blur-sm dark:border-white/10 dark:bg-white/5">
                   <FormControl>
                     <input
                       type="checkbox"
@@ -205,7 +209,7 @@ export default function StudentRegisterClient() {
                       onChange={field.onChange}
                       onBlur={field.onBlur}
                       ref={field.ref}
-                      className="mt-1 h-4 w-4 rounded border-white/20 accent-gold-300"
+                      className="mt-1 h-4 w-4 rounded border-border accent-navy-900 dark:accent-gold-300"
                     />
                   </FormControl>
                   <FormLabel className="font-normal">{t("consentLabel")}</FormLabel>
@@ -225,16 +229,16 @@ export default function StudentRegisterClient() {
         </form>
       </Form>
 
-      <div className="mt-6 flex flex-wrap items-center justify-between gap-3 text-sm">
+      <div className="relative flex flex-wrap items-center justify-between gap-3 border-t border-white/20 px-5 py-4 text-sm dark:border-white/10 sm:px-6">
         <Link
           href="/register"
-          className="font-semibold text-white/70 transition-colors hover:text-white"
+          className="font-semibold text-muted-foreground transition-colors hover:text-foreground"
         >
           {t("back")}
         </Link>
         <Link
           href="/login"
-          className="font-semibold text-gold-200 transition-colors hover:text-gold-100"
+          className="font-semibold text-gold-600 transition-colors hover:text-gold-500 dark:text-gold-400 dark:hover:text-gold-300"
         >
           {t("loginLink")}
         </Link>

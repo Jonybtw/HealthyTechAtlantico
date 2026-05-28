@@ -176,6 +176,7 @@ export const biometricsSchema = z.object({
   fatZone: z.string().optional().nullable(),
   waistZone: z.string().optional().nullable(),
   sessionId: z.string().optional().nullable(),
+  notes: z.string().max(1000).optional().nullable(),
 });
 
 const testItemSchema = z.object({

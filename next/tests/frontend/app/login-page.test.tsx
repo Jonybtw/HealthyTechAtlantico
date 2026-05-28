@@ -10,6 +10,18 @@ const searchParams = {
   get: () => null,
 };
 
+function getActionButton(name: string) {
+  const button = screen
+    .getAllByRole("button", { name })
+    .find((element) => element.getAttribute("type") === "submit");
+
+  if (!button) {
+    throw new Error(`Could not find submit button named ${name}`);
+  }
+
+  return button;
+}
+
 vi.mock("next/navigation", () => ({
   useRouter: () => ({
     push: routerPush,
@@ -59,17 +71,21 @@ describe("LoginClient", () => {
     signInMock.mockReset();
   });
 
-  it("navigates to register page when clicking create account", async () => {
+  it("switches to registration mode when clicking create account", async () => {
     const user = userEvent.setup();
 
     render(<LoginClient />);
 
     expect(screen.getByRole("heading", { name: "Entrar" })).toBeInTheDocument();
 
-    const createAccountButton = screen.getByRole("button", { name: /Criar conta/i });
+    const createAccountButton = screen.getByText("Criar conta").closest("button");
+    expect(createAccountButton).toBeInTheDocument();
     await user.click(createAccountButton);
 
-    expect(routerPush).toHaveBeenCalledWith("/register");
+    await waitFor(() => {
+      expect(getActionButton("Criar conta")).toBeInTheDocument();
+    });
+    expect(routerPush).not.toHaveBeenCalled();
   });
 
   it("submits login credentials and redirects on success", async () => {
@@ -80,7 +96,7 @@ describe("LoginClient", () => {
 
     await user.type(screen.getByLabelText("Email"), "admin@example.com");
     await user.type(screen.getByLabelText("Password"), "Password1");
-    await user.click(screen.getByRole("button", { name: "Entrar" }));
+    await user.click(getActionButton("Entrar"));
 
     await waitFor(() => {
       expect(signInMock).toHaveBeenCalledWith("credentials", {
@@ -92,5 +108,22 @@ describe("LoginClient", () => {
 
     expect(routerPush).toHaveBeenCalledWith("/dashboard");
     expect(routerRefresh).toHaveBeenCalled();
+  });
+
+  it("shows a connection error when credentials auth reports database outage", async () => {
+    signInMock.mockResolvedValue({
+      error: "CredentialsSignin",
+      code: "database_unavailable",
+    });
+    const user = userEvent.setup();
+
+    render(<LoginClient />);
+
+    await user.type(screen.getByLabelText("Email"), "admin@example.com");
+    await user.type(screen.getByLabelText("Password"), "Password1");
+    await user.click(getActionButton("Entrar"));
+
+    expect(await screen.findByRole("alert")).toHaveTextContent("Erro de ligacao");
+    expect(routerPush).not.toHaveBeenCalled();
   });
 });

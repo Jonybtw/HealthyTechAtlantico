@@ -83,14 +83,9 @@ export default function LoginClient() {
 
   useEffect(() => {
     const requestedMode = searchParams.get("mode");
-    if (requestedMode === "register") {
-      router.replace("/register");
-      return;
-    }
-
-    setMode("login");
+    setMode(requestedMode === "register" ? "register" : "login");
     setApiError(null);
-  }, [router, searchParams]);
+  }, [searchParams]);
 
   useEffect(() => {
     document.title = `${mode === "login" ? t("login") : t("register")} · HTA`;
@@ -148,7 +143,9 @@ export default function LoginClient() {
         : null;
 
   const switchToRegister = () => {
-    router.push("/register");
+    form.clearErrors();
+    setApiError(null);
+    setMode("register");
   };
 
   const switchToLogin = () => {
@@ -197,6 +194,14 @@ export default function LoginClient() {
         redirect: false,
       });
       if (result?.error) {
+        if (
+          result.code === "database_unavailable" ||
+          result.error === "CallbackRouteError"
+        ) {
+          setApiError(t("connectionError"));
+          return;
+        }
+
         if (result.code === "must_change_password") {
           router.push(
             `/change-password?forced=1&email=${encodeURIComponent(email)}`,
@@ -248,12 +253,15 @@ export default function LoginClient() {
   });
 
   return (
-    <div className="animate-fade-in-up mx-auto w-full max-w-md rounded-2xl overflow-hidden bg-white/90 dark:bg-navy-950/80 backdrop-blur-2xl border border-white/40 dark:border-white/10 shadow-2xl">
-      {/* Gold accent line */}
-      <div className="h-px bg-gradient-to-r from-transparent via-gold-400/60 to-transparent" />
+    <div className="relative w-full overflow-hidden rounded-[24px] border border-white/20 bg-white/60 shadow-[0_20px_60px_rgba(5,14,24,0.09)] backdrop-blur-md dark:border-white/10 dark:bg-navy-950/60 dark:shadow-[0_20px_60px_rgba(5,14,24,0.32)]">
+      {/* Gold gradient top line */}
+      <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-gold-400/40 to-transparent" />
+      {/* Radial gold glow */}
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_80%_0%,rgba(244,211,94,0.08),transparent_44%)]" />
+
       {/* Header */}
-      <div className="flex items-start gap-3 border-b border-slate-200/50 px-5 py-4 dark:border-slate-800/50 sm:items-center sm:px-6 sm:py-5">
-        <div className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-navy-900 text-gold-300">
+      <div className="relative flex items-start gap-3 border-b border-white/20 px-5 py-5 dark:border-white/10 sm:items-center sm:px-6">
+        <div className="flex size-11 shrink-0 items-center justify-center rounded-[16px] border border-white/20 bg-white/40 text-gold-600 dark:border-white/10 dark:bg-black/20 dark:text-gold-400">
           <AnimatePresence mode="wait" initial={false}>
             {mode === "login" ? (
               <motion.span
@@ -287,7 +295,7 @@ export default function LoginClient() {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: 6 }}
                 transition={{ duration: 0.2 }}
-                className="font-display text-lg font-semibold tracking-tight text-navy-950 dark:text-white"
+                className="font-display text-xl font-semibold tracking-tight text-foreground"
               >
                 {t("login")}
               </motion.h1>
@@ -298,7 +306,7 @@ export default function LoginClient() {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: 6 }}
                 transition={{ duration: 0.2 }}
-                className="font-display text-lg font-semibold tracking-tight text-navy-950 dark:text-white"
+                className="font-display text-xl font-semibold tracking-tight text-foreground"
               >
                 {t("register")}
               </motion.h1>
@@ -317,18 +325,24 @@ export default function LoginClient() {
             </motion.p>
           </AnimatePresence>
         </div>
-        {/* Step indicator */}
+        {/* Step indicator — matches carousel dot style */}
         <div className="ml-auto flex shrink-0 items-center gap-1.5">
-          <div
+          <button
+            type="button"
+            onClick={switchToLogin}
+            aria-label={t("login")}
             className={cn(
               "h-1.5 rounded-full transition-all duration-500",
-              mode === "login" ? "w-5 bg-gold-400" : "w-1.5 bg-border/50",
+              mode === "login" ? "w-5 bg-gold-400" : "w-1.5 bg-white/30 hover:bg-white/60",
             )}
           />
-          <div
+          <button
+            type="button"
+            onClick={switchToRegister}
+            aria-label={t("register")}
             className={cn(
               "h-1.5 rounded-full transition-all duration-500",
-              mode === "register" ? "w-5 bg-gold-400" : "w-1.5 bg-border/50",
+              mode === "register" ? "w-5 bg-gold-400" : "w-1.5 bg-white/30 hover:bg-white/60",
             )}
           />
         </div>
@@ -344,12 +358,12 @@ export default function LoginClient() {
               handleRegister();
             }
           }}
-          className="space-y-4 p-5 sm:space-y-5 sm:p-6"
+          className="relative flex flex-col gap-4 p-5 sm:p-6"
         >
           {statusMessage && !apiError ? (
             <div
               role="status"
-              className="flex items-center gap-2.5 rounded-2xl border border-success-200 bg-success-50 px-4 py-3 text-sm font-medium text-success-800 shadow-sm dark:border-success-900/50 dark:bg-success-950/40 dark:text-success-200"
+              className="flex items-center gap-2.5 rounded-[16px] border border-success-200 bg-success-50 px-4 py-3 text-sm font-medium text-success-800 shadow-sm dark:border-success-900/50 dark:bg-success-950/40 dark:text-success-200"
             >
               <CheckCircle2 className="size-4 shrink-0" />
               {statusMessage}
@@ -364,7 +378,7 @@ export default function LoginClient() {
               initial={{ x: 0 }}
               animate={{ x: [-5, 5, -4, 4, -2, 2, 0] }}
               transition={{ duration: 0.4, ease: "easeOut" }}
-              className="rounded-2xl border border-danger-200 bg-danger-50 px-4 py-3 text-sm font-medium text-danger-900 shadow-sm dark:border-danger-900/50 dark:bg-danger-950/40 dark:text-danger-200"
+              className="rounded-[16px] border border-danger-200 bg-danger-50 px-4 py-3 text-sm font-medium text-danger-900 shadow-sm dark:border-danger-900/50 dark:bg-danger-950/40 dark:text-danger-200"
             >
               {apiError}
             </motion.div>
@@ -529,7 +543,7 @@ export default function LoginClient() {
                   />
 
                   <div className="space-y-2">
-                    <label className="text-sm font-semibold tracking-tight text-foreground">
+                    <label className="text-[10px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
                       {t("roleLabel")}
                     </label>
                     <div className="grid gap-2 sm:grid-cols-2">
@@ -589,7 +603,7 @@ export default function LoginClient() {
                     </div>
                   </div>
 
-                  <div className="rounded-2xl border border-white/20 bg-white/50 p-3.5 backdrop-blur-sm dark:border-white/10 dark:bg-navy-950/40 sm:p-4">
+                  <div className="rounded-[16px] border border-white/20 bg-white/30 p-3.5 backdrop-blur-sm dark:border-white/10 dark:bg-white/5 sm:p-4">
                     <label
                       htmlFor="register-rgpd"
                       className="flex cursor-pointer items-start gap-3"
@@ -644,7 +658,7 @@ export default function LoginClient() {
             {mode === "login" ? t("enter") : t("createAccount")}
           </Button>
 
-          <div className="mt-2 flex flex-col items-start gap-3 rounded-2xl border border-white/20 bg-white/50 px-4 py-3 text-sm backdrop-blur-sm dark:border-white/10 dark:bg-navy-950/40 sm:flex-row sm:items-center sm:justify-between">
+          <div className="mt-1 flex flex-col items-start gap-3 rounded-[16px] border border-white/20 bg-white/30 px-4 py-3 text-sm dark:border-white/10 dark:bg-white/5 sm:flex-row sm:items-center sm:justify-between">
             {mode === "login" ? (
               <>
                 <p className="text-muted-foreground">{t("noAccount")}</p>

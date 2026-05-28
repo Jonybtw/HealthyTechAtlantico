@@ -7,7 +7,7 @@ import {
   FileSearch,
   FileText,
   Heart,
-  Home,
+  LayoutDashboard,
   School,
   Settings,
   Shield,
@@ -29,7 +29,7 @@ export const NAV_ITEMS: NavItem[] = [
   {
     href: "/dashboard",
     label: "nav.dashboard",
-    icon: Home,
+    icon: LayoutDashboard,
     roles: ["ADMIN", "PROFESSOR", "ALUNO", "PSICOLOGO", "PAIS"],
     section: "core",
   },

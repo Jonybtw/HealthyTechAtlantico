@@ -262,11 +262,11 @@ export default function AuditoriaPage() {
 
         {loading ? (
           <div className="flex flex-col gap-3">
-            <Skeleton className="h-12 w-full rounded-xl" />
-            <Skeleton className="h-12 w-full rounded-xl" />
-            <Skeleton className="h-12 w-full rounded-xl" />
-            <Skeleton className="h-12 w-full rounded-xl" />
-            <Skeleton className="h-12 w-full rounded-xl" />
+            <Skeleton className="h-12 w-full rounded-[8px]" />
+            <Skeleton className="h-12 w-full rounded-[8px]" />
+            <Skeleton className="h-12 w-full rounded-[8px]" />
+            <Skeleton className="h-12 w-full rounded-[8px]" />
+            <Skeleton className="h-12 w-full rounded-[8px]" />
           </div>
         ) : null}
 
@@ -308,7 +308,7 @@ export default function AuditoriaPage() {
               <p>{t("showingCount", { count: logs.length })}</p>
             </div>
 
-            <div className="surface-utility overflow-x-auto rounded-[24px] p-1">
+            <div className="surface-utility overflow-x-auto rounded-[12px] p-1">
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-white/20 dark:border-white/10 bg-navy-50/50 dark:bg-navy-900/30">
@@ -355,7 +355,7 @@ export default function AuditoriaPage() {
                       <td className="px-5 py-3 font-mono text-xs text-muted-foreground">
                         {entry.targetId ? (
                           <span
-                            className="rounded-md border border-white/20 dark:border-white/10 bg-muted/80 px-2 py-1 shadow-inner"
+                            className="rounded-[6px] border border-white/20 dark:border-white/10 bg-muted/80 px-2 py-1 shadow-inner"
                             title={entry.targetId}
                           >
                             {entry.targetId.slice(0, 8)}...

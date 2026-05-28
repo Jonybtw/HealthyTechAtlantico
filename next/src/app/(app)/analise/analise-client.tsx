@@ -9,7 +9,6 @@ import {
   Bar,
   BarChart,
   CartesianGrid,
-  ResponsiveContainer,
   Tooltip,
   XAxis,
   YAxis,
@@ -25,13 +24,16 @@ import {
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { interactiveControlClasses } from "@/components/ui/button";
-import { ChartFrame } from "@/components/ui/chart-frame";
+import {
+  ChartFrame,
+  ResponsiveChartContainer,
+} from "@/components/ui/chart-frame";
 import { ChartTooltip } from "@/components/ui/chart-tooltip";
 import { ClassPicker } from "@/components/ui/class-picker";
 import { EmptyState } from "@/components/ui/empty-state";
 import { PageScaffold } from "@/components/ui/page-scaffold";
-import { PageSection } from "@/components/ui/page-section";
 import { StudentPicker } from "@/components/ui/student-picker";
+import { useReducedEffects } from "@/hooks/use-reduced-effects";
 import { useUser } from "@/components/user-context";
 import { useClasses } from "@/hooks/use-queries";
 import { readApiResponse } from "@/lib/api-client";
@@ -93,6 +95,19 @@ type BioSeriesMeta = {
   gradientId: string;
   unit?: string;
 };
+
+function sectionAnimation(index: number, re: boolean) {
+  if (re) return {};
+  return { animationDelay: `${index * 70}ms` };
+}
+
+function BioPanel({ children, className, index, reducedEffects }: { children: React.ReactNode; className?: string; index: number; reducedEffects: boolean }) {
+  return (
+    <section style={sectionAnimation(index, reducedEffects)} className={cn("relative overflow-hidden rounded-[12px] border border-border bg-card/88 shadow-[0_4px_12px_rgba(9,21,35,0.08)] backdrop-blur-sm dark:border-white/10 dark:bg-navy-950/68 dark:shadow-[0_4px_18px_rgba(0,0,0,0.22)]", !reducedEffects && "animate-fade-in-up opacity-0", className)}>
+      <div className="relative">{children}</div>
+    </section>
+  );
+}
 
 const TEST_ORDER = [
   "vai",
@@ -184,6 +199,7 @@ export default function AnaliseClient() {
   const { role } = useUser();
 
   const canViewAnalysis = role === "ADMIN" || role === "PROFESSOR";
+  const reducedEffects = useReducedEffects();
 
   const [students, setStudents] = useState<StudentOption[]>([]);
   const [loadingStudents, setLoadingStudents] = useState(true);
@@ -596,13 +612,7 @@ export default function AnaliseClient() {
     >
       <div className="grid items-start gap-5 xl:grid-cols-[minmax(0,1.08fr)_360px]">
         <div className="space-y-5">
-          <PageSection
-            eyebrow={t("overviewEyebrow")}
-            title={t("overviewTitle")}
-            description={t("overviewDescription")}
-            tone="primary"
-            layout="analytics"
-          >
+          <BioPanel index={0} reducedEffects={reducedEffects} className="p-5">
             <div className="space-y-4">
               <div className="grid gap-4 lg:grid-cols-[220px_minmax(0,360px)] lg:items-end">
                 <div className="space-y-2">
@@ -635,7 +645,7 @@ export default function AnaliseClient() {
                         className="w-full"
                       />
                     ) : (
-                      <div className="rounded-[24px] border border-dashed border-border/80 bg-background/55 px-4 py-3 text-sm text-muted-foreground">
+                      <div className="rounded-[12px] border border-dashed border-border/80 bg-background/55 px-4 py-3 text-sm text-muted-foreground">
                         {t("noClassesAvailableDescription")}
                       </div>
                     )
@@ -668,40 +678,16 @@ export default function AnaliseClient() {
                 )}
               </div>
             </div>
-          </PageSection>
+          </BioPanel>
 
-          <PageSection
-            eyebrow={
-              isClassMode ? t("classSnapshotTitle") : t("studentSnapshotTitle")
-            }
-            title={
-              isClassMode
-                ? (currentClass?.name ?? t("distributionCurrent"))
-                : lens === "tests"
-                  ? t("chartTests")
-                  : (activeBioSeries?.title ?? t("chartBmi"))
-            }
-            description={
-              isClassMode
-                ? t("chartClassDescription")
-                : lens === "tests"
-                  ? t("chartTestsDescription")
-                  : (activeBioSeries?.description ?? t("description"))
-            }
-            actions={
-              isClassMode ? null : (
-                <AnalysisControlGroup
-                  options={lensOptions}
-                  value={lens}
-                  onChange={setLens}
-                  align="end"
-                />
-              )
-            }
-            tone="secondary"
-            layout="analytics"
-            className="overflow-hidden"
-          >
+          <BioPanel index={1} reducedEffects={reducedEffects} className="overflow-hidden p-5">
+            <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <p className="text-tiny font-semibold uppercase tracking-[0.18em] text-muted-foreground">{isClassMode ? t("classSnapshotTitle") : t("studentSnapshotTitle")}</p>
+                <h3 className="mt-0.5 text-lg font-bold tracking-tight text-foreground">{isClassMode ? (currentClass?.name ?? t("distributionCurrent")) : lens === "tests" ? t("chartTests") : (activeBioSeries?.title ?? t("chartBmi"))}</h3>
+              </div>
+              {!isClassMode && <AnalysisControlGroup options={lensOptions} value={lens} onChange={setLens} align="end" />}
+            </div>
             {isClassMode ? (
               classes.length === 0 ? (
                 <EmptyState
@@ -720,7 +706,7 @@ export default function AnaliseClient() {
                   {[1, 2, 3].map((item) => (
                     <div
                       key={item}
-                      className="h-24 animate-pulse rounded-[24px] bg-muted/30"
+                      className="h-24 animate-pulse rounded-[12px] bg-muted/30"
                     />
                   ))}
                 </div>
@@ -762,7 +748,7 @@ export default function AnaliseClient() {
                     </Badge>
                   </div>
                   <ChartFrame className="h-[360px] w-full">
-                    <ResponsiveContainer width="100%" height="100%">
+                    <ResponsiveChartContainer width="100%" height="100%">
                       <BarChart
                         data={testData}
                         margin={{ top: 8, right: 8, left: -12, bottom: 8 }}
@@ -798,7 +784,7 @@ export default function AnaliseClient() {
                           />
                         ))}
                       </BarChart>
-                    </ResponsiveContainer>
+                    </ResponsiveChartContainer>
                   </ChartFrame>
                 </div>
               ) : (
@@ -824,7 +810,7 @@ export default function AnaliseClient() {
                   </Badge>
                 </div>
                 <ChartFrame className="h-[360px] w-full">
-                  <ResponsiveContainer width="100%" height="100%">
+                  <ResponsiveChartContainer width="100%" height="100%">
                     <AreaChart
                       data={bioData}
                       margin={{ top: 8, right: 8, left: -12, bottom: 8 }}
@@ -888,7 +874,7 @@ export default function AnaliseClient() {
                         }}
                       />
                     </AreaChart>
-                  </ResponsiveContainer>
+                  </ResponsiveChartContainer>
                 </ChartFrame>
               </div>
             ) : (
@@ -898,24 +884,10 @@ export default function AnaliseClient() {
                 description={t("emptyStudentDataDescription")}
               />
             )}
-          </PageSection>
+          </BioPanel>
         </div>
 
-        <PageSection
-          eyebrow={
-            isClassMode ? t("classSnapshotTitle") : t("studentSnapshotTitle")
-          }
-          title={
-            isClassMode ? t("classSnapshotTitle") : t("studentSnapshotTitle")
-          }
-          description={
-            isClassMode
-              ? t("classSnapshotDescription")
-              : t("studentSnapshotDescription")
-          }
-          tone="secondary"
-          className="xl:sticky xl:top-24"
-        >
+        <BioPanel index={2} reducedEffects={reducedEffects} className="p-5 xl:sticky xl:top-24">
           {isClassMode ? (
             classes.length === 0 ? (
               <EmptyState
@@ -995,7 +967,7 @@ export default function AnaliseClient() {
                   />
                 </div>
               ) : (
-                <div className="rounded-[24px] border border-dashed border-border/80 bg-background/55 px-4 py-5 text-sm leading-relaxed text-muted-foreground">
+                <div className="rounded-[12px] border border-dashed border-border/80 bg-background/55 px-4 py-5 text-sm leading-relaxed text-muted-foreground">
                   {lens === "tests"
                     ? t("emptyTestsDataDescription")
                     : t("emptyStudentDataDescription")}
@@ -1003,7 +975,7 @@ export default function AnaliseClient() {
               )}
             </div>
           )}
-        </PageSection>
+        </BioPanel>
       </div>
     </PageScaffold>
   );
@@ -1019,7 +991,7 @@ function AnalysisSummaryTile({
   support: string;
 }) {
   return (
-    <div className="rounded-[24px] border border-border/70 bg-background/70 p-4">
+    <div className="rounded-[12px] border border-border/70 bg-background/70 p-4">
       <p className="text-tiny font-semibold uppercase tracking-[0.16em] text-muted-foreground">
         {label}
       </p>
@@ -1052,7 +1024,7 @@ function AnalysisMetricTile({
           : "bg-slate-300";
 
   return (
-    <div className="rounded-[24px] border border-border/70 bg-background/72 p-4">
+    <div className="rounded-[12px] border border-border/70 bg-background/72 p-4">
       <div className="flex items-center gap-2">
         <span className={`size-2.5 rounded-full ${dotClassName}`} />
         <p className="text-tiny font-semibold uppercase tracking-[0.16em] text-muted-foreground">
@@ -1092,7 +1064,7 @@ function ClassDistributionCard({
   const noDataWidth = (noData / safeTotal) * 100;
 
   return (
-    <div className="rounded-3xl border border-border/70 bg-background/72 p-5">
+    <div className="rounded-[12px] border border-border/70 bg-background/72 p-5">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <p className="text-tiny font-semibold uppercase tracking-[0.16em] text-muted-foreground">
@@ -1197,7 +1169,7 @@ function DistributionStat({
   value: number;
 }) {
   return (
-    <div className="rounded-[24px] border border-border/70 bg-background/65 px-4 py-3">
+    <div className="rounded-[12px] border border-border/70 bg-background/65 px-4 py-3">
       <div className="flex items-center gap-2">
         <span className={`size-2.5 rounded-full ${color}`} />
         <p className="text-sm text-muted-foreground">{label}</p>

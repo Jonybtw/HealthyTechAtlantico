@@ -17,7 +17,7 @@ export function BrandLogo({
   return (
     <div className={cn("relative", className)}>
       <Image
-        src="/logo.png"
+        src="/logo-icon.png"
         alt={alt}
         fill
         sizes={sizes}

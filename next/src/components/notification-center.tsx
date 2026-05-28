@@ -58,7 +58,7 @@ export function NotificationCenter({ userRole }: NotificationCenterProps) {
         <Button
           variant="ghost"
           size="icon"
-          className="relative rounded-lg"
+          className="relative rounded-[8px] !border-transparent hover:!border-transparent"
           aria-label={t("bellLabel")}
         >
           <Bell className="size-4" />
@@ -86,7 +86,7 @@ export function NotificationCenter({ userRole }: NotificationCenterProps) {
               <p className="text-xs text-muted-foreground">{t("allClear")}</p>
             </div>
           ) : (
-            <div className="flex items-start gap-3 rounded-xl border border-danger-500/15 bg-danger-500/10 px-3 py-3 shadow-sm dark:border-danger-500/20 dark:bg-danger-500/12">
+            <div className="flex items-start gap-3 rounded-[8px] border border-danger-500/15 bg-danger-500/10 px-3 py-3 shadow-sm dark:border-danger-500/20 dark:bg-danger-500/12">
               <div className="mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-full border border-danger-500/20 bg-danger-500/10 text-danger-700 dark:border-danger-500/20 dark:bg-danger-500/15 dark:text-danger-300">
                 <AlertTriangle className="size-4" />
               </div>

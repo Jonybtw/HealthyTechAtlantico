@@ -17,7 +17,7 @@ const DialogOverlay = React.forwardRef<
   <DialogPrimitive.Overlay
     ref={ref}
     className={cn(
-      "fixed inset-0 z-50 bg-navy-950/65 backdrop-blur",
+      "fixed inset-0 z-50 bg-navy-950/60",
       "data-[state=open]:animate-in data-[state=closed]:animate-out",
       "data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
       className,
@@ -40,7 +40,7 @@ const DialogContent = React.forwardRef<
       aria-describedby={props["aria-describedby"] ?? undefined}
       className={cn(
         "fixed left-1/2 top-1/2 z-50 w-full max-w-md -translate-x-1/2 -translate-y-1/2",
-        "overflow-hidden rounded-[24px] border border-border/70 bg-card/95 p-4 shadow-float sm:p-5",
+        "overflow-hidden rounded-[16px] border border-border/70 bg-white p-4 shadow-float focus:outline-none dark:bg-[#0d1d30] sm:p-5",
         "animate-scale-in",
         "duration-200",
         className,

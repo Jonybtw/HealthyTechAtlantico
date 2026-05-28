@@ -6,11 +6,11 @@ import {
   XAxis,
   YAxis,
   Tooltip as RechartsTooltip,
-  ResponsiveContainer,
   CartesianGrid,
   ComposedChart,
 } from "recharts";
 import { useTranslations } from "next-intl";
+import { ResponsiveChartContainer } from "@/components/ui/chart-frame";
 
 const WHO_HEIGHT_M: Record<number, { p5: number; p50: number; p95: number }> = {
   10: { p5: 125, p50: 138, p95: 151 },
@@ -87,7 +87,7 @@ export function HeightPercentilesChart({
   chartData.sort((a, b) => a.age - b.age);
 
   return (
-    <ResponsiveContainer width="100%" height="100%">
+    <ResponsiveChartContainer width="100%" height="100%">
       <ComposedChart
         data={chartData}
         margin={{ top: 10, right: 10, bottom: 20, left: -20 }}
@@ -124,7 +124,7 @@ export function HeightPercentilesChart({
             if (active && payload && payload.length) {
               const data = payload[0].payload;
               return (
-                <div className="rounded-lg border border-border/60 bg-background p-2.5 text-xs shadow-sm">
+                <div className="rounded-[8px] border border-border/60 bg-background p-2.5 text-xs shadow-sm">
                   <p className="font-semibold mb-1">
                     {t("chartAge")}: {data.age} {t("chartYears")}
                   </p>
@@ -185,6 +185,6 @@ export function HeightPercentilesChart({
           isAnimationActive={true}
         />
       </ComposedChart>
-    </ResponsiveContainer>
+    </ResponsiveChartContainer>
   );
 }

@@ -1,30 +1,47 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
 import {
   Activity,
   AlertTriangle,
   ArrowRight,
   BookOpen,
   CalendarDays,
+  CheckCircle2,
   ClipboardList,
   FileText,
+  Gauge,
+  HeartPulse,
   Link2,
+  Ruler,
   School,
-  Sparkles,
+  ShieldCheck,
+  Upload,
   Users,
+  UserPlus,
+  type LucideIcon,
 } from "lucide-react";
-import { PieChart, Pie, Cell, Tooltip } from "recharts";
-import { EmptyState } from "@/components/ui/empty-state";
-import { KpiCard } from "@/components/ui/kpi-card";
-import { PageScaffold } from "@/components/ui/page-scaffold";
-import { PageSection } from "@/components/ui/page-section";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { EmptyState } from "@/components/ui/empty-state";
+import { KpiCard } from "@/components/ui/kpi-card";
+import { PageHeader } from "@/components/ui/page-header";
+import { PageScaffold } from "@/components/ui/page-scaffold";
+import { PageSection } from "@/components/ui/page-section";
+import { StaffDashboardContent } from "./_components/staff-dashboard";
+import { StudentDashboardContent } from "./_components/student-dashboard";
 import type {
+  DashboardActionData,
   DashboardCardData,
   DashboardSummary,
+  DashboardWorkItem,
   ZafYearStat,
 } from "@/lib/dashboard";
 import { getQuestionnaireTypeLabelKey } from "@/lib/questionnaires";
@@ -49,86 +66,211 @@ const FALLBACK_MESSAGES: {
   questionarios: Record<string, string>;
 } = {
   dashboard: {
+    totalStudentsTitle: "Total Students",
+    totalStudentsFooter: "+12 this month",
+    biometricsLoggedTitle: "Biometrics Logged",
+    biometricsLoggedFooter: "This academic year",
+    activeAlertsTitle: "Active Alerts",
+    activeAlertsFooter: "1 Critical priority",
+    pendingAssessmentsTitle: "Pending Assessments",
+    pendingAssessmentsFooter: "5 overdue",
     title: "Painel",
+    dashboardStatus: "Painel",
+    overview: "Vista geral",
+    welcomeBackOverview:
+      "Bem-vindo de volta, {name}. Aqui tens a tua visao geral de hoje.",
+    platformOverview:
+      "Centro de comando institucional para cobertura, segurança e qualidade dos dados.",
+    teacherOverview:
+      "Espaço de trabalho para registos de turma, dispensas e sinais SOS.",
+    psychologistOverview:
+      "Triagem de acompanhamento, instrumentos recentes e casos sinalizados.",
+    parentOverview: "Resumo familiar dos alunos associados e relatórios partilhados.",
+    activitySummary: "Últimos registos, próximos passos e atalhos do teu percurso.",
     unlinkedTitle: "Perfil não associado",
-    unlinkedDescription: "Conta ainda não associada a um perfil de aluno.",
-    activitySummary: "Resumo da tua atividade",
-    lastBiometric: "Última biometria",
-    lastTests: "Últimos testes",
-    lastMeasurement: "Data da última medição",
-    lastTestDate: "Data do último teste físico",
-    platformOverview: "Indicadores globais da plataforma.",
-    psychologistOverview: "Resumo da fila de acompanhamento.",
-    parentOverview: "Alunos associados à sua conta.",
+    unlinkedDescription:
+      "A tua conta ainda não está associada a um perfil de aluno. Contacta a escola para concluírem a ligação.",
     students: "Alunos",
     classes: "Turmas",
     sessions: "Sessões",
-    pendingSos: "SOS Pendentes",
+    pendingSos: "SOS pendentes",
     totalRegistered: "Total registados",
     activeClasses: "Turmas ativas",
-    evaluationsDone: "Avaliações realizadas",
-    alertsPending: "Alertas por resolver",
-    platformIndicatorsEyebrow: "Indicadores da plataforma",
-    platformIndicatorsTitle: "Indicadores da plataforma",
-    platformIndicatorsDescription:
-      "Visao consolidada de alunos, turmas, avaliacoes e alertas.",
-    zafDistribution: "Distribuição ZAF por Ano Letivo",
-    zsaf: "Z. Saudável",
-    zmf: "Z. Melhoria",
-    psychologistQueueTitle: "Fila prioritária de acompanhamento",
-    psychologistQueueDescription:
-      "Casos SOS por tratar, por ordem de prioridade.",
-    psychologistRecentTitle: "Questionários recentes",
-    psychologistRecentDescription: "Últimas submissões de questionários.",
-    classPending: "Turma por confirmar",
-    alertOpenedOn: "Aberto em {date}",
-    openStudentFollowUp: "Abrir acompanhamento",
+    evaluationsDone: "Sessões registadas",
+    alertsPending: "SOS em aberto",
+    questionnairesAvailable: "Questionários",
+    questionnaireQueue: "Submissões para leitura",
+    studentsInFollowUp: "Em acompanhamento",
+    studentsInFollowUpDesc: "Alunos com sinais recentes",
+    linkedStudents: "Alunos associados",
+    linkedStudentsDesc: "Alunos ligados à tua conta",
+    reportsAvailable: "Relatórios",
+    reportsAvailableDesc: "Documentos disponíveis",
+    familyQuestionnairesDesc: "Questionários submetidos",
+    teacherStudentsDesc: "Alunos no ano letivo atual",
+    teacherSessionsDesc: "Sessões que registaste",
+    activeExemptions: "Dispensas ativas",
+    activeExemptionsDesc: "Dispensas em vigor",
+    teacherSosDesc: "Alertas encaminhados para ti",
+    missingBiometrics: "Biometrias em falta",
+    missingBiometricsDesc: "Alunos sem medição no ano atual",
+    missingTests: "Testes em falta",
+    missingTestsDesc: "Alunos sem prova física no ano atual",
+    missingQuestionnaires: "Questionários em falta",
+    missingQuestionnairesDesc: "Alunos sem submissão no ano atual",
+    unlinkedStudents: "Alunos sem conta",
+    unlinkedStudentsDesc: "Perfis ainda sem utilizador associado",
+    guardianLinks: "Ligações familiares",
+    guardianLinksDesc: "Associações aluno-encarregado",
+    auditLast7Days: "Auditoria recente",
+    auditLast7DaysDesc: "Eventos registados nos últimos 7 dias",
+    reportsLast30Days: "Relatórios recentes",
+    reportsLast30DaysDesc: "Relatórios gerados nos últimos 30 dias",
+    commandCenter: "Comando",
+    commandCenterTitle: "Prioridades institucionais",
+    commandCenterDescription:
+      "O que precisa de decisão, revisão ou encaminhamento neste momento.",
+    teacherDesk: "Aula e registos",
+    teacherDeskTitle: "Fila de trabalho da turma",
+    teacherDeskDescription:
+      "Alunos e registos que ajudam a fechar a cobertura do período.",
+    clinicalDesk: "Acompanhamento",
+    clinicalDeskTitle: "Fila de intervenção",
+    clinicalDeskDescription: "Casos SOS por resolver, ordenados pelos mais antigos.",
+    familyDesk: "Família",
+    familyDeskTitle: "Acompanhamento por aluno",
+    familyDeskDescription: "Leitura simples dos últimos sinais partilhados pela escola.",
+    studentDesk: "Percurso",
+    studentDeskTitle: "O teu estado atual",
+    studentDeskDescription: "Datas e atalhos principais para continuares o teu registo.",
+    quickActions: "Ações rápidas",
+    quickActionsDescription: "Atalhos diretos para as tarefas mais prováveis.",
+    recentActivity: "Atividade recente",
+    viewAll: "Ver tudo",
+    systemStatus: "Estado do sistema",
+    allSystemsOperational: "Todos os sistemas operacionais",
+    draftsSyncing: "{count} rascunhos a sincronizar",
+    lastSync: "Ultima sincronizacao",
+    allCaughtUp: "Tudo em dia",
+    bmiFitnessTrends: "Tendencias de IMC e condicao fisica",
+    currentAcademicYear: "Ano letivo atual",
+    avgBmi: "IMC medio",
+    fitnessScore: "Score fisico",
+    zafDistributionTitle: "Distribuicao ZAF",
+    coverageAverageLabel: "Media da turma",
+    dataQualityTitle: "Cobertura e qualidade",
+    dataQualityDescription: "Lacunas do ano letivo atual que merecem seguimento.",
+    zafTitle: "Zona saudável e evolução",
+    zafDescription: "Cobertura biométrica e distribuição ZAF nos anos recentes.",
+    recentReportsTitle: "Relatórios recentes",
+    recentReportsDescription: "Últimos documentos disponibilizados pela escola.",
+    recentQuestionnairesTitle: "Instrumentos recentes",
+    recentQuestionnairesDescription: "Submissões mais recentes para leitura clínica.",
     noPendingCasesTitle: "Sem casos pendentes",
     noPendingCasesDescription: "A fila SOS está limpa neste momento.",
     noRecentQuestionnairesTitle: "Sem questionários recentes",
     noRecentQuestionnairesDescription:
-      "Quando houver novas submissões, aparecem aqui para leitura rápida.",
-    parentStudentsTitle: "Acompanhamento dos alunos",
-    parentStudentsDescription: "Última informação registada por aluno.",
-    parentReportsTitle: "Relatórios recentes",
-    parentReportsDescription:
-      "Relatórios recentes disponibilizados pela escola.",
-    studentRecord: "Registo do aluno",
-    lastReport: "Último relatório",
-    lastQuestionnaire: "Último questionário",
-    linkedStudents: "Alunos associados",
-    historyGeneratedOn: "Gerado em {date}",
+      "As novas submissões aparecem aqui quando forem recebidas.",
     noLinkedStudentsDashboardTitle: "Sem alunos associados",
     noLinkedStudentsDashboardDescription:
       "Quando a escola concluir a associação, os dados surgem aqui.",
     noReportsDashboardTitle: "Sem relatórios recentes",
     noReportsDashboardDescription:
       "Os relatórios disponibilizados pela escola aparecem nesta área.",
-    studentsUnit: "alunos",
-    overviewEyebrow: "Resumo",
-    overviewTitle: "Indicadores",
-    overviewDescription:
-      "Números de alunos, turmas, avaliações e alertas SOS em aberto.",
-    dashboardStatus: "Painel",
-    yearInFocus: "Ano em foco",
-    coverageRecent: "Cobertura biométrica do ano letivo mais recente.",
-    studentsWithBiometrics: "Com biometria",
+    classPending: "Turma por confirmar",
+    alertOpenedOn: "Aberto em {date}",
+    generatedOn: "Gerado em {date}",
+    studentRecord: "Registo do aluno",
+    lastBiometric: "Última biometria",
+    lastTests: "Últimos testes",
+    lastQuestionnaire: "Último questionário",
+    lastReport: "Último relatório",
+    activeStudentSos: "SOS ativo",
+    activeStudentExemption: "Dispensa ativa",
+    noStudentSignal: "Sem sinal ativo",
+    lastMeasurement: "Data da última medição",
+    lastTestDate: "Data do último teste físico",
+    studentQuestionnairesDesc: "Instrumentos já submetidos",
+    needsBiometrics: "Registar biometria",
+    needsTests: "Registar testes",
+    reviewItem: "Rever",
+    openItem: "Abrir",
+    latestAcademicYear: "Último ano letivo",
     coverageLabel: "Cobertura registada",
+    studentsWithBiometrics: "Com biometria",
     healthyStudentsLabel: "Em Z. Saudável",
     improvementStudentsLabel: "Em Z. Melhoria",
-    annualSeries: "Série anual",
-    annualSeriesDescription:
-      "Comparação do peso da Zona Saudável em cada ano letivo com registos.",
-    comparisonPanelTitle: "Evolução por ano letivo",
-    comparisonPanelDescription:
-      "Percentagem em zona saudável (alunos com biometria).",
+    zsaf: "Z. Saudável",
+    zmf: "Z. Melhoria",
+    noBioData: "Sem dados biométricos",
     annualSeriesPendingTitle: "Ainda não existe série histórica comparável.",
     annualSeriesPendingDescription:
       "A evolução anual aparece quando houver mais do que um ano letivo com biometria registada.",
-    noBioData: "Sem dados biométricos",
-    greetingMorning: "Bom dia",
-    greetingAfternoon: "Boa tarde",
-    greetingEvening: "Boa noite",
+    studentsUnit: "alunos",
+    actionSosTitle: "SOS",
+    actionSosDesc: "Rever alertas ativos",
+    actionStudentsTitle: "Alunos",
+    actionStudentsDesc: "Gerir perfis e ligações",
+    actionClassTitle: "Turma",
+    actionClassDesc: "Ver trabalho da turma",
+    actionBiometricsTitle: "Biometria",
+    actionBiometricsDesc: "Registar medições",
+    actionTestsTitle: "Testes",
+    actionTestsDesc: "Registar provas",
+    actionReportsTitle: "Relatórios",
+    actionReportsDesc: "Consultar ou gerar documentos",
+    actionQuestionnairesTitle: "Questionários",
+    actionQuestionnairesDesc: "Responder instrumentos",
+    actionProtocolsTitle: "Protocolos",
+    actionProtocolsDesc: "Consultar orientações",
+    actionAdminTitle: "Admin",
+    actionAdminDesc: "Gerir utilizadores",
+    actionAuditTitle: "Auditoria",
+    actionAuditDesc: "Rever atividade",
+    actionProfileTitle: "Perfil",
+    actionProfileDesc: "Preferências e conta",
+    actionLogBiometricsTitle: "Registar biometria",
+    actionLogBiometricsDesc: "Registar dados do aluno",
+    actionRaiseSosTitle: "Abrir SOS",
+    actionRaiseSosDesc: "Alerta de emergencia",
+    actionNewAssessmentTitle: "Nova avaliacao",
+    actionNewAssessmentDesc: "Atribuir questionario",
+    actionGenerateReportTitle: "Gerar relatorio",
+    actionGenerateReportDesc: "Exportar relatorio PDF",
+    actionEnrollStudentTitle: "Inscrever aluno",
+    actionEnrollStudentDesc: "Adicionar novo aluno",
+    actionBulkImportTitle: "Importacao em lote",
+    actionBulkImportDesc: "Upload CSV",
+    studentHealthProgress: "My Health Progress",
+    studentGrowthSubtitle: "Tracking your growth over time",
+    student6Months: "6 Months",
+    student1Year: "1 Year",
+    studentWeightLabel: "Weight (kg)",
+    studentHeightLabel: "Height (cm)",
+    studentPendingTasks: "Pending Tasks",
+    studentNoPendingTasks: "No pending tasks",
+    studentNoPendingDesc: "All questionnaires for this school year have been submitted.",
+    studentStart: "Start",
+    studentDueSoon: "Due Soon",
+    studentPending: "Pending",
+    studentYourPosition: "Your Position",
+    studentComparedWHO: "Position relative to the healthy zone",
+    studentPercentile: "Percentile",
+    studentCurrentHealth: "Current Health Status",
+    studentBMI: "BMI",
+    studentHeight: "Height",
+    studentWeight: "Weight",
+    studentZScore: "Z-Score (BMI)",
+    studentFitnessScore: "Fitness Score",
+    studentNoBiometrics: "No biometric data recorded",
+    studentNoBiometricsDesc: "Once your teacher records your measurements, data will appear here.",
+    studentNoTests: "No tests recorded",
+    studentLastUpdated: "Last updated",
+    studentHealthy: "Healthy",
+    studentAtRisk: "At Risk",
+    studentNormal: "Normal",
+    studentGood: "Good",
+    studentSosActive: "Active SOS alert",
   },
   nav: {
     perfil: "Perfil",
@@ -140,44 +282,36 @@ const FALLBACK_MESSAGES: {
   },
 };
 
+const ICONS: Record<DashboardCardData["icon"], LucideIcon> = {
+  activity: Activity,
+  alert: AlertTriangle,
+  book: BookOpen,
+  clipboard: ClipboardList,
+  file: FileText,
+  gauge: Gauge,
+  school: School,
+  shield: ShieldCheck,
+  upload: Upload,
+  users: Users,
+  userPlus: UserPlus,
+};
+
 function formatMessage(
   template: string,
   values?: Record<string, string | number>,
 ) {
-  if (!values) {
-    return template;
-  }
+  if (!values) return template;
 
   let result = template;
   for (const [token, replacement] of Object.entries(values)) {
     result = result.replaceAll(`{${token}}`, String(replacement));
   }
-
   return result;
 }
 
-const ICONS: Record<DashboardCardData["icon"], typeof Users> = {
-  users: Users,
-  activity: Activity,
-  alert: AlertTriangle,
-  school: School,
-  file: FileText,
-  book: BookOpen,
-};
+function formatCompactDate(value: string | null, locale: string) {
+  if (!value) return "-";
 
-function formatDisplayDate(value: string | null, locale: string) {
-  if (!value) {
-    return "-";
-  }
-
-  return new Date(value).toLocaleDateString(locale, {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-  });
-}
-
-function formatCompactDate(value: string, locale: string) {
   return new Date(value).toLocaleDateString(locale, {
     day: "2-digit",
     month: "short",
@@ -193,19 +327,51 @@ function formatNumberValue(value: string | number, locale: string) {
 }
 
 function getCoveragePct(year: Pick<ZafYearStat, "total" | "withBio"> | null) {
-  if (!year || year.total <= 0) {
-    return 0;
-  }
-
+  if (!year || year.total <= 0) return 0;
   return Math.round((year.withBio / year.total) * 100);
 }
 
 function getHealthyPct(year: Pick<ZafYearStat, "withBio" | "zsaf"> | null) {
-  if (!year || year.withBio <= 0) {
-    return 0;
-  }
-
+  if (!year || year.withBio <= 0) return 0;
   return Math.round((year.zsaf / year.withBio) * 100);
+}
+
+function getLatestYear(zafByYear: ZafYearStat[] | null) {
+  if (!zafByYear) return null;
+  return zafByYear.find((year) => year.withBio > 0) ?? zafByYear[0] ?? null;
+}
+
+function useDashboardText(messages: Props["messages"]) {
+  const t = (key: string, values?: Record<string, string | number>) =>
+    formatMessage(
+      messages?.dashboard[key] ?? FALLBACK_MESSAGES.dashboard[key] ?? key,
+      values,
+    );
+  const nav = (key: string, values?: Record<string, string | number>) =>
+    formatMessage(
+      messages?.nav[key] ?? FALLBACK_MESSAGES.nav[key] ?? key,
+      values,
+    );
+  const questionnaires = (
+    key: string,
+    values?: Record<string, string | number>,
+  ) =>
+    formatMessage(
+      messages?.questionarios[key] ??
+        FALLBACK_MESSAGES.questionarios[key] ??
+        key,
+      values,
+    );
+
+  return { nav, questionnaires, t };
+}
+
+function getRoleCopy(summary: DashboardSummary) {
+  if (summary.variant === "admin") return "platformOverview";
+  if (summary.variant === "teacher") return "teacherOverview";
+  if (summary.variant === "psychologist") return "psychologistOverview";
+  if (summary.variant === "parent") return "parentOverview";
+  return "activitySummary";
 }
 
 export function DashboardClient({
@@ -216,941 +382,846 @@ export function DashboardClient({
   todayLabel,
   username,
 }: Props) {
-  const t = (key: string, values?: Record<string, string | number>) =>
-    formatMessage(
-      messages.dashboard[key] ?? FALLBACK_MESSAGES.dashboard[key] ?? key,
-      values,
-    );
-  const nav = (key: string, values?: Record<string, string | number>) =>
-    formatMessage(messages.nav[key] ?? FALLBACK_MESSAGES.nav[key] ?? key, values);
-  const questionnaires = (
-    key: string,
-    values?: Record<string, string | number>,
-  ) =>
-    formatMessage(
-      messages.questionarios[key] ??
-        FALLBACK_MESSAGES.questionarios[key] ??
-        key,
-      values,
-    );
-  const [chartsReady, setChartsReady] = useState(false);
-
-  useEffect(() => {
-    const frame = window.requestAnimationFrame(() => {
-      setChartsReady(true);
-    });
-
-    return () => window.cancelAnimationFrame(frame);
-  }, []);
-
-  const scaffoldClassName = "gap-6";
-  const buildHeaderProps = (title: string, description: string) => ({
-    title,
-    description,
-    eyebrow: t("title"),
-    meta: todayLabel,
-  });
-
-  if (summary.variant === "student") {
-    if (!summary.studentSummary) {
-      return (
-        <PageScaffold
-          className={scaffoldClassName}
-          headerProps={buildHeaderProps(
-            `${greeting}, ${username}!`,
-            t("unlinkedDescription"),
-          )}
-        >
-          <EmptyState
-            icon={Link2}
-            title={t("unlinkedTitle")}
-            description={t("unlinkedDescription")}
-            action={
-              <Link
-                href="/perfil"
-                className={buttonVariants({ size: "sm", variant: "ghost" })}
-              >
-                {nav("perfil")}
-              </Link>
-            }
-          />
-        </PageScaffold>
-      );
-    }
-
-    const firstName =
-      summary.studentSummary.name.split(" ")[0] ?? summary.studentSummary.name;
-
-    return (
-      <PageScaffold
-        className={scaffoldClassName}
-        headerProps={buildHeaderProps(
-          `${greeting}, ${firstName}!`,
-          t("activitySummary"),
-        )}
-      >
-        <div className="grid gap-4 sm:grid-cols-2">
-          <KpiCard
-            icon={Activity}
-            title={t("lastBiometric")}
-            value={formatDisplayDate(
-              summary.studentSummary.lastBiometric,
-              locale,
-            )}
-            description={t("lastMeasurement")}
-            accent="blue"
-            emphasis="hero"
-            footer={
-              <p className="text-sm text-white/74">
-                {summary.studentSummary.lastBiometric
-                  ? t("lastMeasurement")
-                  : t("unlinkedDescription")}
-              </p>
-            }
-          />
-          <KpiCard
-            icon={ClipboardList}
-            title={t("lastTests")}
-            value={formatDisplayDate(summary.studentSummary.lastTest, locale)}
-            description={t("lastTestDate")}
-            accent="gold"
-          />
-        </div>
-      </PageScaffold>
-    );
-  }
-
-  const description =
-    summary.variant === "staff"
-      ? t("platformOverview")
-      : summary.variant === "psychologist"
-        ? t("psychologistOverview")
-        : t("parentOverview");
-
-  if (summary.variant === "psychologist") {
-    return (
-      <PageScaffold
-        className={scaffoldClassName}
-        headerProps={buildHeaderProps(`${greeting}, ${username}!`, description)}
-      >
-        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-          {summary.cards.map((card) => (
-            <KpiCard
-              key={card.id}
-              icon={ICONS[card.icon]}
-              title={t(card.titleKey)}
-              value={card.value}
-              description={t(card.descriptionKey)}
-              accent={card.accent}
-            />
-          ))}
-        </div>
-
-        <div className="grid gap-5 xl:grid-cols-[minmax(0,1.1fr)_340px]">
-          <PageSection
-            tone="secondary"
-            layout="list"
-            eyebrow={t("psychologistOverview")}
-            title={t("psychologistQueueTitle")}
-            description={t("psychologistQueueDescription")}
-          >
-            {summary.openAlerts.length > 0 ? (
-              <div className="grid gap-3">
-                {summary.openAlerts.map((alert) => (
-                  <DashboardPanel
-                    key={alert.id}
-                    href={`/acompanhamento/${alert.studentId}`}
-                  >
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="space-y-1">
-                        <p className="text-sm font-semibold text-foreground">
-                          {alert.studentName}
-                        </p>
-                        <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
-                          {alert.className ?? t("classPending")}
-                        </p>
-                      </div>
-                      <Badge variant="danger" size="sm">
-                        {t("pendingSos")}
-                      </Badge>
-                    </div>
-
-                    <div className="mt-4 flex items-center justify-between gap-3">
-                      <span className="text-sm text-muted-foreground">
-                        {t("alertOpenedOn", {
-                          date: formatDisplayDate(alert.createdAt, locale),
-                        })}
-                      </span>
-                      <span className="inline-flex items-center gap-2 text-sm font-semibold text-foreground">
-                        {t("openStudentFollowUp")}
-                        <ArrowRight className="size-4 transition-transform duration-300 group-hover:translate-x-1" />
-                      </span>
-                    </div>
-                  </DashboardPanel>
-                ))}
-              </div>
-            ) : (
-              <EmptyState
-                icon={AlertTriangle}
-                title={t("noPendingCasesTitle")}
-                description={t("noPendingCasesDescription")}
-              />
-            )}
-          </PageSection>
-
-          <div className="grid gap-5">
-            <PageSection
-              tone="utility"
-              layout="list"
-              eyebrow={t("psychologistRecentTitle")}
-              title={t("psychologistRecentTitle")}
-              description={t("psychologistRecentDescription")}
-            >
-              {summary.recentQuestionnaires.length > 0 ? (
-                <div className="grid gap-3">
-                  {summary.recentQuestionnaires.map((questionnaire) => (
-                    <DashboardPanel key={questionnaire.id}>
-                      <div className="flex items-start justify-between gap-3">
-                        <div>
-                          <p className="text-sm font-semibold text-foreground">
-                            {questionnaire.studentName}
-                          </p>
-                          <p className="mt-1 text-sm text-muted-foreground">
-                            {questionnaires(
-                              getQuestionnaireTypeLabelKey(
-                                questionnaire.type as
-                                  | "AUTOCONCEITO"
-                                  | "AUTOESTIMA"
-                                  | "KIDMED",
-                              ),
-                            )}
-                          </p>
-                        </div>
-                        <Badge
-                          variant="default"
-                          size="sm"
-                          className="bg-surface-utility"
-                        >
-                          {formatCompactDate(questionnaire.submittedAt, locale)}
-                        </Badge>
-                      </div>
-                    </DashboardPanel>
-                  ))}
-                </div>
-              ) : (
-                <EmptyState
-                  icon={BookOpen}
-                  title={t("noRecentQuestionnairesTitle")}
-                  description={t("noRecentQuestionnairesDescription")}
-                />
-              )}
-            </PageSection>
-          </div>
-        </div>
-      </PageScaffold>
-    );
-  }
-
-  if (summary.variant === "parent") {
-    return (
-      <PageScaffold
-        className={scaffoldClassName}
-        headerProps={buildHeaderProps(`${greeting}, ${username}!`, description)}
-      >
-        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-          {summary.cards.map((card) => (
-            <KpiCard
-              key={card.id}
-              icon={ICONS[card.icon]}
-              title={t(card.titleKey)}
-              value={card.value}
-              description={t(card.descriptionKey)}
-              accent={card.accent}
-            />
-          ))}
-        </div>
-
-        <div className="grid gap-5 xl:grid-cols-[minmax(0,1.15fr)_340px]">
-          <PageSection
-            tone="secondary"
-            layout="list"
-            eyebrow={t("parentOverview")}
-            title={t("parentStudentsTitle")}
-            description={t("parentStudentsDescription")}
-          >
-            {summary.linkedStudents.length > 0 ? (
-              <div className="grid gap-3 lg:grid-cols-2">
-                {summary.linkedStudents.map((student) => (
-                  <DashboardPanel key={student.id}>
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="space-y-1">
-                        <p className="text-sm font-semibold text-foreground">
-                          {student.name}
-                        </p>
-                        <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
-                          {[student.className, student.schoolYear]
-                            .filter(Boolean)
-                            .join(" - ") || t("studentRecord")}
-                        </p>
-                      </div>
-                      <Badge variant="info" size="sm">
-                        {t("linkedStudents")}
-                      </Badge>
-                    </div>
-
-                    <div className="mt-4 grid gap-3 sm:grid-cols-2">
-                      <DashboardMetaPill
-                        label={t("lastReport")}
-                        value={formatDisplayDate(student.lastReportAt, locale)}
-                      />
-                      <DashboardMetaPill
-                        label={t("lastQuestionnaire")}
-                        value={formatDisplayDate(
-                          student.lastQuestionnaireAt,
-                          locale,
-                        )}
-                      />
-                    </div>
-                  </DashboardPanel>
-                ))}
-              </div>
-            ) : (
-              <EmptyState
-                icon={Users}
-                title={t("noLinkedStudentsDashboardTitle")}
-                description={t("noLinkedStudentsDashboardDescription")}
-              />
-            )}
-          </PageSection>
-
-          <div className="grid gap-5">
-            <PageSection
-              tone="utility"
-              layout="list"
-              eyebrow={t("parentReportsTitle")}
-              title={t("parentReportsTitle")}
-              description={t("parentReportsDescription")}
-            >
-              {summary.recentReports.length > 0 ? (
-                <div className="grid gap-3">
-                  {summary.recentReports.map((report) => (
-                    <DashboardPanel key={report.id}>
-                      <p className="text-sm font-semibold text-foreground">
-                        {report.title}
-                      </p>
-                      <p className="mt-1 text-sm text-muted-foreground">
-                        {report.studentName}
-                      </p>
-                      <p className="mt-3 text-xs uppercase tracking-[0.18em] text-muted-foreground">
-                        {t("historyGeneratedOn", {
-                          date: formatDisplayDate(report.createdAt, locale),
-                        })}
-                      </p>
-                    </DashboardPanel>
-                  ))}
-                </div>
-              ) : (
-                <EmptyState
-                  icon={FileText}
-                  title={t("noReportsDashboardTitle")}
-                  description={t("noReportsDashboardDescription")}
-                />
-              )}
-            </PageSection>
-          </div>
-        </div>
-      </PageScaffold>
-    );
-  }
+  const { nav, questionnaires, t } = useDashboardText(messages);
+  const titleName =
+    summary.variant === "student" && summary.studentSummary
+      ? summary.studentSummary.name.split(" ")[0]
+      : username;
 
   return (
     <PageScaffold
-      className={scaffoldClassName}
+      className="gap-6"
       header={
-        <StaffDashboardHeader
-          description={description}
-          greeting={greeting}
-          t={t}
-          todayLabel={todayLabel}
-          username={username}
-        />
+        summary.variant === "teacher" || summary.variant === "student" ? null : (
+          <DashboardHero
+            eyebrow={t("dashboardStatus")}
+            title={`${greeting}, ${titleName}`}
+            description={t(getRoleCopy(summary))}
+            todayLabel={todayLabel}
+          />
+        )
       }
     >
-      {summary.cards.length > 0 ? (
-        <StaffOverview locale={locale} summary={summary} t={t} />
-      ) : null}
-
-      {summary.zafByYear.length > 0 ? (
-        <DashboardAnalytics
-          chartsReady={chartsReady}
+      {summary.variant === "admin" ? (
+        <AdminDashboard locale={locale} summary={summary} t={t} />
+      ) : summary.variant === "teacher" ? (
+        <TeacherDashboard
+          greeting={greeting}
           locale={locale}
           summary={summary}
           t={t}
+          username={titleName}
         />
-      ) : null}
+      ) : summary.variant === "psychologist" ? (
+        <PsychologistDashboard
+          locale={locale}
+          questionnaires={questionnaires}
+          summary={summary}
+          t={t}
+        />
+      ) : summary.variant === "parent" ? (
+        <ParentDashboard locale={locale} summary={summary} t={t} />
+      ) : (
+        <StudentDashboard
+          greeting={greeting}
+          locale={locale}
+          nav={nav}
+          questionnaires={questionnaires}
+          summary={summary}
+          t={t}
+        />
+      )}
     </PageScaffold>
   );
 }
 
-function StaffDashboardHeader({
+function DashboardHero({
   description,
-  greeting,
-  t,
+  eyebrow,
+  title,
   todayLabel,
-  username,
 }: {
   description: string;
-  greeting: string;
-  t: (key: string) => string;
+  eyebrow: string;
+  title: string;
   todayLabel: string;
+}) {
+  return (
+    <PageHeader
+      eyebrow={eyebrow}
+      title={title}
+      description={description}
+      icon={<HeartPulse className="size-6" />}
+      meta={
+        <span className="inline-flex items-center gap-1.5 text-muted-foreground">
+          <CalendarDays className="size-3.5 text-gold-600 dark:text-gold-300" />
+          {todayLabel}
+        </span>
+      }
+    />
+  );
+}
+
+function AdminDashboard({
+  locale,
+  summary,
+  t,
+}: {
+  locale: string;
+  summary: Extract<DashboardSummary, { variant: "admin" }>;
+  t: (key: string, values?: Record<string, string | number>) => string;
+}) {
+  return (
+    <div className="grid gap-6">
+      <MetricGrid cards={summary.cards} t={t} />
+
+      <div className="grid gap-6 xl:grid-cols-[minmax(0,1.2fr)_380px]">
+        <WorkQueue
+          description={t("commandCenterDescription")}
+          emptyIcon={CheckCircle2}
+          emptyTitle={t("noPendingCasesTitle")}
+          eyebrow={t("commandCenter")}
+          items={summary.workItems}
+          locale={locale}
+          t={t}
+          title={t("commandCenterTitle")}
+        />
+        <QuickActions actions={summary.quickActions} t={t} />
+      </div>
+
+      <div className="grid gap-6 xl:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)]">
+        <DataQuality cards={summary.quality} t={t} />
+        <ZafPanel locale={locale} t={t} zafByYear={summary.zafByYear} />
+      </div>
+    </div>
+  );
+}
+
+function TeacherDashboard({
+  greeting,
+  locale,
+  summary,
+  t,
+  username,
+}: {
+  greeting: string;
+  locale: string;
+  summary: Extract<DashboardSummary, { variant: "teacher" }>;
+  t: (key: string, values?: Record<string, string | number>) => string;
   username: string;
 }) {
   return (
-    <section className="relative overflow-hidden rounded-[2rem] border border-white/55 bg-white/72 px-6 py-7 shadow-[0_24px_70px_rgba(5,14,24,0.12)] backdrop-blur-xl dark:border-white/10 dark:bg-navy-950/72 dark:shadow-[0_28px_80px_rgba(0,0,0,0.36)] sm:px-8 sm:py-8">
-      <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-gold-400/70 to-transparent" />
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_78%_-18%,rgba(216,173,52,0.18),transparent_46%),radial-gradient(circle_at_8%_110%,rgba(16,36,58,0.08),transparent_40%)] dark:bg-[radial-gradient(circle_at_78%_-18%,rgba(232,199,102,0.2),transparent_46%),radial-gradient(circle_at_8%_110%,rgba(20,48,76,0.45),transparent_40%)]" />
-
-      <div className="relative flex flex-col gap-7 lg:flex-row lg:items-end lg:justify-between">
-        <div>
-          <div className="inline-flex items-center gap-2">
-            <span className="flex size-6 items-center justify-center rounded-full bg-gold-400/16 text-gold-700 ring-1 ring-gold-400/25 dark:text-gold-200">
-              <Sparkles className="size-3.5" />
-            </span>
-            <span className="text-[11px] font-bold uppercase tracking-[0.28em] text-gold-700 dark:text-gold-200">
-              {t("title")}
-            </span>
-          </div>
-
-          <h1 className="mt-4 font-display text-[2.4rem] font-black leading-none tracking-[-0.055em] text-navy-950 dark:text-white sm:text-[3.25rem]">
-            {greeting},{" "}
-            <span className="text-gradient-gold">{username}</span>!
-          </h1>
-          <p className="mt-4 max-w-2xl text-base leading-relaxed text-muted-foreground sm:text-lg">
-            {description}
-          </p>
-        </div>
-
-        <span className="inline-flex w-fit items-center gap-2 rounded-full border border-border/70 bg-white/70 px-4 py-2 text-sm font-medium text-muted-foreground shadow-sm dark:border-white/10 dark:bg-white/8 dark:text-white/70">
-          <CalendarDays className="size-4 text-gold-600 dark:text-gold-200" />
-          {todayLabel}
-        </span>
-      </div>
-    </section>
+    <StaffDashboardContent
+      greeting={greeting}
+      locale={locale}
+      summary={summary}
+      t={t}
+      username={username}
+    />
   );
 }
 
-function StaffOverview({
+function PsychologistDashboard({
   locale,
+  questionnaires,
   summary,
   t,
 }: {
   locale: string;
-  summary: Extract<DashboardSummary, { variant: "staff" }>;
-  t: (key: string) => string;
+  questionnaires: (
+    key: string,
+    values?: Record<string, string | number>,
+  ) => string;
+  summary: Extract<DashboardSummary, { variant: "psychologist" }>;
+  t: (key: string, values?: Record<string, string | number>) => string;
 }) {
-  const cardMap = Object.fromEntries(
-    summary.cards.map((card) => [card.id, card]),
-  ) as Record<string, DashboardCardData | undefined>;
-  const studentsCard = cardMap["students"];
-  const sessionsCard = cardMap["sessions"];
-  const classesCard = cardMap["classes"];
-  const pendingSosCard = cardMap["pending-sos"];
-  const metrics = [
-    studentsCard
-      ? {
-          id: studentsCard.id,
-          icon: Users,
-          title: t(studentsCard.titleKey),
-          value: formatNumberValue(studentsCard.value, locale),
-          description: t(studentsCard.descriptionKey),
-          accent: studentsCard.accent,
-        }
-      : null,
-    classesCard
-      ? {
-        id: classesCard.id,
-        icon: School,
-          title: t(classesCard.titleKey),
-          value: formatNumberValue(classesCard.value, locale),
-          description: t(classesCard.descriptionKey),
-          accent: classesCard.accent,
-        }
-      : null,
-    sessionsCard
-      ? {
-          id: sessionsCard.id,
-          icon: Activity,
-          title: t(sessionsCard.titleKey),
-          value: formatNumberValue(sessionsCard.value, locale),
-          description: t(sessionsCard.descriptionKey),
-          accent: sessionsCard.accent,
-        }
-      : null,
-    pendingSosCard
-      ? {
-          id: pendingSosCard.id,
-          icon: AlertTriangle,
-          title: t(pendingSosCard.titleKey),
-          value: formatNumberValue(pendingSosCard.value, locale),
-          description: t(pendingSosCard.descriptionKey),
-          accent: pendingSosCard.accent,
-          emphasis: "danger" as const,
-        }
-      : null,
-  ].filter(Boolean) as Array<{
-    id: string;
-    icon: typeof Users;
-    title: string;
-    value: string | number;
-    description: string;
-    accent: NonNullable<DashboardCardData["accent"]>;
-    emphasis?: "danger";
-  }>;
-
   return (
-    <section className="relative overflow-hidden rounded-[2rem] border border-white/50 bg-white/66 p-6 shadow-[0_22px_70px_rgba(5,14,24,0.1)] backdrop-blur-xl dark:border-white/10 dark:bg-navy-950/64 dark:shadow-[0_22px_70px_rgba(0,0,0,0.32)] sm:p-7">
-      <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-gold-400/60 to-transparent" />
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_86%_0%,rgba(216,173,52,0.1),transparent_42%)] dark:bg-[radial-gradient(circle_at_86%_0%,rgba(232,199,102,0.13),transparent_42%)]" />
+    <div className="grid gap-6">
+      <MetricGrid cards={summary.cards} t={t} />
 
-      <div className="relative flex flex-col gap-6">
-        <div>
-          <p className="text-[11px] font-bold uppercase tracking-[0.28em] text-gold-700 dark:text-gold-200">
-            {t("platformIndicatorsEyebrow")}
-          </p>
-          <h2 className="mt-2 font-display text-2xl font-bold tracking-[-0.04em] text-foreground">
-            {t("platformIndicatorsTitle")}
-          </h2>
-          <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted-foreground sm:text-base">
-            {t("platformIndicatorsDescription")}
-          </p>
-        </div>
-
-        <div className="overflow-hidden rounded-[1.35rem] border border-border/70 bg-border/50 shadow-sm dark:border-white/10 dark:bg-white/10">
-          <div className="grid gap-px md:grid-cols-2 xl:grid-cols-4">
-            {metrics.map((metric) => (
-              <StaffMetricRailCell
-                key={metric.id}
-                accent={metric.accent}
-                description={metric.description}
-                emphasis={metric.emphasis}
-                icon={metric.icon}
-                title={metric.title}
-                value={metric.value}
-              />
-            ))}
-          </div>
-        </div>
-      </div>
-    </section>
-  );
-}
-
-function DashboardAnalytics({
-  chartsReady,
-  locale,
-  summary,
-  t,
-}: {
-  chartsReady: boolean;
-  locale: string;
-  summary: Extract<DashboardSummary, { variant: "staff" }>;
-  t: (key: string) => string;
-}) {
-  const timelineYears = summary.zafByYear.filter(
-    (academicYear) => academicYear.withBio > 0,
-  );
-  const latestYear = timelineYears[0] ?? summary.zafByYear[0] ?? null;
-  const focusCoveragePct = getCoveragePct(latestYear);
-  const focusHealthyPct = getHealthyPct(latestYear);
-  const focusWithBio = latestYear?.withBio ?? 0;
-  const donutData = latestYear
-    ? [
-        { name: t("zsaf"), value: latestYear.zsaf },
-        { name: t("zmf"), value: latestYear.zmf },
-      ]
-    : [];
-
-  return (
-    <PageSection
-      eyebrow={t("annualSeries")}
-      title={t("zafDistribution")}
-      description={t("comparisonPanelDescription")}
-      tone="secondary"
-      layout="analytics"
-      className="rounded-[2rem] p-6 sm:p-7"
-    >
-      <div className="grid gap-4 xl:grid-cols-[minmax(0,1.02fr)_minmax(320px,0.98fr)]">
-        <section className="overflow-hidden rounded-[1.4rem] border border-border/70 bg-white/58 shadow-sm backdrop-blur-md dark:border-white/10 dark:bg-navy-950/45">
-          <div className="p-5 sm:p-6">
-          <div className="flex items-start gap-4">
-            <div>
-              <p className="text-[11px] font-bold uppercase tracking-[0.24em] text-gold-700 dark:text-gold-200">
-                {t("yearInFocus")}
-              </p>
-              <h3 className="mt-1 font-display text-[1.55rem] font-semibold tracking-[-0.04em] text-foreground dark:text-white sm:text-[1.8rem]">
-                {latestYear?.year ?? "-"}
-              </h3>
-              <p className="mt-3 max-w-sm text-sm leading-relaxed text-muted-foreground dark:text-white/68">
-                {t("coverageRecent")}
-              </p>
-            </div>
-          </div>
-
-          <div className="mt-8 grid gap-6 lg:grid-cols-[220px_minmax(0,1fr)] lg:items-center">
-            <div className="relative mx-auto h-48 w-48 flex-shrink-0 lg:mx-0">
-              {chartsReady ? (
-                <PieChart width={192} height={192}>
-                  <Pie
-                    data={donutData}
-                    cx="50%"
-                    cy="50%"
-                    innerRadius={70}
-                    outerRadius={90}
-                    paddingAngle={3}
-                    dataKey="value"
-                    strokeWidth={0}
-                    cornerRadius={8}
-                  >
-                    <Cell
-                      key="zsaf"
-                      fill="var(--color-success-500)"
-                      className="dark:fill-success-400"
-                    />
-                    <Cell
-                      key="zmf"
-                      fill="var(--color-danger-500)"
-                      className="dark:fill-danger-400"
-                    />
-                  </Pie>
-                  <Tooltip
-                    contentStyle={{
-                      borderRadius: "16px",
-                      border: "1px solid var(--color-border)",
-                      background: "var(--color-card)",
-                      fontSize: "13px",
-                    }}
-                  />
-                </PieChart>
-              ) : (
-                <div className="h-full w-full animate-pulse rounded-full border-[16px] border-muted" />
-              )}
-
-              <div className="absolute inset-0 flex flex-col items-center justify-center">
-                <span className="text-3xl font-black leading-none text-foreground dark:text-white">
-                  {chartsReady ? `${focusHealthyPct}%` : "-"}
-                </span>
-                <span className="mt-1 text-micro font-bold uppercase text-muted-foreground dark:text-white/58">
-                  {t("zsaf")}
-                </span>
-              </div>
-            </div>
-
-            <div className="flex flex-col gap-3">
-              <DashboardMetaPill
-                label={t("studentsWithBiometrics")}
-                value={`${formatNumberValue(focusWithBio, locale)} / ${formatNumberValue(latestYear?.total ?? 0, locale)} ${t("studentsUnit")}`}
-              />
-
-              <DashboardCoverageBar
-                label={t("coverageLabel")}
-                value={focusCoveragePct}
-              />
-
-              <div className="grid gap-3 sm:grid-cols-2">
-                <StaffSpotlightMetric
-                  label={t("healthyStudentsLabel")}
-                  value={formatNumberValue(latestYear?.zsaf ?? 0, locale)}
-                  tone="success"
-                />
-                <StaffSpotlightMetric
-                  label={t("improvementStudentsLabel")}
-                  value={formatNumberValue(latestYear?.zmf ?? 0, locale)}
-                  tone="danger"
-                />
-              </div>
-            </div>
-          </div>
-          </div>
-        </section>
-
-        <div className="overflow-hidden rounded-[1.4rem] border border-border/70 bg-white/58 shadow-sm backdrop-blur-md dark:border-white/10 dark:bg-navy-950/45">
-          <div className="border-b border-border/70 p-5 dark:border-white/10 sm:p-6">
-          <div className="mb-6 flex items-start justify-between gap-3">
-            <div>
-              <p className="text-[11px] font-bold uppercase tracking-[0.24em] text-gold-700 dark:text-gold-200">
-                {t("annualSeries")}
-              </p>
-              <h4 className="mt-1 font-display text-[1.35rem] font-semibold tracking-[-0.035em] text-foreground">
-                {t("comparisonPanelTitle")}
-              </h4>
-              <p className="mt-2 max-w-sm text-sm leading-relaxed text-muted-foreground">
-                {t("annualSeriesDescription")}
-              </p>
-            </div>
-            {timelineYears.length > 1 ? (
-              <Badge variant="default" size="sm" className="bg-background/90">
-                {timelineYears.length}
-              </Badge>
-            ) : null}
-          </div>
-          </div>
-
-          <div className="p-5 sm:p-6">
-          {timelineYears.length > 1 ? (
-            <div className="space-y-4">
-              {timelineYears.map((academicYear) => {
-                const healthyPct = getHealthyPct(academicYear);
-
-                return (
-                  <div
-                    key={academicYear.year}
-                    className="rounded-[1.2rem] border border-border/70 bg-background/82 p-4"
-                  >
-                    <div className="flex items-start justify-between gap-3">
-                      <div>
-                        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-                          {academicYear.year}
-                        </p>
-                        <p className="mt-1 text-sm font-semibold text-foreground">
-                          {formatNumberValue(academicYear.withBio, locale)}{" "}
-                          {t("studentsUnit")}
-                        </p>
+      <div className="grid gap-6 xl:grid-cols-[minmax(0,1.2fr)_380px]">
+        <PageSection
+          eyebrow={t("clinicalDesk")}
+          title={t("clinicalDeskTitle")}
+          description={t("clinicalDeskDescription")}
+          tone="secondary"
+          layout="list"
+        >
+          {summary.openAlerts.length > 0 ? (
+            <div className="grid gap-3">
+              {summary.openAlerts.map((alert) => (
+                <Link
+                  key={alert.id}
+                  href={`/acompanhamento/${alert.studentId}`}
+                  className="group"
+                >
+                  <Card className="transition-all hover:-translate-y-0.5 hover:border-danger-400/45 hover:shadow-card-hover">
+                    <CardContent className="flex items-center gap-4 p-5">
+                      <div className="flex size-11 shrink-0 items-center justify-center rounded-[12px] bg-danger-500/10 text-danger-600 dark:text-danger-400">
+                        <AlertTriangle className="size-5" />
                       </div>
-                      <div className="text-right">
-                        <p className="text-lg font-bold text-success-700 dark:text-success-300">
-                          {healthyPct}%
-                        </p>
-                        <p className="text-xs uppercase tracking-[0.14em] text-muted-foreground">
-                          {t("zsaf")}
-                        </p>
+                      <div className="min-w-0 flex-1">
+                        <CardTitle className="truncate text-base">
+                          {alert.studentName}
+                        </CardTitle>
+                        <CardDescription className="mt-1">
+                          {alert.className ?? t("classPending")}
+                        </CardDescription>
                       </div>
-                    </div>
-
-                    <div className="mt-4 h-2.5 overflow-hidden rounded-full bg-danger-100 dark:bg-danger-950/35">
-                      <div
-                        className="h-full rounded-full bg-success-500 transition-all duration-700 dark:bg-success-400"
-                        style={{ width: `${healthyPct}%` }}
-                      />
-                    </div>
-
-                    <div className="mt-3 flex items-center justify-between gap-3 text-xs text-muted-foreground">
-                      <span>
-                        {t("zsaf")} {formatNumberValue(academicYear.zsaf, locale)}
-                      </span>
-                      <span>
-                        {t("zmf")} {formatNumberValue(academicYear.zmf, locale)}
-                      </span>
-                    </div>
-                  </div>
-                );
-              })}
+                      <div className="flex shrink-0 items-center gap-3">
+                        <Badge variant="danger" className="hidden sm:inline-flex">{t("pendingSos")}</Badge>
+                        <span className="hidden text-xs text-muted-foreground lg:inline">
+                          {formatCompactDate(alert.createdAt, locale)}
+                        </span>
+                        <ArrowRight className="size-4 text-muted-foreground transition-transform group-hover:translate-x-1" />
+                      </div>
+                    </CardContent>
+                  </Card>
+                </Link>
+              ))}
             </div>
-          ) : latestYear ? (
-            <DashboardSeriesEmptyState year={latestYear.year} t={t} />
           ) : (
             <EmptyState
-              icon={Activity}
-              title={t("noBioData")}
-              description={t("annualSeriesPendingDescription")}
+              icon={CheckCircle2}
+              title={t("noPendingCasesTitle")}
+              description={t("noPendingCasesDescription")}
             />
           )}
+        </PageSection>
+
+        <QuickActions actions={summary.quickActions} t={t} />
+      </div>
+
+      <PageSection
+        eyebrow={t("recentQuestionnairesTitle")}
+        title={t("recentQuestionnairesTitle")}
+        description={t("recentQuestionnairesDescription")}
+        tone="secondary"
+        layout="list"
+      >
+        {summary.recentQuestionnaires.length > 0 ? (
+          <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+            {summary.recentQuestionnaires.map((questionnaire) => (
+              <Card key={questionnaire.id}>
+                <CardContent className="flex items-center gap-4 p-5">
+                  <div className="flex size-11 shrink-0 items-center justify-center rounded-[12px] bg-gold-500/10 text-gold-700 dark:text-gold-300">
+                    <ClipboardList className="size-5" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <CardTitle className="truncate text-base">
+                      {questionnaire.studentName}
+                    </CardTitle>
+                    <CardDescription className="mt-1">
+                      {questionnaires(
+                        getQuestionnaireTypeLabelKey(
+                          questionnaire.type as
+                            | "AUTOCONCEITO"
+                            | "AUTOESTIMA"
+                            | "KIDMED",
+                        ),
+                      )}
+                    </CardDescription>
+                  </div>
+                  <Badge variant="gold" className="shrink-0">
+                    {formatCompactDate(questionnaire.submittedAt, locale)}
+                  </Badge>
+                </CardContent>
+              </Card>
+            ))}
           </div>
-        </div>
+        ) : (
+          <EmptyState
+            icon={BookOpen}
+            title={t("noRecentQuestionnairesTitle")}
+            description={t("noRecentQuestionnairesDescription")}
+          />
+        )}
+      </PageSection>
+    </div>
+  );
+}
+
+function ParentDashboard({
+  locale,
+  summary,
+  t,
+}: {
+  locale: string;
+  summary: Extract<DashboardSummary, { variant: "parent" }>;
+  t: (key: string, values?: Record<string, string | number>) => string;
+}) {
+  return (
+    <div className="grid gap-6">
+      <MetricGrid cards={summary.cards} t={t} />
+
+      <div className="grid gap-6 xl:grid-cols-[minmax(0,1.2fr)_380px]">
+        <PageSection
+          eyebrow={t("familyDesk")}
+          title={t("familyDeskTitle")}
+          description={t("familyDeskDescription")}
+          tone="secondary"
+          layout="list"
+        >
+          {summary.linkedStudents.length > 0 ? (
+            <div className="grid gap-4 lg:grid-cols-2">
+              {summary.linkedStudents.map((student) => (
+                <StudentFamilyCard
+                  key={student.id}
+                  locale={locale}
+                  student={student}
+                  t={t}
+                />
+              ))}
+            </div>
+          ) : (
+            <EmptyState
+              icon={Users}
+              title={t("noLinkedStudentsDashboardTitle")}
+              description={t("noLinkedStudentsDashboardDescription")}
+            />
+          )}
+        </PageSection>
+
+        <QuickActions actions={summary.quickActions} t={t} />
+      </div>
+
+      <RecentReports
+        locale={locale}
+        reports={summary.recentReports}
+        t={t}
+      />
+    </div>
+  );
+}
+
+function StudentDashboard({
+  greeting,
+  locale,
+  nav,
+  questionnaires,
+  summary,
+  t,
+}: {
+  greeting: string;
+  locale: string;
+  nav: (key: string, values?: Record<string, string | number>) => string;
+  questionnaires: (key: string, values?: Record<string, string | number>) => string;
+  summary: Extract<DashboardSummary, { variant: "student" }>;
+  t: (key: string, values?: Record<string, string | number>) => string;
+}) {
+  const student = summary.studentSummary;
+
+  if (!student) {
+    return (
+      <EmptyState
+        icon={Link2}
+        title={t("unlinkedTitle")}
+        description={t("unlinkedDescription")}
+        action={
+          <Link
+            href="/perfil"
+            className={buttonVariants({ size: "sm", variant: "secondary" })}
+          >
+            {nav("perfil")}
+          </Link>
+        }
+      />
+    );
+  }
+
+  return (
+    <StudentDashboardContent
+      greeting={greeting}
+      locale={locale}
+      questionnaires={questionnaires}
+      student={student}
+      t={t}
+    />
+  );
+}
+
+function MetricGrid({
+  cards,
+  t,
+}: {
+  cards: DashboardCardData[];
+  t: (key: string, values?: Record<string, string | number>) => string;
+}) {
+  if (cards.length === 0) return null;
+
+  return (
+    <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      {cards.map((card) => (
+        <KpiCard
+          key={card.id}
+          accent={card.accent}
+          footer={card.footer ?? t(card.descriptionKey)}
+          icon={ICONS[card.icon]}
+          title={t(card.titleKey)}
+          value={card.value}
+        />
+      ))}
+    </div>
+  );
+}
+
+function QuickActions({
+  actions = [],
+  compact = false,
+  t,
+}: {
+  actions: DashboardActionData[];
+  compact?: boolean;
+  t: (key: string, values?: Record<string, string | number>) => string;
+}) {
+  return (
+    <PageSection
+      eyebrow={t("quickActions")}
+      title={t("quickActions")}
+      description={compact ? undefined : t("quickActionsDescription")}
+      tone="utility"
+      layout="list"
+    >
+      <div className={cn("grid gap-3", compact && "sm:grid-cols-2 lg:grid-cols-1")}>
+        {actions.map((action) => {
+          const Icon = ICONS[action.icon];
+
+          return (
+            <Link key={action.id} href={action.href} className="group">
+              <div className="flex items-center gap-3 rounded-[12px] border border-border/70 bg-background/65 p-3.5 transition-all hover:-translate-y-0.5 hover:border-gold-300/45 hover:shadow-card">
+                <span
+                  className={cn(
+                    "flex size-10 shrink-0 items-center justify-center rounded-[8px] border",
+                    action.tone === "danger"
+                      ? "border-danger-500/20 bg-danger-500/10 text-danger-600 dark:text-danger-300"
+                      : action.tone === "gold"
+                        ? "border-gold-500/20 bg-gold-500/10 text-gold-700 dark:text-gold-300"
+                        : "border-border bg-surface-secondary text-foreground",
+                  )}
+                >
+                  <Icon className="size-5" />
+                </span>
+                <span className="min-w-0 flex-1">
+                  <span className="block truncate text-sm font-semibold text-foreground">
+                    {t(action.titleKey)}
+                  </span>
+                  <span className="mt-0.5 block truncate text-xs text-muted-foreground">
+                    {t(action.descriptionKey)}
+                  </span>
+                </span>
+                <ArrowRight className="size-4 text-muted-foreground transition-transform group-hover:translate-x-1" />
+              </div>
+            </Link>
+          );
+        })}
       </div>
     </PageSection>
   );
 }
 
-function StaffMetricRailCell({
-  accent,
+function WorkQueue({
   description,
-  emphasis,
-  icon: Icon,
+  emptyIcon,
+  emptyTitle,
+  eyebrow,
+  items,
+  locale: _locale,
+  t,
   title,
-  value,
 }: {
-  accent: NonNullable<DashboardCardData["accent"]>;
   description: string;
-  emphasis?: "danger";
-  icon: typeof Users;
+  emptyIcon: LucideIcon;
+  emptyTitle: string;
+  eyebrow: string;
+  items: DashboardWorkItem[];
+  locale: string;
+  t: (key: string, values?: Record<string, string | number>) => string;
   title: string;
-  value: string | number;
 }) {
-  const accentClassName = {
-    blue:
-      "border-navy-200 bg-navy-100 text-navy-800 dark:border-navy-700/60 dark:bg-navy-900/80 dark:text-white",
-    green:
-      "border-success-200 bg-success-50 text-success-700 dark:border-success-700/60 dark:bg-success-950/50 dark:text-success-200",
-    gold:
-      "border-gold-200 bg-gold-50 text-gold-800 dark:border-gold-500/40 dark:bg-gold-950/40 dark:text-gold-200",
-    red: "border-danger-200 bg-danger-50 text-danger-700 dark:border-danger-700/50 dark:bg-danger-950/40 dark:text-danger-200",
-  }[accent];
-  const valueClassName = {
-    blue: "text-navy-950 dark:text-white",
-    green: "text-success-700 dark:text-success-300",
-    gold: "text-gold-700 dark:text-gold-200",
-    red: "text-danger-600 dark:text-danger-300",
-  }[accent];
-
   return (
-    <div
-      className={cn(
-        "relative min-h-[146px] bg-white/62 px-6 py-6 dark:bg-navy-950/42",
-        emphasis === "danger" &&
-          "bg-danger-500/[0.055] dark:bg-danger-500/[0.1]",
-      )}
+    <PageSection
+      eyebrow={eyebrow}
+      title={title}
+      description={description}
+      tone="secondary"
+      layout="list"
     >
-      <div className="flex items-start justify-between gap-4">
-        <div className="min-w-0">
-          <p className="text-sm font-semibold text-muted-foreground">
-            {title}
-          </p>
-          <p
+      {items.length > 0 ? (
+        <div className="grid gap-3">
+          {items.map((item) => (
+            <WorkQueueItem key={item.id} item={item} />
+          ))}
+        </div>
+      ) : (
+        <EmptyState
+          icon={emptyIcon}
+          title={emptyTitle}
+          description={t("noPendingCasesDescription")}
+        />
+      )}
+    </PageSection>
+  );
+}
+
+function WorkQueueItem({
+  item,
+}: {
+  item: DashboardWorkItem;
+}) {
+  return (
+    <Link href={item.href} className="group">
+      <Card className="transition-all hover:-translate-y-0.5 hover:border-gold-300/45 hover:shadow-card-hover">
+        <CardContent className="flex items-center gap-4 p-5">
+          <div
             className={cn(
-              "mt-8 text-[2.7rem] font-black leading-none tracking-[-0.045em]",
-              valueClassName,
+              "flex size-11 shrink-0 items-center justify-center rounded-[12px]",
+              item.tone === "danger"
+                ? "bg-danger-500/10 text-danger-600 dark:text-danger-400"
+                : item.tone === "warning"
+                  ? "bg-gold-500/10 text-gold-700 dark:text-gold-300"
+                  : "bg-navy-500/10 text-navy-700 dark:text-navy-200",
             )}
           >
-            {value}
-          </p>
-          <p className="mt-2 max-w-[18ch] text-sm leading-relaxed text-muted-foreground">
-            {description}
-          </p>
-        </div>
-
-        <span
-          className={cn(
-            "flex size-12 flex-shrink-0 items-center justify-center rounded-full border shadow-sm",
-            accentClassName,
-          )}
-        >
-          <Icon className="size-5" />
-        </span>
-      </div>
-    </div>
+            {item.tone === "danger" ? (
+              <AlertTriangle className="size-5" />
+            ) : item.tone === "warning" ? (
+              <Activity className="size-5" />
+            ) : (
+              <ClipboardList className="size-5" />
+            )}
+          </div>
+          <div className="min-w-0 flex-1">
+            <div className="flex flex-wrap items-center gap-2">
+              <CardTitle className="truncate text-base">{item.title}</CardTitle>
+              <ToneBadge tone={item.tone} />
+            </div>
+            {item.meta ? (
+              <CardDescription className="mt-1">{item.meta}</CardDescription>
+            ) : null}
+          </div>
+          <div className="flex shrink-0 items-center gap-3 text-sm text-muted-foreground">
+            <ArrowRight className="size-4 transition-transform group-hover:translate-x-1" />
+          </div>
+        </CardContent>
+      </Card>
+    </Link>
   );
 }
 
-function DashboardSeriesEmptyState({
-  year,
+function ToneBadge({ tone }: { tone: DashboardWorkItem["tone"] }) {
+  if (tone === "danger") return <Badge variant="danger">SOS</Badge>;
+  if (tone === "warning") return <Badge variant="warning">Fila</Badge>;
+  if (tone === "success") return <Badge variant="success">OK</Badge>;
+  if (tone === "info") return <Badge variant="info">Info</Badge>;
+  return <Badge variant="default">Estado</Badge>;
+}
+
+function DataQuality({
+  cards,
   t,
 }: {
-  year: string;
-  t: (key: string) => string;
+  cards: DashboardCardData[];
+  t: (key: string, values?: Record<string, string | number>) => string;
 }) {
   return (
-    <div className="rounded-[1.25rem] border border-dashed border-border/70 bg-background/68 p-5">
-      <div className="max-w-sm">
-        <p className="text-sm font-semibold text-foreground">
-          {t("annualSeriesPendingTitle")}
-        </p>
-        <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-          {t("annualSeriesPendingDescription")}
-        </p>
-      </div>
+    <PageSection
+      eyebrow={t("dataQualityTitle")}
+      title={t("dataQualityTitle")}
+      description={t("dataQualityDescription")}
+      tone="secondary"
+      layout="default"
+    >
+      <div className="grid gap-3 sm:grid-cols-2">
+        {cards.map((card) => {
+          const Icon = ICONS[card.icon];
 
-      <div className="mt-5 inline-flex items-center rounded-full border border-border/70 bg-background/90 px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-        {year}
+          return (
+            <Card key={card.id}>
+              <CardContent className="p-5">
+                <div className="flex items-start justify-between gap-4">
+                  <span className="flex size-10 items-center justify-center rounded-[8px] border border-border bg-background/70 text-gold-700 dark:text-gold-300">
+                    <Icon className="size-5" />
+                  </span>
+                  <span className="text-2xl font-bold tabular-nums text-foreground">
+                    {card.value}
+                  </span>
+                </div>
+                <CardTitle className="mt-5 text-base">{t(card.titleKey)}</CardTitle>
+                <CardDescription className="mt-1">
+                  {t(card.descriptionKey)}
+                </CardDescription>
+              </CardContent>
+            </Card>
+          );
+        })}
       </div>
-    </div>
+    </PageSection>
   );
 }
 
-function StaffSpotlightMetric({
-  label,
-  tone,
-  value,
+function ZafPanel({
+  compact = false,
+  locale,
+  t,
+  zafByYear,
 }: {
-  label: string;
-  tone: "success" | "danger";
-  value: string | number;
+  compact?: boolean;
+  locale: string;
+  t: (key: string, values?: Record<string, string | number>) => string;
+  zafByYear: ZafYearStat[];
 }) {
+  const latestYear = getLatestYear(zafByYear);
+
   return (
-    <div
-      className={cn(
-        "rounded-[1.1rem] border px-3.5 py-3",
-        tone === "success"
-          ? "border-success-400/18 bg-success-500/10"
-          : "border-danger-400/18 bg-danger-500/10",
+    <PageSection
+      eyebrow={t("zafTitle")}
+      title={t("zafTitle")}
+      description={t("zafDescription")}
+      tone="secondary"
+      layout="default"
+    >
+      {latestYear ? (
+        <div className={cn("grid gap-4", !compact && "lg:grid-cols-[0.95fr_1.05fr]")}>
+          <Card>
+            <CardHeader>
+              <CardDescription className="text-xs uppercase tracking-[0.16em]">
+                {t("latestAcademicYear")}
+              </CardDescription>
+              <CardTitle className="text-2xl">{latestYear.year}</CardTitle>
+            </CardHeader>
+            <CardContent className="grid gap-5">
+              <div className="grid gap-3 sm:grid-cols-2">
+                <MiniStat
+                  icon={Users}
+                  label={t("studentsWithBiometrics")}
+                  value={`${formatNumberValue(latestYear.withBio, locale)} / ${formatNumberValue(latestYear.total, locale)}`}
+                />
+                <MiniStat
+                  icon={Gauge}
+                  label={t("coverageLabel")}
+                  value={`${getCoveragePct(latestYear)}%`}
+                />
+              </div>
+              <ZafStackedBar
+                healthy={latestYear.zsaf}
+                healthyLabel={t("zsaf")}
+                improvement={latestYear.zmf}
+                improvementLabel={t("zmf")}
+              />
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="grid gap-4 p-5">
+              {zafByYear
+                .filter((year) => year.withBio > 0)
+                .slice(0, 3)
+                .map((year) => (
+                  <YearRow key={year.year} locale={locale} t={t} year={year} />
+                ))}
+            </CardContent>
+          </Card>
+        </div>
+      ) : (
+        <EmptyState
+          icon={Activity}
+          title={t("noBioData")}
+          description={t("annualSeriesPendingDescription")}
+        />
       )}
-      >
-      <p className="text-xs font-medium text-muted-foreground dark:text-white/62">
-        {label}
-      </p>
-      <p className="mt-1 text-lg font-bold text-foreground dark:text-white">
-        {value}
-      </p>
-    </div>
+    </PageSection>
   );
 }
 
-function DashboardMetaPill({ label, value }: { label: string; value: string }) {
+function StudentFamilyCard({
+  locale,
+  student,
+  t,
+}: {
+  locale: string;
+  student: Extract<DashboardSummary, { variant: "parent" }>["linkedStudents"][number];
+  t: (key: string, values?: Record<string, string | number>) => string;
+}) {
   return (
-    <div className="rounded-xl border border-border bg-surface-utility px-4 py-3">
-      <p className="text-tiny font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-        {label}
-      </p>
-      <p className="mt-1.5 text-base font-semibold text-foreground">{value}</p>
-    </div>
+    <Card>
+      <CardContent className="p-5">
+        <div className="flex items-center gap-4">
+          <div className="flex size-11 shrink-0 items-center justify-center rounded-[12px] bg-navy-500/10 text-navy-700 dark:text-navy-200">
+            <Users className="size-5" />
+          </div>
+          <div className="min-w-0 flex-1">
+            <CardTitle className="truncate text-base">{student.name}</CardTitle>
+            <CardDescription className="mt-1">
+              {[student.className, student.schoolYear].filter(Boolean).join(" - ") ||
+                t("studentRecord")}
+            </CardDescription>
+          </div>
+          <Badge variant="info" className="hidden sm:inline-flex">{t("linkedStudents")}</Badge>
+        </div>
+        <div className="mt-5 grid gap-3 sm:grid-cols-3">
+          <MiniStat
+            icon={Ruler}
+            label={t("lastBiometric")}
+            value={formatCompactDate(student.lastBiometricAt, locale)}
+          />
+          <MiniStat
+            icon={ClipboardList}
+            label={t("lastQuestionnaire")}
+            value={formatCompactDate(student.lastQuestionnaireAt, locale)}
+          />
+          <MiniStat
+            icon={FileText}
+            label={t("lastReport")}
+            value={formatCompactDate(student.lastReportAt, locale)}
+          />
+        </div>
+      </CardContent>
+    </Card>
   );
 }
 
-function DashboardCoverageBar({
+function RecentReports({
+  locale,
+  reports,
+  t,
+}: {
+  locale: string;
+  reports: Extract<DashboardSummary, { variant: "parent" }>["recentReports"];
+  t: (key: string, values?: Record<string, string | number>) => string;
+}) {
+  return (
+    <PageSection
+      eyebrow={t("recentReportsTitle")}
+      title={t("recentReportsTitle")}
+      description={t("recentReportsDescription")}
+      tone="secondary"
+      layout="list"
+    >
+      {reports.length > 0 ? (
+        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+          {reports.map((report) => (
+            <Card key={report.id}>
+              <CardContent className="flex items-center gap-4 p-5">
+                <div className="flex size-11 shrink-0 items-center justify-center rounded-[12px] bg-navy-500/10 text-navy-700 dark:text-navy-200">
+                  <FileText className="size-5" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <CardTitle className="truncate text-base">{report.title}</CardTitle>
+                  <CardDescription className="mt-1 truncate">
+                    {report.studentName} · {formatCompactDate(report.createdAt, locale)}
+                  </CardDescription>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      ) : (
+        <EmptyState
+          icon={FileText}
+          title={t("noReportsDashboardTitle")}
+          description={t("noReportsDashboardDescription")}
+        />
+      )}
+    </PageSection>
+  );
+}
+
+function MiniStat({
+  icon: Icon,
   label,
   value,
 }: {
+  icon?: LucideIcon;
   label: string;
-  value: number;
+  value: string;
 }) {
   return (
-    <div className="rounded-xl border border-border bg-surface-utility px-3.5 py-3">
-      <div className="flex items-center justify-between gap-3">
-        <p className="text-tiny font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+    <div className="flex items-center gap-3 rounded-[12px] border border-border/70 bg-background/60 p-3">
+      {Icon && (
+        <span className="flex size-8 shrink-0 items-center justify-center rounded-[6px] bg-navy-500/10 text-navy-700 dark:text-navy-300">
+          <Icon className="size-4" />
+        </span>
+      )}
+      <div className="min-w-0 flex-1">
+        <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
           {label}
         </p>
-        <span className="text-sm font-semibold text-foreground">{value}%</span>
+        <p className="mt-1 text-sm font-semibold text-foreground">{value}</p>
       </div>
-      <div className="mt-3 h-2.5 overflow-hidden rounded-full bg-muted">
+    </div>
+  );
+}
+
+function YearRow({
+  locale,
+  t,
+  year,
+}: {
+  locale: string;
+  t: (key: string, values?: Record<string, string | number>) => string;
+  year: ZafYearStat;
+}) {
+  const healthyPct = getHealthyPct(year);
+
+  return (
+    <div>
+      <div className="flex items-center justify-between gap-4">
+        <div>
+          <p className="text-sm font-semibold text-foreground">{year.year}</p>
+          <p className="text-xs text-muted-foreground">
+            {formatNumberValue(year.withBio, locale)} {t("studentsUnit")}
+          </p>
+        </div>
+        <p className="text-sm font-semibold text-success-700 dark:text-success-300">
+          {healthyPct}%
+        </p>
+      </div>
+      <div className="mt-3 h-2 overflow-hidden rounded-full bg-muted/50">
         <div
-          className="h-full rounded-full bg-navy-900 transition-all duration-700 dark:bg-gold-300"
-          style={{ width: `${value}%` }}
+          className="h-full rounded-full bg-success-600 dark:bg-success-400"
+          style={{ width: `${healthyPct}%` }}
         />
       </div>
     </div>
   );
 }
 
-function DashboardPanel({
-  children,
-  className,
-  href,
+function ZafStackedBar({
+  healthy,
+  healthyLabel,
+  improvement,
+  improvementLabel,
 }: {
-  children: React.ReactNode;
-  className?: string;
-  href?: string;
+  healthy: number;
+  healthyLabel: string;
+  improvement: number;
+  improvementLabel: string;
 }) {
-  const panelClassName = cn(
-    "relative overflow-hidden rounded-[24px] border border-border bg-surface-secondary p-4 shadow-sm transition-all duration-300",
-    href &&
-      "group hover:-translate-y-0.5 hover:border-gold-300/35 hover:shadow-card-hover",
-    className,
-  );
-
-  if (href) {
-    return (
-      <Link href={href} className={panelClassName}>
-        <div className="absolute inset-x-6 top-0 h-px bg-gradient-to-r from-transparent via-gold-400/40 to-transparent" />
-        {children}
-      </Link>
-    );
-  }
+  const total = healthy + improvement;
+  const healthyPct = total > 0 ? Math.round((healthy / total) * 100) : 0;
 
   return (
-    <div className={panelClassName}>
-      <div className="absolute inset-x-6 top-0 h-px bg-gradient-to-r from-transparent via-gold-400/40 to-transparent" />
-      {children}
+    <div>
+      <div className="flex h-3 overflow-hidden rounded-full bg-muted/50">
+        <div
+          className="bg-success-600 dark:bg-success-400"
+          style={{ width: `${healthyPct}%` }}
+        />
+        <div
+          className="bg-danger-500/90 dark:bg-danger-400/90"
+          style={{ width: `${Math.max(0, 100 - healthyPct)}%` }}
+        />
+      </div>
+      <div className="mt-3 grid gap-2 text-xs text-muted-foreground sm:grid-cols-2">
+        <span className="inline-flex items-center gap-2 font-medium">
+          <span className="size-2 rounded-full bg-success-500" />
+          {healthyLabel} {healthy}
+        </span>
+        <span className="inline-flex items-center gap-2 font-medium">
+          <span className="size-2 rounded-full bg-danger-500" />
+          {improvementLabel} {improvement}
+        </span>
+      </div>
     </div>
   );
 }
-
-// DashboardLegendItem removed – unused

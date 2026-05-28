@@ -40,7 +40,7 @@ export function ClassPicker({
         <PopoverTrigger asChild>
           <button
             type="button"
-            className="inline-flex min-h-[46px] w-full items-center justify-between rounded-[24px] border border-border/70 bg-card px-4 py-2 shadow-sm outline-none transition-all duration-300 hover:border-navy-300/40 hover:bg-muted/50 hover:text-foreground focus-visible:ring-1 focus-visible:ring-ring"
+            className="inline-flex min-h-[46px] w-full items-center justify-between rounded-[12px] border border-border/70 bg-card px-4 py-2 shadow-sm outline-none transition-all duration-300 hover:border-navy-300/40 hover:bg-muted/50 hover:text-foreground focus-visible:ring-1 focus-visible:ring-ring"
           >
             <div className="flex min-w-0 items-center gap-2 text-sm font-medium">
               <School className="h-4 w-4 text-muted-foreground mr-1" />
@@ -63,7 +63,7 @@ export function ClassPicker({
           </button>
         </PopoverTrigger>
         <PopoverContent
-          className="w-[var(--radix-popover-trigger-width)] min-w-[280px] max-h-[320px] rounded-[24px] p-0"
+          className="w-[var(--radix-popover-trigger-width)] min-w-[280px] max-h-[320px] rounded-[12px] p-0"
           align="start"
           side="bottom"
           sideOffset={8}
@@ -87,7 +87,7 @@ export function ClassPicker({
                     onChange(schoolClass.id);
                     setOpen(false);
                   }}
-                  className={`flex items-center gap-3 w-full rounded-xl px-3 py-2.5 text-sm transition-all text-left ${
+                  className={`flex items-center gap-3 w-full rounded-[8px] px-3 py-2.5 text-sm transition-all text-left ${
                     value === schoolClass.id
                       ? "bg-navy-900 text-white shadow-card"
                       : "hover:bg-muted/60 text-foreground"

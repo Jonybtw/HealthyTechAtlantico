@@ -1,40 +1,76 @@
-import { BrandLogo } from "@/components/brand-logo";
+"use client";
+
+import { useTranslations } from "next-intl";
 
 export default function Loading() {
+  const t = useTranslations("common");
+  const label = t("loading");
+
   return (
     <div
       role="status"
-      aria-label="A carregar"
+      aria-label={label}
       className="fixed inset-0 z-[25] overflow-hidden animate-fade-in"
     >
-      <div
-        aria-hidden="true"
-        className="absolute inset-y-0 left-0 hidden w-72 overflow-hidden rounded-r-[2.75rem] bg-navy-950 lg:block"
-      >
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(216,173,52,0.16),transparent_40%),linear-gradient(180deg,rgba(20,48,76,0.24),transparent)]" />
-      </div>
+      {/* Backdrop */}
+      <div className="absolute inset-0 bg-background/88 backdrop-blur-[2px] dark:bg-navy-950/88" />
+      {/* Radial gold glow */}
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_50%_35%_at_50%_50%,rgba(217,166,28,0.10),transparent)]" />
 
-      <div className="absolute inset-0 bg-slate-500/42 backdrop-blur-[1px]" />
-      <div className="absolute inset-y-0 left-0 hidden w-72 bg-transparent lg:block" />
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_60%_40%_at_65%_50%,rgba(217,166,28,0.14),transparent)]" />
-
-      <div className="relative z-10 flex h-full w-full items-center justify-center lg:pl-72">
-        <div className="flex flex-col items-center gap-4 animate-fade-in-up">
+      <div className="relative z-10 flex h-full w-full items-center justify-center">
+        <div className="flex animate-fade-in-up flex-col items-center gap-5">
+          {/* Spinning arc ring */}
           <div className="relative flex items-center justify-center">
-            <div className="absolute size-24 rounded-full bg-gold-500/15 blur-3xl animate-pulse" />
-            <BrandLogo
-          alt="HealthyTech Atlântico"
-              className="relative z-10 h-[96px] w-[94px]"
-            imageClassName="brightness-0 invert drop-shadow-[0_0_20px_rgba(255,255,255,0.12)]"
-            priority
-            sizes="96px"
-          />
-        </div>
+            <div className="absolute size-14 rounded-full bg-gold-400/10 blur-2xl" />
+            <svg
+              width="56"
+              height="56"
+              viewBox="0 0 56 56"
+              fill="none"
+              aria-hidden="true"
+              className="animate-spin"
+              style={{
+                animationDuration: "1.1s",
+                animationTimingFunction: "linear",
+              }}
+            >
+              {/* Track ring */}
+              <circle
+                cx="28"
+                cy="28"
+                r="22"
+                strokeWidth="3"
+                className="stroke-navy-200 dark:stroke-white/15"
+              />
+              {/* Gold arc */}
+              <circle
+                cx="28"
+                cy="28"
+                r="22"
+                strokeWidth="3"
+                strokeLinecap="round"
+                strokeDasharray="90 48"
+                className="stroke-gold-500 dark:stroke-gold-400"
+              />
+            </svg>
+          </div>
 
-        <div className="h-1 w-40 overflow-hidden rounded-full bg-navy-800">
-          <div className="skeleton h-full w-1/2 rounded-full bg-gradient-to-r from-gold-400 to-gold-500" />
+          {/* Staggered pulse dots */}
+          <div className="flex items-center gap-1.5">
+            {([0, 0.18, 0.36] as const).map((delay, i) => (
+              <div
+                key={i}
+                className="size-1.5 animate-pulse rounded-full bg-gold-500 dark:bg-gold-400"
+                style={{ animationDelay: `${delay}s` }}
+              />
+            ))}
+          </div>
+
+          {/* Label */}
+          <p className="text-[11px] font-medium tracking-wide text-muted-foreground/60">
+            {label}
+          </p>
         </div>
-      </div>
       </div>
     </div>
   );

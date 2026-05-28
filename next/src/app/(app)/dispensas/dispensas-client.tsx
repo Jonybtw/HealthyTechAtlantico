@@ -5,14 +5,16 @@ import { useLocale, useTranslations } from "next-intl";
 import { toast } from "sonner";
 import {
   Calendar,
+  CheckCircle2,
   FileText,
   Plus,
   RefreshCw,
   ShieldOff,
+  Timer,
   Trash2,
+  Users,
 } from "lucide-react";
 import { PageScaffold } from "@/components/ui/page-scaffold";
-import { PageSection } from "@/components/ui/page-section";
 import { StudentPicker } from "@/components/ui/student-picker";
 import { StudentIdentity } from "@/components/ui/student-identity";
 import { Button } from "@/components/ui/button";
@@ -29,6 +31,8 @@ import {
   useDispensas,
   useStudents,
 } from "@/hooks/use-queries";
+import { useReducedEffects } from "@/hooks/use-reduced-effects";
+import { cn } from "@/lib/utils";
 
 type StudentOption = {
   id: string;
@@ -49,6 +53,32 @@ const INITIAL_FORM = {
   startDate: "",
   endDate: "",
 };
+
+function sectionAnimation(index: number, re: boolean) {
+  if (re) return {};
+  return { animationDelay: `${index * 70}ms` };
+}
+
+function BioPanel({ children, className, index, reducedEffects }: { children: React.ReactNode; className?: string; index: number; reducedEffects: boolean }) {
+  return (
+    <section style={sectionAnimation(index, reducedEffects)} className={cn("relative overflow-hidden rounded-[12px] border border-border bg-card/88 shadow-[0_4px_12px_rgba(9,21,35,0.08)] backdrop-blur-sm dark:border-white/10 dark:bg-navy-950/68 dark:shadow-[0_4px_18px_rgba(0,0,0,0.22)]", !reducedEffects && "animate-fade-in-up opacity-0", className)}>
+      <div className="relative">{children}</div>
+    </section>
+  );
+}
+
+function KpiCard({ index, re, icon, iconClass, label, value, sub }: { index: number; re: boolean; icon: React.ReactNode; iconClass: string; label: string; value: string | number; sub: string }) {
+  return (
+    <BioPanel index={index} reducedEffects={re} className="p-4">
+      <div className="flex items-start justify-between gap-2">
+        <p className="text-sm font-semibold text-muted-foreground">{label}</p>
+        <span className={cn("flex size-9 shrink-0 items-center justify-center rounded-[12px]", iconClass)}>{icon}</span>
+      </div>
+      <p className="mt-2 text-4xl font-extrabold tracking-tight text-foreground">{value}</p>
+      <p className="mt-1 truncate text-xs font-semibold text-muted-foreground">{sub}</p>
+    </BioPanel>
+  );
+}
 
 function isExemptionActive(endDate: string) {
   const today = new Date();
@@ -228,350 +258,141 @@ export default function DispensasClient() {
     }
   };
 
+  const reducedEffects = useReducedEffects();
+
   if (!canManageDispensas) {
     return (
-      <PageScaffold
-        headerProps={{
-          eyebrow: t("eyebrow"),
-          title: t("title"),
-          description: t("description"),
-        }}
-      >
-        <EmptyState
-          icon={ShieldOff}
-          title={t("accessTitle")}
-          description={t("accessDescription")}
-        />
+      <PageScaffold headerProps={{ title: t("title"), description: t("description") }}>
+        <EmptyState icon={ShieldOff} title={t("accessTitle")} description={t("accessDescription")} />
       </PageScaffold>
     );
   }
 
   return (
     <PageScaffold
-      className="gap-4"
-      contentClassName="gap-4"
-      headerProps={{
-        eyebrow: t("eyebrow"),
-        title: t("title"),
-        description: selectedStudent ? selectedSummary : t("description"),
-        meta: selectedStudent?.className ?? undefined,
-      }}
+      className="gap-5"
+      headerProps={{ title: t("title"), description: t("description") }}
       headerActions={
-        <div className="flex flex-wrap items-center gap-2">
-          {selectedStudent ? (
-            <>
-              <Badge variant="success" size="md">
-                {stats.active} {t("activeCountLabel")}
-              </Badge>
-              <Badge variant="default" size="md">
-                {stats.expired} {t("expiredCountLabel")}
-              </Badge>
-            </>
-          ) : null}
-
-          <Button
-            variant="primary"
-            size="sm"
-            icon={showForm ? undefined : <Plus className="size-4" />}
-            disabled={!studentId && !showForm}
-            onClick={() => {
-              if (!studentId && !showForm) {
-                return;
-              }
-              setShowForm((current) => !current);
-            }}
-          >
-            {showForm ? t("cancelBtn") : t("newBtn")}
-          </Button>
-        </div>
+        <Button variant="primary" size="sm" icon={showForm ? undefined : <Plus className="size-4" />} disabled={!studentId && !showForm} onClick={() => { if (!studentId && !showForm) return; setShowForm((c) => !c); }}>
+          {showForm ? t("cancelBtn") : t("newBtn")}
+        </Button>
       }
     >
-      <PageSection tone="utility" layout="default" className="overflow-visible">
-        <div className="max-w-[420px] space-y-2">
-          <p className="text-tiny font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-            {t("studentPickerLabel")}
-          </p>
-          <StudentPicker
-            students={students}
-            value={studentId}
-            onChange={handleStudentChange}
-            loading={loadingStudents}
-          />
-        </div>
-      </PageSection>
+      {/* KPI Row */}
+      <div className="grid grid-cols-3 gap-4">
+        <KpiCard index={0} re={reducedEffects} icon={<FileText className="size-[18px]" />} iconClass="bg-navy-100 text-navy-700 dark:bg-white/8 dark:text-navy-100" label={t("kpiTotalLabel")} value={stats.total} sub={t("kpiTotalSub")} />
+        <KpiCard index={1} re={reducedEffects} icon={<CheckCircle2 className="size-[18px]" />} iconClass="bg-emerald-100 text-emerald-700 dark:bg-emerald-300/12 dark:text-emerald-200" label={t("activeCountLabel")} value={stats.active} sub={t("kpiActiveSub")} />
+        <KpiCard index={2} re={reducedEffects} icon={<Timer className="size-[18px]" />} iconClass="bg-muted text-muted-foreground" label={t("expiredCountLabel")} value={stats.expired} sub={t("kpiExpiredSub")} />
+      </div>
 
-      {studentsError ? (
-        <PageSection tone="secondary">
-          <EmptyState
-            icon={ShieldOff}
-            title={t("studentsLoadErrorTitle")}
-            description={t("studentsLoadErrorDescription")}
-            action={
-              <Button
-                size="sm"
-                variant="secondary"
-                icon={<RefreshCw className="size-4" />}
-                onClick={() => void refetchStudents()}
-              >
-                {common("refresh")}
-              </Button>
-            }
-          />
-        </PageSection>
-      ) : !loadingStudents && students.length === 0 ? (
-        <PageSection tone="secondary">
-          <EmptyState
-            icon={ShieldOff}
-            title={t("studentsEmptyTitle")}
-            description={t("studentsEmptyDescription")}
-          />
-        </PageSection>
-      ) : studentId && selectedStudent ? (
-        <div className="grid gap-4 xl:grid-cols-[340px_minmax(0,1fr)] xl:items-start">
-          <PageSection tone="primary" layout="form">
-            <div className="rounded-3xl border border-border/70 bg-background/72 p-5">
-              <p className="text-tiny font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-                {t("studentContextTitle")}
-              </p>
-              <StudentIdentity
-                student={selectedStudent}
-                subtitle={selectedStudent.className ?? t("studentPickerLabel")}
-                className="mt-3"
-                nameClassName="text-lg"
-              />
-              <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
-                {selectedSummary}
-              </p>
-              <div className="mt-4 flex flex-wrap gap-2">
-                <Badge variant="success" size="md">
-                  {stats.active} {t("activeCountLabel")}
-                </Badge>
-                <Badge variant="default" size="md">
-                  {stats.expired} {t("expiredCountLabel")}
-                </Badge>
-              </div>
+      {/* Main Grid */}
+      <div className="grid gap-5 xl:grid-cols-[340px_minmax(0,1fr)] xl:items-start">
+        {/* Left: picker + form */}
+        <BioPanel index={3} reducedEffects={reducedEffects} className="p-5">
+          <p className="text-tiny font-semibold uppercase tracking-[0.16em] text-muted-foreground">{t("studentPickerLabel")}</p>
+          <div className="mt-2">
+            <StudentPicker students={students} value={studentId} onChange={handleStudentChange} loading={loadingStudents} />
+          </div>
+
+          {studentsError && (
+            <div className="mt-4 rounded-[12px] border border-border/70 bg-background/65 p-4">
+              <EmptyState icon={ShieldOff} title={t("studentsLoadErrorTitle")} description={t("studentsLoadErrorDescription")} action={<Button size="sm" variant="secondary" icon={<RefreshCw className="size-4" />} onClick={() => void refetchStudents()}>{common("refresh")}</Button>} />
             </div>
+          )}
 
-            {showForm ? (
-              <div className="rounded-3xl border border-border/70 bg-background/72 p-5 sm:p-6">
-                <div className="mb-5 space-y-1">
-                  <p className="text-tiny font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-                    {t("formTitle")}
-                  </p>
-                  <p className="text-sm text-muted-foreground">
-                    {t("formDescription")}
-                  </p>
+          {selectedStudent && (
+            <>
+              <div className="mt-4 rounded-[12px] border border-border/70 bg-background/65 p-4">
+                <StudentIdentity student={selectedStudent} subtitle={selectedStudent.className ?? t("studentPickerLabel")} nameClassName="text-base" />
+                <p className="mt-2 text-xs leading-relaxed text-muted-foreground">{selectedSummary}</p>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  <Badge variant="success" size="sm">{stats.active} {t("activeCountLabel")}</Badge>
+                  <Badge variant="default" size="sm">{stats.expired} {t("expiredCountLabel")}</Badge>
                 </div>
-
-                <form onSubmit={handleCreate} className="grid gap-5">
-                  <Input
-                    label={t("reason")}
-                    placeholder={t("reasonPlaceholder")}
-                    value={form.reason}
-                    onChange={(event) =>
-                      setForm((current) => ({
-                        ...current,
-                        reason: event.target.value,
-                      }))
-                    }
-                    required
-                  />
-
-                  <div className="grid gap-5 sm:grid-cols-2">
-                    <DateField
-                      label={t("startDateShort")}
-                      value={form.startDate}
-                      onChange={(value) =>
-                        setForm((current) => ({ ...current, startDate: value }))
-                      }
-                      required
-                    />
-
-                    <DateField
-                      label={t("endDateShort")}
-                      value={form.endDate}
-                      onChange={(value) =>
-                        setForm((current) => ({ ...current, endDate: value }))
-                      }
-                      required
-                    />
-                  </div>
-
-                  <div className="flex justify-end">
-                    <Button
-                      type="submit"
-                      variant="primary"
-                      loading={createMutation.isPending}
-                    >
-                      {t("createBtn")}
-                    </Button>
-                  </div>
-                </form>
               </div>
-            ) : (
-              <div className="rounded-3xl border border-dashed border-border/70 bg-background/52 p-5">
-                <p className="text-tiny font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-                  {t("formTitle")}
-                </p>
-                <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-                  {t("formDescription")}
-                </p>
-                <Button
-                  className="mt-4"
-                  type="button"
-                  variant="primary"
-                  icon={<Plus className="size-4" />}
-                  onClick={() => setShowForm(true)}
-                >
-                  {t("createBtn")}
-                </Button>
-              </div>
-            )}
-          </PageSection>
 
-          <PageSection
-            tone="secondary"
-            layout="list"
-            title={t("historyTitle")}
-            description={selectedStudent.name}
-            actions={
-              <Button
-                size="sm"
-                variant="secondary"
-                icon={<RefreshCw className="size-4" />}
-                onClick={() => void refetchDispensas()}
-              >
-                {common("refresh")}
-              </Button>
-            }
-          >
-            {dispensasError ? (
-              <EmptyState
-                icon={ShieldOff}
-                title={t("historyLoadErrorTitle")}
-                description={t("historyLoadErrorDescription")}
-                action={
-                  <Button
-                    size="sm"
-                    variant="secondary"
-                    icon={<RefreshCw className="size-4" />}
-                    onClick={() => void refetchDispensas()}
-                  >
-                    {common("refresh")}
-                  </Button>
-                }
-              />
+              {showForm ? (
+                <div className="mt-4 rounded-[12px] border border-border/70 bg-background/65 p-4">
+                  <p className="text-tiny font-semibold uppercase tracking-[0.18em] text-muted-foreground">{t("formTitle")}</p>
+                  <form onSubmit={handleCreate} className="mt-3 grid gap-4">
+                    <Input label={t("reason")} placeholder={t("reasonPlaceholder")} value={form.reason} onChange={(e) => setForm((c) => ({ ...c, reason: e.target.value }))} required />
+                    <div className="grid gap-4 sm:grid-cols-2">
+                      <DateField label={t("startDateShort")} value={form.startDate} onChange={(v) => setForm((c) => ({ ...c, startDate: v }))} required />
+                      <DateField label={t("endDateShort")} value={form.endDate} onChange={(v) => setForm((c) => ({ ...c, endDate: v }))} required />
+                    </div>
+                    <Button type="submit" variant="primary" loading={createMutation.isPending}>{t("createBtn")}</Button>
+                  </form>
+                </div>
+              ) : (
+                <div className="mt-4 rounded-[12px] border border-dashed border-border/60 bg-background/40 px-4 py-6 text-center">
+                  <FileText className="mx-auto size-6 text-muted-foreground/40" />
+                  <p className="mt-2 text-sm text-muted-foreground">{t("formDescription")}</p>
+                  <Button className="mt-3" size="sm" variant="primary" icon={<Plus className="size-4" />} onClick={() => setShowForm(true)}>{t("createBtn")}</Button>
+                </div>
+              )}
+            </>
+          )}
+
+          {!loadingStudents && !studentsError && students.length === 0 && (
+            <div className="mt-4">
+              <EmptyState icon={Users} title={t("studentsEmptyTitle")} description={t("studentsEmptyDescription")} />
+            </div>
+          )}
+        </BioPanel>
+
+        {/* Right: history */}
+        <BioPanel index={4} reducedEffects={reducedEffects} className="p-5">
+          <div className="flex items-center justify-between gap-3">
+            <div>
+              <p className="text-tiny font-semibold uppercase tracking-[0.18em] text-muted-foreground">{t("historyPanelTitle")}</p>
+              <h3 className="mt-0.5 text-lg font-bold tracking-tight text-foreground">{t("historyTitle")}</h3>
+            </div>
+            <Button size="sm" variant="ghost" icon={<RefreshCw className="size-4" />} onClick={() => void refetchDispensas()}>{common("refresh")}</Button>
+          </div>
+
+          <div className="mt-4">
+            {!selectedStudent ? (
+              <div className="rounded-[12px] border border-dashed border-border/60 bg-background/40 px-4 py-8 text-center">
+                <Users className="mx-auto size-6 text-muted-foreground/40" />
+                <p className="mt-2.5 text-sm text-muted-foreground">{t("studentContextEmpty")}</p>
+              </div>
+            ) : dispensasError ? (
+              <EmptyState icon={ShieldOff} title={t("historyLoadErrorTitle")} description={t("historyLoadErrorDescription")} action={<Button size="sm" variant="secondary" icon={<RefreshCw className="size-4" />} onClick={() => void refetchDispensas()}>{common("refresh")}</Button>} />
             ) : loadingDispensas ? (
               <div className="grid gap-3">
-                {[1, 2, 3].map((item) => (
-                  <div
-                    key={item}
-                    className="rounded-[22px] border border-border/70 bg-background/58 p-5"
-                  >
-                    <Skeleton className="h-5 w-52" />
-                    <Skeleton className="mt-4 h-4 w-64" />
-                  </div>
-                ))}
+                {[1,2,3].map((i) => <div key={i} className="rounded-[12px] border border-border/70 bg-background/58 p-4"><Skeleton className="h-5 w-48" /><Skeleton className="mt-3 h-4 w-60" /></div>)}
               </div>
             ) : sortedDispensas.length === 0 ? (
-              <EmptyState
-                icon={FileText}
-                title={t("noExemptionsTitle")}
-                description={t("noExemptions")}
-                action={
-                  <Button
-                    size="sm"
-                    variant="primary"
-                    icon={<Plus className="size-4" />}
-                    onClick={() => setShowForm(true)}
-                  >
-                    {t("createBtn")}
-                  </Button>
-                }
-              />
+              <EmptyState icon={FileText} title={t("noExemptionsTitle")} description={t("noExemptions")} action={<Button size="sm" variant="primary" icon={<Plus className="size-4" />} onClick={() => setShowForm(true)}>{t("createBtn")}</Button>} />
             ) : (
-              <div className="space-y-3">
+              <div className="grid gap-3">
                 {sortedDispensas.map((exemption) => {
                   const active = isExemptionActive(exemption.endDate);
-
                   return (
-                    <div
-                      key={exemption.id}
-                      className="rounded-[22px] border border-border/70 bg-background/58 p-4 sm:p-5"
-                    >
-                      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-                        <div className="min-w-0 space-y-3">
+                    <div key={exemption.id} className="rounded-[12px] border border-border/70 bg-background/65 p-4">
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="min-w-0 flex-1">
                           <div className="flex flex-wrap items-center gap-2">
-                            <h3 className="text-base font-semibold tracking-[-0.02em] text-foreground">
-                              {exemption.reason}
-                            </h3>
-                            <Badge
-                              variant={active ? "success" : "default"}
-                              size="sm"
-                            >
-                              {active ? t("activeBadge") : t("expiredBadge")}
-                            </Badge>
+                            <p className="text-sm font-semibold text-foreground">{exemption.reason}</p>
+                            <Badge variant={active ? "success" : "default"} size="sm">{active ? t("activeBadge") : t("expiredBadge")}</Badge>
                           </div>
-
-                          <div className="flex flex-wrap gap-2 text-sm text-muted-foreground">
-                            <div className="inline-flex items-center gap-2 rounded-full border border-border/60 bg-background/70 px-3 py-1.5">
-                              <Calendar className="size-4" />
-                              <span>
-                                {formatDate(exemption.startDate)} -{" "}
-                                {formatDate(exemption.endDate)}
-                              </span>
-                            </div>
-                            <div className="inline-flex items-center gap-2 rounded-full border border-border/60 bg-background/70 px-3 py-1.5">
-                              <FileText className="size-4" />
-                              <span>
-                                {t("createdAtLabel")} {formatDate(exemption.createdAt)}
-                              </span>
-                            </div>
+                          <div className="mt-2 flex flex-wrap gap-2">
+                            <span className="inline-flex items-center gap-1.5 text-xs text-muted-foreground"><Calendar className="size-3.5" />{formatDate(exemption.startDate)} – {formatDate(exemption.endDate)}</span>
+                            <span className="inline-flex items-center gap-1.5 text-xs text-muted-foreground"><FileText className="size-3.5" />{t("createdAtLabel")} {formatDate(exemption.createdAt)}</span>
                           </div>
                         </div>
-
-                        <Button
-                          type="button"
-                          size="icon"
-                          variant="ghost"
-                          onClick={() => setDeleteId(exemption.id)}
-                          title={t("deleteBtn")}
-                          className="text-muted-foreground hover:border-danger-500/20 hover:bg-danger-500/10 hover:text-danger-500"
-                        >
-                          <Trash2 className="size-4" />
-                        </Button>
+                        <Button type="button" size="icon" variant="ghost" onClick={() => setDeleteId(exemption.id)} title={t("deleteBtn")} className="shrink-0 text-muted-foreground hover:border-danger-500/20 hover:bg-danger-500/10 hover:text-danger-500"><Trash2 className="size-4" /></Button>
                       </div>
                     </div>
                   );
                 })}
               </div>
             )}
-          </PageSection>
-        </div>
-      ) : (
-        <PageSection tone="secondary" layout="default">
-          <div className="rounded-3xl border border-dashed border-border/70 bg-background/52 p-5 sm:p-6">
-            <p className="text-tiny font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-              {t("workspaceTitle")}
-            </p>
-            <p className="mt-3 text-lg font-semibold tracking-[-0.03em] text-foreground">
-              {t("studentContextEmpty")}
-            </p>
-            <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted-foreground">
-              {t("formDescription")}
-            </p>
           </div>
-        </PageSection>
-      )}
+        </BioPanel>
+      </div>
 
-      <ConfirmModal
-        open={!!deleteId}
-        title={t("deleteTitle")}
-        message={t("deleteDesc")}
-        variant="danger"
-        onConfirm={handleDelete}
-        onCancel={() => setDeleteId(null)}
-      />
+      <ConfirmModal open={!!deleteId} title={t("deleteTitle")} message={t("deleteDesc")} variant="danger" onConfirm={handleDelete} onCancel={() => setDeleteId(null)} />
     </PageScaffold>
   );
 }

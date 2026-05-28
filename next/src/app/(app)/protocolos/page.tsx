@@ -162,9 +162,9 @@ export default async function ProtocolosPage() {
       {/* ── Sticky Quick Navigation ────────────────────────────────────────── */}
       <ProtocolosNav />
 
-      <div className="flex flex-col gap-8 lg:gap-14">
+      <div className="flex flex-col gap-6">
         {/* ── Reference Tables ─────────────────────────────────────────────── */}
-        <section id="body-eval" className="scroll-mt-32">
+        <section id="body-eval" className="scroll-mt-32 animate-fade-in-up overflow-hidden rounded-[16px] border border-border bg-card/88 p-5 shadow-[0_4px_12px_rgba(9,21,35,0.08)] backdrop-blur-sm dark:border-white/10 dark:bg-navy-950/68 sm:p-6">
           <div className="mb-5 flex items-center gap-3">
             <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-navy-100 dark:bg-navy-900/40">
               <Scale className="h-4 w-4 text-navy-600 dark:text-navy-300" />
@@ -182,7 +182,7 @@ export default async function ProtocolosPage() {
           <div className="grid gap-6 lg:grid-cols-2">
             {/* ── BMI Table ─────────────────────────────────────────────── */}
             <div id="bmi" className="scroll-mt-40 animate-fade-in-up">
-              <div className="group relative overflow-hidden rounded-[24px] border border-navy-200/60 bg-gradient-to-br from-navy-50/80 via-white/60 to-navy-50/40 shadow-[0_8px_32px_-16px_rgb(9_21_35_/_0.15)] backdrop-blur-sm transition-all duration-300 hover:shadow-[0_16px_40px_-20px_rgb(9_21_35_/_0.22)] dark:border-navy-800/40 dark:from-navy-950/60 dark:via-navy-950/40 dark:to-navy-900/30">
+              <div className="group relative overflow-hidden rounded-[16px] border border-navy-200/60 bg-gradient-to-br from-navy-50/80 via-white/60 to-navy-50/40 shadow-[0_8px_32px_-16px_rgb(9_21_35_/_0.15)] backdrop-blur-sm transition-all duration-300 hover:shadow-[0_8px_24px_rgba(9,21,35,0.12)] dark:border-navy-800/40 dark:from-navy-950/60 dark:via-navy-950/40 dark:to-navy-900/30">
                 {/* Top accent stripe */}
                 <div className="h-1 w-full bg-gradient-to-r from-navy-600 via-navy-500 to-navy-400" />
 
@@ -275,7 +275,7 @@ export default async function ProtocolosPage() {
               id="waist"
               className="scroll-mt-40 animate-fade-in-up delay-100"
             >
-              <div className="group relative overflow-hidden rounded-[24px] border border-gold-200/60 bg-gradient-to-br from-gold-50/80 via-white/60 to-gold-50/40 shadow-[0_8px_32px_-16px_rgb(9_21_35_/_0.12)] backdrop-blur-sm transition-all duration-300 hover:shadow-[0_16px_40px_-20px_rgb(184_140_25_/_0.2)] dark:border-gold-800/30 dark:from-gold-950/40 dark:via-navy-950/40 dark:to-gold-950/20">
+              <div className="group relative overflow-hidden rounded-[16px] border border-gold-200/60 bg-gradient-to-br from-gold-50/80 via-white/60 to-gold-50/40 shadow-[0_8px_32px_-16px_rgb(9_21_35_/_0.12)] backdrop-blur-sm transition-all duration-300 hover:shadow-[0_8px_24px_rgba(9,21,35,0.12)] dark:border-gold-800/30 dark:from-gold-950/40 dark:via-navy-950/40 dark:to-gold-950/20">
                 {/* Top accent stripe */}
                 <div className="h-1 w-full bg-gradient-to-r from-gold-600 via-gold-400 to-gold-300" />
 
@@ -366,7 +366,7 @@ export default async function ProtocolosPage() {
         </section>
 
         {/* ── Fitness Tests ─────────────────────────────────────────────────── */}
-        <section id="fitness" className="scroll-mt-32">
+        <section id="fitness" className="scroll-mt-32 animate-fade-in-up overflow-hidden rounded-[16px] border border-border bg-card/88 p-5 shadow-[0_4px_12px_rgba(9,21,35,0.08)] backdrop-blur-sm dark:border-white/10 dark:bg-navy-950/68 sm:p-6" style={{ animationDelay: "70ms" }}>
           {/* Section header */}
           <div className="mb-6 flex flex-col items-start gap-1 sm:flex-row sm:items-end sm:justify-between">
             <div className="flex items-center gap-3">
@@ -440,8 +440,8 @@ export default async function ProtocolosPage() {
                 <article
                   key={item.testKey}
                   className={cn(
-                    "group relative flex flex-col overflow-hidden rounded-[24px] border bg-surface-secondary shadow-card transition-all duration-300",
-                    "hover:-translate-y-1.5 hover:shadow-[0_16px_40px_-16px_rgb(9_21_35_/_0.18)]",
+                    "group relative flex flex-col overflow-hidden rounded-[16px] border bg-surface-secondary shadow-card transition-all duration-300",
+                    "hover:-translate-y-1.5 hover:shadow-[0_8px_24px_rgba(9,21,35,0.12)]",
                     "animate-fade-in-up",
                     "border-white/20 dark:border-white/10",
                   )}
@@ -470,7 +470,7 @@ export default async function ProtocolosPage() {
                     <div className="mb-4 flex items-start justify-between">
                       <div
                         className={cn(
-                          "inline-flex h-11 w-11 items-center justify-center rounded-[24px] bg-gradient-to-br shadow-sm transition-all duration-300",
+                          "inline-flex h-11 w-11 items-center justify-center rounded-[16px] bg-gradient-to-br shadow-sm transition-all duration-300",
                           iconBg,
                         )}
                       >

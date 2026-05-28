@@ -21,6 +21,16 @@ async function mutateJson<T>(
   return readApiResponse<T>(response);
 }
 
+interface LatestBiometric {
+  imc: number | string;
+  imcZone: string;
+  recordedAt: string;
+}
+
+interface LatestTest {
+  recordedAt: string;
+}
+
 interface StudentListItem {
   id: string;
   name: string;
@@ -30,6 +40,8 @@ interface StudentListItem {
   className: string | null;
   schoolYear: string | null;
   processNumber: string | null;
+  biometrics: LatestBiometric[];
+  tests: LatestTest[];
 }
 
 interface StudentsListResponse {

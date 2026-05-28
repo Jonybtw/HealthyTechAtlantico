@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import { cn } from "@/lib/utils";
-import { PageHeader, type PageHeaderProps } from "@/components/ui/page-header";
+import { PageHeader } from "@/components/ui/page-header";
+import type { PageHeaderProps } from "@/components/ui/page-header";
 
 interface PageScaffoldProps {
   header?: ReactNode;
@@ -19,15 +20,15 @@ export function PageScaffold({
   className,
   contentClassName,
 }: PageScaffoldProps) {
-  const headerNode =
-    header ??
-    (headerProps ? (
-      <PageHeader {...headerProps}>{headerActions}</PageHeader>
-    ) : null);
-
   return (
     <div className={cn("page-stack", className)}>
-      {headerNode}
+      {header ? (
+        header
+      ) : headerProps ? (
+        <PageHeader {...headerProps}>{headerActions}</PageHeader>
+      ) : headerActions ? (
+        <div className="flex flex-wrap items-center justify-end gap-2">{headerActions}</div>
+      ) : null}
       <div className={cn("page-content-stack", contentClassName)}>
         {children}
       </div>

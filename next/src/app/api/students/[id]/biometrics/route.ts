@@ -112,6 +112,7 @@ export async function POST(
         imcZone: data.imcZone,
         fatZone: data.fatZone ?? null,
         waistZone: data.waistZone ?? null,
+        notes: data.notes ?? null,
       },
     });
 

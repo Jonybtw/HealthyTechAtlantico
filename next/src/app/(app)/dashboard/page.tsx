@@ -20,6 +20,7 @@ export default async function DashboardPage() {
   const questionnaireMessages = (messages.questionarios ??
     {}) as Record<string, string>;
   const summary = await getDashboardSummaryForUser({
+    email: user.email,
     id: user.id,
     role: user.role,
   });

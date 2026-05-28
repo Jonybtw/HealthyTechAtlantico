@@ -12,6 +12,10 @@ class InvalidCredentialsError extends CredentialsSignin {
   code = "invalid_credentials";
 }
 
+class DatabaseUnavailableError extends CredentialsSignin {
+  code = "database_unavailable";
+}
+
 declare module "next-auth" {
   interface User {
     id: string;
@@ -131,6 +135,22 @@ function getAuditActorId(message: unknown): string | null {
   return null;
 }
 
+function isDatabaseUnavailableError(error: unknown): boolean {
+  if (typeof error !== "object" || error === null) {
+    return false;
+  }
+
+  const code = "code" in error ? error.code : undefined;
+
+  return (
+    code === "P1001" ||
+    code === "ECONNREFUSED" ||
+    code === "ETIMEDOUT" ||
+    code === "ENOTFOUND" ||
+    code === "EAI_AGAIN"
+  );
+}
+
 export function applyUserToToken(
   token: SessionToken,
   user: Pick<AuthUser, "id" | "name" | "role" | "consentRgpd" | "consentShare">,
@@ -190,9 +210,17 @@ export const { handlers, auth } = NextAuth({
           throw new InvalidCredentialsError();
         }
 
-        const user = await prisma.user.findUnique({
-          where: { email },
-        });
+        const user = await prisma.user
+          .findUnique({
+            where: { email },
+          })
+          .catch((error: unknown) => {
+            if (isDatabaseUnavailableError(error)) {
+              throw new DatabaseUnavailableError();
+            }
+
+            throw error;
+          });
 
         if (!user) {
           throw new InvalidCredentialsError();

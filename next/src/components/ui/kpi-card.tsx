@@ -58,20 +58,20 @@ interface KpiCardProps {
 
 const accents = {
   gold: {
-    iconBg: "bg-gold-400 text-navy-950 shadow-lg shadow-gold-400/30",
+    iconBg: "bg-gold-400 text-navy-950 shadow-sm",
     barFill: "bg-gold-400",
   },
   green: {
-    iconBg: "bg-success-600 text-white shadow-lg shadow-success-600/30",
+    iconBg: "bg-success-600 text-white shadow-sm",
     barFill: "bg-success-600",
   },
   red: {
-    iconBg: "bg-danger-600 text-white shadow-lg shadow-danger-600/30",
+    iconBg: "bg-danger-600 text-white shadow-sm",
     barFill: "bg-danger-600",
   },
   blue: {
     iconBg:
-      "bg-navy-900 text-white shadow-lg shadow-navy-900/30 dark:bg-navy-800",
+      "bg-navy-900 text-white shadow-sm dark:bg-navy-800",
     barFill: "bg-navy-900 dark:bg-gold-300",
   },
 };
@@ -98,69 +98,62 @@ export function KpiCard({
   return (
     <Card
       className={cn(
-        "group relative overflow-hidden rounded-[24px] transition-all duration-300 hover:-translate-y-1 hover:shadow-card-hover",
+        "group relative overflow-hidden rounded-[16px] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_8px_24px_rgba(9,21,35,0.12)] dark:hover:shadow-[0_10px_28px_rgba(0,0,0,0.34)]",
         heroCard
-          ? "border border-white/16 bg-gradient-to-br from-navy-950 via-navy-900 to-navy-800 text-white shadow-float"
-          : "rounded-[24px] border border-white/20 bg-white/60 shadow-lg backdrop-blur-md dark:border-white/10 dark:bg-navy-950/60 text-foreground dark:text-white",
-        reducedEffects && "transition-none hover:translate-y-0 hover:shadow-float",
+          ? "border border-white/10 bg-navy-950 text-white shadow-[0_4px_18px_rgba(0,0,0,0.22)]"
+          : "border border-border bg-card/88 text-foreground shadow-[0_4px_12px_rgba(9,21,35,0.08)] backdrop-blur-sm dark:border-white/10 dark:bg-navy-950/68 dark:text-white dark:shadow-[0_4px_18px_rgba(0,0,0,0.22)]",
+        reducedEffects && "transition-none hover:translate-y-0",
       )}
     >
       <div className="absolute inset-x-8 top-0 h-px bg-gradient-to-r from-transparent via-gold-400/70 to-transparent" />
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(216,173,52,0.14),transparent_24%),radial-gradient(circle_at_bottom_left,rgba(255,255,255,0.08),transparent_32%)]" />
       <CardContent className="relative p-5 sm:p-6">
-        <div className="mb-5 flex items-start justify-between">
+        <div className="mb-4 flex items-start justify-between gap-3">
+          <h3
+            className={cn(
+              "text-sm font-semibold",
+              heroCard ? "text-gold-200" : "text-muted-foreground",
+            )}
+          >
+            {title}
+          </h3>
           <div
             className={cn(
-              "rounded-[24px] p-3 transition-transform duration-300 group-hover:scale-110",
+              "shrink-0 rounded-[14px] p-2 transition-transform duration-300 group-hover:scale-105",
               styles.iconBg,
             )}
           >
-            <Icon className="size-6" />
+            <Icon className="size-5" />
           </div>
         </div>
 
-        <h3
-          className={cn(
-            "mb-2 text-tiny font-semibold uppercase tracking-[0.22em]",
-            heroCard ? "text-gold-200" : "text-muted-foreground",
-          )}
-        >
-          {title}
-        </h3>
-
         <p
           className={cn(
-            "text-3xl font-extrabold tabular-nums tracking-tight",
+            "text-5xl font-extrabold tabular-nums tracking-tight",
             heroCard ? "text-white" : "text-foreground",
+            accent === "red" && !heroCard && "text-danger-600 dark:text-danger-400",
           )}
         >
           {isNumeric ? animatedValue : value}
         </p>
 
-        {description ? (
+        {footer ? (
           <p
             className={cn(
-              "mt-2 text-sm leading-relaxed",
+              "mt-2 inline-flex items-center gap-1 text-xs font-semibold",
+              heroCard ? "text-white/74" : "text-muted-foreground",
+            )}
+          >
+            {footer}
+          </p>
+        ) : description ? (
+          <p
+            className={cn(
+              "mt-2 text-xs font-semibold",
               heroCard ? "text-white/74" : "text-muted-foreground",
             )}
           >
             {description}
           </p>
-        ) : null}
-
-
-
-        {footer ? (
-          <div
-            className={cn(
-              "mt-5 border-t pt-4",
-              heroCard
-                ? "border-white/14 text-white/80"
-                : "border-navy-200 dark:border-navy-800",
-            )}
-          >
-            {footer}
-          </div>
         ) : null}
       </CardContent>
     </Card>

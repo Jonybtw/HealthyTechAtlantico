@@ -82,6 +82,22 @@ export async function GET(req: NextRequest) {
           processNumber: true,
           kidmedConsentAt: true,
           linkedUserId: true,
+          biometrics: {
+            orderBy: { recordedAt: "desc" },
+            take: 1,
+            select: {
+              imc: true,
+              imcZone: true,
+              recordedAt: true,
+            },
+          },
+          tests: {
+            orderBy: { recordedAt: "desc" },
+            take: 1,
+            select: {
+              recordedAt: true,
+            },
+          },
         },
       }),
       prisma.student.count({ where }),

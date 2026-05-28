@@ -164,7 +164,7 @@ export function StudentPicker({
   if (loading) {
     return (
       <div
-        className="flex h-[46px] w-full items-center justify-between rounded-[24px] border border-input bg-card px-4 shadow-sm"
+        className="flex h-[46px] w-full items-center justify-between rounded-[12px] border border-input bg-card px-4 shadow-sm"
         aria-busy="true"
         aria-live="polite"
       >
@@ -184,7 +184,7 @@ export function StudentPicker({
       ? createPortal(
           <div
             ref={menuRef}
-            className="animate-scale-in fixed z-[180] overflow-hidden rounded-[24px] border border-border bg-surface-utility shadow-card"
+            className="animate-scale-in fixed z-[180] overflow-hidden rounded-[12px] border border-border/70 bg-[#fffdf8] shadow-float dark:bg-navy-950"
             style={menuStyle}
           >
             <div className="max-h-72 overflow-y-auto p-2">
@@ -205,7 +205,7 @@ export function StudentPicker({
                         setOpen(false);
                         setSearch("");
                       }}
-                      className="flex w-full items-center gap-3 rounded-xl px-3 py-2 text-left transition-colors hover:bg-muted/70"
+                      className="flex w-full items-center gap-3 rounded-[8px] px-3 py-2 text-left transition-colors hover:bg-muted/70"
                     >
                       <span
                         className="flex size-9 shrink-0 items-center justify-center rounded-full text-xs font-semibold shadow-[inset_0_1px_0_rgba(255,255,255,0.18)]"
@@ -249,7 +249,7 @@ export function StudentPicker({
             setOpen(true);
           }
         }}
-        className={`flex h-[46px] w-full cursor-pointer items-center justify-between rounded-[24px] border px-4 text-left transition-all duration-300 ${
+        className={`flex h-[46px] w-full cursor-pointer items-center justify-between rounded-[12px] border px-4 text-left transition-all duration-300 ${
           open
             ? "border-gold-500/50 bg-card shadow-card"
             : "border-input bg-card shadow-sm hover:border-navy-300/40 hover:bg-muted/50 hover:text-foreground"

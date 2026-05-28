@@ -51,7 +51,8 @@ import { HeightPercentilesChart } from "@/components/ui/height-percentiles-chart
 import { FieldShell } from "@/components/ui/field-shell";
 import { Switch } from "@/components/ui/switch";
 import { PageScaffold } from "@/components/ui/page-scaffold";
-import { PageSection } from "@/components/ui/page-section";
+import { useReducedEffects } from "@/hooks/use-reduced-effects";
+import { cn } from "@/lib/utils";
 import { calcAgeFromBirthDate } from "@/lib/zaf";
 import { readApiResponse } from "@/lib/api-client";
 import {
@@ -64,6 +65,19 @@ import {
   type QuestionnaireTypeValue,
 } from "@/lib/questionnaires";
 import { getInitials } from "@/components/ui/student-picker";
+
+function sectionAnimation(index: number, re: boolean) {
+  if (re) return {};
+  return { animationDelay: `${index * 70}ms` };
+}
+
+function BioPanel({ children, className, index, reducedEffects }: { children: React.ReactNode; className?: string; index: number; reducedEffects: boolean }) {
+  return (
+    <section style={sectionAnimation(index, reducedEffects)} className={cn("relative overflow-hidden rounded-[12px] border border-border bg-card/88 shadow-[0_4px_12px_rgba(9,21,35,0.08)] backdrop-blur-sm dark:border-white/10 dark:bg-navy-950/68 dark:shadow-[0_4px_18px_rgba(0,0,0,0.22)]", !reducedEffects && "animate-fade-in-up opacity-0", className)}>
+      <div className="relative">{children}</div>
+    </section>
+  );
+}
 
 interface Props {
   student: {
@@ -133,6 +147,7 @@ export function StudentDetailClient({ student }: Props) {
   const locale = useLocale();
   const canManageStudent = role === "PROFESSOR" || role === "ADMIN";
 
+  const reducedEffects = useReducedEffects();
   const age = student.age ?? calcAgeFromBirthDate(student.birthDate);
   const lastBio = student.biometrics[0];
   const initials = getInitials(student.name);
@@ -278,7 +293,7 @@ export function StudentDetailClient({ student }: Props) {
           meta: studentMeta,
           actionsClassName: "w-full lg:w-auto lg:self-start",
           status: (
-            <span className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-white/15 bg-white/12 text-sm font-bold text-white backdrop-blur-sm">
+            <span className="inline-flex h-10 w-10 items-center justify-center rounded-[8px] border border-white/15 bg-white/12 text-sm font-bold text-white backdrop-blur-sm">
               {initials}
             </span>
           ),
@@ -327,7 +342,7 @@ export function StudentDetailClient({ student }: Props) {
               ) : null}
             </div>
 
-            <div className="hidden items-center gap-2 rounded-[24px] border border-white/14 bg-white/9 p-1.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.18)] backdrop-blur-md lg:flex">
+            <div className="hidden items-center gap-2 rounded-[12px] border border-white/14 bg-white/9 p-1.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.18)] backdrop-blur-md lg:flex">
               <Button
                 type="button"
                 variant="secondary"
@@ -368,7 +383,8 @@ export function StudentDetailClient({ student }: Props) {
         }
       >
         {editing ? (
-          <PageSection tone="primary" layout="form" title={t("editTitle")}>
+          <BioPanel index={0} reducedEffects={reducedEffects} className="p-5">
+            <p className="mb-4 text-sm font-bold text-foreground">{t("editTitle")}</p>
             <Form {...editForm}>
               <form
                 onSubmit={editForm.handleSubmit(handleSave)}
@@ -479,20 +495,15 @@ export function StudentDetailClient({ student }: Props) {
                 </Button>
               </form>
             </Form>
-          </PageSection>
+          </BioPanel>
         ) : null}
 
         <div className="grid gap-4 xl:grid-cols-2">
-          <PageSection
-            tone="secondary"
-            layout="analytics"
-            title={
-              <span className="flex items-center gap-2">
-                <Ruler className="size-4 text-gold-600" />
-                {t("recentBiometrics")}
-              </span>
-            }
-          >
+          <BioPanel index={1} reducedEffects={reducedEffects} className="p-5">
+            <div className="mb-4 flex items-center gap-2">
+              <Ruler className="size-4 text-gold-600" />
+              <p className="text-sm font-bold tracking-tight text-foreground">{t("recentBiometrics")}</p>
+            </div>
             {lastBio ? (
               <>
                 <div className="grid gap-3 sm:grid-cols-2">
@@ -530,7 +541,7 @@ export function StudentDetailClient({ student }: Props) {
                 </div>
 
                 {student.biometrics.length > 0 ? (
-                  <div className="rounded-[24px] border border-border bg-surface-utility p-4">
+                  <div className="rounded-[12px] border border-border bg-surface-utility p-4">
                     <div className="mb-3 flex items-center gap-2">
                       <TrendingUp className="size-4 text-gold-500" />
                       <p className="text-tiny font-semibold uppercase tracking-[0.2em] text-muted-foreground">
@@ -550,18 +561,13 @@ export function StudentDetailClient({ student }: Props) {
             ) : (
               <Empty message={t("noRecords")} />
             )}
-          </PageSection>
+          </BioPanel>
 
-          <PageSection
-            tone="secondary"
-            layout="list"
-            title={
-              <span className="flex items-center gap-2">
-                <Timer className="size-4 text-gold-600" />
-                {t("recentTests")}
-              </span>
-            }
-          >
+          <BioPanel index={2} reducedEffects={reducedEffects} className="p-5">
+            <div className="mb-4 flex items-center gap-2">
+              <Timer className="size-4 text-gold-600" />
+              <p className="text-sm font-bold tracking-tight text-foreground">{t("recentTests")}</p>
+            </div>
             {orderedTests.length > 0 ? (
               <div className="grid gap-3 sm:grid-cols-2">
                 {orderedTests.map((test) => {
@@ -576,10 +582,10 @@ export function StudentDetailClient({ student }: Props) {
                   return (
                     <div
                       key={`${test.testId}-${test.recordedAt}`}
-                      className={`group relative overflow-hidden rounded-[24px] border p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.65),0_10px_24px_-20px_rgba(9,21,35,0.35)] backdrop-blur-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.75),0_16px_30px_-20px_rgba(9,21,35,0.45)] ${cardStateClass}`}
+                      className={`group relative overflow-hidden rounded-[12px] border p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.65),0_10px_24px_-20px_rgba(9,21,35,0.35)] backdrop-blur-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.75),0_16px_30px_-20px_rgba(9,21,35,0.45)] ${cardStateClass}`}
                     >
                       <div className="flex min-w-0 items-center gap-2.5">
-                          <span className="flex size-8 shrink-0 items-center justify-center rounded-xl border border-white/45 bg-white/80 text-navy-700 shadow-[inset_0_1px_0_rgba(255,255,255,0.9)] dark:border-white/10 dark:bg-white/8 dark:text-gold-200 dark:shadow-none">
+                          <span className="flex size-8 shrink-0 items-center justify-center rounded-[8px] border border-white/45 bg-white/80 text-navy-700 shadow-[inset_0_1px_0_rgba(255,255,255,0.9)] dark:border-white/10 dark:bg-white/8 dark:text-gold-200 dark:shadow-none">
                             {getTestIcon(test.testId)}
                           </span>
                           <p className="text-base font-semibold capitalize tracking-tight text-foreground">
@@ -607,30 +613,25 @@ export function StudentDetailClient({ student }: Props) {
             ) : (
               <Empty message={t("noRecords")} />
             )}
-          </PageSection>
+          </BioPanel>
 
-          <PageSection
-            tone="secondary"
-            layout="list"
-            title={
-              <span className="flex items-center gap-2">
-                <ClipboardList className="size-4 text-gold-600" />
-                {t("questionnaires")}
-              </span>
-            }
-          >
+          <BioPanel index={3} reducedEffects={reducedEffects} className="p-5">
+            <div className="mb-4 flex items-center gap-2">
+              <ClipboardList className="size-4 text-gold-600" />
+              <p className="text-sm font-bold tracking-tight text-foreground">{t("questionnaires")}</p>
+            </div>
             {student.questionnaires.length > 0 ? (
               <ul className="grid gap-3">
                 {student.questionnaires.map((questionnaire, index) => (
                   <li
                     key={`${questionnaire.type}-${questionnaire.submittedAt}-${index}`}
-                    className="group relative overflow-hidden rounded-[24px] border border-white/28 bg-gradient-to-br from-white/78 via-white/62 to-white/48 p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.65),0_10px_24px_-20px_rgba(9,21,35,0.35)] backdrop-blur-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-gold-300/35 hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.75),0_16px_30px_-20px_rgba(9,21,35,0.45)] dark:border-white/10 dark:from-navy-950/50 dark:via-navy-950/38 dark:to-navy-950/28 dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]"
+                    className="group relative overflow-hidden rounded-[12px] border border-white/28 bg-gradient-to-br from-white/78 via-white/62 to-white/48 p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.65),0_10px_24px_-20px_rgba(9,21,35,0.35)] backdrop-blur-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-gold-300/35 hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.75),0_16px_30px_-20px_rgba(9,21,35,0.45)] dark:border-white/10 dark:from-navy-950/50 dark:via-navy-950/38 dark:to-navy-950/28 dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]"
                   >
                     <span className="pointer-events-none absolute -right-10 -top-10 size-24 rounded-full bg-gold-300/14 blur-2xl opacity-70 transition-opacity duration-300 group-hover:opacity-100 dark:bg-gold-400/10" />
 
                     <div className="relative flex items-start justify-between gap-3">
                       <div className="flex min-w-0 items-center gap-2.5">
-                        <span className="flex size-8 shrink-0 items-center justify-center rounded-xl border border-white/45 bg-white/80 text-gold-700 shadow-[inset_0_1px_0_rgba(255,255,255,0.9)] dark:border-white/10 dark:bg-white/8 dark:text-gold-200 dark:shadow-none">
+                        <span className="flex size-8 shrink-0 items-center justify-center rounded-[8px] border border-white/45 bg-white/80 text-gold-700 shadow-[inset_0_1px_0_rgba(255,255,255,0.9)] dark:border-white/10 dark:bg-white/8 dark:text-gold-200 dark:shadow-none">
                           <ClipboardList className="size-4" />
                         </span>
                         <p className="truncate text-base font-semibold tracking-tight text-foreground">
@@ -706,19 +707,14 @@ export function StudentDetailClient({ student }: Props) {
             ) : (
               <Empty message={t("noRecords")} />
             )}
-          </PageSection>
+          </BioPanel>
 
-          <PageSection
-            tone="secondary"
-            layout="default"
-            title={
-              <span className="flex items-center gap-2">
-                <ShieldCheck className="size-4 text-gold-600" />
-                {t("kidmedConsentTitle")}
-              </span>
-            }
-            description={t("kidmedConsentDescription")}
-          >
+          <BioPanel index={4} reducedEffects={reducedEffects} className="p-5">
+            <div className="mb-1 flex items-center gap-2">
+              <ShieldCheck className="size-4 text-gold-600" />
+              <p className="text-sm font-bold tracking-tight text-foreground">{t("kidmedConsentTitle")}</p>
+            </div>
+            <p className="mb-4 text-xs text-muted-foreground">{t("kidmedConsentDescription")}</p>
             <div className="flex flex-col gap-4">
               <div className="flex items-start justify-between gap-4">
                 <div>
@@ -739,7 +735,7 @@ export function StudentDetailClient({ student }: Props) {
                 ) : null}
               </div>
 
-              <div className="flex items-start gap-3 rounded-xl border border-border bg-surface-utility p-4">
+              <div className="flex items-start gap-3 rounded-[8px] border border-border bg-surface-utility p-4">
                 {student.kidmedConsentAt ? (
                   <ShieldCheck className="mt-0.5 size-5 shrink-0 text-success-600 dark:text-success-300" />
                 ) : (
@@ -767,72 +763,76 @@ export function StudentDetailClient({ student }: Props) {
                 </div>
               </div>
             </div>
-          </PageSection>
+          </BioPanel>
 
-          <PageSection
-            tone="secondary"
-            layout="list"
-            title={
-              <span className="flex items-center gap-2">
-                <ShieldOff className="size-4 text-gold-600" />
-                {t("exemptions")}
-              </span>
-            }
-          >
+          <BioPanel index={5} reducedEffects={reducedEffects} className="p-5">
+            <div className="mb-4 flex items-center gap-2">
+              <ShieldOff className="size-4 text-gold-600" />
+              <p className="text-sm font-bold tracking-tight text-foreground">{t("exemptions")}</p>
+            </div>
             {student.exemptions.length > 0 ? (
               <ul className="grid gap-2">
                 {student.exemptions.map((exemption) => (
                   <li
                     key={exemption.id}
-                    className="flex items-start justify-between rounded-xl border border-border bg-surface-utility px-4 py-3"
+                    className="flex items-start gap-3 rounded-[8px] border border-border bg-surface-utility px-4 py-3"
                   >
-                    <span className="text-sm font-medium text-foreground">
-                      {exemption.reason}
+                    <span className="mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-[6px] bg-danger-500/10 text-danger-700 dark:text-danger-400">
+                      <ShieldOff className="size-4" />
                     </span>
-                    <span className="shrink-0 text-xs text-muted-foreground">
-                      {formatDate(exemption.startDate)} - {formatDate(exemption.endDate)}
-                    </span>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="text-sm font-medium text-foreground">
+                          {exemption.reason}
+                        </span>
+                        <span className="shrink-0 text-xs text-muted-foreground">
+                          {formatDate(exemption.startDate)} - {formatDate(exemption.endDate)}
+                        </span>
+                      </div>
+                    </div>
                   </li>
                 ))}
               </ul>
             ) : (
               <Empty message={t("noRecords")} />
             )}
-          </PageSection>
+          </BioPanel>
 
-          <PageSection
-            tone="secondary"
-            layout="list"
-            title={
-              <span className="flex items-center gap-2">
-                <Users className="size-4 text-gold-600" />
-                {t("guardians")}
-              </span>
-            }
-          >
+          <BioPanel index={6} reducedEffects={reducedEffects} className="p-5">
+            <div className="mb-4 flex items-center gap-2">
+              <Users className="size-4 text-gold-600" />
+              <p className="text-sm font-bold tracking-tight text-foreground">{t("guardians")}</p>
+            </div>
             {student.guardians.length > 0 ? (
               <ul className="grid gap-2">
                 {student.guardians.map((guardianLink) => (
                   <li
                     key={guardianLink.id}
-                    className="flex items-center justify-between rounded-xl border border-border bg-surface-utility px-4 py-3"
+                    className="flex items-center gap-3 rounded-[8px] border border-border bg-surface-utility px-4 py-3"
                   >
-                    <span className="text-sm font-medium text-foreground">
-                      {guardianLink.guardian.name ?? guardianLink.guardian.email}{" "}
-                      <span className="text-xs text-muted-foreground">
-                        ({guardianLink.relationship})
-                      </span>
+                    <span className="flex size-8 shrink-0 items-center justify-center rounded-[6px] bg-navy-500/10 text-navy-700 dark:text-navy-300">
+                      <Users className="size-4" />
                     </span>
-                    <span className="text-xs text-muted-foreground">
-                      {guardianLink.guardian.email}
-                    </span>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="truncate text-sm font-medium text-foreground">
+                          {guardianLink.guardian.name ?? guardianLink.guardian.email}{" "}
+                          <span className="text-xs text-muted-foreground">
+                            ({guardianLink.relationship})
+                          </span>
+                        </span>
+                        <span className="hidden text-xs text-muted-foreground sm:inline">
+                          {guardianLink.guardian.email}
+                        </span>
+                      </div>
+                    </div>
                   </li>
                 ))}
               </ul>
             ) : (
               <Empty message={t("noRecords")} />
             )}
-          </PageSection>
+          </BioPanel>
         </div>
       </PageScaffold>
 
@@ -861,12 +861,12 @@ function StatTile({
   badge?: ReactNode;
 }) {
   return (
-    <div className="group relative flex min-h-[114px] w-full flex-col justify-between overflow-hidden rounded-[24px] border border-border bg-surface-secondary px-4 py-4 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-card-hover hover:border-gold-300/35">
+    <div className="group relative flex min-h-[114px] w-full flex-col justify-between overflow-hidden rounded-[12px] border border-border bg-surface-secondary px-4 py-4 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-card-hover hover:border-gold-300/35">
       <div className="pointer-events-none absolute -right-8 -top-8 size-24 rounded-full bg-gold-300/12 blur-2xl transition-opacity duration-300 group-hover:opacity-100 dark:bg-gold-400/10" />
 
       <div className="flex items-center gap-2.5">
         {icon ? (
-          <span className="flex size-8 shrink-0 items-center justify-center rounded-xl border border-white/45 bg-white/80 text-navy-700 shadow-[inset_0_1px_0_rgba(255,255,255,0.92)] dark:border-white/10 dark:bg-white/8 dark:text-gold-200 dark:shadow-none">
+          <span className="flex size-8 shrink-0 items-center justify-center rounded-[8px] border border-white/45 bg-white/80 text-navy-700 shadow-[inset_0_1px_0_rgba(255,255,255,0.92)] dark:border-white/10 dark:bg-white/8 dark:text-gold-200 dark:shadow-none">
             {icon}
           </span>
         ) : null}

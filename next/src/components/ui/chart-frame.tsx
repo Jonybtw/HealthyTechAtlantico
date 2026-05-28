@@ -1,6 +1,10 @@
 "use client";
 
 import * as React from "react";
+import {
+  ResponsiveContainer,
+  type ResponsiveContainerProps,
+} from "recharts";
 import { cn } from "@/lib/utils";
 
 interface ChartFrameProps extends React.HTMLAttributes<HTMLDivElement> {
@@ -42,8 +46,17 @@ export function ChartFrame({
       {ready
         ? children
         : (fallback ?? (
-            <div className="h-full w-full animate-pulse rounded-[24px] bg-muted/30" />
+            <div className="h-full w-full animate-pulse rounded-[16px] bg-muted/30" />
           ))}
     </div>
+  );
+}
+
+export function ResponsiveChartContainer({
+  initialDimension = { height: 1, width: 1 },
+  ...props
+}: ResponsiveContainerProps) {
+  return (
+    <ResponsiveContainer initialDimension={initialDimension} {...props} />
   );
 }

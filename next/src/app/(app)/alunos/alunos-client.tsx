@@ -1,21 +1,22 @@
 "use client";
 
-import { useActionState, useEffect, useMemo, useRef, useState } from "react";
+import { useActionState, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
 import {
+  Activity,
   AlertTriangle,
-  FileUp,
-  Mars,
-  RotateCcw,
+  ChevronLeft,
+  ChevronRight,
+  Ellipsis,
+  Funnel,
+  Search,
+  Upload,
   UserPlus,
-  Users,
-  Venus,
 } from "lucide-react";
+import { BulkImportModal } from "@/components/ui/bulk-import-modal";
 import { toast } from "sonner";
-import { PageScaffold } from "@/components/ui/page-scaffold";
-import { DataTable, type Column } from "@/components/ui/data-table";
 import { Button } from "@/components/ui/button";
 import { DateField } from "@/components/ui/date-field";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -37,22 +38,13 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import { Skeleton } from "@/components/ui/skeleton";
-import { readApiResponse } from "@/lib/api-client";
-import { StudentIdentity } from "@/components/ui/student-identity";
 import { useStudents, useStudentsList } from "@/hooks/use-queries";
+import { cn } from "@/lib/utils";
 import { createStudentAction } from "./actions";
 
 const ALL_FILTER_VALUE = "__all__";
 
-interface StudentRow {
-  id: string;
-  name: string;
-  sex: string;
-  birthDate: string | null;
-  className: string | null;
-  schoolYear: string | null;
-  processNumber: string | null;
-}
+type Status = "healthy" | "attention" | "critical";
 
 interface AlunosClientProps {
   currentPage: number;
@@ -67,6 +59,44 @@ function isNonEmptyString(value: string | null | undefined): value is string {
 
 function buildRelativeUrl(url: URL) {
   return url.search ? `${url.pathname}${url.search}` : url.pathname;
+}
+
+function getStatusFromZone(zone: string | null | undefined): Status | null {
+  if (!zone) return null;
+  const n = zone.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+  if (n.includes("saudavel") || n.includes("healthy") || n.includes("zsaf")) return "healthy";
+  if (n.includes("risco") || n.includes("critical") || n.includes("znrf")) return "critical";
+  return "attention";
+}
+
+function StatusBadge({ status, t }: { status: Status | null; t: (key: string) => string }) {
+  if (!status) return <span className="text-sm text-muted-foreground">-</span>;
+  const styles: Record<Status, string> = {
+    healthy: "bg-success-100 text-success-700",
+    attention: "bg-warning-100 text-warning-700",
+    critical: "bg-danger-100 text-danger-700",
+  };
+  const labelKeys: Record<Status, string> = {
+    healthy: "statusHealthy",
+    attention: "statusAttention",
+    critical: "statusCritical",
+  };
+  return (
+    <span className={cn("inline-flex items-center rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider", styles[status])}>
+      {t(labelKeys[status])}
+    </span>
+  );
+}
+
+function StudentAvatar({ name }: { name: string }) {
+  const initials = name.split(" ").map((n) => n[0]).join("").slice(0, 2).toUpperCase();
+  return (
+    <div className="flex size-9 shrink-0 items-center justify-center overflow-hidden rounded-full border-2 border-gold-500/30 bg-gray-400">
+      <span className="text-xs font-semibold text-white">
+        {initials}
+      </span>
+    </div>
+  );
 }
 
 export function AlunosClient({
@@ -90,12 +120,13 @@ export function AlunosClient({
   });
   const allStudentsQuery = useStudents(2000);
 
-  const students = studentsQuery.data?.students ?? [];
+  const students = useMemo(() => studentsQuery.data?.students ?? [], [studentsQuery.data?.students]);
   const totalStudents = studentsQuery.data?.total ?? 0;
+  const totalPages = studentsQuery.data?.pages ?? 1;
 
   const [showCreate, setShowCreate] = useState(false);
-  const [isImportingCsv, setIsImportingCsv] = useState(false);
-  const importInputRef = useRef<HTMLInputElement | null>(null);
+  const [showBulkImport, setShowBulkImport] = useState(false);
+  const [statusFilter, setStatusFilter] = useState<string>(ALL_FILTER_VALUE);
   const [form, setForm] = useState({
     name: "",
     sex: "M",
@@ -109,6 +140,13 @@ export function AlunosClient({
     null,
   );
   const lastHandledStateRef = useRef<typeof state>(null);
+  const searchTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const handleImportSuccess = useCallback(async () => {
+    await queryClient.invalidateQueries({ queryKey: ["students-list"] });
+    await queryClient.invalidateQueries({ queryKey: ["students"] });
+    router.refresh();
+  }, [queryClient, router]);
 
   useEffect(() => {
     if (!state || lastHandledStateRef.current === state) {
@@ -156,82 +194,10 @@ export function AlunosClient({
   }, [filterSource, locale]);
 
   const hasActiveFilters = Boolean(
-    searchQuery.trim() || classNameQuery || schoolYearQuery,
+    searchQuery.trim() || classNameQuery || schoolYearQuery || statusFilter !== ALL_FILTER_VALUE,
   );
   const hasDirectoryStudents =
     (allStudentsQuery.data?.length ?? studentsQuery.data?.total ?? 0) > 0;
-
-  const columns: Column<StudentRow>[] = [
-    {
-      key: "name",
-      header: t("colName"),
-      sortable: true,
-      className: "min-w-[260px]",
-      render: (row) => (
-        <StudentIdentity
-          student={row}
-          subtitle={
-            row.schoolYear ? (
-              <span className="text-xs text-muted-foreground">
-                {row.schoolYear}
-              </span>
-            ) : undefined
-          }
-        />
-      ),
-    },
-    {
-      key: "processNumber",
-      header: t("colProcessNumber"),
-      sortable: true,
-      render: (row) =>
-        row.processNumber ? (
-          <span className="text-sm font-semibold text-navy-900">{row.processNumber}</span>
-        ) : (
-          <span className="text-slate-400">-</span>
-        ),
-    },
-    {
-      key: "sex",
-      header: t("colSex"),
-      sortable: true,
-      className: "w-28",
-      render: (row) =>
-        row.sex === "M" ? (
-          <span className="inline-flex items-center gap-1 rounded-full bg-blue-50 px-3 py-1 text-micro font-bold uppercase tracking-wide text-blue-700">
-            <Mars className="size-3" />
-            Masc
-          </span>
-        ) : (
-          <span className="inline-flex items-center gap-1 rounded-full bg-rose-50 px-3 py-1 text-micro font-bold uppercase tracking-wide text-rose-700">
-            <Venus className="size-3" />
-            Fem
-          </span>
-        ),
-    },
-    {
-      key: "birthDate",
-      header: t("colBirth"),
-      sortable: true,
-      render: (row) =>
-        row.birthDate
-          ? new Date(row.birthDate).toLocaleDateString(locale)
-          : "-",
-    },
-    {
-      key: "className",
-      header: t("colClass"),
-      className: "w-32",
-      render: (row) =>
-        row.className ? (
-          <span className="text-sm font-semibold text-navy-900">
-            {row.className}
-          </span>
-        ) : (
-          <span className="text-slate-400">-</span>
-        ),
-    },
-  ];
 
   const navigateWithParams = (
     mutate: (params: URLSearchParams) => void,
@@ -267,149 +233,33 @@ export function AlunosClient({
       params.delete("school_year");
       params.set("page", "1");
     });
+    setStatusFilter(ALL_FILTER_VALUE);
   };
 
-  const handleCsvImport = async (
-    event: React.ChangeEvent<HTMLInputElement>,
-  ) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-
-    setIsImportingCsv(true);
-
-    try {
-      const formData = new FormData();
-      formData.append("file", file);
-
-      const response = await fetch("/api/students/import", {
-        method: "POST",
-        body: formData,
-      });
-      const result = await readApiResponse<{ created: number; failed: number }>(
-        response,
-      );
-
-      toast.success(t("importSuccess", { count: result.created }));
-
-      if (result.failed > 0) {
-        toast.warning(t("importPartialWarning", { count: result.failed }));
-      }
-
-      await queryClient.invalidateQueries({ queryKey: ["students-list"] });
-      await queryClient.invalidateQueries({ queryKey: ["students"] });
-      router.refresh();
-    } catch (error) {
-      toast.error(
-        error instanceof Error ? error.message : t("importError"),
-      );
-    } finally {
-      event.target.value = "";
-      setIsImportingCsv(false);
+  const handleSearch = (query: string) => {
+    if (searchTimeoutRef.current) {
+      clearTimeout(searchTimeoutRef.current);
     }
+    searchTimeoutRef.current = setTimeout(() => {
+      navigateWithParams((params) => {
+        if (query) {
+          params.set("search", query);
+        } else {
+          params.delete("search");
+        }
+        params.set("page", "1");
+      });
+    }, 300);
   };
 
-  const toolbarActions = (
-    <>
-      <div className="flex flex-wrap items-center gap-2">
-        <Select
-          value={classNameQuery || ALL_FILTER_VALUE}
-          onValueChange={(value) =>
-            updateFilter(
-              "class_name",
-              value === ALL_FILTER_VALUE ? "" : value,
-            )
-          }
-          disabled={allStudentsQuery.isLoading && classOptions.length === 0}
-        >
-          <SelectTrigger
-            aria-label={t("filterClassLabel")}
-            className="w-full sm:w-[148px]"
-          >
-            <SelectValue placeholder={t("filterClassLabel")} />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value={ALL_FILTER_VALUE}>{t("filterClassAll")}</SelectItem>
-            {classOptions.map((option) => (
-              <SelectItem key={option} value={option}>
-                {option}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-
-        <Select
-          value={schoolYearQuery || ALL_FILTER_VALUE}
-          onValueChange={(value) =>
-            updateFilter(
-              "school_year",
-              value === ALL_FILTER_VALUE ? "" : value,
-            )
-          }
-          disabled={allStudentsQuery.isLoading && schoolYearOptions.length === 0}
-        >
-          <SelectTrigger
-            aria-label={t("filterSchoolYearLabel")}
-            className="w-full sm:w-[172px]"
-          >
-            <SelectValue placeholder={t("filterSchoolYearLabel")} />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value={ALL_FILTER_VALUE}>
-              {t("filterSchoolYearAll")}
-            </SelectItem>
-            {schoolYearOptions.map((option) => (
-              <SelectItem key={option} value={option}>
-                {option}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-
-        {hasActiveFilters ? (
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            icon={<RotateCcw className="size-4" />}
-            onClick={clearFilters}
-          >
-            {t("clearFilters")}
-          </Button>
-        ) : null}
-      </div>
-
-      <div className="hidden h-6 w-px bg-border/60 xl:block" />
-
-      <div className="flex flex-wrap items-center gap-2">
-        <input
-          ref={importInputRef}
-          type="file"
-          accept=".csv,text/csv"
-          className="hidden"
-          onChange={handleCsvImport}
-        />
-        <Button
-          type="button"
-          variant="secondary"
-          size="sm"
-          loading={isImportingCsv}
-          icon={<FileUp className="size-4" />}
-          onClick={() => importInputRef.current?.click()}
-        >
-          {common("importCsv")}
-        </Button>
-        <Button
-          type="button"
-          variant="primary"
-          size="sm"
-          icon={<UserPlus className="size-4" />}
-          onClick={() => setShowCreate(true)}
-        >
-          {t("new")}
-        </Button>
-      </div>
-    </>
-  );
+  const displayedStudents = useMemo(() => {
+    if (statusFilter === ALL_FILTER_VALUE) return students;
+    return students.filter((s) => {
+      const zone = s.biometrics?.[0]?.imcZone;
+      const status = getStatusFromZone(zone);
+      return status === statusFilter;
+    });
+  }, [students, statusFilter]);
 
   const emptyMessage = hasActiveFilters
     ? t("emptyFilteredMessage")
@@ -417,16 +267,141 @@ export function AlunosClient({
       ? t("emptyMessage")
       : t("studentsEmptyDescription");
 
+  const TABLE_HEADERS = [
+    t("colName"),
+    t("colProcessNumber"),
+    t("colClass"),
+    t("colBirth"),
+    t("colBmi"),
+    t("colStatus"),
+    t("colLastTest"),
+  ];
+
   return (
     <>
-      <PageScaffold
-        contentClassName="gap-5"
-        headerProps={{
-          title: t("title"),
-          description: t("description"),
-          eyebrow: t("eyebrow"),
-        }}
-      >
+      <div className="page-stack gap-5">
+        {/* Header */}
+        <div>
+          <h1 className="font-display text-[28px] font-bold tracking-tight text-navy-950 dark:text-white">
+            {t("title")}
+          </h1>
+          <p className="mt-1 text-sm text-navy-700 dark:text-navy-200">
+            {t("description")}
+          </p>
+        </div>
+
+        {/* Toolbar */}
+        <div className="flex flex-col items-start justify-between gap-4 md:flex-row md:items-center">
+          <div className="flex flex-1 flex-col gap-3 md:flex-row md:items-center">
+            <div className="relative max-w-md flex-1">
+              <Search className="pointer-events-none absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-navy-700/50 dark:text-navy-200/50" />
+              <input
+                type="text"
+                placeholder={t("search")}
+                defaultValue={searchQuery}
+                onChange={(e) => handleSearch(e.target.value)}
+                className="h-10 w-full rounded-[8px] border border-navy-950/10 bg-white py-2.5 pl-10 pr-4 text-sm text-navy-950 placeholder:text-navy-700/40 focus:border-gold-500 focus:outline-none focus:ring-2 focus:ring-gold-500/20 dark:border-white/10 dark:bg-navy-950 dark:text-white dark:placeholder:text-navy-200/40"
+              />
+            </div>
+
+            <div className="flex flex-wrap gap-2">
+              <Select
+                value={classNameQuery || ALL_FILTER_VALUE}
+                onValueChange={(value) =>
+                  updateFilter(
+                    "class_name",
+                    value === ALL_FILTER_VALUE ? "" : value,
+                  )
+                }
+                disabled={allStudentsQuery.isLoading && classOptions.length === 0}
+              >
+                <SelectTrigger className="flex h-10 w-full items-center gap-2 rounded-[8px] border border-navy-950/10 bg-white px-3 py-2.5 text-sm text-navy-950 hover:bg-muted/60 dark:border-white/10 dark:bg-navy-950 dark:text-white md:w-[160px]">
+                  <Funnel className="size-4 text-navy-700 dark:text-navy-200" />
+                  <SelectValue placeholder={t("filterClassLabel")} />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value={ALL_FILTER_VALUE}>{t("filterClassAll")}</SelectItem>
+                  {classOptions.map((option) => (
+                    <SelectItem key={option} value={option}>
+                      {option}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+
+              <Select
+                value={schoolYearQuery || ALL_FILTER_VALUE}
+                onValueChange={(value) =>
+                  updateFilter(
+                    "school_year",
+                    value === ALL_FILTER_VALUE ? "" : value,
+                  )
+                }
+                disabled={allStudentsQuery.isLoading && schoolYearOptions.length === 0}
+              >
+                <SelectTrigger className="flex h-10 w-full items-center gap-2 rounded-[8px] border border-navy-950/10 bg-white px-3 py-2.5 text-sm text-navy-950 hover:bg-muted/60 dark:border-white/10 dark:bg-navy-950 dark:text-white md:w-[180px]">
+                  <Funnel className="size-4 text-navy-700 dark:text-navy-200" />
+                  <SelectValue placeholder={t("filterSchoolYearLabel")} />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value={ALL_FILTER_VALUE}>{t("filterSchoolYearAll")}</SelectItem>
+                  {schoolYearOptions.map((option) => (
+                    <SelectItem key={option} value={option}>
+                      {option}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+
+              <Select value={statusFilter} onValueChange={setStatusFilter}>
+                <SelectTrigger className="flex h-10 w-full items-center gap-2 rounded-[8px] border border-navy-950/10 bg-white px-3 py-2.5 text-sm text-navy-950 hover:bg-muted/60 dark:border-white/10 dark:bg-navy-950 dark:text-white md:w-[160px]">
+                  <Activity className="size-4 text-navy-700 dark:text-navy-200" />
+                  <SelectValue placeholder={t("filterStatusAll")} />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value={ALL_FILTER_VALUE}>{t("filterStatusAll")}</SelectItem>
+                  <SelectItem value="healthy">{t("statusHealthy")}</SelectItem>
+                  <SelectItem value="attention">{t("statusAttention")}</SelectItem>
+                  <SelectItem value="critical">{t("statusCritical")}</SelectItem>
+                </SelectContent>
+              </Select>
+
+              {hasActiveFilters && (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={clearFilters}
+                >
+                  {t("clearFilters")}
+                </Button>
+              )}
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <Button
+              type="button"
+              variant="gold"
+              size="sm"
+              icon={<Upload className="size-4" />}
+              onClick={() => setShowBulkImport(true)}
+            >
+              {t("bulkImportBtn")}
+            </Button>
+            <Button
+              type="button"
+              variant="primary"
+              size="sm"
+              icon={<UserPlus className="size-4" />}
+              onClick={() => setShowCreate(true)}
+            >
+              {t("new")}
+            </Button>
+          </div>
+        </div>
+
+        {/* Table */}
         {studentsQuery.isError && !studentsQuery.data ? (
           <EmptyState
             icon={AlertTriangle}
@@ -437,36 +412,17 @@ export function AlunosClient({
                 : t("loadErrorDescription")
             }
             action={
-              <Button
-                type="button"
-                variant="secondary"
-                onClick={() => void studentsQuery.refetch()}
-              >
+              <Button type="button" variant="secondary" onClick={() => void studentsQuery.refetch()}>
                 {common("refresh")}
               </Button>
             }
           />
         ) : studentsQuery.isLoading && !studentsQuery.data ? (
-          <div className="rounded-[24px] border border-white/20 bg-white/72 p-5 shadow-card">
-            <div className="flex flex-col gap-4 border-b border-border/60 pb-4 sm:flex-row sm:items-center sm:justify-between">
-              <div className="space-y-2">
-                <Skeleton className="h-3 w-24" />
-                <Skeleton className="h-5 w-36" />
-              </div>
-              <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row">
-                <Skeleton className="h-10 w-full rounded-xl sm:w-[148px]" />
-                <Skeleton className="h-10 w-full rounded-xl sm:w-[172px]" />
-                <Skeleton className="h-10 w-full rounded-xl sm:w-28" />
-                <Skeleton className="h-10 w-full rounded-full sm:w-56" />
-              </div>
-            </div>
-            <div className="space-y-4 pt-4">
-              {[1, 2, 3, 4, 5].map((item) => (
-                <div
-                  key={item}
-                  className="grid grid-cols-[minmax(0,1.7fr)_110px_150px_110px] items-center gap-4"
-                >
-                  <Skeleton className="h-10 w-full rounded-xl" />
+          <div className="overflow-hidden rounded-[12px] border border-border bg-card/88 shadow-[0_4px_12px_rgba(9,21,35,0.08)] dark:border-white/10 dark:bg-navy-950/68 dark:shadow-[0_4px_18px_rgba(0,0,0,0.22)]">
+            <div className="space-y-4 p-5">
+              {[1, 2, 3, 4, 5].map((i) => (
+                <div key={i} className="flex items-center gap-4">
+                  <Skeleton className="h-10 w-full rounded-[8px]" />
                   <Skeleton className="h-8 w-20 rounded-full" />
                   <Skeleton className="h-4 w-24" />
                   <Skeleton className="h-4 w-16" />
@@ -475,46 +431,143 @@ export function AlunosClient({
             </div>
           </div>
         ) : (
-          <DataTable
-            key={searchQuery}
-            columns={columns}
-            data={students}
-            serverTotalItems={totalStudents}
-            serverPage={currentPage}
-            onServerPageChange={(pageNum) => {
-              navigateWithParams(
-                (params) => {
-                  params.set("page", pageNum.toString());
-                },
-                "push",
-              );
-            }}
-            onServerSearch={(query) => {
-              navigateWithParams((params) => {
-                if (query) {
-                  params.set("search", query);
-                } else {
-                  params.delete("search");
-                }
-                params.set("page", "1");
-              });
-            }}
-            rowKey={(row) => row.id}
-            onRowClick={(row) => router.push(`/alunos/${row.id}`)}
-            emptyMessage={emptyMessage}
-            toolbarTitle={t("directoryToolbarTitle")}
-            toolbarSummary={
-              hasActiveFilters
-                ? t("directoryFilteredSummary", { count: totalStudents })
-                : t("directorySummary", { count: totalStudents })
-            }
-            toolbarActions={toolbarActions}
-            searchPlaceholder={t("search")}
-            searchValue={searchQuery}
-            emptyStateIcon={Users}
-          />
+          <div className="overflow-hidden rounded-[12px] border border-border bg-card/88 shadow-[0_4px_12px_rgba(9,21,35,0.08)] dark:border-white/10 dark:bg-navy-950/68 dark:shadow-[0_4px_18px_rgba(0,0,0,0.22)]">
+            <div className="overflow-x-auto">
+              <table className="w-full text-left">
+                <thead>
+                  <tr className="border-b border-navy-950/5 dark:border-white/5">
+                    {TABLE_HEADERS.map((header) => (
+                      <th
+                        key={header}
+                        className="px-5 py-3.5 text-xs font-semibold uppercase tracking-wider text-navy-700 dark:text-navy-200"
+                      >
+                        {header}
+                      </th>
+                    ))}
+                    <th className="px-5 py-3.5" />
+                  </tr>
+                </thead>
+                <tbody>
+                  {displayedStudents.length === 0 ? (
+                    <tr>
+                      <td colSpan={8} className="px-5 py-8 text-center text-sm text-navy-700 dark:text-navy-200">
+                        {emptyMessage}
+                      </td>
+                    </tr>
+                  ) : (
+                    displayedStudents.map((student) => {
+                      const latestBio = student.biometrics?.[0];
+                      const latestTest = student.tests?.[0];
+                      const status = getStatusFromZone(latestBio?.imcZone);
+                      return (
+                        <tr
+                          key={student.id}
+                          onClick={() => router.push(`/alunos/${student.id}`)}
+                          className="group cursor-pointer border-b border-navy-950/5 transition-colors hover:bg-muted dark:border-white/5"
+                        >
+                          <td className="px-5 py-4">
+                            <div className="flex items-center gap-3">
+                              <StudentAvatar name={student.name} />
+                              <span className="text-sm font-medium text-navy-950 dark:text-white">
+                                {student.name}
+                              </span>
+                            </div>
+                          </td>
+                          <td className="px-5 py-4 text-sm font-mono text-navy-700 dark:text-navy-200">
+                            #{student.processNumber ?? student.id.slice(-4)}
+                          </td>
+                          <td className="px-5 py-4 text-sm text-navy-950 dark:text-white">
+                            {student.className ?? "-"}
+                          </td>
+                          <td className="px-5 py-4 text-sm text-navy-700 dark:text-navy-200">
+                            {student.birthDate
+                              ? new Date(student.birthDate).toLocaleDateString(locale)
+                              : student.age ?? "-"}
+                          </td>
+                          <td className="px-5 py-4 text-sm font-semibold tabular-nums text-navy-950 dark:text-white">
+                            {latestBio ? Number(latestBio.imc).toFixed(1) : "-"}
+                          </td>
+                          <td className="px-5 py-4">
+                            <StatusBadge status={status} t={t} />
+                          </td>
+                          <td className="px-5 py-4 text-sm text-navy-700 dark:text-navy-200">
+                            {latestTest
+                              ? new Date(latestTest.recordedAt).toLocaleDateString(locale, {
+                                  month: "short",
+                                  day: "numeric",
+                                  year: "numeric",
+                                })
+                              : "-"}
+                          </td>
+                          <td className="px-5 py-4">
+                            <button
+                              type="button"
+                              onClick={(e) => e.stopPropagation()}
+                              className="rounded-[6px] p-1.5 opacity-0 transition-all hover:bg-muted group-hover:opacity-100"
+                            >
+                              <Ellipsis className="size-4 text-navy-700 dark:text-navy-200" />
+                            </button>
+                          </td>
+                        </tr>
+                      );
+                    })
+                  )}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Pagination */}
+            {totalPages > 1 && (
+              <div className="flex items-center justify-between border-t border-navy-950/5 px-5 py-3 dark:border-white/5">
+                <span className="text-xs text-navy-700 dark:text-navy-200">
+                  {t("directoryFilteredSummary", { count: totalStudents })}
+                </span>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    disabled={currentPage <= 1}
+                    onClick={() =>
+                      navigateWithParams(
+                        (params) => {
+                          params.set("page", String(currentPage - 1));
+                        },
+                        "push",
+                      )
+                    }
+                    className="rounded-[6px] p-1.5 text-navy-700 transition-colors hover:bg-muted disabled:opacity-40 dark:text-navy-200"
+                  >
+                    <ChevronLeft className="size-4" />
+                  </button>
+                  <span className="text-xs font-medium text-navy-950 dark:text-white">
+                    {currentPage} / {totalPages}
+                  </span>
+                  <button
+                    type="button"
+                    disabled={currentPage >= totalPages}
+                    onClick={() =>
+                      navigateWithParams(
+                        (params) => {
+                          params.set("page", String(currentPage + 1));
+                        },
+                        "push",
+                      )
+                    }
+                    className="rounded-[6px] p-1.5 text-navy-700 transition-colors hover:bg-muted disabled:opacity-40 dark:text-navy-200"
+                  >
+                    <ChevronRight className="size-4" />
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
         )}
-      </PageScaffold>
+      </div>
+
+      <BulkImportModal
+        open={showBulkImport}
+        onClose={() => setShowBulkImport(false)}
+        onSuccess={() => void handleImportSuccess()}
+      />
 
       <Sheet open={showCreate} onOpenChange={setShowCreate}>
         <SheetContent
@@ -552,12 +605,12 @@ export function AlunosClient({
                     {
                       value: "M",
                       label: t("male"),
-                      icon: <Mars className="size-3.5" />,
+                      icon: <svg className="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="8" r="5"/><path d="M12 13v9m0 0-3-3m3 3 3-3"/></svg>,
                     },
                     {
                       value: "F",
                       label: t("female"),
-                      icon: <Venus className="size-3.5" />,
+                      icon: <svg className="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="8" r="5"/><path d="M12 13v9m-3-3h6"/></svg>,
                     },
                   ]}
                   value={form.sex}

@@ -56,27 +56,33 @@ export default async function VerifyEmailPage({ searchParams }: Props) {
   const copy = STATUS_KEYS[status] ?? STATUS_KEYS.missing;
 
   return (
-    <div className="mx-auto w-full max-w-lg rounded-[2rem] border border-white/12 bg-white/10 p-6 text-center shadow-[0_28px_70px_rgba(5,14,24,0.34)] backdrop-blur-md sm:p-8">
-      <p className="text-xs font-semibold uppercase tracking-[0.18em] text-gold-200/90">
-        {t("eyebrow")}
-      </p>
-      <h1 className="mt-4 font-display text-3xl font-semibold tracking-tight text-white">
-        {t(copy.title)}
-      </h1>
-      <p className="mt-3 text-sm leading-7 text-white/72">
-        {t(copy.description)}
-      </p>
+    <div className="relative w-full overflow-hidden rounded-[24px] border border-white/20 bg-white/60 shadow-[0_20px_60px_rgba(5,14,24,0.09)] backdrop-blur-md dark:border-white/10 dark:bg-navy-950/60 dark:shadow-[0_20px_60px_rgba(5,14,24,0.32)]">
+      {/* Gold gradient top line */}
+      <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-gold-400/40 to-transparent" />
+      {/* Radial gold glow */}
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_80%_0%,rgba(244,211,94,0.08),transparent_44%)]" />
+      <div className="relative border-b border-white/20 px-5 py-5 text-center dark:border-white/10 sm:px-6">
+        <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-gold-600 dark:text-gold-400">
+          {t("eyebrow")}
+        </p>
+        <h1 className="mt-2 font-display text-xl font-semibold tracking-tight text-foreground">
+          {t(copy.title)}
+        </h1>
+        <p className="mx-auto mt-2 max-w-xs text-[12px] leading-relaxed text-muted-foreground sm:text-[13px]">
+          {t(copy.description)}
+        </p>
+      </div>
 
-      <div className="mt-8 flex flex-wrap justify-center gap-4 text-sm">
+      <div className="relative flex flex-wrap justify-center gap-4 px-5 py-5 text-sm sm:px-6">
         <Link
           href="/login"
-          className="font-semibold text-gold-200 transition-colors hover:text-gold-100"
+          className="font-semibold text-gold-600 transition-colors hover:text-gold-500 dark:text-gold-400 dark:hover:text-gold-300"
         >
           {t("loginLink")}
         </Link>
         <Link
           href="/register"
-          className="font-semibold text-white/72 transition-colors hover:text-white"
+          className="font-semibold text-muted-foreground transition-colors hover:text-foreground"
         >
           {t("registerLink")}
         </Link>

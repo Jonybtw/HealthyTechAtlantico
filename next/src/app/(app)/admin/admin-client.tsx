@@ -312,9 +312,9 @@ export default function AdminPage() {
         >
           {loadingStaff ? (
             <div className="flex flex-col gap-2">
-              <Skeleton className="h-12 w-full rounded-xl" />
-              <Skeleton className="h-12 w-full rounded-xl" />
-              <Skeleton className="h-12 w-full rounded-xl" />
+              <Skeleton className="h-12 w-full rounded-[8px]" />
+              <Skeleton className="h-12 w-full rounded-[8px]" />
+              <Skeleton className="h-12 w-full rounded-[8px]" />
             </div>
           ) : null}
 
@@ -327,7 +327,7 @@ export default function AdminPage() {
           ) : null}
 
           {!loadingStaff && staff.length > 0 ? (
-            <div className="surface-utility overflow-x-auto rounded-[24px] p-1">
+            <div className="surface-utility overflow-x-auto rounded-[12px] p-1">
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-white/20 bg-muted/30 dark:border-white/10">
@@ -358,7 +358,7 @@ export default function AdminPage() {
                       </td>
                       <td className="px-4 py-3">
                         <span
-                          className={`inline-block rounded-xl px-2.5 py-1 text-xs font-medium ${getRoleBadgeClass(
+                          className={`inline-block rounded-[8px] px-2.5 py-1 text-xs font-medium ${getRoleBadgeClass(
                             staffUser.role,
                           )}`}
                         >
@@ -373,7 +373,7 @@ export default function AdminPage() {
                       <td className="px-4 py-3 text-right">
                         <button
                           onClick={() => setDeleteTarget(staffUser)}
-                          className="rounded-xl border border-transparent p-1.5 text-muted-foreground transition-all hover:border-danger-200 hover:bg-danger-50 hover:text-danger-600 dark:hover:border-danger-800/30 dark:hover:bg-danger-900/20"
+                          className="rounded-[8px] border border-transparent p-1.5 text-muted-foreground transition-all hover:border-danger-200 hover:bg-danger-50 hover:text-danger-600 dark:hover:border-danger-800/30 dark:hover:bg-danger-900/20"
                           aria-label={t("deleteBtn")}
                         >
                           <Trash2 size={15} />
@@ -415,9 +415,9 @@ export default function AdminPage() {
 
           {loadingUsers ? (
             <div className="flex flex-col gap-2">
-              <Skeleton className="h-12 w-full rounded-xl" />
-              <Skeleton className="h-12 w-full rounded-xl" />
-              <Skeleton className="h-12 w-full rounded-xl" />
+              <Skeleton className="h-12 w-full rounded-[8px]" />
+              <Skeleton className="h-12 w-full rounded-[8px]" />
+              <Skeleton className="h-12 w-full rounded-[8px]" />
             </div>
           ) : null}
 
@@ -430,7 +430,7 @@ export default function AdminPage() {
           ) : null}
 
           {!loadingUsers && filteredUsers.length > 0 ? (
-            <div className="surface-utility overflow-x-auto rounded-[24px] p-1">
+            <div className="surface-utility overflow-x-auto rounded-[12px] p-1">
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-white/20 bg-muted/30 dark:border-white/10">
@@ -464,7 +464,7 @@ export default function AdminPage() {
                       </td>
                       <td className="px-4 py-3">
                         <span
-                          className={`inline-block rounded-xl px-2.5 py-1 text-xs font-medium ${getRoleBadgeClass(
+                          className={`inline-block rounded-[8px] px-2.5 py-1 text-xs font-medium ${getRoleBadgeClass(
                             user.role,
                           )}`}
                         >
@@ -474,7 +474,7 @@ export default function AdminPage() {
                       <td className="px-4 py-3">
                         <div className="flex flex-wrap gap-2">
                           <span
-                            className={`inline-block rounded-xl px-2.5 py-1 text-xs font-medium ${
+                            className={`inline-block rounded-[8px] px-2.5 py-1 text-xs font-medium ${
                               user.emailVerified
                                 ? "bg-success-100 text-success-700 dark:bg-success-900/30 dark:text-success-300"
                                 : "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300"
@@ -485,7 +485,7 @@ export default function AdminPage() {
                               : t("pendingVerification")}
                           </span>
                           {user.mustChangePassword ? (
-                            <span className="inline-block rounded-xl bg-danger-100 px-2.5 py-1 text-xs font-medium text-danger-700 dark:bg-danger-900/30 dark:text-danger-300">
+                            <span className="inline-block rounded-[8px] bg-danger-100 px-2.5 py-1 text-xs font-medium text-danger-700 dark:bg-danger-900/30 dark:text-danger-300">
                               {t("needsResetStatus")}
                             </span>
                           ) : null}

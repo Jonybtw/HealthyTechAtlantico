@@ -226,7 +226,7 @@ export const DateField = React.forwardRef<HTMLButtonElement, DateFieldProps>(
             </button>
           </PopoverTrigger>
 
-          <PopoverContent align="start" className="w-[320px] rounded-[24px] p-4">
+          <PopoverContent align="start" className="w-[320px] rounded-[16px] p-4">
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <button
@@ -288,7 +288,7 @@ export const DateField = React.forwardRef<HTMLButtonElement, DateFieldProps>(
                       onClick={() => handleSelect(date)}
                       disabled={isDisabledDay}
                       className={cn(
-                        "flex h-10 items-center justify-center rounded-[24px] text-sm transition-all duration-200",
+                        "flex h-10 items-center justify-center rounded-[16px] text-sm transition-all duration-200",
                         isSelected
                           ? "bg-navy-900 text-white shadow-card"
                           : isToday

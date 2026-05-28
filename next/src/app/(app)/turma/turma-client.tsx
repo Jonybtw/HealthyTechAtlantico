@@ -14,8 +14,9 @@ import {
   Users,
 } from "lucide-react";
 import { PageScaffold } from "@/components/ui/page-scaffold";
-import { PageSection } from "@/components/ui/page-section";
 import { ClassPicker } from "@/components/ui/class-picker";
+import { useReducedEffects } from "@/hooks/use-reduced-effects";
+import { cn } from "@/lib/utils";
 import { DataTable, type Column } from "@/components/ui/data-table";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -34,6 +35,19 @@ interface StudentRow {
   className: string | null;
   latestBiometric: { imc: number | string; imcZone: string } | null;
   testCount: number;
+}
+
+function sectionAnimation(index: number, re: boolean) {
+  if (re) return {};
+  return { animationDelay: `${index * 70}ms` };
+}
+
+function BioPanel({ children, className, index, reducedEffects }: { children: React.ReactNode; className?: string; index: number; reducedEffects: boolean }) {
+  return (
+    <section style={sectionAnimation(index, reducedEffects)} className={cn("relative overflow-hidden rounded-[12px] border border-border bg-card/88 shadow-[0_4px_12px_rgba(9,21,35,0.08)] backdrop-blur-sm dark:border-white/10 dark:bg-navy-950/68 dark:shadow-[0_4px_18px_rgba(0,0,0,0.22)]", !reducedEffects && "animate-fade-in-up opacity-0", className)}>
+      <div className="relative">{children}</div>
+    </section>
+  );
 }
 
 function isHealthyZone(zone: string | null | undefined) {
@@ -229,6 +243,7 @@ export default function TurmaPage() {
     }
   };
 
+  const reducedEffects = useReducedEffects();
   const selectedClass = classes.find((item) => item.id === classId) ?? null;
 
   const stats = useMemo(() => {
@@ -346,7 +361,6 @@ export default function TurmaPage() {
     return (
       <PageScaffold
         headerProps={{
-          eyebrow: t("eyebrow"),
           title: t("title"),
           description: t("description"),
         }}
@@ -364,7 +378,6 @@ export default function TurmaPage() {
     <PageScaffold
       className="gap-5"
       headerProps={{
-        eyebrow: t("eyebrow"),
         title: t("title"),
         description: t("description"),
       }}
@@ -398,12 +411,9 @@ export default function TurmaPage() {
         </div>
       }
     >
-      <PageSection
-        tone="primary"
-        layout="analytics"
-      >
+      <BioPanel index={0} reducedEffects={reducedEffects} className="p-5">
         {loadingClasses ? (
-          <Skeleton className="h-28 rounded-[24px]" />
+          <Skeleton className="h-28 rounded-[12px]" />
         ) : classesError ? (
           <EmptyState
             icon={Users}
@@ -480,13 +490,13 @@ export default function TurmaPage() {
             description={t("noClassesDescription")}
           />
         )}
-      </PageSection>
+      </BioPanel>
 
       {!classId ? null : loading ? (
         <div className="space-y-5">
           <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_320px]">
-            <Skeleton className="h-[640px] rounded-[24px]" />
-            <Skeleton className="h-[320px] rounded-[24px]" />
+            <Skeleton className="h-[640px] rounded-[12px]" />
+            <Skeleton className="h-[320px] rounded-[12px]" />
           </div>
         </div>
       ) : (
@@ -497,23 +507,13 @@ export default function TurmaPage() {
               : "grid gap-5"
           }
         >
-          <PageSection
-            tone="secondary"
-            layout="list"
-            actions={
-              hasAttentionStudents ? undefined : (
-                <Button
-                  type="button"
-                  size="sm"
-                  variant="secondary"
-                  icon={<ChartIcon className="size-4" />}
-                  onClick={() => router.push("/analise")}
-                >
-                  {t("openAnalysis")}
-                </Button>
-              )
-            }
-          >
+          <BioPanel index={1} reducedEffects={reducedEffects} className="p-5">
+            {!hasAttentionStudents && (
+              <div className="mb-4 flex items-center justify-between gap-3">
+                <p className="text-tiny font-semibold uppercase tracking-[0.18em] text-muted-foreground">{t("rosterToolbarTitle")}</p>
+                <Button type="button" size="sm" variant="ghost" icon={<ChartIcon className="size-4" />} onClick={() => router.push("/analise")}>{t("openAnalysis")}</Button>
+              </div>
+            )}
             <ClassSnapshotBar
               total={stats.total}
               withData={stats.withData}
@@ -543,25 +543,14 @@ export default function TurmaPage() {
               toolbarSummary={`${students.length} ${t("studentsUnit")}`}
               searchPlaceholder={t("searchStudents")}
             />
-          </PageSection>
+          </BioPanel>
 
           {hasAttentionStudents ? (
-            <PageSection
-              tone="utility"
-              layout="list"
-              title={t("attentionQueueTitle")}
-              actions={
-                <Button
-                  type="button"
-                  size="sm"
-                  variant="secondary"
-                  icon={<ChartIcon className="size-4" />}
-                  onClick={() => router.push("/analise")}
-                >
-                  {t("openAnalysis")}
-                </Button>
-              }
-            >
+            <BioPanel index={2} reducedEffects={reducedEffects} className="p-5">
+              <div className="mb-4 flex items-center justify-between gap-3">
+                <p className="text-sm font-bold tracking-tight text-foreground">{t("attentionQueueTitle")}</p>
+                <Button type="button" size="sm" variant="ghost" icon={<ChartIcon className="size-4" />} onClick={() => router.push("/analise")}>{t("openAnalysis")}</Button>
+              </div>
               <div className="space-y-3">
                 {attentionStudents.slice(0, 5).map((student) => {
                   const needsBiometrics = !student.latestBiometric;
@@ -575,7 +564,7 @@ export default function TurmaPage() {
                       key={student.id}
                       type="button"
                       onClick={() => router.push(`/alunos/${student.id}`)}
-                      className="flex w-full items-center gap-3 rounded-[24px] border border-border/70 bg-background/72 px-4 py-3 text-left transition-all duration-200 hover:-translate-y-0.5 hover:border-gold-300/40 hover:shadow-card"
+                      className="flex w-full items-center gap-3 rounded-[12px] border border-border/70 bg-background/72 px-4 py-3 text-left transition-all duration-200 hover:-translate-y-0.5 hover:border-gold-300/40 hover:shadow-card"
                     >
                       <div className="min-w-0 flex-1">
                         <StudentIdentity
@@ -598,7 +587,7 @@ export default function TurmaPage() {
                   );
                 })}
               </div>
-            </PageSection>
+            </BioPanel>
           ) : null}
         </div>
       )}
@@ -649,7 +638,7 @@ function ClassSnapshotBar({
   const noDataWidth = (noData / safeTotal) * 100;
 
   return (
-    <div className="space-y-4 rounded-3xl border border-border/70 bg-background/60 p-4">
+    <div className="space-y-4 rounded-[12px] border border-border/70 bg-background/60 p-4">
       <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
         <MetricChip
           icon={Users}
@@ -723,7 +712,7 @@ function MetricChip({
   meta: string;
 }) {
   return (
-    <div className="rounded-[24px] border border-border/70 bg-background/58 px-4 py-3">
+    <div className="rounded-[12px] border border-border/70 bg-background/58 px-4 py-3">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <p className="text-tiny font-semibold uppercase tracking-[0.16em] text-muted-foreground">

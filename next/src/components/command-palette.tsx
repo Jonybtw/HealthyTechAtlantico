@@ -52,7 +52,7 @@ export function CommandPalette({
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="overflow-hidden p-0 max-w-lg">
+      <DialogContent className="overflow-hidden p-0 max-w-lg" hideClose>
         <VisuallyHidden.Root>
           <DialogTitle>Paleta de comandos</DialogTitle>
         </VisuallyHidden.Root>
@@ -63,7 +63,7 @@ export function CommandPalette({
               value={search}
               onValueChange={setSearch}
               placeholder={t("commandPalette.placeholder")}
-              className="flex h-10 w-full bg-transparent text-sm outline-none placeholder:text-muted-foreground"
+              className="flex h-10 w-full border-0 bg-transparent text-sm outline-none outline-0 focus:border-0 focus:outline-none focus:ring-0 focus-visible:outline-none focus-visible:ring-0 placeholder:text-muted-foreground"
             />
             <kbd className="hidden sm:inline-flex h-4 items-center gap-1 rounded border border-border bg-muted px-1 text-micro font-medium text-muted-foreground">
               ESC
@@ -78,7 +78,7 @@ export function CommandPalette({
             {/* ── Navigation ──────────────────────────────── */}
             <Command.Group
               heading={t("commandPalette.navigate")}
-              className="text-micro font-semibold text-muted-foreground uppercase tracking-[0.2em] px-2 py-1.5"
+              className="[&_[cmdk-group-heading]]:px-2 [&_[cmdk-group-heading]]:py-1.5 [&_[cmdk-group-heading]]:text-micro [&_[cmdk-group-heading]]:font-semibold [&_[cmdk-group-heading]]:text-muted-foreground [&_[cmdk-group-heading]]:uppercase [&_[cmdk-group-heading]]:tracking-[0.2em]"
             >
               {visibleNav.map((item) => {
                 const Icon = item.icon;
@@ -88,9 +88,9 @@ export function CommandPalette({
                     key={item.href}
                     value={label}
                     onSelect={() => runAction(() => router.push(item.href))}
-                    className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm cursor-pointer select-none data-[selected=true]:bg-muted/80 data-[selected=true]:text-foreground transition-colors"
+                    className="group flex items-center gap-3 rounded-[6px] px-3 py-2 text-sm cursor-pointer select-none hover:bg-muted/50 data-[selected=true]:bg-muted/80 data-[selected=true]:text-foreground transition-colors"
                   >
-                    <Icon className="size-4 text-muted-foreground" />
+                    <Icon className="size-4 text-muted-foreground group-data-[selected=true]:text-foreground transition-colors" />
                     <span>{label}</span>
                   </Command.Item>
                 );
@@ -100,17 +100,17 @@ export function CommandPalette({
             {/* ── Actions ─────────────────────────────────── */}
             <Command.Group
               heading={t("commandPalette.actions")}
-              className="text-micro font-semibold text-muted-foreground uppercase tracking-[0.2em] px-2 py-1.5 mt-1"
+              className="mt-2 border-t border-border pt-1 [&_[cmdk-group-heading]]:px-2 [&_[cmdk-group-heading]]:py-1.5 [&_[cmdk-group-heading]]:text-micro [&_[cmdk-group-heading]]:font-semibold [&_[cmdk-group-heading]]:text-muted-foreground [&_[cmdk-group-heading]]:uppercase [&_[cmdk-group-heading]]:tracking-[0.2em]"
             >
               <Command.Item
                 value={t("commandPalette.toggleTheme")}
                 onSelect={() => runAction(toggleTheme)}
-                className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm cursor-pointer select-none data-[selected=true]:bg-muted/80 data-[selected=true]:text-foreground transition-colors"
+                className="group flex items-center gap-3 rounded-[6px] px-3 py-2 text-sm cursor-pointer select-none hover:bg-muted/50 data-[selected=true]:bg-muted/80 data-[selected=true]:text-foreground transition-colors"
               >
                 {theme === "light" ? (
-                  <Moon className="size-4 text-muted-foreground" />
+                  <Moon className="size-4 text-muted-foreground group-data-[selected=true]:text-foreground transition-colors" />
                 ) : (
-                  <Sun className="size-4 text-muted-foreground" />
+                  <Sun className="size-4 text-muted-foreground group-data-[selected=true]:text-foreground transition-colors" />
                 )}
                 <span>{t("commandPalette.toggleTheme")}</span>
               </Command.Item>
@@ -120,9 +120,9 @@ export function CommandPalette({
                 onSelect={() =>
                   runAction(() => signOut({ callbackUrl: "/login" }))
                 }
-                className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm cursor-pointer select-none data-[selected=true]:bg-muted/80 data-[selected=true]:text-foreground transition-colors"
+                className="group flex items-center gap-3 rounded-[6px] px-3 py-2 text-sm cursor-pointer select-none hover:bg-muted/50 data-[selected=true]:bg-muted/80 data-[selected=true]:text-foreground transition-colors"
               >
-                <LogOut className="size-4 text-muted-foreground" />
+                <LogOut className="size-4 text-muted-foreground group-data-[selected=true]:text-foreground transition-colors" />
                 <span>{t("commandPalette.signOut")}</span>
               </Command.Item>
             </Command.Group>

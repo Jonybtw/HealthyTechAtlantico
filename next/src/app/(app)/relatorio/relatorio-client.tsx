@@ -24,8 +24,9 @@ import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
 import { FieldShell } from "@/components/ui/field-shell";
 import { PageScaffold } from "@/components/ui/page-scaffold";
-import { PageSection } from "@/components/ui/page-section";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useReducedEffects } from "@/hooks/use-reduced-effects";
+import { cn } from "@/lib/utils";
 import { StudentIdentity } from "@/components/ui/student-identity";
 import {
   StudentPicker,
@@ -101,6 +102,22 @@ const TEST_LABEL_KEYS: Record<string, string> = {
   senta: "testSentaAlcanca",
   senta_alcanca: "testSentaAlcanca",
 };
+
+function sectionAnimation(index: number, re: boolean) {
+  if (re) return {};
+  return { animationDelay: `${index * 70}ms` };
+}
+
+function BioPanel({ children, className, index, reducedEffects }: { children: React.ReactNode; className?: string; index: number; reducedEffects: boolean }) {
+  return (
+    <section style={sectionAnimation(index, reducedEffects)} className={cn("relative overflow-hidden rounded-[12px] border border-border bg-card/88 shadow-[0_4px_12px_rgba(9,21,35,0.08)] backdrop-blur-sm dark:border-white/10 dark:bg-navy-950/68 dark:shadow-[0_4px_18px_rgba(0,0,0,0.22)]", !reducedEffects && "animate-fade-in-up opacity-0", className)}>
+      <div className="relative">{children}</div>
+    </section>
+  );
+}
+
+const reportSurfaceClassName =
+  "rounded-[12px] border border-border/70 bg-card/88 shadow-card backdrop-blur-sm dark:border-white/10 dark:bg-white/[0.06]";
 
 function toNumber(value: number | string | null | undefined) {
   if (typeof value === "number") {
@@ -187,6 +204,7 @@ export default function RelatorioClient() {
   const locale = useLocale();
   const { role } = useUser();
 
+  const reducedEffects = useReducedEffects();
   const canViewReports =
     role === "ADMIN" ||
     role === "PROFESSOR" ||
@@ -508,7 +526,7 @@ export default function RelatorioClient() {
       let headerTextX = 14;
 
       try {
-        const logoResponse = await fetch("/logo.png");
+        const logoResponse = await fetch("/logo-icon.png");
         const logoBlob = await logoResponse.blob();
         const logoDataUrl = await new Promise<string>((resolve) => {
           const reader = new FileReader();
@@ -539,7 +557,7 @@ export default function RelatorioClient() {
       doc.setFont("helvetica", "normal");
       doc.setFontSize(8);
       doc.text(
-        `${locale === "en" ? "Issued on" : "Emitido em"} ${new Intl.DateTimeFormat(
+        `${t("issuedOn")} ${new Intl.DateTimeFormat(
           locale,
           {
             day: "2-digit",
@@ -578,10 +596,8 @@ export default function RelatorioClient() {
       doc.setFontSize(8);
       doc.text(
         selectedStudent?.className
-          ? `${locale === "en" ? "Class" : "Turma"} ${selectedStudent.className}`
-          : locale === "en"
-            ? "Student"
-            : "Aluno",
+          ? `${t("pdfClassLabel")} ${selectedStudent.className}`
+          : t("pdfStudentLabel"),
         30,
         y + 6,
       );
@@ -720,6 +736,22 @@ export default function RelatorioClient() {
         doc.text(t("noTests"), width / 2, y + 6.5, { align: "center" });
       }
 
+      const disclaimerText = t("disclaimerText");
+
+      const disclaimerLines = doc.splitTextToSize(disclaimerText, width - 28);
+      const disclaimerLineHeight = 3.6;
+      const disclaimerBlockH = disclaimerLines.length * disclaimerLineHeight + 6;
+      const disclaimerY = height - 16 - disclaimerBlockH;
+
+      stroke(border);
+      doc.setLineWidth(0.3);
+      doc.line(14, disclaimerY, width - 14, disclaimerY);
+
+      text(mutedForeground);
+      doc.setFont("helvetica", "italic");
+      doc.setFontSize(6.5);
+      doc.text(disclaimerLines, 14, disclaimerY + 5);
+
       fill(footerBackground);
       doc.rect(0, height - 16, width, 16, "F");
       fill(brand);
@@ -728,9 +760,7 @@ export default function RelatorioClient() {
       doc.setFont("helvetica", "normal");
       doc.setFontSize(6.5);
       doc.text(
-        locale === "en"
-          ? "HealthyTech Atlântico · Document generated automatically"
-          : "HealthyTech Atlântico · Documento gerado automaticamente",
+        t("pdfFooter"),
         width / 2,
         height - 7.5,
         { align: "center" },
@@ -789,7 +819,6 @@ export default function RelatorioClient() {
     return (
       <PageScaffold
         headerProps={{
-          eyebrow: t("eyebrow"),
           title: t("title"),
           description: t("description"),
         }}
@@ -807,7 +836,6 @@ export default function RelatorioClient() {
     return (
       <PageScaffold
         headerProps={{
-          eyebrow: t("eyebrow"),
           title: t("title"),
           description: t("description"),
         }}
@@ -824,20 +852,13 @@ export default function RelatorioClient() {
   return (
     <PageScaffold
       headerProps={{
-        eyebrow: t("eyebrow"),
         title: t("title"),
         description: t("description"),
       }}
     >
       <div className="grid items-start gap-5 xl:grid-cols-[minmax(0,1.08fr)_360px]">
         <div className="space-y-5">
-          <PageSection
-            eyebrow={t("workspaceEyebrow")}
-            title={t("workspaceTitle")}
-            description={t("workspaceDescription")}
-            tone="primary"
-            layout="analytics"
-          >
+          <BioPanel index={0} reducedEffects={reducedEffects} className="p-5">
             <div className="grid gap-5 xl:grid-cols-[minmax(0,1.1fr)_280px]">
               <div className="space-y-4">
                 <div className="space-y-2">
@@ -862,7 +883,7 @@ export default function RelatorioClient() {
                 </div>
 
                 {studentId && selectedStudent ? (
-                  <div className="rounded-3xl border border-white/28 bg-[linear-gradient(145deg,rgba(255,255,255,0.94),rgba(246,240,231,0.94))] p-5 shadow-card">
+                  <div className={cn(reportSurfaceClassName, "p-5")}>
                     <div className="flex flex-wrap items-start justify-between gap-4">
                       <div className="flex items-center gap-4">
                         <span
@@ -924,7 +945,7 @@ export default function RelatorioClient() {
                 )}
               </div>
 
-              <div className="rounded-3xl border border-navy-900/90 bg-[linear-gradient(160deg,rgba(9,21,35,0.98),rgba(20,38,57,0.94))] p-5 text-white shadow-card">
+              <div className="rounded-[12px] border border-navy-900/90 bg-[linear-gradient(160deg,rgba(9,21,35,0.98),rgba(20,38,57,0.94))] p-5 text-white shadow-card">
                 <p className="text-tiny font-semibold uppercase tracking-[0.2em] text-gold-200/82">
                   {t("documentIncludesTitle")}
                 </p>
@@ -962,18 +983,17 @@ export default function RelatorioClient() {
                 </div>
               </div>
             </div>
-          </PageSection>
+          </BioPanel>
           <div className="grid gap-5 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
-            <PageSection
-              eyebrow={t("biometricsSection")}
-              title={t("latestBiometricsTitle")}
-              description={t("latestBiometricsDescription")}
-              tone="secondary"
-            >
+            <BioPanel index={1} reducedEffects={reducedEffects} className="p-5">
+              <div className="mb-4">
+                <p className="text-tiny font-semibold uppercase tracking-[0.18em] text-muted-foreground">{t("biometricsSection")}</p>
+                <h3 className="mt-0.5 text-lg font-bold tracking-tight text-foreground">{t("latestBiometricsTitle")}</h3>
+              </div>
               {loadingPreview && studentId ? (
                 <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
                   {[1, 2, 3, 4].map((item) => (
-                    <Skeleton key={item} className="h-24 rounded-[24px]" />
+                    <Skeleton key={item} className="h-24 rounded-[12px]" />
                   ))}
                 </div>
               ) : latestBiometric ? (
@@ -1018,7 +1038,7 @@ export default function RelatorioClient() {
                     />
                   </div>
 
-                  <div className="rounded-[24px] border border-border/70 bg-background/65 px-4 py-3">
+                  <div className="rounded-[12px] border border-border/70 bg-background/65 px-4 py-3">
                     <p className="text-tiny font-semibold uppercase tracking-[0.16em] text-muted-foreground">
                       {t("includedInPdf")}
                     </p>
@@ -1042,18 +1062,17 @@ export default function RelatorioClient() {
                   }
                 />
               )}
-            </PageSection>
+            </BioPanel>
 
-            <PageSection
-              eyebrow={t("testsSection")}
-              title={t("latestTestsTitle")}
-              description={t("latestTestsDescription")}
-              tone="secondary"
-            >
+            <BioPanel index={2} reducedEffects={reducedEffects} className="p-5">
+              <div className="mb-4">
+                <p className="text-tiny font-semibold uppercase tracking-[0.18em] text-muted-foreground">{t("testsSection")}</p>
+                <h3 className="mt-0.5 text-lg font-bold tracking-tight text-foreground">{t("latestTestsTitle")}</h3>
+              </div>
               {loadingPreview && studentId ? (
                 <div className="space-y-3">
                   {[1, 2, 3].map((item) => (
-                    <Skeleton key={item} className="h-20 rounded-[24px]" />
+                    <Skeleton key={item} className="h-20 rounded-[12px]" />
                   ))}
                 </div>
               ) : testData.length > 0 ? (
@@ -1083,25 +1102,15 @@ export default function RelatorioClient() {
                   }
                 />
               )}
-            </PageSection>
+            </BioPanel>
           </div>
         </div>
 
-        <PageSection
-          eyebrow={t("actionsEyebrow")}
-          title={t("actionsTitle")}
-          description={
-            studentId
-              ? t("actionsDescription")
-              : t("noStudentActionDescription")
-          }
-          tone="secondary"
-          className="xl:sticky xl:top-24"
-        >
+        <BioPanel index={3} reducedEffects={reducedEffects} className="p-5 xl:sticky xl:top-24">
           <div className="space-y-4">
-            <div className="rounded-3xl border border-white/24 bg-[linear-gradient(145deg,rgba(255,255,255,0.92),rgba(246,240,231,0.9))] p-4 shadow-card">
+            <div className={cn(reportSurfaceClassName, "p-4")}>
               <div className="flex items-start gap-3">
-                <div className="flex size-10 shrink-0 items-center justify-center rounded-[24px] bg-navy-100 text-navy-700 dark:bg-navy-900 dark:text-navy-200">
+                <div className="flex size-10 shrink-0 items-center justify-center rounded-[12px] bg-navy-100 text-navy-700 dark:bg-navy-900 dark:text-navy-200">
                   <FileText className="size-5" />
                 </div>
                 <div className="space-y-1">
@@ -1126,9 +1135,9 @@ export default function RelatorioClient() {
             </div>
 
             {canSendEmail ? (
-              <div className="rounded-3xl border border-border/70 bg-background/75 p-4">
+              <div className="rounded-[12px] border border-border/70 bg-background/75 p-4">
                 <div className="flex items-start gap-3">
-                  <div className="flex size-10 shrink-0 items-center justify-center rounded-[24px] bg-gold-100 text-gold-700 dark:bg-gold-500/10 dark:text-gold-300">
+                  <div className="flex size-10 shrink-0 items-center justify-center rounded-[12px] bg-gold-100 text-gold-700 dark:bg-gold-500/10 dark:text-gold-300">
                     <Mail className="size-5" />
                   </div>
                   <div className="space-y-1">
@@ -1185,7 +1194,7 @@ export default function RelatorioClient() {
               </div>
             ) : null}
 
-            <div className="rounded-3xl border border-border/70 bg-background/70 p-4">
+            <div className="rounded-[12px] border border-border/70 bg-background/70 p-4">
               <p className="text-tiny font-semibold uppercase tracking-[0.16em] text-muted-foreground">
                 {t("studentSelectionLabel")}
               </p>
@@ -1209,7 +1218,7 @@ export default function RelatorioClient() {
               ) : null}
             </div>
           </div>
-        </PageSection>
+        </BioPanel>
       </div>
     </PageScaffold>
   );
@@ -1221,7 +1230,7 @@ function SelectedStudentCard({
   student: StudentOption | undefined;
 }) {
   return (
-    <div className="flex min-h-[64px] w-full items-center rounded-[24px] border border-input/80 bg-card/95 px-4 py-3 shadow-sm">
+    <div className="flex min-h-[64px] w-full items-center rounded-[12px] border border-input/80 bg-card/95 px-4 py-3 shadow-sm">
       <div className="flex w-full items-center gap-3">
         {student ? (
           <StudentIdentity
@@ -1261,7 +1270,7 @@ function ReportMetricCard({
   badge?: React.ReactNode;
 }) {
   return (
-    <div className="rounded-[24px] border border-border/70 bg-background/70 p-4">
+    <div className="rounded-[12px] border border-border/70 bg-background/70 p-4">
       <div className="flex items-center gap-2 text-muted-foreground">
         <Icon className="size-4" />
         <p className="text-tiny font-semibold uppercase tracking-[0.16em]">
@@ -1288,9 +1297,9 @@ function ReportStatusCard({
   detail: string;
 }) {
   return (
-    <div className="rounded-[24px] border border-border/70 bg-background/58 p-4">
+    <div className="rounded-[12px] border border-border/70 bg-background/58 p-4">
       <div className="flex items-start gap-3">
-        <div className="flex size-10 shrink-0 items-center justify-center rounded-[24px] bg-surface-utility text-foreground shadow-sm">
+        <div className="flex size-10 shrink-0 items-center justify-center rounded-[12px] bg-surface-utility text-foreground shadow-sm">
           <Icon className="size-5" />
         </div>
         <div className="space-y-1">
@@ -1317,7 +1326,7 @@ function ReportTestRow({
   date: string | null;
 }) {
   return (
-    <div className="rounded-[24px] border border-border/70 bg-background/68 px-4 py-3">
+    <div className="rounded-[12px] border border-border/70 bg-background/68 px-4 py-3">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="space-y-1">
           <p className="text-sm font-semibold text-foreground">{label}</p>
@@ -1346,8 +1355,8 @@ function ReportEmptyPanel({
   description: string;
 }) {
   return (
-    <div className="flex min-h-[220px] flex-col items-center justify-center rounded-3xl border border-dashed border-border/80 bg-background/55 px-6 py-8 text-center">
-      <div className="flex size-12 items-center justify-center rounded-[24px] bg-surface-utility text-foreground shadow-sm">
+    <div className="flex min-h-[220px] flex-col items-center justify-center rounded-[12px] border border-dashed border-border/80 bg-background/55 px-6 py-8 text-center">
+      <div className="flex size-12 items-center justify-center rounded-[12px] bg-surface-utility text-foreground shadow-sm">
         <Icon className="size-5" />
       </div>
       <h3 className="mt-4 text-lg font-semibold tracking-[-0.03em] text-foreground">
@@ -1370,9 +1379,9 @@ function ReportEmptySteps({
   steps: string[];
 }) {
   return (
-    <div className="rounded-3xl border border-dashed border-border/80 bg-background/50 px-5 py-6">
+    <div className="rounded-[12px] border border-dashed border-border/80 bg-background/50 px-5 py-6">
       <div className="flex items-start gap-3">
-        <div className="flex size-12 shrink-0 items-center justify-center rounded-[24px] bg-surface-utility text-foreground shadow-sm">
+        <div className="flex size-12 shrink-0 items-center justify-center rounded-[12px] bg-surface-utility text-foreground shadow-sm">
           <FileCheck2 className="size-5" />
         </div>
         <div>
@@ -1389,7 +1398,7 @@ function ReportEmptySteps({
         {steps.map((step, index) => (
           <div
             key={step}
-            className="rounded-[24px] border border-border/70 bg-background/75 p-4"
+            className="rounded-[12px] border border-border/70 bg-background/75 p-4"
           >
             <p className="text-tiny font-semibold uppercase tracking-[0.16em] text-muted-foreground">
               0{index + 1}
@@ -1412,7 +1421,7 @@ function InlineStatusRow({
   tone: "default" | "success" | "warning" | "info";
 }) {
   return (
-    <div className="flex items-center justify-between gap-3 rounded-[24px] border border-border bg-surface-secondary shadow-sm px-3 py-3">
+    <div className="flex items-center justify-between gap-3 rounded-[12px] border border-border bg-surface-secondary shadow-sm px-3 py-3">
       <span className="text-sm text-white/78">{label}</span>
       <Badge variant={tone === "default" ? "default" : tone}>{value}</Badge>
     </div>

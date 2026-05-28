@@ -19,19 +19,6 @@ vi.mock("next/link", () => ({
   ),
 }));
 
-vi.mock("recharts", () => {
-  const Wrapper = ({ children }: { children?: ReactNode }) => (
-    <div>{children}</div>
-  );
-
-  return {
-    PieChart: Wrapper,
-    Pie: Wrapper,
-    Cell: Wrapper,
-    Tooltip: () => null,
-  };
-});
-
 vi.mock("@/hooks/use-reduced-effects", () => ({
   useReducedEffects: () => true,
 }));
@@ -39,82 +26,80 @@ vi.mock("@/hooks/use-reduced-effects", () => ({
 const messages = {
   dashboard: {
     title: "Painel",
-    unlinkedTitle: "Perfil n\u00e3o associado",
-    unlinkedDescription: "Conta ainda n\u00e3o associada a um perfil de aluno.",
+    unlinkedTitle: "Perfil não associado",
+    unlinkedDescription: "Conta ainda não associada a um perfil de aluno.",
     activitySummary: "Resumo da tua atividade",
-    lastBiometric: "\u00daltima biometria",
-    lastTests: "\u00daltimos testes",
-    lastMeasurement: "Data da \u00faltima medi\u00e7\u00e3o",
-    lastTestDate: "Data do \u00faltimo teste f\u00edsico",
-    platformOverview: "Vis\u00e3o geral da plataforma HealthyTech Atl\u00e2ntico",
-    psychologistOverview:
-      "Vis\u00e3o geral da fila de acompanhamento dos alunos",
-    parentOverview: "Vis\u00e3o geral dos alunos associados \u00e0 tua conta",
+    platformOverview: "Visão institucional",
+    teacherOverview: "Visão da turma",
+    psychologistOverview: "Visão clínica",
+    parentOverview: "Visão familiar",
+    dashboardStatus: "Painel",
     students: "Alunos",
     classes: "Turmas",
-    sessions: "Sess\u00f5es",
+    sessions: "Sessões",
     pendingSos: "SOS Pendentes",
     totalRegistered: "Total registados",
     activeClasses: "Turmas ativas",
-    evaluationsDone: "Avalia\u00e7\u00f5es realizadas",
-    alertsPending: "Alertas por resolver",
-    zafDistribution: "Distribui\u00e7\u00e3o ZAF por Ano Letivo",
-    zafDistributionSummary:
-      "Comparativo recente entre Zona Saud\u00e1vel e Zona de Melhoria.",
-    zsaf: "Z. Saud\u00e1vel",
-    zmf: "Z. Melhoria",
-    psychologistQueueTitle: "Fila priorit\u00e1ria de acompanhamento",
-    psychologistQueueDescription:
-      "Casos pendentes que devem ser revistos primeiro pelo psic\u00f3logo.",
-    psychologistRecentTitle: "Question\u00e1rios recentes",
-    psychologistRecentDescription: "\u00daltimos instrumentos submetidos.",
-    classPending: "Turma por confirmar",
-    alertOpenedOn: "Aberto em {date}",
-    openStudentFollowUp: "Abrir acompanhamento",
-    noPendingCasesTitle: "Sem casos pendentes",
-    noPendingCasesDescription: "A fila SOS est\u00e1 limpa neste momento.",
-    noRecentQuestionnairesTitle: "Sem question\u00e1rios recentes",
-    noRecentQuestionnairesDescription:
-      "Quando houver novas submiss\u00f5es, aparecem aqui para leitura r\u00e1pida.",
-    parentStudentsTitle: "Acompanhamento dos alunos",
-    parentStudentsDescription:
-      "Vis\u00e3o r\u00e1pida do estado recente dos alunos associados \u00e0 tua conta.",
-    parentReportsTitle: "Relat\u00f3rios recentes",
-    parentReportsDescription:
-      "\u00daltimos relat\u00f3rios gerados para consulta familiar.",
-    studentRecord: "Registo do aluno",
-    lastReport: "\u00daltimo relat\u00f3rio",
-    lastQuestionnaire: "\u00daltimo question\u00e1rio",
+    evaluationsDone: "Sessões registadas",
+    alertsPending: "SOS em aberto",
+    lastBiometric: "Última biometria",
+    lastTests: "Últimos testes",
+    lastQuestionnaire: "Último questionário",
+    lastReport: "Último relatório",
     linkedStudents: "Alunos associados",
-    historyGeneratedOn: "Gerado em {date}",
+    linkedStudentsDesc: "Alunos associados",
+    reportsAvailable: "Relatórios",
+    reportsAvailableDesc: "Relatórios disponíveis",
+    questionnairesAvailable: "Questionários",
+    familyQuestionnairesDesc: "Questionários submetidos",
+    studentsInFollowUp: "Alunos em acompanhamento",
+    studentsInFollowUpDesc: "Alunos com sinais recentes",
+    questionnaireQueue: "Submissões para leitura",
+    classPending: "Turma por confirmar",
+    noPendingCasesTitle: "Sem casos pendentes",
+    noPendingCasesDescription: "A fila SOS está limpa neste momento.",
     noLinkedStudentsDashboardTitle: "Sem alunos associados",
     noLinkedStudentsDashboardDescription:
-      "Quando a escola concluir a associa\u00e7\u00e3o, os dados surgem aqui.",
-    noReportsDashboardTitle: "Sem relat\u00f3rios recentes",
+      "Quando a escola concluir a associação, os dados surgem aqui.",
+    noReportsDashboardTitle: "Sem relatórios recentes",
     noReportsDashboardDescription:
-      "Os relat\u00f3rios disponibilizados pela escola aparecem nesta \u00e1rea.",
+      "Os relatórios disponibilizados pela escola aparecem nesta área.",
+    studentRecord: "Registo do aluno",
+    generatedOn: "Gerado em {date}",
     studentsUnit: "alunos",
-    overviewEyebrow: "Resumo operacional",
-    overviewTitle: "Panorama da atividade",
-    overviewDescription:
-      "Leitura r\u00e1pida dos n\u00fameros-chave da plataforma e dos sinais que pedem aten\u00e7\u00e3o no dia a dia.",
-    dashboardStatus: "Vis\u00e3o institucional",
-    yearInFocus: "Ano em foco",
-    coverageRecent: "Cobertura biom\u00e9trica do ano letivo mais recente.",
-    studentsWithBiometrics: "Com biometria",
     coverageLabel: "Cobertura registada",
-    healthyStudentsLabel: "Em Z. Saud\u00e1vel",
-    improvementStudentsLabel: "Em Z. Melhoria",
-    annualSeries: "S\u00e9rie anual",
-    annualSeriesDescription:
-      "Compara\u00e7\u00e3o do peso da Zona Saud\u00e1vel em cada ano letivo com registos.",
-    comparisonPanelTitle: "Evolu\u00e7\u00e3o por ano letivo",
-    comparisonPanelDescription:
-      "Percentagem de Zona Saud\u00e1vel entre os alunos com biometria registada.",
-    annualSeriesPendingTitle:
-      "Ainda n\u00e3o existe s\u00e9rie hist\u00f3rica compar\u00e1vel.",
-    annualSeriesPendingDescription:
-      "A evolu\u00e7\u00e3o anual aparece quando houver mais do que um ano letivo com biometria registada.",
+    studentsWithBiometrics: "Com biometria",
+    zsaf: "Z. Saudável",
+    zmf: "Z. Melhoria",
+    dataQualityTitle: "Cobertura e qualidade",
+    dataQualityDescription: "Lacunas do ano atual.",
+    zafTitle: "Zona saudável e evolução",
+    zafDescription: "Distribuição ZAF.",
+    commandCenter: "Comando",
+    commandCenterTitle: "Prioridades institucionais",
+    commandCenterDescription: "O que precisa de revisão.",
+    teacherDesk: "Aula e registos",
+    teacherDeskTitle: "Fila de trabalho da turma",
+    teacherDeskDescription: "Registos pendentes.",
+    clinicalDesk: "Acompanhamento",
+    clinicalDeskTitle: "Fila de intervenção",
+    clinicalDeskDescription: "Casos SOS por resolver.",
+    familyDesk: "Família",
+    familyDeskTitle: "Acompanhamento por aluno",
+    familyDeskDescription: "Últimos sinais partilhados.",
+    studentDesk: "Percurso",
+    studentDeskTitle: "O teu estado atual",
+    studentDeskDescription: "Datas e atalhos principais.",
+    quickActions: "Ações rápidas",
+    quickActionsDescription: "Atalhos diretos.",
+    recentReportsTitle: "Relatórios recentes",
+    recentReportsDescription: "Últimos documentos.",
+    recentQuestionnairesTitle: "Instrumentos recentes",
+    recentQuestionnairesDescription: "Submissões recentes.",
+    activeStudentSos: "SOS ativo",
+    noStudentSignal: "Sem sinal ativo",
+    actionProfileTitle: "Perfil",
+    actionProfileDesc: "Preferências e conta",
   },
   nav: {
     perfil: "Perfil",
@@ -124,7 +109,7 @@ const messages = {
     autoestima: "Autoestima",
     kidmed: "KIDMED",
   },
-} as const;
+};
 
 function renderDashboard(summary: DashboardSummary, username: string) {
   return render(
@@ -139,47 +124,58 @@ function renderDashboard(summary: DashboardSummary, username: string) {
 }
 
 describe("DashboardClient", () => {
-  it("renders the unlinked student state with the unified header", () => {
+  it("renders the unlinked student state", () => {
     const summary: DashboardSummary = {
       variant: "student",
       studentSummary: null,
       cards: [],
+      quickActions: [{ id: "profile", titleKey: "actionProfileTitle", descriptionKey: "actionProfileDesc", href: "/perfil", icon: "users", tone: "secondary" }],
+      workItems: [],
       zafByYear: null,
     };
 
-    renderDashboard(summary, "Jo\u00e3o");
+    renderDashboard(summary, "João");
 
-    expect(screen.getByRole("heading", { name: /Jo\u00e3o/i })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: /João/i })).toBeInTheDocument();
     expect(
-      screen.getByRole("heading", { name: "Perfil n\u00e3o associado" }),
+      screen.getByRole("heading", { name: "Perfil não associado" }),
     ).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Perfil" })).toBeInTheDocument();
   });
 
-  it("renders the linked student summary cards", () => {
+  it("renders the linked student workspace", () => {
     const summary: DashboardSummary = {
       variant: "student",
       studentSummary: {
         name: "Maria Silva",
+        className: "7A",
+        schoolYear: "2025/2026",
         lastBiometric: "2026-03-20T00:00:00.000Z",
         lastTest: "2026-03-18T00:00:00.000Z",
+        lastQuestionnaire: "2026-03-21T00:00:00.000Z",
+        lastReportAt: "2026-03-22T00:00:00.000Z",
+        openSos: 0,
+        activeExemptions: 0,
       },
       cards: [],
+      quickActions: [],
+      workItems: [],
       zafByYear: null,
     };
 
     renderDashboard(summary, "Maria Silva");
 
-    expect(screen.getByRole("heading", { name: /Maria/i })).toBeInTheDocument();
-    expect(screen.getByText("\u00daltima biometria")).toBeInTheDocument();
-    expect(screen.getByText("\u00daltimos testes")).toBeInTheDocument();
+    expect(screen.getAllByRole("heading", { name: /Maria/i }).length).toBeGreaterThan(0);
+    expect(screen.getByText("O teu estado atual")).toBeInTheDocument();
+    expect(screen.getByText("Última biometria")).toBeInTheDocument();
+    expect(screen.getByText("Últimos testes")).toBeInTheDocument();
   });
 
-  it("renders the psychologist dashboard sections", () => {
+  it("renders the psychologist workspace", () => {
     const summary: DashboardSummary = {
       variant: "psychologist",
       studentSummary: null,
-      zafByYear: null,
+      zafByYear: [],
       cards: [
         {
           id: "open-sos",
@@ -190,6 +186,8 @@ describe("DashboardClient", () => {
           accent: "red",
         },
       ],
+      quickActions: [],
+      workItems: [],
       openAlerts: [
         {
           id: "alert-1",
@@ -210,34 +208,30 @@ describe("DashboardClient", () => {
       ],
     };
 
-    renderDashboard(summary, "Psic\u00f3loga");
+    renderDashboard(summary, "Psicóloga");
 
-    expect(
-      screen.getByText("Fila priorit\u00e1ria de acompanhamento"),
-    ).toBeInTheDocument();
-    expect(screen.getAllByText("Question\u00e1rios recentes").length).toBeGreaterThan(
-      0,
-    );
-    expect(
-      screen.getByRole("link", { name: /Abrir acompanhamento/i }),
-    ).toBeInTheDocument();
+    expect(screen.getByText("Fila de intervenção")).toBeInTheDocument();
+    expect(screen.getAllByText("Instrumentos recentes").length).toBeGreaterThan(0);
+    expect(screen.getByRole("link", { name: /Rita/i })).toBeInTheDocument();
   });
 
-  it("renders the parent dashboard sections", () => {
+  it("renders the parent workspace", () => {
     const summary: DashboardSummary = {
       variant: "parent",
       studentSummary: null,
-      zafByYear: null,
+      zafByYear: [],
       cards: [
         {
           id: "linked-students",
           titleKey: "linkedStudents",
-          descriptionKey: "linkedStudents",
+          descriptionKey: "linkedStudentsDesc",
           value: 1,
           icon: "users",
           accent: "blue",
         },
       ],
+      quickActions: [],
+      workItems: [],
       linkedStudents: [
         {
           id: "student-1",
@@ -246,12 +240,13 @@ describe("DashboardClient", () => {
           schoolYear: "2025/2026",
           lastReportAt: "2026-03-12T00:00:00.000Z",
           lastQuestionnaireAt: "2026-03-14T00:00:00.000Z",
+          lastBiometricAt: "2026-03-10T00:00:00.000Z",
         },
       ],
       recentReports: [
         {
           id: "report-1",
-          title: "Relat\u00f3rio de mar\u00e7o",
+          title: "Relatório de março",
           studentName: "Miguel",
           createdAt: "2026-03-15T00:00:00.000Z",
         },
@@ -260,17 +255,15 @@ describe("DashboardClient", () => {
 
     renderDashboard(summary, "Encarregado");
 
-    expect(screen.getByText("Acompanhamento dos alunos")).toBeInTheDocument();
-    expect(screen.getAllByText("Relat\u00f3rios recentes").length).toBeGreaterThan(
-      0,
-    );
+    expect(screen.getByText("Acompanhamento por aluno")).toBeInTheDocument();
+    expect(screen.getAllByText("Relatórios recentes").length).toBeGreaterThan(0);
     expect(screen.getAllByText("Miguel").length).toBeGreaterThan(0);
-    expect(screen.getByText("Relat\u00f3rio de mar\u00e7o")).toBeInTheDocument();
+    expect(screen.getByText("Relatório de março")).toBeInTheDocument();
   });
 
-  it("renders the staff dashboard analytics area", () => {
+  it("renders the admin command center", () => {
     const summary: DashboardSummary = {
-      variant: "staff",
+      variant: "admin",
       studentSummary: null,
       cards: [
         {
@@ -281,13 +274,17 @@ describe("DashboardClient", () => {
           icon: "users",
           accent: "blue",
         },
+      ],
+      quickActions: [],
+      workItems: [],
+      quality: [
         {
-          id: "classes",
-          titleKey: "classes",
-          descriptionKey: "activeClasses",
-          value: 16,
-          icon: "school",
-          accent: "green",
+          id: "missing-biometrics",
+          titleKey: "missingBiometrics",
+          descriptionKey: "missingBiometricsDesc",
+          value: 8,
+          icon: "activity",
+          accent: "gold",
         },
       ],
       zafByYear: [
@@ -298,22 +295,14 @@ describe("DashboardClient", () => {
           zsaf: 104,
           zmf: 56,
         },
-        {
-          year: "2024/2025",
-          total: 180,
-          withBio: 150,
-          zsaf: 90,
-          zmf: 60,
-        },
       ],
     };
 
-    renderDashboard(summary, "Dire\u00e7\u00e3o");
+    renderDashboard(summary, "Direção");
 
-    expect(
-      screen.getAllByText("Distribui\u00e7\u00e3o ZAF por Ano Letivo").length,
-    ).toBeGreaterThan(0);
-    expect(screen.getAllByText("2025/2026").length).toBeGreaterThan(0);
+    expect(screen.getByText("Prioridades institucionais")).toBeInTheDocument();
+    expect(screen.getAllByText("Cobertura e qualidade").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Zona saudável e evolução").length).toBeGreaterThan(0);
     expect(screen.getByText("340")).toBeInTheDocument();
   });
 });

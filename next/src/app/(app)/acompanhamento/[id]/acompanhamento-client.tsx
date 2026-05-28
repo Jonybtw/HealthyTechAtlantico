@@ -286,12 +286,12 @@ export function AcompanhamentoClient({
           description={t("studentContextDescription")}
         >
           <div className="grid gap-3 sm:grid-cols-2">
-            <div className="rounded-[24px] border border-border bg-surface-utility p-4">
+            <div className="rounded-[12px] border border-border bg-surface-utility p-4">
               <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
                 {t("studentLabel")}
               </p>
               <div className="mt-3 flex items-center gap-3">
-                <span className="flex size-11 items-center justify-center rounded-[24px] bg-navy-900 text-white dark:bg-gold-300 dark:text-navy-950">
+                <span className="flex size-11 items-center justify-center rounded-[12px] bg-navy-900 text-white dark:bg-gold-300 dark:text-navy-950">
                   <UserRound className="size-5" />
                 </span>
                 <div>
@@ -307,7 +307,7 @@ export function AcompanhamentoClient({
               </div>
             </div>
 
-            <div className="rounded-[24px] border border-border bg-surface-utility p-4">
+            <div className="rounded-[12px] border border-border bg-surface-utility p-4">
               <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
                 {t("contextSummary")}
               </p>
@@ -340,7 +340,7 @@ export function AcompanhamentoClient({
           description={t("signalsDescription")}
         >
           <div className="grid gap-3 sm:grid-cols-2">
-            <div className="rounded-[24px] border border-danger-300/50 bg-danger-50/50 p-4 dark:border-danger-900/30 dark:bg-danger-950/20">
+            <div className="rounded-[12px] border border-danger-300/50 bg-danger-50/50 p-4 dark:border-danger-900/30 dark:bg-danger-950/20">
               <p className="text-xs uppercase tracking-[0.18em] text-danger-700 dark:text-danger-300">
                 {t("pendingSos")}
               </p>
@@ -351,7 +351,7 @@ export function AcompanhamentoClient({
                 {t("pendingSosDescription")}
               </p>
             </div>
-            <div className="rounded-[24px] border border-gold-300/50 bg-gold-50/50 p-4 dark:border-gold-900/30 dark:bg-gold-950/20">
+            <div className="rounded-[12px] border border-gold-300/50 bg-gold-50/50 p-4 dark:border-gold-900/30 dark:bg-gold-950/20">
               <p className="text-xs uppercase tracking-[0.18em] text-gold-700 dark:text-gold-300">
                 {t("questionnairesAvailable")}
               </p>
@@ -375,8 +375,8 @@ export function AcompanhamentoClient({
         >
           {loading ? (
             <div className="flex flex-col gap-2">
-              <Skeleton className="h-24 w-full rounded-xl" />
-              <Skeleton className="h-24 w-full rounded-xl" />
+              <Skeleton className="h-24 w-full rounded-[8px]" />
+              <Skeleton className="h-24 w-full rounded-[8px]" />
             </div>
           ) : sosError ? (
             <EmptyState
@@ -405,7 +405,7 @@ export function AcompanhamentoClient({
               {sosAlerts.map((alert) => (
                 <StaggerItem
                   key={alert.id}
-                  className="surface-secondary rounded-[24px] p-4"
+                  className="surface-secondary rounded-[12px] p-4"
                 >
                   <div className="flex flex-wrap items-start justify-between gap-3">
                     <div>
@@ -438,7 +438,7 @@ export function AcompanhamentoClient({
                   </div>
 
                   <div className="mt-4 grid gap-3 sm:grid-cols-2">
-                    <div className="rounded-xl border border-border bg-surface-utility p-3">
+                    <div className="rounded-[8px] border border-border bg-surface-utility p-3">
                       <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
                         {t("psychLabel")}
                       </p>
@@ -449,7 +449,7 @@ export function AcompanhamentoClient({
                         {alert.psychEmail ?? "-"}
                       </p>
                     </div>
-                    <div className="rounded-xl border border-border bg-surface-utility p-3">
+                    <div className="rounded-[8px] border border-border bg-surface-utility p-3">
                       <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
                         {t("teacherLabel")}
                       </p>
@@ -482,8 +482,8 @@ export function AcompanhamentoClient({
         >
           {loading ? (
             <div className="flex flex-col gap-2">
-              <Skeleton className="h-24 w-full rounded-xl" />
-              <Skeleton className="h-24 w-full rounded-xl" />
+              <Skeleton className="h-24 w-full rounded-[8px]" />
+              <Skeleton className="h-24 w-full rounded-[8px]" />
             </div>
           ) : questionnaireError ? (
             <EmptyState
@@ -515,7 +515,7 @@ export function AcompanhamentoClient({
                 return (
                   <StaggerItem
                     key={questionnaire.id}
-                    className="surface-secondary rounded-[24px] p-4"
+                    className="surface-secondary rounded-[12px] p-4"
                   >
                     <div className="flex flex-wrap items-start justify-between gap-3">
                       <div>
@@ -545,7 +545,7 @@ export function AcompanhamentoClient({
                         {highlights.map((item) => (
                           <div
                             key={item.key}
-                            className="rounded-xl border border-border bg-surface-utility p-3"
+                            className="rounded-[8px] border border-border bg-surface-utility p-3"
                           >
                             <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
                               {item.label}

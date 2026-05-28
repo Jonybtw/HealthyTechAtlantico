@@ -14,9 +14,9 @@ interface PageSectionProps {
 }
 
 const toneClasses: Record<NonNullable<PageSectionProps["tone"]>, string> = {
-  primary: "border border-white/20 bg-white/60 shadow-[0_20px_60px_rgba(5,14,24,0.09)] backdrop-blur-md dark:border-white/10 dark:bg-navy-950/60 dark:shadow-[0_20px_60px_rgba(5,14,24,0.32)] rounded-[24px] p-5 sm:p-6",
-  secondary: "border border-white/20 bg-white/55 shadow-[0_20px_60px_rgba(5,14,24,0.09)] backdrop-blur-md dark:border-white/10 dark:bg-navy-950/60 dark:shadow-[0_20px_60px_rgba(5,14,24,0.32)] rounded-[24px] p-5 sm:p-6",
-  utility: "surface-utility rounded-[24px] p-4 sm:p-5",
+  primary: "rounded-[16px] border border-border bg-card/88 p-5 shadow-[0_4px_12px_rgba(9,21,35,0.08)] backdrop-blur-sm dark:border-white/10 dark:bg-navy-950/68 dark:shadow-[0_4px_18px_rgba(0,0,0,0.22)] sm:p-6",
+  secondary: "rounded-[16px] border border-border bg-card/88 p-5 shadow-[0_4px_12px_rgba(9,21,35,0.08)] backdrop-blur-sm dark:border-white/10 dark:bg-navy-950/68 dark:shadow-[0_4px_18px_rgba(0,0,0,0.22)] sm:p-6",
+  utility: "rounded-[16px] border border-border bg-card/88 p-4 shadow-[0_4px_12px_rgba(9,21,35,0.08)] backdrop-blur-sm dark:border-white/10 dark:bg-navy-950/68 dark:shadow-[0_4px_18px_rgba(0,0,0,0.22)] sm:p-5",
 };
 
 const layoutClasses: Record<NonNullable<PageSectionProps["layout"]>, string> = {
@@ -51,7 +51,7 @@ export function PageSection({
           <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
             <div className="flex max-w-3xl flex-col gap-4 sm:flex-row sm:items-start">
               {icon && (
-                <div className="flex size-11 shrink-0 items-center justify-center rounded-[14px] border border-white/20 bg-white/40 text-gold-600 shadow-[0_4px_12px_rgba(5,14,24,0.03)] dark:border-white/10 dark:bg-black/20 dark:text-gold-400">
+                <div className="flex size-10 shrink-0 items-center justify-center rounded-[14px] border border-border/70 bg-background/55 text-gold-600 shadow-sm dark:border-white/10 dark:bg-white/5 dark:text-gold-400">
                   {icon}
                 </div>
               )}

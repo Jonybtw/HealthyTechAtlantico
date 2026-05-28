@@ -50,7 +50,7 @@ export function ConfirmModal({
         <div className="relative space-y-4">
           <DialogHeader className="flex-row items-start gap-4 text-left">
             <div
-              className={`flex size-10 shrink-0 items-center justify-center rounded-xl ring-1 ${
+              className={`flex size-10 shrink-0 items-center justify-center rounded-[8px] ring-1 ${
                 isDanger
                   ? "bg-danger-100/80 text-danger-700 ring-danger-500/20 dark:bg-danger-500/10 dark:text-danger-300"
                   : "bg-gold-100/80 text-gold-700 ring-gold-500/20 dark:bg-gold-400/10 dark:text-gold-300"

@@ -144,6 +144,7 @@ model Biometric {
   imcZone    String   @map("imc_zone")
   fatZone    String?  @map("fat_zone")
   waistZone  String?  @map("waist_zone")
+  notes      String?  @map("notes")
   recordedAt DateTime @default(now()) @map("recorded_at")
 
   student Student            @relation(fields: [studentId], references: [id])

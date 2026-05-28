@@ -35,6 +35,8 @@ interface DataTableProps<T> {
   emptyStateIcon?: LucideIcon;
   onRowClick?: (row: T) => void;
   rowKey: (row: T) => string;
+  tableClassName?: string;
+  scrollAreaClassName?: string;
 
   /* Server pagination optional props */
   serverTotalItems?: number;
@@ -57,6 +59,8 @@ export function DataTable<T extends object>({
   emptyStateIcon: EmptyIcon = Search,
   onRowClick,
   rowKey,
+  tableClassName,
+  scrollAreaClassName,
   serverTotalItems,
   serverPage,
   onServerPageChange,
@@ -156,7 +160,7 @@ export function DataTable<T extends object>({
 
   return (
     <div className="animate-fade-in-up flex flex-col gap-4">
-      <div className="overflow-hidden rounded-[24px] border border-border bg-surface-secondary shadow-card">
+      <div className="overflow-hidden rounded-[16px] border border-border bg-surface-secondary shadow-card">
         {searchable || toolbarTitle || toolbarSummary || toolbarActions ? (
           <div className="flex flex-col gap-4 border-b border-border/60 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
             <div className="space-y-0.5">
@@ -196,8 +200,8 @@ export function DataTable<T extends object>({
           </div>
         ) : null}
 
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-sm">
+        <div className={cn("overflow-x-auto", scrollAreaClassName)}>
+          <table className={cn("w-full text-left text-sm", tableClassName)}>
             <thead className="sticky top-0 z-10">
               <tr className="bg-muted/60 backdrop-blur-sm">
                 {columns.map((column) => (
