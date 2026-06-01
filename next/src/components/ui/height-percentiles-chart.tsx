@@ -10,7 +10,10 @@ import {
   ComposedChart,
 } from "recharts";
 import { useTranslations } from "next-intl";
-import { ResponsiveChartContainer } from "@/components/ui/chart-frame";
+import {
+  ChartFrame,
+  ResponsiveChartContainer,
+} from "@/components/ui/chart-frame";
 
 const WHO_HEIGHT_M: Record<number, { p5: number; p50: number; p95: number }> = {
   10: { p5: 125, p50: 138, p95: 151 },
@@ -87,104 +90,115 @@ export function HeightPercentilesChart({
   chartData.sort((a, b) => a.age - b.age);
 
   return (
-    <ResponsiveChartContainer width="100%" height="100%">
-      <ComposedChart
-        data={chartData}
-        margin={{ top: 10, right: 10, bottom: 20, left: -20 }}
+    <ChartFrame className="h-full min-h-0 min-w-0">
+      <ResponsiveChartContainer
+        width="100%"
+        height="100%"
+        minWidth={0}
+        minHeight={0}
       >
-        <CartesianGrid
-          strokeDasharray="3 3"
-          vertical={false}
-          stroke="var(--color-border)"
-        />
-        <XAxis
-          dataKey="age"
-          type="number"
-          domain={[10, 18]}
-          tickCount={9}
-          tick={{ fill: "var(--color-muted-foreground)", fontSize: 12 }}
-          axisLine={false}
-          tickLine={false}
-          dy={10}
-        />
-        <YAxis
-          domain={["auto", "auto"]}
-          tick={{ fill: "var(--color-muted-foreground)", fontSize: 12 }}
-          axisLine={false}
-          tickLine={false}
-          tickFormatter={(v) => `${v} cm`}
-        />
-        <RechartsTooltip
-          cursor={{
-            stroke: "var(--color-border)",
-            strokeWidth: 1,
-            strokeDasharray: "4 4",
-          }}
-          content={({ active, payload }) => {
-            if (active && payload && payload.length) {
-              const data = payload[0].payload;
-              return (
-                <div className="rounded-[8px] border border-border/60 bg-background p-2.5 text-xs shadow-sm">
-                  <p className="font-semibold mb-1">
-                    {t("chartAge")}: {data.age} {t("chartYears")}
-                  </p>
-                  {data.studentHeight !== null && (
-                    <p className="text-success-600 font-bold mt-1">
-                      {t("chartStudent")}: {data.studentHeight} cm
+        <ComposedChart
+          data={chartData}
+          margin={{ top: 10, right: 10, bottom: 20, left: -20 }}
+        >
+          <CartesianGrid
+            strokeDasharray="3 3"
+            vertical={false}
+            stroke="var(--color-border)"
+          />
+          <XAxis
+            dataKey="age"
+            type="number"
+            domain={[10, 18]}
+            tickCount={9}
+            tick={{ fill: "var(--color-muted-foreground)", fontSize: 12 }}
+            axisLine={false}
+            tickLine={false}
+            dy={10}
+          />
+          <YAxis
+            domain={["auto", "auto"]}
+            tick={{ fill: "var(--color-muted-foreground)", fontSize: 12 }}
+            axisLine={false}
+            tickLine={false}
+            tickFormatter={(v) => `${v} cm`}
+          />
+          <RechartsTooltip
+            cursor={{
+              stroke: "var(--color-border)",
+              strokeWidth: 1,
+              strokeDasharray: "4 4",
+            }}
+            content={({ active, payload }) => {
+              if (active && payload && payload.length) {
+                const data = payload[0].payload;
+                return (
+                  <div className="rounded-[8px] border border-border/60 bg-background p-2.5 text-xs shadow-sm">
+                    <p className="font-semibold mb-1">
+                      {t("chartAge")}: {data.age} {t("chartYears")}
                     </p>
-                  )}
-                  {data.p50 !== null && (
-                    <p className="text-muted-foreground mt-1">
-                      P50 ({t("chartAverage")}): {data.p50} cm
-                    </p>
-                  )}
-                  {data.range && (
-                    <p className="text-muted-foreground">
-                      {t("chartRange")}: {data.range[0]} - {data.range[1]} cm
-                    </p>
-                  )}
-                </div>
-              );
-            }
-            return null;
-          }}
-        />
-        <Area
-          type="monotone"
-          dataKey="range"
-          stroke="none"
-          fill="var(--color-success-500)"
-          fillOpacity={0.15}
-          connectNulls
-          activeDot={false}
-        />
-        <Line
-          type="monotone"
-          dataKey="p50"
-          stroke="var(--color-success-600)"
-          strokeOpacity={0.6}
-          strokeWidth={2}
-          strokeDasharray="4 4"
-          connectNulls
-          dot={false}
-          activeDot={false}
-        />
-        <Line
-          type="monotone"
-          dataKey="studentHeight"
-          stroke="var(--color-success-600)"
-          strokeWidth={3}
-          connectNulls
-          dot={{
-            r: 4,
-            strokeWidth: 2,
-            fill: "var(--color-background)",
-            stroke: "var(--color-success-600)",
-          }}
-          activeDot={{ r: 6, strokeWidth: 0, fill: "var(--color-success-600)" }}
-          isAnimationActive={true}
-        />
-      </ComposedChart>
-    </ResponsiveChartContainer>
+                    {data.studentHeight !== null && (
+                      <p className="text-success-600 font-bold mt-1">
+                        {t("chartStudent")}: {data.studentHeight} cm
+                      </p>
+                    )}
+                    {data.p50 !== null && (
+                      <p className="text-muted-foreground mt-1">
+                        P50 ({t("chartAverage")}): {data.p50} cm
+                      </p>
+                    )}
+                    {data.range && (
+                      <p className="text-muted-foreground">
+                        {t("chartRange")}: {data.range[0]} - {data.range[1]} cm
+                      </p>
+                    )}
+                  </div>
+                );
+              }
+              return null;
+            }}
+          />
+          <Area
+            type="monotone"
+            dataKey="range"
+            stroke="none"
+            fill="var(--color-success-500)"
+            fillOpacity={0.15}
+            connectNulls
+            activeDot={false}
+          />
+          <Line
+            type="monotone"
+            dataKey="p50"
+            stroke="var(--color-success-600)"
+            strokeOpacity={0.6}
+            strokeWidth={2}
+            strokeDasharray="4 4"
+            connectNulls
+            dot={false}
+            activeDot={false}
+          />
+          <Line
+            type="monotone"
+            dataKey="studentHeight"
+            stroke="var(--color-success-600)"
+            strokeWidth={3}
+            connectNulls
+            dot={{
+              r: 4,
+              strokeWidth: 2,
+              fill: "var(--color-background)",
+              stroke: "var(--color-success-600)",
+            }}
+            activeDot={{
+              r: 6,
+              strokeWidth: 0,
+              fill: "var(--color-success-600)",
+            }}
+            isAnimationActive={true}
+          />
+        </ComposedChart>
+      </ResponsiveChartContainer>
+    </ChartFrame>
   );
 }
