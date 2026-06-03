@@ -1017,65 +1017,73 @@ export default function RelatorioClient() {
 
   return (
     <PageScaffold
+      contentClassName="mx-auto w-full max-w-[1440px]"
       headerProps={{
         title: t("title"),
         description: t("description"),
       }}
     >
-      <div className="grid items-start gap-5 xl:grid-cols-[minmax(0,1.08fr)_360px]">
+      <div className="grid items-start gap-5 xl:grid-cols-[minmax(0,1fr)_340px] 2xl:grid-cols-[minmax(0,1fr)_360px]">
         <div className="space-y-5">
           <BioPanel index={0} reducedEffects={reducedEffects} className="p-5">
-            <div className="grid gap-5 xl:grid-cols-[minmax(0,1.1fr)_280px]">
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <p className="text-tiny font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-                    {t("studentSelectionLabel")}
-                  </p>
-                  {role !== "ALUNO" ? (
-                    <StudentPicker
-                      students={students}
-                      value={studentId}
-                      onChange={setStudentId}
-                      loading={loadingStudents}
-                    />
-                  ) : (
-                    <SelectedStudentCard student={selectedStudent} />
-                  )}
-                  {role !== "ALUNO" ? (
-                    <p className="text-tiny leading-relaxed text-muted-foreground">
-                      {t("studentSelectionHint")}
-                    </p>
-                  ) : null}
-                </div>
+            <div className="grid gap-5 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
+              <div className={cn(reportSurfaceClassName, "p-4 sm:p-5")}>
+                <div className="flex min-w-0 items-start gap-3">
+                  <div className="flex size-10 shrink-0 items-center justify-center rounded-[12px] bg-navy-100 text-navy-700 dark:bg-navy-900 dark:text-navy-200">
+                    <User className="size-5" />
+                  </div>
+                  <div className="min-w-0 flex-1 space-y-3">
+                    <div>
+                      <p className="text-tiny font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+                        {t("studentSelectionLabel")}
+                      </p>
+                      <h2 className="mt-1 text-lg font-bold tracking-tight text-foreground">
+                        {t("flowStepSelect")}
+                      </h2>
+                    </div>
 
+                    {role !== "ALUNO" ? (
+                      <StudentPicker
+                        students={students}
+                        value={studentId}
+                        onChange={setStudentId}
+                        loading={loadingStudents}
+                      />
+                    ) : (
+                      <SelectedStudentCard student={selectedStudent} />
+                    )}
+
+                    {role !== "ALUNO" ? (
+                      <p className="text-tiny leading-relaxed text-muted-foreground">
+                        {t("studentSelectionHint")}
+                      </p>
+                    ) : null}
+                  </div>
+                </div>
+              </div>
+
+              <div className={cn(reportSurfaceClassName, "p-4 sm:p-5")}>
                 {studentId && selectedStudent ? (
-                  <div className={cn(reportSurfaceClassName, "p-5")}>
-                    <div className="flex flex-wrap items-start justify-between gap-4">
-                      <div className="flex items-center gap-4">
-                        <span
-                          className="flex size-12 shrink-0 items-center justify-center rounded-full text-sm font-semibold shadow-[inset_0_1px_0_rgba(255,255,255,0.18)]"
-                          style={getStudentSwatch(selectedStudent)}
-                        >
-                          {getInitials(selectedStudent.name)}
-                        </span>
-                        <div className="space-y-1">
-                          <p className="text-tiny font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-                            {t("previewHeader")}
-                          </p>
-                          <h3 className="font-display text-2xl font-semibold tracking-[-0.04em] text-foreground">
-                            {selectedStudent.name}
-                          </h3>
-                          <p className="text-sm text-muted-foreground">
-                            {selectedStudent.className
-                              ? selectedStudent.className
-                              : t("description")}
-                          </p>
-                        </div>
+                  <div className="grid h-full gap-5">
+                    <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                      <div className="min-w-0">
+                        <p className="text-tiny font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+                          {t("workspaceTitle")}
+                        </p>
+                        <h3 className="mt-1 font-display text-2xl font-semibold tracking-tight text-foreground">
+                          {selectedStudent.name}
+                        </h3>
+                        <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
+                          {hasReportData
+                            ? t("documentIncludesDescription")
+                            : t("noData")}
+                        </p>
                       </div>
 
                       <Badge
                         variant={hasReportData ? "success" : "warning"}
                         size="md"
+                        className="w-fit shrink-0"
                       >
                         {hasReportData
                           ? t("readyToGenerateTitle")
@@ -1083,7 +1091,7 @@ export default function RelatorioClient() {
                       </Badge>
                     </div>
 
-                    <div className="mt-5 grid gap-3 md:grid-cols-2">
+                    <div className="grid gap-3 md:grid-cols-2">
                       <ReportStatusCard
                         icon={Activity}
                         title={t("biometricsSection")}
@@ -1095,6 +1103,14 @@ export default function RelatorioClient() {
                         title={t("testsSection")}
                         description={testsStatus}
                         detail={previewMeta.tests}
+                      />
+                    </div>
+
+                    <div className="rounded-[12px] border border-border/70 bg-background/70 p-3">
+                      <InlineStatusRow
+                        label={t("emailTitle")}
+                        value={recipientStatus}
+                        tone={guardians.length > 0 ? "info" : "default"}
                       />
                     </div>
                   </div>
@@ -1110,61 +1126,32 @@ export default function RelatorioClient() {
                   />
                 )}
               </div>
-
-              <div className="rounded-[12px] border border-navy-900/90 bg-[linear-gradient(160deg,rgba(9,21,35,0.98),rgba(20,38,57,0.94))] p-5 text-white shadow-card">
-                <p className="text-tiny font-semibold uppercase tracking-[0.2em] text-gold-200/82">
-                  {t("documentIncludesTitle")}
-                </p>
-                <h3 className="mt-2 font-display text-2xl font-semibold tracking-[-0.04em] text-white">
-                  {studentId
-                    ? t("readyToGenerateTitle")
-                    : t("previewInstruction")}
-                </h3>
-                <p className="mt-2 text-sm leading-relaxed text-white/70">
-                  {studentId
-                    ? t("documentIncludesDescription")
-                    : t("documentEmptyDescription")}
-                </p>
-
-                <div className="mt-5 space-y-3">
-                  <InlineStatusRow
-                    label={t("biometricsSection")}
-                    value={
-                      bioData.length > 0 ? t("includedInPdf") : biometricsStatus
-                    }
-                    tone={bioData.length > 0 ? "success" : "warning"}
-                  />
-                  <InlineStatusRow
-                    label={t("testsSection")}
-                    value={
-                      testData.length > 0 ? t("includedInPdf") : testsStatus
-                    }
-                    tone={testData.length > 0 ? "success" : "warning"}
-                  />
-                  <InlineStatusRow
-                    label={t("emailTitle")}
-                    value={recipientStatus}
-                    tone={guardians.length > 0 ? "info" : "default"}
-                  />
-                </div>
-              </div>
             </div>
           </BioPanel>
-          <div className="grid gap-5 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
+          <div className="grid gap-5 lg:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)]">
             <BioPanel index={1} reducedEffects={reducedEffects} className="p-5">
-              <div className="mb-4">
-                <p className="text-tiny font-semibold uppercase tracking-[0.18em] text-muted-foreground">{t("biometricsSection")}</p>
-                <h3 className="mt-0.5 text-lg font-bold tracking-tight text-foreground">{t("latestBiometricsTitle")}</h3>
+              <div className="mb-4 flex min-w-0 flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+                <div className="min-w-0">
+                  <p className="text-tiny font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+                    {t("biometricsSection")}
+                  </p>
+                  <h3 className="mt-0.5 text-lg font-bold tracking-tight text-foreground">{t("latestBiometricsTitle")}</h3>
+                </div>
+                {latestBiometric ? (
+                  <Badge variant={imcState.badgeVariant} className="w-fit">
+                    {imcState.label}
+                  </Badge>
+                ) : null}
               </div>
               {loadingPreview && studentId ? (
-                <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+                <div className="grid gap-3 sm:grid-cols-2">
                   {[1, 2, 3, 4].map((item) => (
                     <Skeleton key={item} className="h-24 rounded-[12px]" />
                   ))}
                 </div>
               ) : latestBiometric ? (
                 <div className="space-y-4">
-                  <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+                  <div className="grid gap-3 sm:grid-cols-2">
                     <ReportMetricCard
                       icon={Ruler}
                       label={t("heightLabel")}
@@ -1216,7 +1203,7 @@ export default function RelatorioClient() {
                   <HealthInsightPanel insight={healthInsight} t={t} />
 
                   {biometricChartData.length > 0 ? (
-                    <div className="rounded-3xl border border-border/70 bg-background/70 p-4">
+                    <div className="rounded-[12px] border border-border/70 bg-background/70 p-4">
                       <div className="flex flex-wrap items-start justify-between gap-3">
                         <div>
                           <p className="text-tiny font-semibold uppercase tracking-[0.16em] text-muted-foreground">
@@ -1364,6 +1351,20 @@ export default function RelatorioClient() {
 
         <BioPanel index={3} reducedEffects={reducedEffects} className="p-5 xl:sticky xl:top-24">
           <div className="space-y-4">
+            <div>
+              <p className="text-tiny font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+                {t("workspaceTitle")}
+              </p>
+              <h2 className="mt-1 text-lg font-bold tracking-tight text-foreground">
+                {t("actionsTitle")}
+              </h2>
+              <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
+                {studentId
+                  ? t("actionsDescription")
+                  : t("noStudentActionDescription")}
+              </p>
+            </div>
+
             <div className={cn(reportSurfaceClassName, "p-4")}>
               <div className="flex items-start gap-3">
                 <div className="flex size-10 shrink-0 items-center justify-center rounded-[12px] bg-navy-100 text-navy-700 dark:bg-navy-900 dark:text-navy-200">
@@ -1449,30 +1450,6 @@ export default function RelatorioClient() {
                 )}
               </div>
             ) : null}
-
-            <div className="rounded-[12px] border border-border/70 bg-background/70 p-4">
-              <p className="text-tiny font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-                {t("studentSelectionLabel")}
-              </p>
-              <p className="mt-2 text-base font-semibold text-foreground">
-                {selectedStudent?.name ?? t("previewInstruction")}
-              </p>
-              <p className="mt-1 text-sm text-muted-foreground">
-                {selectedStudent?.className ?? t("noStudentActionDescription")}
-              </p>
-              {selectedStudent ? (
-                <div className="mt-4">
-                  <Badge
-                    variant={hasReportData ? "success" : "warning"}
-                    size="md"
-                  >
-                    {hasReportData
-                      ? t("readyToGenerateTitle")
-                      : t("documentIncludesTitle")}
-                  </Badge>
-                </div>
-              ) : null}
-            </div>
           </div>
         </BioPanel>
       </div>
@@ -1529,10 +1506,10 @@ function HealthInsightPanel({
         : "border-amber-200 bg-amber-50/70 text-amber-950 dark:border-amber-500/20 dark:bg-amber-500/10 dark:text-amber-100";
 
   return (
-    <div className={`rounded-3xl border p-5 ${toneClassName}`}>
+    <div className={`rounded-[12px] border p-5 ${toneClassName}`}>
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div className="flex items-start gap-3">
-          <div className="flex size-11 shrink-0 items-center justify-center rounded-2xl bg-white/70 text-current shadow-sm dark:bg-white/10">
+          <div className="flex size-11 shrink-0 items-center justify-center rounded-[12px] bg-white/70 text-current shadow-sm dark:bg-white/10">
             <Dumbbell className="size-5" />
           </div>
           <div>
@@ -1550,11 +1527,11 @@ function HealthInsightPanel({
       </div>
 
       <div className="mt-4 grid gap-3 lg:grid-cols-2">
-        <div className="rounded-2xl border border-white/60 bg-white/58 p-4 text-sm leading-relaxed text-current dark:border-white/10 dark:bg-white/8">
+        <div className="rounded-[12px] border border-white/60 bg-white/58 p-4 text-sm leading-relaxed text-current dark:border-white/10 dark:bg-white/8">
           <p className="font-semibold">{t("healthCurrentReading")}</p>
           <p className="mt-2 opacity-80">{insight.summary}</p>
         </div>
-        <div className="rounded-2xl border border-white/60 bg-white/58 p-4 text-sm leading-relaxed text-current dark:border-white/10 dark:bg-white/8">
+        <div className="rounded-[12px] border border-white/60 bg-white/58 p-4 text-sm leading-relaxed text-current dark:border-white/10 dark:bg-white/8">
           <p className="font-semibold">
             {insight.status === "normal"
               ? t("healthMaintainTitle")
@@ -1599,17 +1576,17 @@ function ReportMetricCard({
   badge?: React.ReactNode;
 }) {
   return (
-    <div className="rounded-[12px] border border-border/70 bg-background/70 p-4">
-      <div className="flex items-center gap-2 text-muted-foreground">
-        <Icon className="size-4" />
+    <div className="flex min-h-[132px] flex-col rounded-[12px] border border-border/70 bg-background/70 p-4">
+      <div className="flex min-w-0 items-center gap-2 text-muted-foreground">
+        <Icon className="size-4 shrink-0" />
         <p className="text-tiny font-semibold uppercase tracking-[0.16em]">
           {label}
         </p>
       </div>
-      <p className="mt-3 text-2xl font-semibold tracking-[-0.04em] text-foreground">
+      <p className="mt-3 text-2xl font-semibold tracking-tight text-foreground">
         {value}
       </p>
-      {badge ? <div className="mt-3">{badge}</div> : null}
+      {badge ? <div className="mt-auto pt-3">{badge}</div> : null}
     </div>
   );
 }
@@ -1627,14 +1604,14 @@ function ReportStatusCard({
 }) {
   return (
     <div className="rounded-[12px] border border-border/70 bg-background/58 p-4">
-      <div className="flex items-start gap-3">
+      <div className="flex min-w-0 items-start gap-3">
         <div className="flex size-10 shrink-0 items-center justify-center rounded-[12px] bg-surface-utility text-foreground shadow-sm">
           <Icon className="size-5" />
         </div>
-        <div className="space-y-1">
+        <div className="min-w-0 space-y-1">
           <p className="text-sm font-semibold text-foreground">{title}</p>
           <p className="text-sm text-muted-foreground">{description}</p>
-          <p className="text-tiny font-medium uppercase tracking-[0.14em] text-navy-700 dark:text-navy-200">
+          <p className="break-words text-tiny font-medium uppercase tracking-[0.14em] text-navy-700 dark:text-navy-200">
             {detail}
           </p>
         </div>
@@ -1656,15 +1633,15 @@ function ReportTestRow({
 }) {
   return (
     <div className="rounded-[12px] border border-border/70 bg-background/68 px-4 py-3">
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div className="space-y-1">
+      <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+        <div className="min-w-0 space-y-1">
           <p className="text-sm font-semibold text-foreground">{label}</p>
           <p className="text-tiny uppercase tracking-[0.16em] text-muted-foreground">
             {date ?? "-"}
           </p>
         </div>
-        <div className="text-right">
-          <p className="text-lg font-semibold tracking-[-0.03em] text-foreground">
+        <div className="shrink-0 sm:text-right">
+          <p className="text-lg font-semibold tracking-tight text-foreground">
             {value}
           </p>
           <p className="text-xs text-muted-foreground">{unit || "-"}</p>
@@ -1750,9 +1727,11 @@ function InlineStatusRow({
   tone: "default" | "success" | "warning" | "info";
 }) {
   return (
-    <div className="flex items-center justify-between gap-3 rounded-[12px] border border-border bg-surface-secondary shadow-sm px-3 py-3">
-      <span className="text-sm text-white/78">{label}</span>
-      <Badge variant={tone === "default" ? "default" : tone}>{value}</Badge>
+    <div className="flex min-w-0 flex-col gap-2 rounded-[12px] border border-border bg-background/70 px-3 py-3 shadow-sm sm:flex-row sm:items-center sm:justify-between">
+      <span className="text-sm font-medium text-muted-foreground">{label}</span>
+      <Badge variant={tone === "default" ? "default" : tone} className="w-fit">
+        {value}
+      </Badge>
     </div>
   );
 }

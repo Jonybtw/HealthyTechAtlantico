@@ -22,7 +22,6 @@ import { Button, buttonVariants } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { DataTable, type Column } from "@/components/ui/data-table";
 import { EmptyState } from "@/components/ui/empty-state";
-import { FieldShell } from "@/components/ui/field-shell";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { StudentIdentity } from "@/components/ui/student-identity";
@@ -207,15 +206,15 @@ export default function SosClient() {
 
   const columns = useMemo<Column<SosAlert>[]>(() => [
     { key: "student", header: t("studentLabel"), render: (a) => <StudentIdentity student={a.student} subtitle={getStudentMeta(a.student)} />, className: "min-w-[170px]" },
-    { key: "psych", header: t("psychLabel"), render: (a) => <div className="max-w-[136px] min-w-0"><p className="truncate text-sm font-semibold">{a.psych}</p>{a.psychEmail && <p className="truncate text-xs text-muted-foreground">{a.psychEmail}</p>}</div>, className: "min-w-[146px]" },
-    { key: "teacher", header: t("teacherLabel"), render: (a) => <div className="max-w-[136px] min-w-0"><p className="truncate text-sm font-semibold">{a.teacher}</p>{a.teacherEmail && <p className="truncate text-xs text-muted-foreground">{a.teacherEmail}</p>}</div>, className: "min-w-[146px]" },
-    { key: "createdAt", header: t("createdAt"), render: (a) => <span className="block max-w-[110px] text-sm leading-snug">{formatDate(a.createdAt)}</span>, className: "min-w-[112px]" },
+    { key: "psych", header: t("psychLabel"), render: (a) => <div className="min-w-0 max-w-[180px]"><p className="truncate text-sm font-semibold">{a.psych}</p>{a.psychEmail && <p className="truncate text-xs text-muted-foreground">{a.psychEmail}</p>}</div>, className: "min-w-[180px]" },
+    { key: "teacher", header: t("teacherLabel"), render: (a) => <div className="min-w-0 max-w-[180px]"><p className="truncate text-sm font-semibold">{a.teacher}</p>{a.teacherEmail && <p className="truncate text-xs text-muted-foreground">{a.teacherEmail}</p>}</div>, className: "min-w-[180px]" },
+    { key: "createdAt", header: t("createdAt"), render: (a) => <span className="block max-w-[140px] text-sm leading-snug">{formatDate(a.createdAt)}</span>, className: "min-w-[140px]" },
     { key: "resolved", header: t("statusHeader"), render: (a) => <Badge variant={a.resolved ? "success" : "warning"}>{a.resolved ? t("resolved") : t("pending")}</Badge>, className: "min-w-[92px]" },
     { key: "resolvedBy", header: t("resolvedBy"), render: (a) => <span className="text-sm text-muted-foreground">{a.resolvedBy ? (a.resolvedBy.name ?? a.resolvedBy.email) : "—"}</span> },
     {
       key: "actions", header: "",
       render: (a) => (
-        <div className="flex min-w-[166px] flex-wrap items-center justify-end gap-2">
+        <div className="flex min-w-[220px] flex-wrap items-center justify-end gap-2">
           <Link href={getStudentHref(role, a.student.id)} className={buttonVariants({ variant: "secondary", size: "sm" })}>
             <ExternalLink className="size-3.5" />{t("openStudentProfile")}
           </Link>
@@ -225,7 +224,7 @@ export default function SosClient() {
           }
         </div>
       ),
-      className: "min-w-[166px]",
+      className: "min-w-[220px]",
     },
   ], [formatDate, resolveAlert, resolvingIds, role, t]);
 
@@ -234,22 +233,22 @@ export default function SosClient() {
   if (isStudent) {
     return (
       <PageScaffold className="gap-5" headerProps={{ title: t("title"), description: t("descriptionStudent") }}>
-        <div className="grid gap-5 xl:grid-cols-[1fr_360px]">
+        <div className="grid min-w-0 gap-5 xl:grid-cols-[minmax(0,1fr)_minmax(300px,360px)]">
           <SosPanel index={0} reducedEffects={reducedEffects} className="p-5 sm:p-6">
-            <div className="mb-4 flex items-center gap-2.5">
+            <div className="mb-4 flex min-w-0 items-center gap-2.5">
               <span className="flex size-9 items-center justify-center rounded-[12px] border border-border/60 bg-danger-500/10 text-danger-600 dark:text-danger-400 shadow-sm">
                 <Send className="size-4" />
               </span>
-              <div>
+              <div className="min-w-0">
                 <p className="text-tiny font-semibold uppercase tracking-[0.18em] text-muted-foreground">Pedido de apoio</p>
-                <p className="text-sm font-semibold text-foreground">{t("contactTitle")}</p>
+                <p className="text-sm font-semibold leading-snug text-foreground">{t("contactTitle")}</p>
               </div>
             </div>
 
             {activeStudentAlert && (
-              <div className="mb-4 flex items-start gap-3 rounded-[12px] border border-warning-300/40 bg-warning-50/80 px-4 py-3 dark:border-warning-500/25 dark:bg-warning-950/40">
+              <div className="mb-4 flex min-w-0 items-start gap-3 rounded-[12px] border border-warning-300/40 bg-warning-50/80 px-4 py-3 dark:border-warning-500/25 dark:bg-warning-950/40">
                 <AlertTriangle className="mt-0.5 size-4 shrink-0 text-warning-600 dark:text-warning-300" />
-                <div>
+                <div className="min-w-0">
                   <p className="text-sm font-semibold text-warning-900 dark:text-warning-100">{t("alreadyOpen")}</p>
                   <p className="mt-0.5 text-xs text-warning-700 dark:text-warning-300">{t("alreadyOpenHint")}</p>
                 </div>
@@ -258,20 +257,36 @@ export default function SosClient() {
 
             <div className="grid gap-4">
               <div className="grid gap-3 sm:grid-cols-2">
-                <FieldShell label={t("psych")}>
-                  <Input value={psych} onChange={(e) => setPsych(e.target.value)} placeholder={t("psych")} disabled={studentLoading || triggeringSos || hasOpenStudentAlert} />
-                </FieldShell>
-                <FieldShell label={t("teacher")}>
-                  <Input value={teacher} onChange={(e) => setTeacher(e.target.value)} placeholder={t("teacher")} disabled={studentLoading || triggeringSos || hasOpenStudentAlert} />
-                </FieldShell>
+                <Input
+                  label={t("psych")}
+                  value={psych}
+                  onChange={(e) => setPsych(e.target.value)}
+                  disabled={studentLoading || triggeringSos || hasOpenStudentAlert}
+                />
+                <Input
+                  label={t("teacher")}
+                  value={teacher}
+                  onChange={(e) => setTeacher(e.target.value)}
+                  disabled={studentLoading || triggeringSos || hasOpenStudentAlert}
+                />
               </div>
               <div className="grid gap-3 sm:grid-cols-2">
-                <FieldShell label={t("psychEmailLabel")} hint={t("emailOptional")}>
-                  <Input type="email" value={psychEmail} onChange={(e) => setPsychEmail(e.target.value)} placeholder="nome@escola.pt" disabled={studentLoading || triggeringSos || hasOpenStudentAlert} />
-                </FieldShell>
-                <FieldShell label={t("teacherEmailLabel")} hint={t("emailOptional")}>
-                  <Input type="email" value={teacherEmail} onChange={(e) => setTeacherEmail(e.target.value)} placeholder="nome@escola.pt" disabled={studentLoading || triggeringSos || hasOpenStudentAlert} />
-                </FieldShell>
+                <Input
+                  type="email"
+                  label={t("psychEmailLabel")}
+                  hint={t("emailOptional")}
+                  value={psychEmail}
+                  onChange={(e) => setPsychEmail(e.target.value)}
+                  disabled={studentLoading || triggeringSos || hasOpenStudentAlert}
+                />
+                <Input
+                  type="email"
+                  label={t("teacherEmailLabel")}
+                  hint={t("emailOptional")}
+                  value={teacherEmail}
+                  onChange={(e) => setTeacherEmail(e.target.value)}
+                  disabled={studentLoading || triggeringSos || hasOpenStudentAlert}
+                />
               </div>
               <div className="flex items-center justify-end pt-1">
                 <Button
@@ -314,7 +329,7 @@ export default function SosClient() {
   if (loading && alerts.length === 0 && !loadError) {
     return (
       <div className="grid gap-5">
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid gap-4 sm:grid-cols-3">
           {[1, 2, 3].map((i) => <Skeleton key={i} className="h-[120px] rounded-[12px]" />)}
         </div>
         <Skeleton className="h-[100px] rounded-[12px]" />
@@ -361,7 +376,7 @@ export default function SosClient() {
       }
     >
       {/* KPI Strip */}
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid gap-4 sm:grid-cols-3">
         <KpiPanel index={0} reducedEffects={reducedEffects}
           icon={<ShieldAlert className="size-[18px]" />}
           iconClass="bg-navy-100 text-navy-700 dark:bg-white/8 dark:text-navy-100"
@@ -385,7 +400,7 @@ export default function SosClient() {
       {/* Priority Focus */}
       <SosPanel index={3} reducedEffects={reducedEffects} className="p-5 sm:p-6">
         {oldestPending ? (
-          <div className="flex flex-col gap-5 xl:flex-row xl:items-center xl:justify-between">
+          <div className="grid min-w-0 gap-5 2xl:grid-cols-[minmax(0,1fr)_minmax(320px,420px)_auto] 2xl:items-center">
             <div className="min-w-0">
               <div className="mb-3 flex flex-wrap items-center gap-2">
                 <span className="flex items-center gap-1.5 rounded-full border border-danger-300/50 bg-danger-100/70 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.18em] text-danger-700 dark:border-danger-500/30 dark:bg-danger-950/60 dark:text-danger-300">
@@ -393,24 +408,24 @@ export default function SosClient() {
                 </span>
                 <Badge variant="warning">{t("pending")}</Badge>
               </div>
-              <div className="flex items-center gap-3">
+              <div className="flex min-w-0 items-center gap-3">
                 <span className="flex size-10 shrink-0 items-center justify-center rounded-[8px] border border-danger-200/50 bg-danger-100/70 dark:border-danger-500/20 dark:bg-danger-900/50">
                   <UserRound className="size-5 text-danger-700 dark:text-danger-300" />
                 </span>
-                <div>
-                  <p className="font-display text-lg font-black tracking-[-0.04em] text-foreground">{oldestPending.student.name}</p>
-                  <p className="text-sm text-muted-foreground">{getStudentMeta(oldestPending.student)}</p>
+                <div className="min-w-0">
+                  <p className="truncate font-display text-lg font-black tracking-tight text-foreground">{oldestPending.student.name}</p>
+                  <p className="truncate text-sm text-muted-foreground">{getStudentMeta(oldestPending.student)}</p>
                 </div>
               </div>
-              <p className="mt-2 flex items-center gap-1.5 text-xs text-danger-700/80 dark:text-danger-300/80">
+              <p className="mt-2 flex min-w-0 items-center gap-1.5 text-xs leading-snug text-danger-700/80 dark:text-danger-300/80">
                 <Clock3 className="size-3.5" />Alerta aberto em {formatDate(oldestPending.createdAt)}
               </p>
             </div>
-            <div className="grid gap-2 sm:grid-cols-2 xl:min-w-[320px]">
+            <div className="grid min-w-0 gap-2 sm:grid-cols-2">
               <MetaRow label={t("psychLabel")} value={oldestPending.psych} sub={oldestPending.psychEmail ?? undefined} />
               <MetaRow label={t("teacherLabel")} value={oldestPending.teacher} sub={oldestPending.teacherEmail ?? undefined} />
             </div>
-            <div className="flex flex-wrap items-center gap-2 xl:shrink-0 xl:justify-end">
+            <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center 2xl:shrink-0 2xl:justify-end">
               <Link href={getStudentHref(role, oldestPending.student.id)} className={buttonVariants({ variant: "secondary", size: "sm" })}>
                 <ExternalLink className="size-4" />{t("openStudentProfile")}
               </Link>
@@ -420,11 +435,11 @@ export default function SosClient() {
             </div>
           </div>
         ) : (
-          <div className="flex items-center gap-4">
+          <div className="flex min-w-0 items-start gap-4">
             <span className="flex size-10 shrink-0 items-center justify-center rounded-[8px] bg-success-500/10 text-success-700 dark:text-success-300">
               <CheckCircle2 className="size-5" />
             </span>
-            <div>
+            <div className="min-w-0">
               <p className="font-semibold text-success-900 dark:text-success-100">{t("priorityEmptyTitle")}</p>
               <p className="mt-0.5 text-sm text-success-700 dark:text-success-300">{t("priorityEmptyDescription")}</p>
             </div>
@@ -440,11 +455,11 @@ export default function SosClient() {
               <p className="text-tiny font-semibold uppercase tracking-[0.18em] text-muted-foreground">{t("queueEyebrow")}</p>
               <h2 className="mt-1 text-lg font-bold tracking-tight text-foreground">{t("queueTitle")}</h2>
             </div>
-            <div className="flex flex-wrap items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2 sm:justify-end">
               {(["all", "pending", "resolved"] as const).map((f) => (
                 <button key={f} onClick={() => setStatusFilter(f)}
                   className={cn(
-                    "inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-semibold transition-colors",
+                    "inline-flex min-h-9 items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-semibold transition-colors",
                     statusFilter === f
                       ? "border-navy-700 bg-navy-700 text-white dark:border-navy-400 dark:bg-navy-800"
                       : "border-border/60 bg-background/60 text-muted-foreground hover:border-border dark:border-white/10 dark:bg-white/6 dark:hover:border-white/20",
@@ -469,7 +484,7 @@ export default function SosClient() {
             emptyStateIcon={ShieldAlert}
             rowKey={(a) => a.id}
             scrollAreaClassName="rounded-b-[24px]"
-            tableClassName="min-w-[900px] xl:min-w-full [&_td]:px-2 [&_th]:px-2"
+            tableClassName="min-w-[1040px] xl:min-w-full [&_td]:px-3 [&_th]:px-3"
           />
         </SosPanel>
 
@@ -537,15 +552,15 @@ function KpiPanel({ index, reducedEffects, icon, iconClass, label, value, footer
   return (
     <SosPanel index={index} reducedEffects={reducedEffects} className="group h-full min-h-[120px] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_8px_24px_rgba(9,21,35,0.12)] dark:hover:shadow-[0_10px_28px_rgba(0,0,0,0.34)]">
       <div className="flex h-full min-h-[120px] flex-col p-4">
-        <div className="mb-3 flex items-start justify-between gap-2">
-          <p className="text-sm font-semibold text-muted-foreground">{label}</p>
+        <div className="mb-3 flex min-w-0 items-start justify-between gap-3">
+          <p className="min-w-0 text-sm font-semibold leading-snug text-muted-foreground">{label}</p>
           <span className={cn("flex size-9 shrink-0 items-center justify-center rounded-[8px] transition-transform duration-300 group-hover:scale-105", iconClass)}>
             {icon}
           </span>
         </div>
         <p className="text-4xl font-extrabold tracking-tight text-foreground">{value}</p>
-        <span className="mt-auto inline-flex items-center gap-1 pt-2 text-xs font-semibold text-muted-foreground">
-          {footerIcon}<span className="truncate">{footer}</span>
+        <span className="mt-auto inline-flex min-w-0 items-start gap-1 pt-2 text-xs font-semibold leading-snug text-muted-foreground">
+          {footerIcon}<span className="min-w-0">{footer}</span>
         </span>
       </div>
     </SosPanel>
@@ -557,15 +572,15 @@ function MetaRow({ label, value, sub }: { label: string; value: string; sub?: st
     return (
       <div className="flex flex-col gap-0.5 rounded-[12px] border border-border/70 bg-background/65 px-3.5 py-2.5 shadow-sm">
         <span className="text-tiny font-semibold uppercase tracking-[0.18em] text-muted-foreground">{label}</span>
-        <span className="text-sm font-semibold text-foreground">{value}</span>
-        <span className="text-xs text-muted-foreground truncate">{sub}</span>
+        <span className="min-w-0 break-words text-sm font-semibold text-foreground">{value}</span>
+        <span className="min-w-0 break-all text-xs text-muted-foreground">{sub}</span>
       </div>
     );
   }
   return (
-    <div className="flex items-center justify-between gap-3 rounded-[12px] border border-border/70 bg-background/65 px-3.5 py-2.5 shadow-sm">
+    <div className="flex min-w-0 flex-col gap-1 rounded-[12px] border border-border/70 bg-background/65 px-3.5 py-2.5 shadow-sm sm:flex-row sm:items-center sm:justify-between sm:gap-3">
       <span className="text-tiny font-semibold uppercase tracking-[0.18em] text-muted-foreground">{label}</span>
-      <span className="text-right text-sm font-semibold text-foreground">{value}</span>
+      <span className="min-w-0 break-words text-sm font-semibold text-foreground sm:text-right">{value}</span>
     </div>
   );
 }
@@ -585,22 +600,22 @@ function QueueAlertRow({ alert, role, onResolve, resolving, formatDate, t }: {
   formatDate: (v: string | null) => string; t: ReturnType<typeof useTranslations>;
 }) {
   return (
-    <div className="grid gap-2 rounded-[12px] border border-warning-300/40 bg-warning-50/50 px-3.5 py-3 shadow-sm dark:border-warning-500/20 dark:bg-warning-950/30">
+    <div className="grid min-w-0 gap-2 rounded-[12px] border border-warning-300/40 bg-warning-50/50 px-3.5 py-3 shadow-sm dark:border-warning-500/20 dark:bg-warning-950/30">
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0">
-          <p className="text-base font-black tracking-[-0.04em] text-foreground truncate">{alert.student.name}</p>
+          <p className="truncate text-base font-black tracking-tight text-foreground">{alert.student.name}</p>
           <p className="mt-0.5 truncate text-xs text-muted-foreground">{getStudentMeta(alert.student)}</p>
         </div>
         <Badge variant="warning" className="shrink-0">{t("pending")}</Badge>
       </div>
-      <p className="flex items-center gap-1 text-xs text-muted-foreground">
+      <p className="flex min-w-0 items-center gap-1 text-xs leading-snug text-muted-foreground">
         <Clock3 className="size-3 text-warning-600 dark:text-warning-400" />{formatDate(alert.createdAt)}
       </p>
-      <div className="flex flex-wrap items-center gap-2">
-        <Link href={getStudentHref(role, alert.student.id)} className={buttonVariants({ variant: "secondary", size: "sm" })}>
+      <div className="grid gap-2 sm:grid-cols-2">
+        <Link href={getStudentHref(role, alert.student.id)} className={cn(buttonVariants({ variant: "secondary", size: "sm" }), "justify-center")}>
           <ExternalLink className="size-3.5" />{t("openStudentProfile")}
         </Link>
-        <Button variant="primary" size="sm" onClick={onResolve} loading={resolving} icon={<CheckCircle2 className="size-4" />}>
+        <Button variant="primary" size="sm" onClick={onResolve} loading={resolving} icon={<CheckCircle2 className="size-4" />} className="justify-center">
           {t("resolve")}
         </Button>
       </div>
@@ -620,24 +635,24 @@ function StudentAlertRow({ alert, formatDate, t }: {
         ? "border-success-300/30 bg-success-50/40 dark:border-success-500/20 dark:bg-success-950/25"
         : "border-warning-300/40 bg-warning-50/50 dark:border-warning-500/20 dark:bg-warning-950/30",
     )}>
-      <div className="flex items-center justify-between gap-2">
-        <div className="flex items-center gap-2">
+      <div className="flex min-w-0 flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex min-w-0 items-center gap-2">
           <span className={cn("flex size-8 shrink-0 items-center justify-center rounded-[10px]",
             resolved ? "bg-success-500/10 text-success-700 dark:text-success-300" : "bg-warning-500/10 text-warning-700 dark:text-warning-300")}>
             {resolved ? <CheckCircle2 className="size-4" /> : <ShieldAlert className="size-4" />}
           </span>
-          <p className="text-xs text-muted-foreground">{formatDate(alert.createdAt)}</p>
+          <p className="min-w-0 text-xs leading-snug text-muted-foreground">{formatDate(alert.createdAt)}</p>
         </div>
-        <Badge variant={resolved ? "success" : "warning"}>{resolved ? t("resolved") : t("pending")}</Badge>
+        <Badge variant={resolved ? "success" : "warning"} className="w-fit shrink-0">{resolved ? t("resolved") : t("pending")}</Badge>
       </div>
       <div className="grid gap-1.5 sm:grid-cols-2">
-        <div className="rounded-[10px] bg-white/70 px-3 py-2 dark:bg-navy-950/40">
+        <div className="min-w-0 rounded-[10px] bg-white/70 px-3 py-2 dark:bg-navy-950/40">
           <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">{t("psychLabel")}</p>
-          <p className="mt-0.5 truncate text-sm font-medium text-foreground">{alert.psych}</p>
+          <p className="mt-0.5 min-w-0 break-words text-sm font-medium text-foreground">{alert.psych}</p>
         </div>
-        <div className="rounded-[10px] bg-white/70 px-3 py-2 dark:bg-navy-950/40">
+        <div className="min-w-0 rounded-[10px] bg-white/70 px-3 py-2 dark:bg-navy-950/40">
           <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">{t("teacherLabel")}</p>
-          <p className="mt-0.5 truncate text-sm font-medium text-foreground">{alert.teacher}</p>
+          <p className="mt-0.5 min-w-0 break-words text-sm font-medium text-foreground">{alert.teacher}</p>
         </div>
       </div>
       {resolved && alert.resolvedAt && (
