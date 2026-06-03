@@ -43,7 +43,7 @@ export function ProtocolosNav() {
   }, []);
 
   return (
-    <div className="sticky top-[72px] z-30 -mx-1 mb-2 px-1 pb-1 pt-0 md:top-[88px]">
+    <div className="-mx-1 mb-2 px-1 pb-1 pt-0">
       <nav
         aria-label="Secções de protocolos"
         className="flex items-center gap-1 overflow-x-auto scrollbar-hide"

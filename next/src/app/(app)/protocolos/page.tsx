@@ -275,18 +275,18 @@ export default async function ProtocolosPage() {
               id="waist"
               className="scroll-mt-40 animate-fade-in-up delay-100"
             >
-              <div className="group relative overflow-hidden rounded-[16px] border border-gold-200/60 bg-gradient-to-br from-gold-50/80 via-white/60 to-gold-50/40 shadow-[0_8px_32px_-16px_rgb(9_21_35_/_0.12)] backdrop-blur-sm transition-all duration-300 hover:shadow-[0_8px_24px_rgba(9,21,35,0.12)] dark:border-gold-800/30 dark:from-gold-950/40 dark:via-navy-950/40 dark:to-gold-950/20">
+              <div className="group relative overflow-hidden rounded-[16px] border border-navy-200/60 bg-gradient-to-br from-navy-50/80 via-white/60 to-navy-50/40 shadow-[0_8px_32px_-16px_rgb(9_21_35_/_0.15)] backdrop-blur-sm transition-all duration-300 hover:shadow-[0_8px_24px_rgba(9,21,35,0.12)] dark:border-navy-800/40 dark:from-navy-950/60 dark:via-navy-950/40 dark:to-navy-900/30">
                 {/* Top accent stripe */}
-                <div className="h-1 w-full bg-gradient-to-r from-gold-600 via-gold-400 to-gold-300" />
+                <div className="h-1 w-full bg-gradient-to-r from-navy-600 via-navy-500 to-navy-400" />
 
                 {/* Card header */}
                 <div className="flex items-start justify-between gap-4 px-6 pb-2 pt-5">
                   <div className="flex items-center gap-3">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gold-100 shadow-sm dark:bg-gold-900/40">
-                      <Scissors className="h-5 w-5 text-gold-600 dark:text-gold-300" />
+                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-navy-100 shadow-sm dark:bg-navy-800/60">
+                      <Scissors className="h-5 w-5 text-navy-600 dark:text-navy-300" />
                     </div>
                     <div>
-                      <h3 className="font-display text-sm font-bold text-gold-900 dark:text-gold-100">
+                      <h3 className="font-display text-sm font-bold text-navy-900 dark:text-navy-100">
                         {t("waistTableTitle")}
                       </h3>
                       <p className="mt-0.5 text-tiny text-muted-foreground">
@@ -294,7 +294,7 @@ export default async function ProtocolosPage() {
                       </p>
                     </div>
                   </div>
-                  <span className="mt-1 inline-flex items-center rounded-full bg-gold-100/80 px-2.5 py-0.5 text-micro font-semibold uppercase tracking-wide text-gold-700 dark:bg-gold-900/40 dark:text-gold-300">
+                  <span className="mt-1 inline-flex items-center rounded-full bg-navy-100/80 px-2.5 py-0.5 text-micro font-semibold uppercase tracking-wide text-navy-600 dark:bg-navy-800/60 dark:text-navy-300">
                     cm
                   </span>
                 </div>
@@ -302,16 +302,16 @@ export default async function ProtocolosPage() {
                 <div className="overflow-hidden">
                   <table className="w-full text-sm">
                     <thead>
-                      <tr className="bg-gold-100/60 dark:bg-gold-900/30">
+                      <tr className="bg-navy-100/70 dark:bg-navy-900/50">
                         <th
                           scope="col"
-                          className="w-[22%] border-b border-gold-200/60 px-5 py-3 text-left text-micro font-bold uppercase tracking-[0.12em] text-gold-700 dark:border-gold-800/40 dark:text-gold-300"
+                          className="w-[22%] border-b border-navy-200/60 px-5 py-3 text-left text-micro font-bold uppercase tracking-[0.12em] text-navy-600 dark:border-navy-800/50 dark:text-navy-300"
                         >
                           {t("age")}
                         </th>
                         <th
                           scope="col"
-                          className="w-[39%] border-b border-gold-200/60 px-5 py-3 text-left text-micro font-bold uppercase tracking-[0.12em] text-gold-700 dark:border-gold-800/40 dark:text-gold-300"
+                          className="w-[39%] border-b border-navy-200/60 px-5 py-3 text-left text-micro font-bold uppercase tracking-[0.12em] text-navy-600 dark:border-navy-800/50 dark:text-navy-300"
                         >
                           <span className="inline-flex items-center gap-1.5">
                             <span className="inline-flex h-4 w-4 items-center justify-center rounded-full bg-navy-600 text-micro font-bold text-white dark:bg-navy-400">
@@ -322,7 +322,7 @@ export default async function ProtocolosPage() {
                         </th>
                         <th
                           scope="col"
-                          className="w-[39%] border-b border-gold-200/60 px-5 py-3 text-left text-micro font-bold uppercase tracking-[0.12em] text-gold-700 dark:border-gold-800/40 dark:text-gold-300"
+                          className="w-[39%] border-b border-navy-200/60 px-5 py-3 text-left text-micro font-bold uppercase tracking-[0.12em] text-navy-600 dark:border-navy-800/50 dark:text-navy-300"
                         >
                           <span className="inline-flex items-center gap-1.5">
                             <span className="inline-flex h-4 w-4 items-center justify-center rounded-full bg-gold-500 text-micro font-bold text-white dark:bg-gold-400">
@@ -338,21 +338,21 @@ export default async function ProtocolosPage() {
                         <tr
                           key={row.age}
                           className={cn(
-                            "group/row border-t border-gold-100/60 transition-colors hover:bg-gold-50/80 dark:border-gold-900/20 dark:hover:bg-gold-900/20",
+                            "group/row border-t border-navy-100/60 transition-colors hover:bg-navy-50/80 dark:border-navy-800/30 dark:hover:bg-navy-900/40",
                             idx % 2 === 0
                               ? "bg-transparent"
-                              : "bg-gold-50/30 dark:bg-gold-950/20",
+                              : "bg-navy-50/30 dark:bg-navy-950/30",
                           )}
                         >
                           <th scope="row" className="px-5 py-3.5 text-left">
-                            <span className="inline-flex h-7 w-7 items-center justify-center rounded-lg bg-gold-100 text-xs font-bold text-gold-700 dark:bg-gold-900/40 dark:text-gold-200">
+                            <span className="inline-flex h-7 w-7 items-center justify-center rounded-lg bg-navy-100 text-xs font-bold text-navy-700 dark:bg-navy-800/60 dark:text-navy-200">
                               {row.age}
                             </span>
                           </th>
-                          <td className="px-5 py-3.5 font-mono text-sm font-semibold tabular-nums text-gold-900 dark:text-gold-100">
+                          <td className="px-5 py-3.5 font-mono text-sm font-semibold tabular-nums text-navy-800 dark:text-navy-100">
                             {row.male}
                           </td>
-                          <td className="px-5 py-3.5 font-mono text-sm font-semibold tabular-nums text-gold-900 dark:text-gold-100">
+                          <td className="px-5 py-3.5 font-mono text-sm font-semibold tabular-nums text-navy-800 dark:text-navy-100">
                             {row.female}
                           </td>
                         </tr>
