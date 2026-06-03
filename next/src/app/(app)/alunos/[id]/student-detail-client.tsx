@@ -5,6 +5,14 @@ import { useRouter } from "next/navigation";
 import { useTranslations, useLocale } from "next-intl";
 import { toast } from "sonner";
 import {
+  CartesianGrid,
+  Line,
+  LineChart,
+  Tooltip as RechartsTooltip,
+  XAxis,
+  YAxis,
+} from "recharts";
+import {
   Activity,
   ArrowLeft,
   CalendarDays,
@@ -48,6 +56,10 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { HeightPercentilesChart } from "@/components/ui/height-percentiles-chart";
+import {
+  ChartFrame,
+  ResponsiveChartContainer,
+} from "@/components/ui/chart-frame";
 import { FieldShell } from "@/components/ui/field-shell";
 import { Switch } from "@/components/ui/switch";
 import { PageScaffold } from "@/components/ui/page-scaffold";
@@ -78,6 +90,11 @@ function BioPanel({ children, className, index, reducedEffects }: { children: Re
     </section>
   );
 }
+
+type BiometricTrendMetric = "heightM" | "weightKg" | "imc" | "waistCm" | "fatPct";
+type SelectedTrend =
+  | { kind: "biometric"; metric: BiometricTrendMetric }
+  | { kind: "test"; testId: string };
 
 interface Props {
   student: {
@@ -155,6 +172,10 @@ export function StudentDetailClient({ student }: Props) {
   const [editing, setEditing] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [updatingKidmedConsent, setUpdatingKidmedConsent] = useState(false);
+  const [selectedTrend, setSelectedTrend] = useState<SelectedTrend>({
+    kind: "biometric",
+    metric: "heightM",
+  });
 
   type StudentEditValues = z.infer<typeof createStudentSchema>;
   const editForm = useForm<StudentEditValues>({
@@ -511,27 +532,62 @@ export function StudentDetailClient({ student }: Props) {
                     label={t("height")}
                     value={`${lastBio.heightM} m`}
                     icon={<Ruler className="size-4" />}
+                    selected={
+                      selectedTrend.kind === "biometric" &&
+                      selectedTrend.metric === "heightM"
+                    }
+                    onClick={() =>
+                      setSelectedTrend({ kind: "biometric", metric: "heightM" })
+                    }
                   />
                   <StatTile
                     label={t("weight")}
                     value={`${lastBio.weightKg} kg`}
                     icon={<Weight className="size-4" />}
+                    selected={
+                      selectedTrend.kind === "biometric" &&
+                      selectedTrend.metric === "weightKg"
+                    }
+                    onClick={() =>
+                      setSelectedTrend({ kind: "biometric", metric: "weightKg" })
+                    }
                   />
                   <StatTile
                     label={t("bmi")}
                     value={lastBio.imc.toFixed(1)}
                     icon={<Activity className="size-4" />}
                     badge={<ZonePill zone={lastBio.imcZone} />}
+                    selected={
+                      selectedTrend.kind === "biometric" &&
+                      selectedTrend.metric === "imc"
+                    }
+                    onClick={() =>
+                      setSelectedTrend({ kind: "biometric", metric: "imc" })
+                    }
                   />
                   <StatTile
                     label={t("waist")}
                     icon={<Scale className="size-4" />}
                     value={lastBio.waistCm !== null ? `${lastBio.waistCm} cm` : "—"}
+                    selected={
+                      selectedTrend.kind === "biometric" &&
+                      selectedTrend.metric === "waistCm"
+                    }
+                    onClick={() =>
+                      setSelectedTrend({ kind: "biometric", metric: "waistCm" })
+                    }
                   />
                   <StatTile
                     label={t("fatPct")}
                     icon={<Percent className="size-4" />}
                     value={lastBio.fatPct !== null ? `${lastBio.fatPct}%` : "—"}
+                    selected={
+                      selectedTrend.kind === "biometric" &&
+                      selectedTrend.metric === "fatPct"
+                    }
+                    onClick={() =>
+                      setSelectedTrend({ kind: "biometric", metric: "fatPct" })
+                    }
                   />
                   <StatTile
                     label={t("date")}
@@ -545,14 +601,17 @@ export function StudentDetailClient({ student }: Props) {
                     <div className="mb-3 flex items-center gap-2">
                       <TrendingUp className="size-4 text-gold-500" />
                       <p className="text-tiny font-semibold uppercase tracking-[0.2em] text-muted-foreground">
-                        Percentis de altura
+                        {getTrendTitle(selectedTrend)}
                       </p>
                     </div>
                     <div className="h-56 w-full">
-                      <HeightPercentilesChart
+                      <StudentTrendChart
+                        selectedTrend={selectedTrend}
                         biometrics={student.biometrics}
+                        tests={student.tests}
                         sex={student.sex}
                         birthDate={student.birthDate}
+                        formatDate={formatDate}
                       />
                     </div>
                   </div>
@@ -580,10 +639,22 @@ export function StudentDetailClient({ student }: Props) {
                       : "border-white/28 bg-gradient-to-br from-white/76 via-white/62 to-white/46 hover:border-gold-300/35 dark:border-white/10 dark:from-navy-950/50 dark:via-navy-950/38 dark:to-navy-950/28";
 
                   return (
-                    <div
+                    <button
                       key={`${test.testId}-${test.recordedAt}`}
-                      className={`group relative overflow-hidden rounded-[12px] border p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.65),0_10px_24px_-20px_rgba(9,21,35,0.35)] backdrop-blur-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.75),0_16px_30px_-20px_rgba(9,21,35,0.45)] ${cardStateClass}`}
+                      type="button"
+                      aria-pressed={
+                        selectedTrend.kind === "test" &&
+                        selectedTrend.testId === test.testId
+                      }
+                      onClick={() =>
+                        setSelectedTrend({ kind: "test", testId: test.testId })
+                      }
+                      className={`group relative overflow-hidden rounded-[12px] border p-4 text-left shadow-[inset_0_1px_0_rgba(255,255,255,0.65),0_10px_24px_-20px_rgba(9,21,35,0.35)] backdrop-blur-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.75),0_16px_30px_-20px_rgba(9,21,35,0.45)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 focus-visible:ring-offset-2 focus-visible:ring-offset-background ${cardStateClass}`}
                     >
+                      {selectedTrend.kind === "test" &&
+                      selectedTrend.testId === test.testId ? (
+                        <span className="pointer-events-none absolute inset-0 rounded-[12px] ring-2 ring-gold-400/70" />
+                      ) : null}
                       <div className="flex min-w-0 items-center gap-2.5">
                           <span className="flex size-8 shrink-0 items-center justify-center rounded-[8px] border border-white/45 bg-white/80 text-navy-700 shadow-[inset_0_1px_0_rgba(255,255,255,0.9)] dark:border-white/10 dark:bg-white/8 dark:text-gold-200 dark:shadow-none">
                             {getTestIcon(test.testId)}
@@ -606,7 +677,7 @@ export function StudentDetailClient({ student }: Props) {
                         </p>
                         <ZonePill zone={test.zone} />
                       </div>
-                    </div>
+                    </button>
                   );
                 })}
               </div>
@@ -854,14 +925,18 @@ function StatTile({
   value,
   icon,
   badge,
+  selected = false,
+  onClick,
 }: {
   label: string;
   value: string;
   icon?: ReactNode;
   badge?: ReactNode;
+  selected?: boolean;
+  onClick?: () => void;
 }) {
-  return (
-    <div className="group relative flex min-h-[114px] w-full flex-col justify-between overflow-hidden rounded-[12px] border border-border bg-surface-secondary px-4 py-4 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-card-hover hover:border-gold-300/35">
+  const content = (
+    <>
       <div className="pointer-events-none absolute -right-8 -top-8 size-24 rounded-full bg-gold-300/12 blur-2xl transition-opacity duration-300 group-hover:opacity-100 dark:bg-gold-400/10" />
 
       <div className="flex items-center gap-2.5">
@@ -881,7 +956,228 @@ function StatTile({
         </span>
         {badge ? <span className="pt-0.5">{badge}</span> : null}
       </div>
+    </>
+  );
+  const className = cn(
+    "group relative flex min-h-[114px] w-full flex-col justify-between overflow-hidden rounded-[12px] border border-border bg-surface-secondary px-4 py-4 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-gold-300/35 hover:shadow-card-hover",
+    selected && "border-gold-400/70 ring-2 ring-gold-400/35",
+    onClick && "text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 focus-visible:ring-offset-2 focus-visible:ring-offset-background",
+  );
+
+  if (onClick) {
+    return (
+      <button type="button" aria-pressed={selected} onClick={onClick} className={className}>
+        {content}
+      </button>
+    );
+  }
+
+  return (
+    <div className={className}>
+      {content}
     </div>
+  );
+}
+
+function getTrendTitle(selectedTrend: SelectedTrend) {
+  if (selectedTrend.kind === "test") {
+    return `Evolução: ${getTestLabel(selectedTrend.testId)}`;
+  }
+
+  const labels: Record<BiometricTrendMetric, string> = {
+    heightM: "Percentis de altura",
+    weightKg: "Evolução: Peso",
+    imc: "Evolução: IMC",
+    waistCm: "Evolução: Cintura",
+    fatPct: "Evolução: Massa gorda",
+  };
+
+  return labels[selectedTrend.metric];
+}
+
+function getBiometricTrendConfig(metric: BiometricTrendMetric) {
+  const config: Record<
+    BiometricTrendMetric,
+    { label: string; unit: string; multiplier?: number }
+  > = {
+    heightM: { label: "Altura", unit: "cm", multiplier: 100 },
+    weightKg: { label: "Peso", unit: "kg" },
+    imc: { label: "IMC", unit: "" },
+    waistCm: { label: "Cintura", unit: "cm" },
+    fatPct: { label: "Massa gorda", unit: "%" },
+  };
+
+  return config[metric];
+}
+
+function toChartNumber(value: number | string | null) {
+  if (typeof value === "number") return Number.isFinite(value) ? value : null;
+  if (!value) return null;
+  const parsed = Number(String(value).replace(",", "."));
+  return Number.isFinite(parsed) ? parsed : null;
+}
+
+function StudentTrendChart({
+  selectedTrend,
+  biometrics,
+  tests,
+  sex,
+  birthDate,
+  formatDate,
+}: {
+  selectedTrend: SelectedTrend;
+  biometrics: Props["student"]["biometrics"];
+  tests: Props["student"]["tests"];
+  sex: string;
+  birthDate: string | null;
+  formatDate: (value: string) => string;
+}) {
+  if (
+    selectedTrend.kind === "biometric" &&
+    selectedTrend.metric === "heightM"
+  ) {
+    return (
+      <HeightPercentilesChart
+        biometrics={biometrics}
+        sex={sex}
+        birthDate={birthDate}
+      />
+    );
+  }
+
+  const config =
+    selectedTrend.kind === "biometric"
+      ? getBiometricTrendConfig(selectedTrend.metric)
+      : { label: getTestLabel(selectedTrend.testId), unit: "" };
+
+  const chartData =
+    selectedTrend.kind === "biometric"
+      ? biometrics
+          .map((entry) => {
+            const rawValue = entry[selectedTrend.metric];
+            const numericValue =
+              typeof rawValue === "number" && Number.isFinite(rawValue)
+                ? rawValue
+                : null;
+            if (numericValue === null) return null;
+
+            return {
+              date: entry.recordedAt,
+              label: formatDate(entry.recordedAt),
+              value:
+                numericValue *
+                (selectedTrend.metric === "heightM"
+                  ? (config.multiplier ?? 1)
+                  : 1),
+            };
+          })
+          .filter((item): item is { date: string; label: string; value: number } =>
+            Boolean(item),
+          )
+      : tests
+          .filter((test) => test.testId === selectedTrend.testId)
+          .map((test) => {
+            const value = toChartNumber(test.valueNum ?? test.valueText);
+            if (value === null) return null;
+
+            return {
+              date: test.recordedAt,
+              label: formatDate(test.recordedAt),
+              value,
+            };
+          })
+          .filter((item): item is { date: string; label: string; value: number } =>
+            Boolean(item),
+          );
+
+  chartData.sort(
+    (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime(),
+  );
+
+  if (chartData.length === 0) {
+    return (
+      <div className="flex h-full items-center justify-center rounded-[12px] border border-dashed border-border bg-background/60 px-4 text-center text-sm text-muted-foreground">
+        Sem dados suficientes para este gráfico.
+      </div>
+    );
+  }
+
+  return (
+    <ChartFrame className="h-full min-h-0 min-w-0">
+      <ResponsiveChartContainer
+        width="100%"
+        height="100%"
+        minWidth={0}
+        minHeight={0}
+      >
+        <LineChart
+          data={chartData}
+          margin={{ top: 10, right: 12, bottom: 20, left: -10 }}
+        >
+          <CartesianGrid
+            strokeDasharray="3 3"
+            vertical={false}
+            stroke="var(--color-border)"
+          />
+          <XAxis
+            dataKey="label"
+            tick={{ fill: "var(--color-muted-foreground)", fontSize: 12 }}
+            axisLine={false}
+            tickLine={false}
+            dy={10}
+          />
+          <YAxis
+            domain={["auto", "auto"]}
+            tick={{ fill: "var(--color-muted-foreground)", fontSize: 12 }}
+            axisLine={false}
+            tickLine={false}
+            tickFormatter={(value) =>
+              config.unit ? `${value} ${config.unit}` : String(value)
+            }
+          />
+          <RechartsTooltip
+            cursor={{
+              stroke: "var(--color-border)",
+              strokeWidth: 1,
+              strokeDasharray: "4 4",
+            }}
+            content={({ active, payload, label }) => {
+              const value = payload?.[0]?.value;
+              if (!active || value === undefined || value === null) return null;
+
+              return (
+                <div className="rounded-[8px] border border-border/60 bg-background p-2.5 text-xs shadow-sm">
+                  <p className="mb-1 font-semibold">{label}</p>
+                  <p className="font-bold text-success-600">
+                    {config.label}: {String(value)}
+                    {config.unit ? ` ${config.unit}` : ""}
+                  </p>
+                </div>
+              );
+            }}
+          />
+          <Line
+            type="monotone"
+            dataKey="value"
+            name={config.label}
+            stroke="var(--color-success-600)"
+            strokeWidth={3}
+            dot={{
+              r: 4,
+              strokeWidth: 2,
+              fill: "var(--color-background)",
+              stroke: "var(--color-success-600)",
+            }}
+            activeDot={{
+              r: 6,
+              strokeWidth: 0,
+              fill: "var(--color-success-600)",
+            }}
+            isAnimationActive={true}
+          />
+        </LineChart>
+      </ResponsiveChartContainer>
+    </ChartFrame>
   );
 }
 
