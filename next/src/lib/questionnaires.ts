@@ -1,6 +1,7 @@
 export const QUESTIONNAIRE_TYPES = [
   "AUTOCONCEITO",
   "AUTOESTIMA",
+  "EMOCIONAL",
   "KIDMED",
 ] as const;
 
@@ -41,7 +42,7 @@ export interface KidmedQuestionDefinition {
 
 export interface QuestionnaireInstrumentDefinition {
   type: QuestionnaireTypeValue;
-  formKind: "routine" | "initial" | "kidmed";
+  formKind: "routine" | "initial" | "emotional" | "kidmed";
   labelKey: string;
   descriptionKey: string;
   goalKey: string;
@@ -103,6 +104,18 @@ export type KidmedQuestionKey =
   | "sweetsSeveralTimesDaily";
 
 export type KidmedAnswers = Record<KidmedQuestionKey, boolean>;
+
+export type EmotionalFrequencyKey =
+  | "never"
+  | "rarely"
+  | "sometimes"
+  | "often"
+  | "always";
+
+export interface EmotionalQuestionDefinition {
+  key: string;
+  labelKey: string;
+}
 
 export const ROUTINE_QUESTIONS: NumericQuestionDefinition[] = [
   {
@@ -242,6 +255,85 @@ export const KIDMED_QUESTIONS: KidmedQuestionDefinition[] = [
   },
 ];
 
+export const EMOTIONAL_CANTRIL_QUESTIONS: NumericQuestionDefinition[] = [
+  {
+    key: "lifeSatisfaction",
+    labelKey: "emotionalLifeSatisfaction",
+    min: 0,
+    max: 10,
+    step: 1,
+    slider: true,
+  },
+  {
+    key: "futureExpectation",
+    labelKey: "emotionalFutureExpectation",
+    min: 0,
+    max: 10,
+    step: 1,
+    slider: true,
+  },
+];
+
+export const EMOTIONAL_WHO5_QUESTIONS: EmotionalQuestionDefinition[] = [
+  { key: "cheerful", labelKey: "emotionalWho5Cheerful" },
+  { key: "calm", labelKey: "emotionalWho5Calm" },
+  { key: "active", labelKey: "emotionalWho5Active" },
+  { key: "rested", labelKey: "emotionalWho5Rested" },
+  { key: "interested", labelKey: "emotionalWho5Interested" },
+];
+
+export const EMOTIONAL_SYMPTOM_QUESTIONS: EmotionalQuestionDefinition[] = [
+  { key: "nervous", labelKey: "emotionalSymptomNervous" },
+  { key: "sad", labelKey: "emotionalSymptomSad" },
+  { key: "overwhelmed", labelKey: "emotionalSymptomOverwhelmed" },
+  { key: "lossOfControl", labelKey: "emotionalSymptomLossOfControl" },
+  { key: "sleepDifficulty", labelKey: "emotionalSymptomSleepDifficulty" },
+  { key: "somaticPain", labelKey: "emotionalSymptomSomaticPain" },
+];
+
+export const EMOTIONAL_SOCIAL_QUESTIONS: NumericQuestionDefinition[] = [
+  {
+    key: "friendsSupport",
+    labelKey: "emotionalSocialFriends",
+    min: 1,
+    max: 5,
+    step: 1,
+    slider: true,
+  },
+  {
+    key: "familySupport",
+    labelKey: "emotionalSocialFamily",
+    min: 1,
+    max: 5,
+    step: 1,
+    slider: true,
+  },
+  {
+    key: "schoolSafety",
+    labelKey: "emotionalSocialSchool",
+    min: 1,
+    max: 5,
+    step: 1,
+    slider: true,
+  },
+  {
+    key: "likesPe",
+    labelKey: "emotionalSocialPe",
+    min: 1,
+    max: 5,
+    step: 1,
+    slider: true,
+  },
+  {
+    key: "activityHelpsMood",
+    labelKey: "emotionalSocialActivityMood",
+    min: 1,
+    max: 5,
+    step: 1,
+    slider: true,
+  },
+];
+
 export const QUESTIONNAIRE_INSTRUMENTS: Record<
   QuestionnaireTypeValue,
   QuestionnaireInstrumentDefinition
@@ -267,6 +359,18 @@ export const QUESTIONNAIRE_INSTRUMENTS: Record<
     cadenceKey: "autoestimaCadence",
     guidanceKey: "autoestimaGuidance",
     historyDescriptionKey: "autoestimaHistoryDescription",
+    supportsDeferral: true,
+    requiresConsent: false,
+  },
+  EMOCIONAL: {
+    type: "EMOCIONAL",
+    formKind: "emotional",
+    labelKey: "emocional",
+    descriptionKey: "emocionalDesc",
+    goalKey: "emocionalGoal",
+    cadenceKey: "emocionalCadence",
+    guidanceKey: "emocionalGuidance",
+    historyDescriptionKey: "emocionalHistoryDescription",
     supportsDeferral: true,
     requiresConsent: false,
   },
@@ -307,6 +411,12 @@ export const QUESTIONNAIRE_FIELD_META: Record<
   eatsBreakfast: { labelKey: "eatsBreakfastLabel" },
   eatsFruitsVegetables: { labelKey: "eatsFruitsVegetablesLabel" },
   drinksWaterEnough: { labelKey: "drinksWaterEnoughLabel" },
+  lifeSatisfaction: { labelKey: "emotionalLifeSatisfaction", scaleMax: 10 },
+  futureExpectation: { labelKey: "emotionalFutureExpectation", scaleMax: 10 },
+  who5Score: { labelKey: "emotionalWho5ScoreLabel", scaleMax: 20 },
+  symptomDailyCount: { labelKey: "emotionalSymptomDailyCountLabel" },
+  socialAverage: { labelKey: "emotionalSocialAverageLabel", scaleMax: 5 },
+  riskSignal: { labelKey: "emotionalRiskSignalLabel" },
 };
 
 export const QUESTIONNAIRE_PREVIEW_FIELDS: Record<
@@ -328,6 +438,12 @@ export const QUESTIONNAIRE_PREVIEW_FIELDS: Record<
     { key: "sportsPractice", labelKey: "sportsPracticeLabel" },
     { key: "eatsBreakfast", labelKey: "eatsBreakfastLabel" },
     { key: "drinksWaterEnough", labelKey: "drinksWaterEnoughLabel" },
+  ],
+  EMOCIONAL: [
+    { key: "lifeSatisfaction", labelKey: "emotionalLifeSatisfaction", scaleMax: 10 },
+    { key: "futureExpectation", labelKey: "emotionalFutureExpectation", scaleMax: 10 },
+    { key: "who5Score", labelKey: "emotionalWho5ScoreLabel", scaleMax: 20 },
+    { key: "symptomDailyCount", labelKey: "emotionalSymptomDailyCountLabel" },
   ],
 };
 
@@ -378,6 +494,57 @@ export function getQuestionnairePreviewItems(
         value: questionnaire.instrumentVersion ?? null,
       },
     ];
+  }
+
+  if (questionnaire.type === "EMOCIONAL") {
+    const payload = questionnaire.payload;
+    const who5Score =
+      typeof payload.who5Score === "number" ? payload.who5Score : null;
+    const symptomDailyCount =
+      typeof payload.symptomDailyCount === "number"
+        ? payload.symptomDailyCount
+        : null;
+    const socialAverage =
+      typeof payload.socialAverage === "number" ? payload.socialAverage : null;
+    const riskSignal =
+      typeof payload.riskSignal === "boolean" ? payload.riskSignal : null;
+
+    return [
+      {
+        key: "lifeSatisfaction",
+        labelKey: "emotionalLifeSatisfaction",
+        value: payload.lifeSatisfaction,
+        scaleMax: 10,
+      },
+      {
+        key: "futureExpectation",
+        labelKey: "emotionalFutureExpectation",
+        value: payload.futureExpectation,
+        scaleMax: 10,
+      },
+      {
+        key: "who5Score",
+        labelKey: "emotionalWho5ScoreLabel",
+        value: who5Score,
+        scaleMax: 20,
+      },
+      {
+        key: "symptomDailyCount",
+        labelKey: "emotionalSymptomDailyCountLabel",
+        value: symptomDailyCount,
+      },
+      {
+        key: "socialAverage",
+        labelKey: "emotionalSocialAverageLabel",
+        value: socialAverage,
+        scaleMax: 5,
+      },
+      {
+        key: "riskSignal",
+        labelKey: "emotionalRiskSignalLabel",
+        value: riskSignal,
+      },
+    ].filter((item) => item.value !== null && item.value !== undefined);
   }
 
   return QUESTIONNAIRE_PREVIEW_FIELDS[questionnaire.type]

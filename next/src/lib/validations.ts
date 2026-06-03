@@ -232,6 +232,35 @@ export const kidmedAnswersSchema = z.object({
   sweetsSeveralTimesDaily: z.boolean(),
 });
 
+const emotionalFrequencySchema = z.number().int().min(0).max(4);
+
+export const emotionalQuestionnairePayloadSchema = z.object({
+  lifeSatisfaction: z.number().int().min(0).max(10),
+  futureExpectation: z.number().int().min(0).max(10),
+  who5: z.object({
+    cheerful: emotionalFrequencySchema,
+    calm: emotionalFrequencySchema,
+    active: emotionalFrequencySchema,
+    rested: emotionalFrequencySchema,
+    interested: emotionalFrequencySchema,
+  }),
+  symptoms: z.object({
+    nervous: emotionalFrequencySchema,
+    sad: emotionalFrequencySchema,
+    overwhelmed: emotionalFrequencySchema,
+    lossOfControl: emotionalFrequencySchema,
+    sleepDifficulty: emotionalFrequencySchema,
+    somaticPain: emotionalFrequencySchema,
+  }),
+  social: z.object({
+    friendsSupport: z.number().int().min(1).max(5),
+    familySupport: z.number().int().min(1).max(5),
+    schoolSafety: z.number().int().min(1).max(5),
+    likesPe: z.number().int().min(1).max(5),
+    activityHelpsMood: z.number().int().min(1).max(5),
+  }),
+});
+
 export const questionnaireSchema = z.discriminatedUnion("type", [
   z.object({
     type: z.literal("AUTOCONCEITO"),
@@ -241,6 +270,11 @@ export const questionnaireSchema = z.discriminatedUnion("type", [
   z.object({
     type: z.literal("AUTOESTIMA"),
     payload: initialQuestionnairePayloadSchema,
+    deferredCount: z.number().int().min(0).max(3).default(0),
+  }),
+  z.object({
+    type: z.literal("EMOCIONAL"),
+    payload: emotionalQuestionnairePayloadSchema,
     deferredCount: z.number().int().min(0).max(3).default(0),
   }),
   z.object({

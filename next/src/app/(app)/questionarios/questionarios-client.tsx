@@ -43,6 +43,10 @@ import {
   getQuestionnairePreviewItems,
   getQuestionnaireTypeLabelKey,
   getSchoolPeriodInfo,
+  EMOTIONAL_CANTRIL_QUESTIONS,
+  EMOTIONAL_SOCIAL_QUESTIONS,
+  EMOTIONAL_SYMPTOM_QUESTIONS,
+  EMOTIONAL_WHO5_QUESTIONS,
   INITIAL_QUESTIONS,
   KIDMED_QUESTIONS,
   QUESTIONNAIRE_FIELD_META,
@@ -195,6 +199,8 @@ function getInstrumentEstimatedTime(type: QuestionnaireTypeValue) {
       return "2-3 min";
     case "AUTOESTIMA":
       return "3-4 min";
+    case "EMOCIONAL":
+      return "6-8 min";
     case "KIDMED":
       return "4-5 min";
   }
@@ -249,6 +255,32 @@ export default function QuestionariosPage() {
     eatsFruitsVegetables: false,
     drinksWaterEnough: false,
   });
+  const [emotionalData, setEmotionalData] = useState({
+    lifeSatisfaction: 6,
+    futureExpectation: 7,
+    who5: {
+      cheerful: 2,
+      calm: 2,
+      active: 2,
+      rested: 2,
+      interested: 2,
+    },
+    symptoms: {
+      nervous: 1,
+      sad: 1,
+      overwhelmed: 1,
+      lossOfControl: 1,
+      sleepDifficulty: 1,
+      somaticPain: 1,
+    },
+    social: {
+      friendsSupport: 4,
+      familySupport: 4,
+      schoolSafety: 4,
+      likesPe: 4,
+      activityHelpsMood: 4,
+    },
+  });
   const [kidmedData, setKidmedData] = useState<KidmedAnswers>({
     fruitDaily: false,
     secondFruitDaily: false,
@@ -286,6 +318,25 @@ export default function QuestionariosPage() {
     latestQuestionnaire.periodKey === currentPeriod.periodKey;
   const kidmedResult =
     latestQuestionnaire?.type === "KIDMED" ? latestQuestionnaire : null;
+  const emotionalWho5Score = Object.values(emotionalData.who5).reduce(
+    (total, value) => total + value,
+    0,
+  );
+  const emotionalSymptomDailyCount = Object.values(
+    emotionalData.symptoms,
+  ).filter((value) => value === 4).length;
+  const emotionalSocialValues = Object.values(emotionalData.social);
+  const emotionalSocialAverage =
+    Math.round(
+      (emotionalSocialValues.reduce((total, value) => total + value, 0) /
+        emotionalSocialValues.length) *
+        10,
+    ) / 10;
+  const emotionalRiskSignal =
+    emotionalWho5Score < 10 ||
+    emotionalSymptomDailyCount >= 3 ||
+    emotionalData.lifeSatisfaction <= 3 ||
+    emotionalData.futureExpectation <= 3;
   const canOpenQuestions =
     Boolean(studentId) &&
     (!isKidmed || (hasKidmedConsent && !kidmedCompletedThisPeriod));
@@ -494,6 +545,12 @@ export default function QuestionariosPage() {
                 payload: initialData,
                 deferredCount: deferred ? deferredCount + 1 : 0,
               }
+            : qType === "EMOCIONAL"
+              ? {
+                  type: qType,
+                  payload: emotionalData,
+                  deferredCount: deferred ? deferredCount + 1 : 0,
+                }
             : { type: qType, payload: kidmedData };
 
       const res = await fetch(`/api/students/${studentId}/questionnaires`, {
@@ -648,6 +705,28 @@ export default function QuestionariosPage() {
               detail: t("reviewSignalsDetail"),
             },
           ]
+        : qType === "EMOCIONAL"
+          ? [
+              {
+                label: t("emotionalWho5ScoreLabel"),
+                value: `${emotionalWho5Score}/20`,
+                detail: t(
+                  emotionalWho5Score < 10
+                    ? "emotionalWho5RiskDetail"
+                    : "emotionalWho5StableDetail",
+                ),
+              },
+              {
+                label: t("emotionalSymptomDailyCountLabel"),
+                value: String(emotionalSymptomDailyCount),
+                detail: t("emotionalSymptomDailyCountDetail"),
+              },
+              {
+                label: t("emotionalRiskSignalLabel"),
+                value: emotionalRiskSignal ? t("yes") : t("no"),
+                detail: t("emotionalRiskSignalDetail"),
+              },
+            ]
         : [
             {
               label: t("kidmedCurrentWindow"),
@@ -770,11 +849,17 @@ export default function QuestionariosPage() {
             <div
               role="radiogroup"
               aria-label={t("instrumentSelectorLabel")}
-              className="grid gap-3 lg:grid-cols-3"
+              className="grid items-stretch gap-4 lg:grid-cols-2 2xl:grid-cols-4"
             >
               {QUESTIONNAIRE_TYPES.map((type) => {
                 const instrument = QUESTIONNAIRE_INSTRUMENTS[type];
                 const active = qType === type;
+                const periodRule =
+                  type === "KIDMED"
+                    ? t("kidmedPeriodRuleShort")
+                    : type === "EMOCIONAL"
+                      ? t("emotionalPeriodRuleShort")
+                      : t("deferralRuleShort", { count: MAX_DEFERRALS });
                 return (
                   <button
                     key={type}
@@ -784,77 +869,89 @@ export default function QuestionariosPage() {
                     onClick={() => setQType(type)}
                     className={cn(
                       interactiveControlClasses.choiceBase,
-                      "rounded-[12px] p-4",
+                      "min-h-[228px] rounded-[12px] p-5 text-left",
                       active
                         ? interactiveControlClasses.choiceActive
                         : interactiveControlClasses.choiceInactive,
                     )}
                   >
                     <div className="flex h-full flex-col gap-4">
-                      <div className="flex items-start justify-between gap-3">
-                        <div>
-                          <span
-                            className={cn(
-                              "inline-flex rounded-full px-2.5 py-1 text-micro font-semibold uppercase tracking-[0.18em]",
-                              active
-                                ? "border border-white/12 bg-white/12 text-gold-200"
-                                : "bg-muted text-muted-foreground",
-                            )}
-                          >
-                            {active
-                              ? t("instrumentSelectedBadge")
-                              : t("instrumentTapBadge")}
-                          </span>
-                          <p
-                            className={cn(
-                              "mt-3 text-base font-semibold tracking-tight",
-                              active ? "text-white" : "text-foreground",
-                            )}
-                          >
-                            {t(instrument.labelKey)}
-                          </p>
-                          <p
-                            className={cn(
-                              "mt-2 text-sm leading-relaxed",
-                              active
-                                ? "text-white/78"
-                                : "text-muted-foreground",
-                            )}
-                          >
-                            {t(instrument.descriptionKey)}
-                          </p>
-                        </div>
+                      <div className="flex items-start justify-between gap-4">
                         <span
                           className={cn(
-                            "rounded-full px-2.5 py-1 text-tiny font-semibold uppercase tracking-[0.18em]",
+                            "inline-flex min-h-7 items-center rounded-full px-2.5 py-1 text-micro font-semibold uppercase tracking-[0.18em]",
                             active
                               ? "border border-white/12 bg-white/12 text-gold-200"
                               : "bg-muted text-muted-foreground",
                           )}
                         >
+                          {active
+                            ? t("instrumentSelectedBadge")
+                            : t("instrumentTapBadge")}
+                        </span>
+                        <span
+                          className={cn(
+                            "inline-flex min-h-7 shrink-0 items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold tabular-nums",
+                            active
+                              ? "border border-white/12 bg-white/12 text-white"
+                              : "border border-border bg-surface-secondary text-foreground",
+                          )}
+                        >
+                          <Clock3
+                            className={cn(
+                              "size-3.5",
+                              active ? "text-gold-200" : "text-gold-600",
+                            )}
+                          />
                           {getInstrumentEstimatedTime(type)}
                         </span>
                       </div>
-                      <div className="mt-auto flex items-center justify-between gap-3">
-                        <span
+
+                      <div className="min-w-0 space-y-2">
+                        <p
                           className={cn(
-                            "text-xs font-semibold uppercase tracking-[0.16em]",
+                            "text-lg font-semibold leading-tight tracking-tight",
+                            active ? "text-white" : "text-foreground",
+                          )}
+                        >
+                          {t(instrument.labelKey)}
+                        </p>
+                        <p
+                          className={cn(
+                            "text-sm leading-relaxed",
                             active ? "text-white/78" : "text-muted-foreground",
                           )}
                         >
-                          {type === "KIDMED"
-                            ? t("kidmedPeriodRuleShort")
-                            : t("deferralRuleShort", { count: MAX_DEFERRALS })}
+                          {t(instrument.descriptionKey)}
+                        </p>
+                      </div>
+
+                      <div className="mt-auto grid gap-3">
+                        <span
+                          className={cn(
+                            "rounded-[10px] border px-3 py-2 text-xs font-semibold leading-snug",
+                            active ? "text-white/78" : "text-muted-foreground",
+                            active
+                              ? "border-white/12 bg-white/8"
+                              : "border-border bg-surface-secondary",
+                          )}
+                        >
+                          {periodRule}
                         </span>
                         <span
                           className={cn(
-                            "rounded-full border px-3 py-1.5 text-xs font-semibold",
+                            "flex min-h-10 items-center justify-between gap-3 rounded-[10px] border px-3.5 py-2 text-sm font-semibold",
                             active
                               ? "border-white/20 bg-white/10 text-white"
                               : "border-border bg-surface-secondary text-foreground",
                           )}
                         >
                           {active ? t("ctaSelected") : t("ctaChoose")}
+                          {active ? (
+                            <CheckCircle2 className="size-4 shrink-0" />
+                          ) : (
+                            <ArrowRight className="size-4 shrink-0" />
+                          )}
                         </span>
                       </div>
                     </div>
@@ -1114,6 +1211,161 @@ export default function QuestionariosPage() {
               </QuestionBlock>
             ) : null}
 
+            {qType === "EMOCIONAL" ? (
+              <div className="grid gap-4">
+                <QuestionBlock
+                  title={t("emotionalCantrilTitle")}
+                  description={t("emotionalCantrilDescription")}
+                >
+                  <div className="grid gap-5">
+                    {EMOTIONAL_CANTRIL_QUESTIONS.map((question) => (
+                      <RangeSlider
+                        key={question.key}
+                        label={t(question.labelKey)}
+                        min={question.min}
+                        max={question.max}
+                        step={question.step}
+                        value={
+                          emotionalData[
+                            question.key as keyof Pick<
+                              typeof emotionalData,
+                              "lifeSatisfaction" | "futureExpectation"
+                            >
+                          ] as number
+                        }
+                        onChange={(value) =>
+                          setEmotionalData((current) => ({
+                            ...current,
+                            [question.key]: value,
+                          }))
+                        }
+                        minLabel={t("emotionalScaleWorst")}
+                        maxLabel={t("emotionalScaleBest")}
+                      />
+                    ))}
+                  </div>
+                </QuestionBlock>
+
+                <QuestionBlock
+                  title={t("emotionalWho5Title")}
+                  description={t("emotionalWho5Description")}
+                >
+                  <div className="grid gap-5">
+                    {EMOTIONAL_WHO5_QUESTIONS.map((question) => (
+                      <RangeSlider
+                        key={question.key}
+                        label={t(question.labelKey)}
+                        min={0}
+                        max={4}
+                        step={1}
+                        value={
+                          emotionalData.who5[
+                            question.key as keyof typeof emotionalData.who5
+                          ]
+                        }
+                        onChange={(value) =>
+                          setEmotionalData((current) => ({
+                            ...current,
+                            who5: { ...current.who5, [question.key]: value },
+                          }))
+                        }
+                        labels={[
+                          t("frequencyNever"),
+                          t("frequencyRarely"),
+                          t("frequencySometimes"),
+                          t("frequencyOften"),
+                          t("frequencyAlways"),
+                        ]}
+                        minLabel={t("frequencyNever")}
+                        maxLabel={t("frequencyAlways")}
+                      />
+                    ))}
+                  </div>
+                </QuestionBlock>
+
+                <QuestionBlock
+                  title={t("emotionalSymptomsTitle")}
+                  description={t("emotionalSymptomsDescription")}
+                >
+                  <div className="grid gap-5">
+                    {EMOTIONAL_SYMPTOM_QUESTIONS.map((question) => (
+                      <RangeSlider
+                        key={question.key}
+                        label={t(question.labelKey)}
+                        min={0}
+                        max={4}
+                        step={1}
+                        value={
+                          emotionalData.symptoms[
+                            question.key as keyof typeof emotionalData.symptoms
+                          ]
+                        }
+                        onChange={(value) =>
+                          setEmotionalData((current) => ({
+                            ...current,
+                            symptoms: {
+                              ...current.symptoms,
+                              [question.key]: value,
+                            },
+                          }))
+                        }
+                        labels={[
+                          t("frequencyNever"),
+                          t("frequencyRarely"),
+                          t("frequencySometimes"),
+                          t("frequencyAlmostDaily"),
+                          t("frequencyDaily"),
+                        ]}
+                        minLabel={t("frequencyNever")}
+                        maxLabel={t("frequencyDaily")}
+                        colorStops={STRESS_COLORS}
+                      />
+                    ))}
+                  </div>
+                </QuestionBlock>
+
+                <QuestionBlock
+                  title={t("emotionalSocialTitle")}
+                  description={t("emotionalSocialDescription")}
+                >
+                  <div className="grid gap-5">
+                    {EMOTIONAL_SOCIAL_QUESTIONS.map((question) => (
+                      <RangeSlider
+                        key={question.key}
+                        label={t(question.labelKey)}
+                        min={question.min}
+                        max={question.max}
+                        step={question.step}
+                        value={
+                          emotionalData.social[
+                            question.key as keyof typeof emotionalData.social
+                          ]
+                        }
+                        onChange={(value) =>
+                          setEmotionalData((current) => ({
+                            ...current,
+                            social: {
+                              ...current.social,
+                              [question.key]: value,
+                            },
+                          }))
+                        }
+                        labels={[
+                          t("agreementStrongDisagree"),
+                          t("agreementDisagree"),
+                          t("agreementNeutral"),
+                          t("agreementAgree"),
+                          t("agreementStrongAgree"),
+                        ]}
+                        minLabel={t("agreementStrongDisagree")}
+                        maxLabel={t("agreementStrongAgree")}
+                      />
+                    ))}
+                  </div>
+                </QuestionBlock>
+              </div>
+            ) : null}
+
             {isKidmed ? (
               canOpenQuestions ? (
                 <div className="grid gap-4">
@@ -1259,6 +1511,47 @@ export default function QuestionariosPage() {
                         />
                       );
                     })}
+                  </div>
+                ) : null}
+
+                {qType === "EMOCIONAL" ? (
+                  <div className="grid gap-3 rounded-[12px] border border-border bg-surface-secondary p-4 sm:grid-cols-3">
+                    <ProgressReviewCard
+                      label={t("emotionalLifeSatisfaction")}
+                      value={emotionalData.lifeSatisfaction}
+                      max={10}
+                      colorClass={
+                        emotionalData.lifeSatisfaction <= 3
+                          ? "bg-danger-500"
+                          : emotionalData.lifeSatisfaction <= 6
+                            ? "bg-warning-500"
+                            : "bg-success-500"
+                      }
+                    />
+                    <ProgressReviewCard
+                      label={t("emotionalWho5ScoreLabel")}
+                      value={emotionalWho5Score}
+                      max={20}
+                      colorClass={
+                        emotionalWho5Score < 10
+                          ? "bg-danger-500"
+                          : emotionalWho5Score < 13
+                            ? "bg-warning-500"
+                            : "bg-success-500"
+                      }
+                    />
+                    <ProgressReviewCard
+                      label={t("emotionalSocialAverageLabel")}
+                      value={emotionalSocialAverage}
+                      max={5}
+                      colorClass={
+                        emotionalSocialAverage < 2.5
+                          ? "bg-danger-500"
+                          : emotionalSocialAverage < 3.5
+                            ? "bg-warning-500"
+                            : "bg-success-500"
+                      }
+                    />
                   </div>
                 ) : null}
 
@@ -1741,10 +2034,12 @@ function ReviewCard({
 function ProgressReviewCard({
   label,
   value,
+  max = 10,
   colorClass,
 }: {
   label: string;
   value: number;
+  max?: number;
   colorClass: string;
 }) {
   return (
@@ -1754,7 +2049,7 @@ function ProgressReviewCard({
           {label}
         </span>
         <span className="text-sm font-bold tabular-nums text-foreground">
-          {value}/10
+          {value}/{max}
         </span>
       </div>
       <div className="mt-3 h-2 overflow-hidden rounded-full bg-muted/60">
@@ -1763,7 +2058,7 @@ function ProgressReviewCard({
             "h-full rounded-full transition-all duration-500",
             colorClass,
           )}
-          style={{ width: `${value * 10}%` }}
+          style={{ width: `${Math.min(100, (value / max) * 100)}%` }}
         />
       </div>
     </div>

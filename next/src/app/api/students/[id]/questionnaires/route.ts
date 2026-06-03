@@ -1,6 +1,6 @@
 import { type NextRequest } from "next/server";
 import { z } from "zod";
-import type { Role } from "@prisma/client";
+import type { Prisma, Role } from "@prisma/client";
 import { auth } from "@/lib/auth";
 import {
   conflict,
@@ -25,6 +25,39 @@ import {
   listQuestionnairesQuerySchema,
   questionnaireSchema,
 } from "@/lib/validations";
+
+function enrichEmotionalPayload(payload: Extract<
+  z.infer<typeof questionnaireSchema>,
+  { type: "EMOCIONAL" }
+>["payload"]) {
+  const who5Score = Object.values(payload.who5).reduce(
+    (total, value) => total + value,
+    0,
+  );
+  const symptomDailyCount = Object.values(payload.symptoms).filter(
+    (value) => value === 4,
+  ).length;
+  const socialValues = Object.values(payload.social);
+  const socialAverage =
+    Math.round(
+      (socialValues.reduce((total, value) => total + value, 0) /
+        socialValues.length) *
+        10,
+    ) / 10;
+  const riskSignal =
+    who5Score < 10 ||
+    symptomDailyCount >= 3 ||
+    payload.lifeSatisfaction <= 3 ||
+    payload.futureExpectation <= 3;
+
+  return {
+    ...payload,
+    who5Score,
+    symptomDailyCount,
+    socialAverage,
+    riskSignal,
+  };
+}
 
 // GET /api/students/[id]/questionnaires
 export async function GET(
@@ -116,9 +149,11 @@ export async function POST(
       return err("Aluno nao encontrado", 404);
     }
 
-    const questionnaireData =
+    const questionnaireData: Prisma.QuestionnaireUncheckedCreateInput | Response =
       data.type === "KIDMED"
-        ? await (async () => {
+        ? await (async (): Promise<
+            Prisma.QuestionnaireUncheckedCreateInput | Response
+          > => {
             if (!student.kidmedConsentAt) {
               return err(
                 "Consentimento parental obrigatorio para o KIDMED",
@@ -155,12 +190,26 @@ export async function POST(
               deferredCount: 0,
             };
           })()
-        : {
-            studentId: id,
-            type: data.type,
-            payload: data.payload,
-            deferredCount: data.deferredCount,
-          };
+        : await (async (): Promise<Prisma.QuestionnaireUncheckedCreateInput> => {
+            if (data.type === "EMOCIONAL") {
+              const payload = enrichEmotionalPayload(data.payload);
+
+              return {
+                studentId: id,
+                type: data.type,
+                payload,
+                score: payload.who5Score,
+                deferredCount: data.deferredCount,
+              };
+            }
+
+            return {
+              studentId: id,
+              type: data.type,
+              payload: data.payload,
+              deferredCount: data.deferredCount,
+            };
+          })();
 
     if (questionnaireData instanceof Response) {
       return questionnaireData;
