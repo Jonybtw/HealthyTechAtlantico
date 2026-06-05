@@ -9,6 +9,12 @@ type GraphEmailAddress = {
   name?: string;
 };
 
+type MailAttachment = {
+  filename: string;
+  contentBase64: string;
+  contentType: string;
+};
+
 function getRequiredEnv(name: string) {
   const value = process.env[name]?.trim();
 
@@ -82,6 +88,7 @@ export async function sendReportMail365(opts: {
   html: string;
   text?: string;
   recipientName?: string | null;
+  attachments?: MailAttachment[];
 }) {
   if (!hasMicrosoftGraphConfig()) {
     if (!allowsSmtpFallback()) {
@@ -96,6 +103,7 @@ export async function sendReportMail365(opts: {
       subject: opts.subject,
       html: opts.html,
       text: opts.text,
+      attachments: opts.attachments,
     });
   }
 
@@ -130,6 +138,12 @@ export async function sendReportMail365(opts: {
               emailAddress: recipient,
             },
           ],
+          attachments: opts.attachments?.map((attachment) => ({
+            "@odata.type": "#microsoft.graph.fileAttachment",
+            name: attachment.filename,
+            contentType: attachment.contentType,
+            contentBytes: attachment.contentBase64,
+          })),
         },
         saveToSentItems: true,
       }),

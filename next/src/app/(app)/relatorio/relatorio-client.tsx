@@ -98,6 +98,16 @@ type GuardianOption = {
   relationship: string;
 };
 
+type ReportEmailResponse = {
+  emailSent: boolean;
+};
+
+type PdfAttachmentPayload = {
+  filename: string;
+  contentBase64: string;
+  contentType: "application/pdf";
+};
+
 type PdfColor = [number, number, number];
 
 type HealthStatusKey = "lowWeight" | "normal" | "overweight" | "obesity";
@@ -144,6 +154,34 @@ function BioPanel({ children, className, index, reducedEffects }: { children: Re
 
 const reportSurfaceClassName =
   "rounded-[12px] border border-border/70 bg-card/88 shadow-card backdrop-blur-sm dark:border-white/10 dark:bg-white/[0.06]";
+
+function blobToBase64(blob: Blob) {
+  return new Promise<string>((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onerror = () => reject(reader.error);
+    reader.onloadend = () => {
+      const result = reader.result;
+      if (typeof result !== "string") {
+        reject(new Error("PDF invalido"));
+        return;
+      }
+
+      resolve(result.split(",")[1] ?? result);
+    };
+    reader.readAsDataURL(blob);
+  });
+}
+
+function buildReportFilename(studentName: string | null | undefined) {
+  const safeName = (studentName ?? "aluno")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-zA-Z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .toLowerCase();
+
+  return `relatorio-${safeName || "aluno"}.pdf`;
+}
 
 function toNumber(value: number | string | null | undefined) {
   if (typeof value === "number") {
@@ -304,6 +342,7 @@ export default function RelatorioClient() {
     role === "ALUNO" ||
     role === "PAIS";
   const canSendEmail = role === "ADMIN" || role === "PROFESSOR";
+  const isStudentRole = role === "ALUNO";
 
   const [students, setStudents] = useState<StudentOption[]>([]);
   const [loadingStudents, setLoadingStudents] = useState(true);
@@ -550,39 +589,11 @@ export default function RelatorioClient() {
     tests: buildMetaDetail(formatDate(latestTestsDate), t("testsEmptyState")),
   };
 
-  const handleGeneratePdf = async () => {
+  const buildReportPdfBlob = async () => {
     if (!studentId) {
-      toast.error(t("selectStudent"));
-      return;
+      throw new Error(t("selectStudent"));
     }
 
-    const previewWindow = window.open("about:blank", "_blank");
-
-    if (!previewWindow) {
-      toast.error(t("previewBlocked"));
-      return;
-    }
-
-    try {
-      previewWindow.opener = null;
-    } catch {
-      // Ignore browsers that prevent overriding opener.
-    }
-
-    previewWindow.document.title = t("previewHeader");
-    previewWindow.document.body.innerHTML = `
-      <div style="font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; min-height: 100vh; margin: 0; display: grid; place-items: center; background: #f4f1ea; color: #091523;">
-        <div style="text-align: center; padding: 24px;">
-          <div style="font-size: 14px; letter-spacing: 0.18em; text-transform: uppercase; color: #5f6d7b; margin-bottom: 12px;">HealthyTech Atlântico</div>
-          <div style="font-size: 28px; font-weight: 700; margin-bottom: 8px;">${t("generating")}</div>
-          <div style="font-size: 14px; color: #5f6d7b;">${t("pdfSubtitle")}</div>
-        </div>
-      </div>
-    `;
-
-    setGeneratingPdf(true);
-
-    try {
       const [rawBiometrics, rawTests] = await Promise.all([
         fetch(`/api/students/${studentId}/biometrics`).then((response) =>
           readApiResponse<RawBiometricEntry[]>(response),
@@ -597,8 +608,7 @@ export default function RelatorioClient() {
       const pdfHealthInsight = getHealthInsight(biometrics[0]?.imc ?? null, t);
 
       if (biometrics.length === 0 && tests.length === 0) {
-        toast.error(t("noData"));
-        return;
+        throw new Error(t("noData"));
       }
 
       const { jsPDF } = await import("jspdf");
@@ -932,7 +942,43 @@ export default function RelatorioClient() {
         { align: "center" },
       );
 
-      const blob = doc.output("blob");
+    return doc.output("blob");
+  };
+
+  const handleGeneratePdf = async () => {
+    if (!studentId) {
+      toast.error(t("selectStudent"));
+      return;
+    }
+
+    const previewWindow = window.open("about:blank", "_blank");
+
+    if (!previewWindow) {
+      toast.error(t("previewBlocked"));
+      return;
+    }
+
+    try {
+      previewWindow.opener = null;
+    } catch {
+      // Ignore browsers that prevent overriding opener.
+    }
+
+    previewWindow.document.title = t("previewHeader");
+    previewWindow.document.body.innerHTML = `
+      <div style="font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; min-height: 100vh; margin: 0; display: grid; place-items: center; background: #f4f1ea; color: #091523;">
+        <div style="text-align: center; padding: 24px;">
+          <div style="font-size: 14px; letter-spacing: 0.18em; text-transform: uppercase; color: #5f6d7b; margin-bottom: 12px;">HealthyTech Atlântico</div>
+          <div style="font-size: 28px; font-weight: 700; margin-bottom: 8px;">${t("generating")}</div>
+          <div style="font-size: 14px; color: #5f6d7b;">${t("pdfSubtitle")}</div>
+        </div>
+      </div>
+    `;
+
+    setGeneratingPdf(true);
+
+    try {
+      const blob = await buildReportPdfBlob();
       const url = URL.createObjectURL(blob);
       previewWindow.location.href = url;
 
@@ -964,13 +1010,26 @@ export default function RelatorioClient() {
     setSendingEmail(true);
 
     try {
+      const pdfBlob = await buildReportPdfBlob();
+      const pdfAttachment: PdfAttachmentPayload = {
+        filename: buildReportFilename(selectedStudent?.name),
+        contentBase64: await blobToBase64(pdfBlob),
+        contentType: "application/pdf",
+      };
+
       const response = await fetch(`/api/students/${studentId}/reports/email`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ guardianUserId }),
+        body: JSON.stringify({ guardianUserId, pdfAttachment }),
       });
 
-      await readApiResponse(response);
+      const result = await readApiResponse<ReportEmailResponse>(response);
+
+      if (!result.emailSent) {
+        toast.error(t("emailSendError"));
+        return;
+      }
+
       toast.success(t("emailSuccess"));
     } catch (error) {
       toast.error(
@@ -1035,14 +1094,16 @@ export default function RelatorioClient() {
                   <div className="min-w-0 flex-1 space-y-3">
                     <div>
                       <p className="text-tiny font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-                        {t("studentSelectionLabel")}
+                        {isStudentRole
+                          ? t("pdfStudentLabel")
+                          : t("studentSelectionLabel")}
                       </p>
                       <h2 className="mt-1 text-lg font-bold tracking-tight text-foreground">
-                        {t("flowStepSelect")}
+                        {isStudentRole ? t("previewHeader") : t("flowStepSelect")}
                       </h2>
                     </div>
 
-                    {role !== "ALUNO" ? (
+                    {!isStudentRole ? (
                       <StudentPicker
                         students={students}
                         value={studentId}
@@ -1053,7 +1114,7 @@ export default function RelatorioClient() {
                       <SelectedStudentCard student={selectedStudent} />
                     )}
 
-                    {role !== "ALUNO" ? (
+                    {!isStudentRole ? (
                       <p className="text-tiny leading-relaxed text-muted-foreground">
                         {t("studentSelectionHint")}
                       </p>

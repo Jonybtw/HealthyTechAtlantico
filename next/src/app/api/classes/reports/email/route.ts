@@ -92,16 +92,6 @@ export async function POST(req: NextRequest) {
       }
 
       for (const guardianLink of student.guardians) {
-        await prisma.report.create({
-          data: {
-            studentId: student.id,
-            title: data.title,
-            emailedTo: guardianLink.guardian.email,
-            schoolYear: student.schoolYear,
-            createdById: session.user.id,
-          },
-        });
-
         try {
           await sendReportMail365({
             to: guardianLink.guardian.email,
@@ -129,6 +119,17 @@ export async function POST(req: NextRequest) {
               })),
             }),
           });
+
+          await prisma.report.create({
+            data: {
+              studentId: student.id,
+              title: data.title,
+              emailedTo: guardianLink.guardian.email,
+              schoolYear: student.schoolYear,
+              createdById: session.user.id,
+            },
+          });
+
           sent += 1;
         } catch (error) {
           failed += 1;

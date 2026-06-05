@@ -301,6 +301,13 @@ export const reportEmailSchema = z.object({
   guardianUserId: z.string().min(1),
   title: z.string().default("Relatório HealthyTechAtlantico"),
   schoolYear: z.string().optional(),
+  pdfAttachment: z
+    .object({
+      filename: z.string().min(1).max(120),
+      contentBase64: z.string().min(1),
+      contentType: z.literal("application/pdf"),
+    })
+    .optional(),
 });
 
 export const guardianSchema = z.object({

@@ -4,6 +4,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import LoginClient from "@/app/(auth)/login/login-client";
 
 const routerPush = vi.fn();
+const routerReplace = vi.fn();
 const routerRefresh = vi.fn();
 const signInMock = vi.fn();
 const searchParams = {
@@ -25,6 +26,7 @@ function getActionButton(name: string) {
 vi.mock("next/navigation", () => ({
   useRouter: () => ({
     push: routerPush,
+    replace: routerReplace,
     refresh: routerRefresh,
   }),
   useSearchParams: () => searchParams,
@@ -67,11 +69,12 @@ vi.mock("next-intl", () => ({
 describe("LoginClient", () => {
   beforeEach(() => {
     routerPush.mockReset();
+    routerReplace.mockReset();
     routerRefresh.mockReset();
     signInMock.mockReset();
   });
 
-  it("switches to registration mode when clicking create account", async () => {
+  it("opens the public account registration chooser", async () => {
     const user = userEvent.setup();
 
     render(<LoginClient />);
@@ -82,10 +85,7 @@ describe("LoginClient", () => {
     expect(createAccountButton).toBeInTheDocument();
     await user.click(createAccountButton);
 
-    await waitFor(() => {
-      expect(getActionButton("Criar conta")).toBeInTheDocument();
-    });
-    expect(routerPush).not.toHaveBeenCalled();
+    expect(routerPush).toHaveBeenCalledWith("/register");
   });
 
   it("submits login credentials and redirects on success", async () => {

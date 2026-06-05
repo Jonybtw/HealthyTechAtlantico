@@ -174,6 +174,7 @@ export async function POST(
             zone: test.zone,
           })),
         }),
+        attachments: data.pdfAttachment ? [data.pdfAttachment] : undefined,
       });
       emailSent = true;
     } catch (error) {

@@ -663,7 +663,7 @@ function ParentDashboard({
           layout="list"
         >
           {summary.linkedStudents.length > 0 ? (
-            <div className="grid gap-4 lg:grid-cols-2">
+            <div className="grid gap-4 [grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr))]">
               {summary.linkedStudents.map((student) => (
                 <StudentFamilyCard
                   key={student.id}
@@ -1043,22 +1043,22 @@ function StudentFamilyCard({
   t: (key: string, values?: Record<string, string | number>) => string;
 }) {
   return (
-    <Card>
-      <CardContent className="p-5">
-        <div className="flex items-center gap-4">
+    <Card className="h-full overflow-hidden">
+      <CardContent className="flex h-full min-w-0 flex-col p-5">
+        <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
           <div className="flex size-11 shrink-0 items-center justify-center rounded-[12px] bg-navy-500/10 text-navy-700 dark:text-navy-200">
             <Users className="size-5" />
           </div>
           <div className="min-w-0 flex-1">
             <CardTitle className="truncate text-base">{student.name}</CardTitle>
-            <CardDescription className="mt-1">
+            <CardDescription className="mt-1 truncate">
               {[student.className, student.schoolYear].filter(Boolean).join(" - ") ||
                 t("studentRecord")}
             </CardDescription>
           </div>
-          <Badge variant="info" className="hidden sm:inline-flex">{t("linkedStudents")}</Badge>
+          <Badge variant="info" className="w-fit shrink-0">{t("linkedStudents")}</Badge>
         </div>
-        <div className="mt-5 grid gap-3 sm:grid-cols-3">
+        <div className="mt-5 grid min-w-0 flex-1 gap-3 [grid-template-columns:repeat(auto-fit,minmax(min(100%,145px),1fr))]">
           <MiniStat
             icon={Ruler}
             label={t("lastBiometric")}
@@ -1136,17 +1136,17 @@ function MiniStat({
   value: string;
 }) {
   return (
-    <div className="flex items-center gap-3 rounded-[12px] border border-border/70 bg-background/60 p-3">
+    <div className="flex min-w-0 items-center gap-3 rounded-[12px] border border-border/70 bg-background/60 p-3">
       {Icon && (
         <span className="flex size-8 shrink-0 items-center justify-center rounded-[6px] bg-navy-500/10 text-navy-700 dark:text-navy-300">
           <Icon className="size-4" />
         </span>
       )}
       <div className="min-w-0 flex-1">
-        <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+        <p className="break-words text-[10px] font-semibold uppercase leading-tight tracking-[0.14em] text-muted-foreground">
           {label}
         </p>
-        <p className="mt-1 text-sm font-semibold text-foreground">{value}</p>
+        <p className="mt-1 truncate text-sm font-semibold text-foreground">{value}</p>
       </div>
     </div>
   );

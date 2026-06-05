@@ -79,13 +79,18 @@ export default function LoginClient() {
   const registeredSuccess = searchParams.get("registered") === "1";
   const verifiedSuccess = searchParams.get("verified") === "1";
   const passwordChangedSuccess = searchParams.get("passwordChanged") === "1";
+  const requestedMode = searchParams.get("mode");
   const prefilledEmail = searchParams.get("email") ?? "";
 
   useEffect(() => {
-    const requestedMode = searchParams.get("mode");
-    setMode(requestedMode === "register" ? "register" : "login");
+    if (requestedMode === "register") {
+      router.replace("/register");
+      return;
+    }
+
+    setMode("login");
     setApiError(null);
-  }, [searchParams]);
+  }, [requestedMode, router]);
 
   useEffect(() => {
     document.title = `${mode === "login" ? t("login") : t("register")} · HTA`;
@@ -145,7 +150,7 @@ export default function LoginClient() {
   const switchToRegister = () => {
     form.clearErrors();
     setApiError(null);
-    setMode("register");
+    router.push("/register");
   };
 
   const switchToLogin = () => {
@@ -355,7 +360,7 @@ export default function LoginClient() {
             if (mode === "login") {
               handleLogin();
             } else {
-              handleRegister();
+              router.push("/register");
             }
           }}
           className="relative flex flex-col gap-4 p-5 sm:p-6"

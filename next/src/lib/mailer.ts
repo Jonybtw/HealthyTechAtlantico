@@ -41,9 +41,24 @@ export async function sendMail(opts: {
   subject: string;
   html: string;
   text?: string;
+  attachments?: {
+    filename: string;
+    contentBase64: string;
+    contentType: string;
+  }[];
 }) {
   if (!process.env.SMTP_USER) {
     throw new Error("SMTP_USER não configurado");
   }
-  return transporter.sendMail({ from: SMTP_FROM, ...opts });
+  const { attachments, ...mailOptions } = opts;
+
+  return transporter.sendMail({
+    from: SMTP_FROM,
+    ...mailOptions,
+    attachments: attachments?.map((attachment) => ({
+      filename: attachment.filename,
+      content: Buffer.from(attachment.contentBase64, "base64"),
+      contentType: attachment.contentType,
+    })),
+  });
 }

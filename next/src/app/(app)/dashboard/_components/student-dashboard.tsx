@@ -137,7 +137,7 @@ export function StudentDashboardContent({
         <div className="space-y-5 lg:col-span-2">
           <HealthProgressChart student={student} t={t} />
           <PendingTasksPanel
-            pending={student.pendingQuestionnaires}
+            pending={student.pendingQuestionnaires ?? []}
             questionnaires={questionnaires}
             t={t}
           />
@@ -216,7 +216,7 @@ function HealthProgressChart({
   t: Translate;
 }) {
   const [period, setPeriod] = useState<"6m" | "1y">("6m");
-  const trend = student.biometricTrend;
+  const trend = student.biometricTrend ?? [];
   const data =
     period === "6m" && trend.length > 4
       ? trend.slice(trend.length - 4)
@@ -464,8 +464,14 @@ function BellCurvePosition({
   student: StudentSummaryData;
   t: Translate;
 }) {
-  const z = student.bmiZScore;
-  const pct = student.percentile;
+  const z =
+    typeof student.bmiZScore === "number" && Number.isFinite(student.bmiZScore)
+      ? student.bmiZScore
+      : null;
+  const pct =
+    typeof student.percentile === "number" && Number.isFinite(student.percentile)
+      ? student.percentile
+      : null;
   const dotCx = z !== null ? getBellCurveX(z) : null;
   const dotCy = dotCx !== null ? getBellCurveY(dotCx) : null;
   const isHealthy =

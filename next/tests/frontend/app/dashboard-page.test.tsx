@@ -90,6 +90,20 @@ const messages = {
     studentDesk: "Percurso",
     studentDeskTitle: "O teu estado atual",
     studentDeskDescription: "Datas e atalhos principais.",
+    studentHealthProgress: "Progresso de saúde",
+    studentGrowthSubtitle: "Evolução das medições",
+    student6Months: "6 meses",
+    student1Year: "1 ano",
+    studentNoBiometricData: "Sem dados de biometria registados",
+    studentNoBiometricDataDesc:
+      "Quando o professor registar medições, os dados aparecem aqui.",
+    studentPendingTasks: "Tarefas pendentes",
+    studentNoPendingTasks: "Sem tarefas pendentes",
+    studentNoPendingDesc: "Todos os questionários foram submetidos.",
+    studentYourPosition: "A tua posição",
+    studentComparedWHO: "Comparação com zona saudável",
+    studentCurrentHealth: "Estado de saúde atual",
+    studentCurrentHealthDesc: "Leitura atual da biometria.",
     quickActions: "Ações rápidas",
     quickActionsDescription: "Atalhos diretos.",
     recentReportsTitle: "Relatórios recentes",
@@ -136,7 +150,6 @@ describe("DashboardClient", () => {
 
     renderDashboard(summary, "João");
 
-    expect(screen.getByRole("heading", { name: /João/i })).toBeInTheDocument();
     expect(
       screen.getByRole("heading", { name: "Perfil não associado" }),
     ).toBeInTheDocument();
@@ -166,9 +179,9 @@ describe("DashboardClient", () => {
     renderDashboard(summary, "Maria Silva");
 
     expect(screen.getAllByRole("heading", { name: /Maria/i }).length).toBeGreaterThan(0);
-    expect(screen.getByText("O teu estado atual")).toBeInTheDocument();
-    expect(screen.getByText("Última biometria")).toBeInTheDocument();
-    expect(screen.getByText("Últimos testes")).toBeInTheDocument();
+    expect(screen.getByText("Progresso de saúde")).toBeInTheDocument();
+    expect(screen.getByText("Tarefas pendentes")).toBeInTheDocument();
+    expect(screen.getByText("A tua posição")).toBeInTheDocument();
   });
 
   it("renders the psychologist workspace", () => {

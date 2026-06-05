@@ -628,6 +628,8 @@ export default function AnaliseClient() {
             failed: result.failed,
           }),
         );
+      } else if (result.skippedNoGuardian > 0 && result.failed === 0) {
+        toast.warning(t("classEmailNoGuardians"));
       } else {
         toast.error(result.firstError ?? t("classEmailNoneSent"));
       }
