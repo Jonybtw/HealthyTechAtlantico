@@ -9,7 +9,7 @@
     "start:standalone": "node .next/standalone/server.js",
     "test": "vitest run",
     "lint": "eslint",
-    "typecheck": "npx next typegen && npx tsc --noEmit",
+    "typecheck": "npm exec prisma generate && npx next typegen && npx tsc --noEmit",
     "bootstrap:admin": "tsx scripts/bootstrap-admin.ts",
     "prepare": "husky",
     "screenshots": "playwright test"
@@ -40,7 +40,7 @@
     "next": "16.2.4",
     "next-auth": "5.0.0-beta.31",
     "next-intl": "^4.9.1",
-    "nodemailer": "^8.0.5",
+    "nodemailer": "^7.0.7",
     "pg": "^8.20.0",
     "react": "19.2.5",
     "react-dom": "19.2.5",

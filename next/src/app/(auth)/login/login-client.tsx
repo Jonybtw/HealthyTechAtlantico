@@ -25,7 +25,6 @@ import { cn } from "@/lib/utils";
 import { Button, interactiveControlClasses } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Form, FormField, FormItem, FormControl } from "@/components/ui/form";
-import { readApiResponse } from "@/lib/api-client";
 
 type RegisterValues = z.infer<typeof registerFormSchema>;
 
@@ -230,32 +229,6 @@ export default function LoginClient() {
       setIsLoading(false);
     }
   };
-
-  const handleRegister = form.handleSubmit(async (values) => {
-    setApiError(null);
-    setIsLoading(true);
-    try {
-      const response = await fetch("/api/auth/register", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name: values.name?.trim(),
-          email: values.email.trim().toLowerCase(),
-          password: values.password,
-          role: values.role,
-          consentRgpd: values.consentRgpd,
-        }),
-      });
-      await readApiResponse(response);
-      router.push("/login?registered=1");
-    } catch (error) {
-      setApiError(
-        error instanceof Error ? error.message : t("connectionError"),
-      );
-    } finally {
-      setIsLoading(false);
-    }
-  });
 
   return (
     <div className="relative w-full overflow-hidden rounded-[24px] border border-white/20 bg-white/60 shadow-[0_20px_60px_rgba(5,14,24,0.09)] backdrop-blur-md dark:border-white/10 dark:bg-navy-950/60 dark:shadow-[0_20px_60px_rgba(5,14,24,0.32)]">

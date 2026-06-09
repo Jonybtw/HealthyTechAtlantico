@@ -1,30 +1,34 @@
 import crypto from "crypto";
 
 const ALGORITHM = "aes-256-gcm";
-// Em produção, esta chave DEVE vir de variáveis de ambiente.
-// O tamanho deve ser de 32 bytes (256 bits).
-const SECRET_KEY =
-  process.env.ENCRYPTION_KEY || "chavedesenvolvimentoaleatoria32b";
+// Em produção, esta chave DEVE vir de variáveis de ambiente e ter 32 bytes.
+const RAW_SECRET_KEY = process.env.ENCRYPTION_KEY;
 
-if (Buffer.from(SECRET_KEY).length !== 32) {
-  console.warn(
-    "[Segurança] A ENCRYPTION_KEY deve ter exatamente 32 bytes de comprimento."
+if (!RAW_SECRET_KEY) {
+  // Fail-closed: nunca aceitamos uma chave por omissão em produção.
+  // Em desenvolvimento/testes, o valor é carregado por `.env` (ver `README.md`).
+  throw new Error(
+    "[Segurança] A variável de ambiente ENCRYPTION_KEY é obrigatória e deve ter exatamente 32 bytes.",
   );
 }
 
+if (Buffer.from(RAW_SECRET_KEY).length !== 32) {
+  throw new Error(
+    "[Segurança] A ENCRYPTION_KEY deve ter exatamente 32 bytes de comprimento.",
+  );
+}
+
+const SECRET_KEY = Buffer.from(RAW_SECRET_KEY);
+
 /**
  * Cifra um payload JSON ou uma string utilizando AES-256-GCM
- * @param text O texto ou objeto JSON a ser cifrado
+ * @param data O texto ou objeto JSON a ser cifrado
  * @returns {string} Texto cifrado codificado em formato Base64 contendo IV:AuthTag:Cifrado
  */
 export function encryptData(data: string | object): string {
   const text = typeof data === "object" ? JSON.stringify(data) : data;
   const iv = crypto.randomBytes(12);
-  const cipher = crypto.createCipheriv(
-    ALGORITHM,
-    Buffer.from(SECRET_KEY.padEnd(32, "0").slice(0, 32)),
-    iv
-  );
+  const cipher = crypto.createCipheriv(ALGORITHM, SECRET_KEY, iv);
 
   let encrypted = cipher.update(text, "utf8", "base64");
   encrypted += cipher.final("base64");
@@ -52,11 +56,7 @@ export function decryptData(encryptedData: string): string {
     const iv = Buffer.from(ivStr, "base64");
     const authTag = Buffer.from(authTagStr, "base64");
 
-    const decipher = crypto.createDecipheriv(
-      ALGORITHM,
-      Buffer.from(SECRET_KEY.padEnd(32, "0").slice(0, 32)),
-      iv
-    );
+    const decipher = crypto.createDecipheriv(ALGORITHM, SECRET_KEY, iv);
     decipher.setAuthTag(authTag);
 
     let decrypted = decipher.update(encryptedStr, "base64", "utf8");

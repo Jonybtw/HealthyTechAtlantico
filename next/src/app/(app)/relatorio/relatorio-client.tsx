@@ -40,11 +40,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useReducedEffects } from "@/hooks/use-reduced-effects";
 import { cn } from "@/lib/utils";
 import { StudentIdentity } from "@/components/ui/student-identity";
-import {
-  StudentPicker,
-  getInitials,
-  getStudentSwatch,
-} from "@/components/ui/student-picker";
+import { StudentPicker, getInitials } from "@/components/ui/student-picker";
 import {
   Select,
   SelectContent,
