@@ -15,6 +15,29 @@ type SosAlertLike = {
   resolvedBy: ResolvedByLike | null;
 };
 
+/**
+ * Shape of a SOS alert over the wire — i.e. after `normalizeSosAlerts` has
+ * been applied **and** the result has been `JSON.stringify`'d for transport
+ * (so the Prisma `Date` fields become ISO strings).
+ *
+ * The Prisma `sosAlert.findMany` query in `app/api/stats/sos-alerts/route.ts`
+ * and `app/api/sos/stream/route.ts` selects this exact subset of fields, and
+ * the function preserves the caller's type parameter (it just mutates
+ * `psych` / `teacher` / `psychEmail` / `teacherEmail` / `resolvedBy`).
+ */
+export type NormalizedSosAlert = SosAlertLike & {
+  id: string;
+  resolved: boolean;
+  createdAt: string;
+  resolvedAt: string | null;
+  student: {
+    id: string;
+    name: string;
+    className: string | null;
+    schoolYear: string | null;
+  };
+};
+
 function looksLikeEmail(value: string | null | undefined): value is string {
   return Boolean(value && value.includes("@"));
 }

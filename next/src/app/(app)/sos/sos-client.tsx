@@ -29,6 +29,7 @@ import { useUser } from "@/components/user-context";
 import { readApiResponse } from "@/lib/api-client";
 import { cn } from "@/lib/utils";
 import { useReducedEffects } from "@/hooks/use-reduced-effects";
+import { useSosAlertsStream } from "@/hooks/use-queries";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -94,11 +95,11 @@ export default function SosClient() {
 
   const [alerts, setAlerts] = useState<SosAlert[]>([]);
   const [statusFilter, setStatusFilter] = useState<"all" | "pending" | "resolved">("all");
-  const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
-  const [lastUpdatedAt, setLastUpdatedAt] = useState<string | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [resolvingIds, setResolvingIds] = useState<Set<string>>(new Set());
+  // Bumped by the "Refresh" button to remount the SSE consumer and
+  // force a fresh EventSource.
+  const [streamNonce, setStreamNonce] = useState(0);
 
   const [studentAlerts, setStudentAlerts] = useState<SosAlert[]>([]);
   const [studentLoading, setStudentLoading] = useState(true);
@@ -117,22 +118,35 @@ export default function SosClient() {
     [locale],
   );
 
-  const fetchAlerts = useCallback(async (mode: "initial" | "refresh" = "initial") => {
+  // SSE stream for the staff inbox. The "Refresh" button bumps
+  // `streamNonce` to force a fresh EventSource.
+  const {
+    data: streamData,
+    status: streamStatus,
+    lastUpdated: streamLastUpdated,
+  } = useSosAlertsStream({ enabled: isStaff, key: streamNonce });
+
+  useEffect(() => {
     if (!isStaff) return;
-    if (mode === "initial") setLoading(true); else setRefreshing(true);
-    setLoadError(null);
-    try {
-      const data = await readApiResponse<SosAlert[]>(await fetch("/api/stats/sos-alerts"));
-      setAlerts(data);
-      setLastUpdatedAt(new Date().toISOString());
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : t("loadError");
-      setLoadError(msg);
-      toast.error(msg);
-    } finally {
-      if (mode === "initial") setLoading(false); else setRefreshing(false);
+    if (streamData) {
+      setAlerts(streamData);
+      setLoadError(null);
     }
-  }, [isStaff, t]);
+  }, [isStaff, streamData]);
+
+  useEffect(() => {
+    if (!isStaff) return;
+    if (streamStatus === "error" && alerts.length === 0) {
+      setLoadError((current) => current ?? t("loadError"));
+    }
+    if (streamStatus === "open" || streamStatus === "closed") {
+      setLoadError(null);
+    }
+  }, [alerts.length, isStaff, streamStatus, t]);
+
+  const lastUpdatedAt = streamLastUpdated ? streamLastUpdated.toISOString() : null;
+  const loading = isStaff && streamStatus === "connecting" && alerts.length === 0;
+  const streamRefreshing = isStaff && streamStatus === "connecting" && alerts.length > 0;
 
   const fetchStudentAlerts = useCallback(async () => {
     setStudentLoading(true);
@@ -149,7 +163,6 @@ export default function SosClient() {
     }
   }, [t]);
 
-  useEffect(() => { void fetchAlerts("initial"); }, [fetchAlerts]);
   useEffect(() => { if (isStudent) void fetchStudentAlerts(); }, [fetchStudentAlerts, isStudent]);
 
   const resolveAlert = useCallback(async (alertId: string) => {
@@ -157,13 +170,15 @@ export default function SosClient() {
     try {
       await readApiResponse<SosAlert>(await fetch(`/api/sos/${alertId}`, { method: "PATCH" }));
       toast.success(t("resolvedSuccess"));
-      await fetchAlerts("refresh");
+      // Optimistic local update — the next SSE poll (within 5 s) will
+      // reconcile the full list.
+      setAlerts((cur) => cur.map((a) => (a.id === alertId ? { ...a, resolved: true } : a)));
     } catch (err) {
       toast.error(err instanceof Error ? err.message : t("resolveError"));
     } finally {
       setResolvingIds((cur) => { const n = new Set(cur); n.delete(alertId); return n; });
     }
-  }, [fetchAlerts, t]);
+  }, [t]);
 
   const pendingAlerts = useMemo(
     () => alerts.filter((a) => !a.resolved).sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()),
@@ -349,7 +364,7 @@ export default function SosClient() {
       <PageScaffold className="gap-5" headerProps={{ title: t("staffTitle"), description: t("staffDescription") }}>
         <SosPanel index={0} reducedEffects={reducedEffects} className="p-5">
           <EmptyState icon={XCircle} title={t("loadError")} description={loadError}
-            action={<Button variant="outline" onClick={() => void fetchAlerts("refresh")} icon={<RefreshCw className="size-4" />}>{t("refresh")}</Button>}
+            action={<Button variant="outline" onClick={() => setStreamNonce((n) => n + 1)} icon={<RefreshCw className="size-4" />}>{t("refresh")}</Button>}
           />
         </SosPanel>
       </PageScaffold>
@@ -364,12 +379,12 @@ export default function SosClient() {
       headerProps={{ title: t("staffTitle"), description: t("staffDescription") }}
       headerActions={
         <div className="flex items-center gap-3">
-          {lastUpdatedAt && !refreshing && (
+          {lastUpdatedAt && !streamRefreshing && (
             <span className="hidden text-xs text-muted-foreground sm:inline">
               {t("lastUpdated", { time: formatDate(lastUpdatedAt) })}
             </span>
           )}
-          <Button variant="outline" size="sm" onClick={() => void fetchAlerts("refresh")} loading={refreshing} disabled={refreshing} icon={<RefreshCw className="size-4" />}>
+          <Button variant="outline" size="sm" onClick={() => setStreamNonce((n) => n + 1)} loading={streamRefreshing} disabled={streamRefreshing} icon={<RefreshCw className="size-4" />}>
             {t("refresh")}
           </Button>
         </div>

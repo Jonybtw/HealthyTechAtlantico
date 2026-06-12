@@ -1,6 +1,8 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { Role, Sex } from "@prisma/client";
 import { readApiResponse } from "@/lib/api-client";
+import { useSosStream, type SosStreamResult } from "@/hooks/use-sos-stream";
+import type { NormalizedSosAlert } from "@/lib/sos-alerts";
 
 async function fetchJson<T>(url: string): Promise<T> {
   const response = await fetch(url);
@@ -221,6 +223,31 @@ export function useSosAlerts(options?: {
     enabled: options?.enabled,
     refetchInterval: options?.refetchInterval,
     staleTime: 30 * 1000,
+  });
+}
+
+/**
+ * Subscribes to `/api/sos/stream` via SSE. The polling version
+ * (`useSosAlerts` above) stays for callers that can't open a long-lived
+ * connection; the SSE path is preferred for the staff SOS inbox because
+ * it eliminates the 5 s polling flicker and saves a round-trip per tick.
+ *
+ * Auto-reconnects on error (the underlying `EventSource` handles this).
+ *
+ * Pass `enabled: false` to skip the connection entirely (e.g. for
+ * students who don't have access to the staff inbox). The hook will
+ * stay in the `connecting` state and never open a socket.
+ *
+ * Pass `key` to force a fresh subscription — bumping the key closes
+ * the existing EventSource and opens a new one. The SOS inbox uses
+ * this for its manual "Refresh" button.
+ */
+export function useSosAlertsStream(
+  options: { enabled?: boolean; key?: number | string } = {},
+): SosStreamResult<NormalizedSosAlert[]> {
+  return useSosStream<NormalizedSosAlert[]>("/api/sos/stream", {
+    enabled: options.enabled,
+    key: options.key,
   });
 }
 

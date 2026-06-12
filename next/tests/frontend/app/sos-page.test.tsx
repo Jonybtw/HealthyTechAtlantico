@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { act, render, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const { currentRole } = vi.hoisted(() => ({
@@ -72,45 +72,60 @@ vi.mock("@/components/user-context", () => ({
 
 import SosPage from "@/app/(app)/sos/sos-client";
 
-function createJsonResponse(data: unknown) {
-  return {
-    ok: true,
-    json: async () => ({ data }),
-  } as Response;
+const SAMPLE_ALERTS = [
+  {
+    id: "alert-1",
+    psych: "Dr. Ana",
+    teacher: "Prof. Carlos",
+    psychEmail: "psicologo@colegioatlantico.pt",
+    teacherEmail: "professor@colegioatlantico.pt",
+    resolved: false,
+    createdAt: "2026-03-20T10:00:00.000Z",
+    resolvedAt: null,
+    student: {
+      id: "student-1",
+      name: "Maria Silva",
+      className: "8A",
+      schoolYear: "2025/2026",
+    },
+    resolvedBy: null,
+  },
+];
+
+async function dispatchNextSseMessage(data: unknown) {
+  // Find the most-recently created EventSource instance and dispatch
+  // a synthetic `open` + `message` event so the hook sees data.
+  // The EventSource is created inside the hook's useEffect, which may
+  // not have run yet by the time this is called from the test — so
+  // we poll for it.
+  const instances = (globalThis as { __eventSourceMockInstances: { dispatch: (type: string, event: Event) => void }[] }).__eventSourceMockInstances;
+  for (let attempt = 0; attempt < 50 && instances.length === 0; attempt += 1) {
+    await new Promise((resolve) => setTimeout(resolve, 5));
+  }
+  if (instances.length === 0) {
+    throw new Error(`No EventSource instance was created (currentRole=${currentRole.value})`);
+  }
+  const source = instances[instances.length - 1];
+  await act(async () => {
+    source.dispatch("open", new Event("open"));
+    source.dispatch(
+      "message",
+      new MessageEvent("message", { data: JSON.stringify(data) }),
+    );
+  });
 }
 
 describe("SosPage staff links", () => {
   beforeEach(() => {
-    vi.stubGlobal(
-      "fetch",
-      vi.fn().mockResolvedValue(
-        createJsonResponse([
-          {
-            id: "alert-1",
-            psych: "Dr. Ana",
-            teacher: "Prof. Carlos",
-            psychEmail: "psicologo@colegioatlantico.pt",
-            teacherEmail: "professor@colegioatlantico.pt",
-            resolved: false,
-            createdAt: "2026-03-20T10:00:00.000Z",
-            resolvedAt: null,
-            student: {
-              id: "student-1",
-              name: "Maria Silva",
-              className: "8A",
-              schoolYear: "2025/2026",
-            },
-            resolvedBy: null,
-          },
-        ]),
-      ),
-    );
+    (globalThis as { __eventSourceMockInstances: unknown[] }).__eventSourceMockInstances.length = 0;
   });
 
   it("routes psychologists to the read-only acompanhamento page", async () => {
     currentRole.value = "PSICOLOGO";
 
     render(<SosPage />);
+
+    await dispatchNextSseMessage(SAMPLE_ALERTS);
 
     const links = await screen.findAllByRole("link", {
       name: "Open student profile",
@@ -127,6 +142,8 @@ describe("SosPage staff links", () => {
     currentRole.value = "ADMIN";
 
     render(<SosPage />);
+
+    await dispatchNextSseMessage(SAMPLE_ALERTS);
 
     const links = await screen.findAllByRole("link", {
       name: "Open student profile",
