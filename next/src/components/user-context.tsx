@@ -34,14 +34,23 @@ export function UserProvider({
 }
 
 function computeInitials(name?: string | null, email?: string | null): string {
-  const source = (name && name.trim()) || (email ? email.split("@")[0] : "");
+  const sourceRaw =
+    (name && name.trim()) || (email ? email.split("@")[0] : "") || "";
+  // Drop honorifics (Prof., Dr., Sr., etc.) so the visible initials reflect
+  // the user's actual name rather than the title.
+  const source = sourceRaw
+    .split(/\s+/)
+    .filter((chunk) => !/^(prof|dr|dra|sr|sra)\.*$/i.test(chunk))
+    .join(" ");
   if (!source) return "··";
   const parts = source.split(/\s+/).filter(Boolean);
   const letters = parts.length > 1
-    ? `${parts[0][0] ?? ""}${parts[parts.length - 1][0] ?? ""}`
+    ? `${parts[0]![0] ?? ""}${parts[parts.length - 1]![0] ?? ""}`
     : (parts[0]?.slice(0, 2) ?? "");
-  return letters.toUpperCase() || "··";
+  return (letters || "··").toUpperCase();
 }
+
+export { computeInitials };
 
 export function useUser(): UserContextDerivedValue {
   const ctx = useContext(UserContext);
