@@ -2,7 +2,7 @@ import { sendMail } from "@/lib/mailer";
 
 const MICROSOFT_TOKEN_URL_BASE = "https://login.microsoftonline.com";
 const MICROSOFT_GRAPH_URL_BASE = "https://graph.microsoft.com/v1.0";
-const DEFAULT_REPORT_FROM = "Healthytec@colegioatlantico.pt";
+const DEFAULT_REPORT_FROM = "HealthyTech@colegioatlantico.pt";
 
 type GraphEmailAddress = {
   address: string;
@@ -93,7 +93,7 @@ export async function sendReportMail365(opts: {
   if (!hasMicrosoftGraphConfig()) {
     if (!allowsSmtpFallback()) {
       throw new Error(
-        "Microsoft Graph nao configurado para a caixa partilhada Healthytec@colegioatlantico.pt",
+        "Microsoft Graph nao configurado para a caixa partilhada HealthyTech@colegioatlantico.pt",
       );
     }
 

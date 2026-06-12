@@ -1082,7 +1082,7 @@ export default function RelatorioClient() {
         description: t("description"),
       }}
     >
-      <div className="grid items-start gap-5 xl:grid-cols-[minmax(0,1fr)_340px] 2xl:grid-cols-[minmax(0,1fr)_360px]">
+      <div className="grid items-start gap-5 lg:grid-cols-[minmax(0,1fr)_300px] xl:grid-cols-[minmax(0,1fr)_340px] 2xl:grid-cols-[minmax(0,1fr)_360px]">
         <div className="space-y-5">
           <BioPanel index={0} reducedEffects={reducedEffects} className="p-5">
             <div className="grid gap-5 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
@@ -1410,7 +1410,7 @@ export default function RelatorioClient() {
           </div>
         </div>
 
-        <BioPanel index={3} reducedEffects={reducedEffects} className="p-5 xl:sticky xl:top-24">
+        <BioPanel index={3} reducedEffects={reducedEffects} className="order-first p-5 lg:order-none lg:sticky lg:top-24">
           <div className="space-y-4">
             <div>
               <p className="text-tiny font-semibold uppercase tracking-[0.16em] text-muted-foreground">

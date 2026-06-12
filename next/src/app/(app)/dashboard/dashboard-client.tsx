@@ -491,7 +491,7 @@ function AdminDashboard({
 
       <div className="grid gap-6 xl:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)]">
         <DataQuality cards={summary.quality} t={t} />
-        <ZafPanel locale={locale} t={t} zafByYear={summary.zafByYear} />
+        <ZafPanel compact locale={locale} t={t} zafByYear={summary.zafByYear} />
       </div>
     </div>
   );
@@ -981,15 +981,15 @@ function ZafPanel({
       layout="default"
     >
       {latestYear ? (
-        <div className={cn("grid gap-4", !compact && "lg:grid-cols-[0.95fr_1.05fr]")}>
-          <Card>
+        <div className={cn("grid gap-4", !compact && "xl:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)]")}>
+          <Card className="overflow-hidden">
             <CardHeader>
               <CardDescription className="text-xs uppercase tracking-[0.16em]">
                 {t("latestAcademicYear")}
               </CardDescription>
               <CardTitle className="text-2xl">{latestYear.year}</CardTitle>
             </CardHeader>
-            <CardContent className="grid gap-5">
+            <CardContent className="grid gap-5 pt-0">
               <div className="grid gap-3 sm:grid-cols-2">
                 <MiniStat
                   icon={Users}
@@ -1011,8 +1011,15 @@ function ZafPanel({
             </CardContent>
           </Card>
 
-          <Card>
-            <CardContent className="grid gap-4 p-5">
+          <Card className="overflow-hidden">
+            <CardHeader className="pb-3">
+              <CardDescription className="text-xs uppercase tracking-[0.16em]">
+                {t("healthyZoneRate")}
+              </CardDescription>
+              <CardTitle className="text-lg">{t("comparisonPanelTitle")}</CardTitle>
+              <CardDescription>{t("comparisonPanelDescription")}</CardDescription>
+            </CardHeader>
+            <CardContent className="grid gap-4 pt-0">
               {zafByYear
                 .filter((year) => year.withBio > 0)
                 .slice(0, 3)

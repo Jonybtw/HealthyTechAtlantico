@@ -74,10 +74,10 @@ NEXTAUTH_SECRET="your-super-secret-key"
 M365_TENANT_ID="your-tenant-id"
 M365_CLIENT_ID="your-app-client-id"
 M365_CLIENT_SECRET="your-app-client-secret"
-M365_SHARED_MAILBOX="Healthytec@colegioatlantico.pt"
+M365_SHARED_MAILBOX="HealthyTech@colegioatlantico.pt"
 ```
 
-For report emails, `Healthytec@colegioatlantico.pt` is treated as a Microsoft
+For report emails, `HealthyTech@colegioatlantico.pt` is treated as a Microsoft
 365 shared mailbox. Configure the Entra app with Microsoft Graph application
 permission `Mail.Send` and admin consent, then restrict mailbox access in
 Exchange Online where appropriate. SMTP fallback is disabled by default; enable
