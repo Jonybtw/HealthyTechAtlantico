@@ -124,10 +124,15 @@ export function DataTable<T extends object>({
   const totalPages = Math.max(1, Math.ceil(totalItemsCount / pageSize));
   const safePage = Math.min(page, totalPages);
 
-  const paged =
-    serverTotalItems !== undefined
-      ? data
-      : sorted.slice((safePage - 1) * pageSize, safePage * pageSize);
+  // Memoized so the table body doesn't re-render on unrelated parent
+  // re-renders (e.g. when the SOS page polls).
+  const paged = useMemo(
+    () =>
+      serverTotalItems !== undefined
+        ? data
+        : sorted.slice((safePage - 1) * pageSize, safePage * pageSize),
+    [data, sorted, safePage, pageSize, serverTotalItems],
+  );
 
   function handlePageChange(newPage: number) {
     if (onServerPageChange) {
