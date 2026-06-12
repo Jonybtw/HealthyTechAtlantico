@@ -199,10 +199,13 @@ export function SyncProvider({ children }: { children: React.ReactNode }) {
     [],
   );
 
+  const value = useMemo<SyncContextValue>(
+    () => ({ isOnline, draftCount, lastSyncAt, isSyncing, addDraft, syncNow }),
+    [isOnline, draftCount, lastSyncAt, isSyncing, addDraft, syncNow],
+  );
+
   return (
-    <SyncContext.Provider
-      value={{ isOnline, draftCount, lastSyncAt, isSyncing, addDraft, syncNow }}
-    >
+    <SyncContext.Provider value={value}>
       {children}
     </SyncContext.Provider>
   );

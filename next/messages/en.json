@@ -107,6 +107,12 @@
     "studentListLoadError": "Error loading students.",
     "refresh": "Refresh"
   },
+  "notFound": {
+    "eyebrow": "404 error",
+    "title": "Page not found",
+    "description": "The content you're looking for was moved, removed, or is temporarily unavailable.",
+    "backToDashboard": "Back to dashboard"
+  },
   "dashboard": {
     "title": "Dashboard",
     "totalStudentsTitle": "Total Students",

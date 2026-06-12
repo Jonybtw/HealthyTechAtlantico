@@ -127,6 +127,8 @@ export function KpiCard({
         </div>
 
         <p
+          aria-live="polite"
+          aria-atomic="true"
           className={cn(
             "text-5xl font-extrabold tabular-nums tracking-tight",
             heroCard ? "text-white" : "text-foreground",

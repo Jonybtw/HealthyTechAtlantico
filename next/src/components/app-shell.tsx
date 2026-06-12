@@ -42,13 +42,18 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
-import { CommandPalette } from "@/components/command-palette";
+import dynamic from "next/dynamic";
 import { NotificationCenter } from "@/components/notification-center";
 import { BrandLogo } from "@/components/brand-logo";
 import { useHotkeys } from "@/hooks/use-hotkeys";
 import { useIsClient } from "@/hooks/use-is-client";
 import { usePreferences } from "@/hooks/use-preferences";
 import { SyncProvider, useSyncStatus } from "@/contexts/sync-context";
+
+const CommandPalette = dynamic(
+  () => import("@/components/command-palette").then((m) => m.CommandPalette),
+  { ssr: false, loading: () => null },
+);
 
 interface AppShellProps {
   user: {

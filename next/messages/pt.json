@@ -107,6 +107,12 @@
     "studentListLoadError": "Erro a carregar alunos.",
     "refresh": "Atualizar"
   },
+  "notFound": {
+    "eyebrow": "Erro 404",
+    "title": "Página não encontrada",
+    "description": "O conteúdo que procuras foi movido, removido ou está temporariamente indisponível.",
+    "backToDashboard": "Voltar ao painel"
+  },
   "dashboard": {
     "title": "Painel",
     "totalStudentsTitle": "Total de Alunos",

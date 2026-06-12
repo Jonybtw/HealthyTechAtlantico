@@ -210,6 +210,18 @@ export function DataTable<T extends object>({
                     onClick={
                       column.sortable ? () => toggleSort(column.key) : undefined
                     }
+                    onKeyDown={
+                      column.sortable
+                        ? (event) => {
+                            if (event.key === "Enter" || event.key === " ") {
+                              event.preventDefault();
+                              toggleSort(column.key);
+                            }
+                          }
+                        : undefined
+                    }
+                    tabIndex={column.sortable ? 0 : undefined}
+                    role={column.sortable ? "button" : undefined}
                     aria-sort={
                       column.sortable && sortKey === column.key
                         ? sortDir === "asc"
@@ -221,7 +233,7 @@ export function DataTable<T extends object>({
                     }
                     className={`px-5 py-3.5 text-tiny font-semibold uppercase tracking-[0.18em] text-muted-foreground ${
                       column.sortable
-                        ? "cursor-pointer transition-colors hover:text-foreground"
+                        ? "cursor-pointer transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400/60"
                         : ""
                     } ${column.className ?? ""}`}
                   >
@@ -230,12 +242,12 @@ export function DataTable<T extends object>({
                       {column.sortable ? (
                         sortKey === column.key ? (
                           sortDir === "asc" ? (
-                            <ChevronUp className="size-3.5" />
+                            <ChevronUp aria-hidden="true" className="size-3.5" />
                           ) : (
-                            <ChevronDown className="size-3.5" />
+                            <ChevronDown aria-hidden="true" className="size-3.5" />
                           )
                         ) : (
-                          <ChevronUp className="size-3.5 opacity-30" />
+                          <ChevronUp aria-hidden="true" className="size-3.5 opacity-30" />
                         )
                       ) : null}
                     </span>
@@ -261,10 +273,22 @@ export function DataTable<T extends object>({
                   <tr
                     key={rowKey(row)}
                     onClick={onRowClick ? () => onRowClick(row) : undefined}
+                    onKeyDown={
+                      onRowClick
+                        ? (event) => {
+                            if (event.key === "Enter" || event.key === " ") {
+                              event.preventDefault();
+                              onRowClick(row);
+                            }
+                          }
+                        : undefined
+                    }
+                    tabIndex={onRowClick ? 0 : undefined}
+                    role={onRowClick ? "link" : undefined}
                     className={cn(
                       "group border-b border-border/50 transition-colors last:border-0",
                       onRowClick &&
-                        "cursor-pointer hover:bg-accent/8 focus-within:bg-accent/8",
+                        "cursor-pointer hover:bg-accent/8 focus-visible:bg-accent/8 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400/60",
                     )}
                   >
                     {columns.map((column) => (
