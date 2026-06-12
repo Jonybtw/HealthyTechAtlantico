@@ -38,7 +38,7 @@ export async function POST(
     const { id } = await params;
 
     if (id === session.user.id) {
-      return badRequest("Nao pode forcar um reset de password para a sua propria conta.");
+      return badRequest("Não pode forçar um reset de password para a sua própria conta.");
     }
 
     const user = await prisma.user.findUnique({
@@ -53,7 +53,7 @@ export async function POST(
     });
 
     if (!user) {
-      return notFound("Utilizador nao encontrado");
+      return notFound("Utilizador não encontrado");
     }
 
     const temporaryPassword = generateTemporaryPassword(12);
@@ -100,7 +100,7 @@ export async function POST(
 
       console.error("POST /api/admin/users/[id]/force-reset-password reset error:", error);
       return serverError(
-        "Nao foi possivel enviar a password temporaria por email.",
+        "Não foi possível enviar a password temporária por email.",
       );
     }
 

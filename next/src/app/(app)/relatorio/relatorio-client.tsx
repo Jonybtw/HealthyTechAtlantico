@@ -1085,7 +1085,7 @@ export default function RelatorioClient() {
       <div className="grid items-start gap-5 lg:grid-cols-[minmax(0,1fr)_300px] xl:grid-cols-[minmax(0,1fr)_340px] 2xl:grid-cols-[minmax(0,1fr)_360px]">
         <div className="space-y-5">
           <BioPanel index={0} reducedEffects={reducedEffects} className="p-5">
-            <div className="grid gap-5 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
+            <div className="grid items-start gap-5 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
               <div className={cn(reportSurfaceClassName, "p-4 sm:p-5")}>
                 <div className="flex min-w-0 items-start gap-3">
                   <div className="flex size-10 shrink-0 items-center justify-center rounded-[12px] bg-navy-100 text-navy-700 dark:bg-navy-900 dark:text-navy-200">
@@ -1189,7 +1189,7 @@ export default function RelatorioClient() {
               </div>
             </div>
           </BioPanel>
-          <div className="grid gap-5 lg:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)]">
+          <div className="grid items-start gap-5 lg:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)]">
             <BioPanel index={1} reducedEffects={reducedEffects} className="p-5">
               <div className="mb-4 flex min-w-0 flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
                 <div className="min-w-0">

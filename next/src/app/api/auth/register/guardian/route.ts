@@ -35,7 +35,7 @@ export async function POST(req: NextRequest) {
     });
 
     if (!student?.processNumber) {
-      return notFound("Nao foi encontrado um aluno com esse numero de processo.");
+      return notFound("Não foi encontrado um aluno com esse número de processo.");
     }
 
     const existingUser = await prisma.user.findUnique({
@@ -46,7 +46,7 @@ export async function POST(req: NextRequest) {
       existingUser &&
       (existingUser.role !== "PAIS" || existingUser.emailVerified)
     ) {
-      return conflict("Email ja registado");
+      return conflict("Email já registado");
     }
 
     const passwordHash = await hash(data.password, 12);

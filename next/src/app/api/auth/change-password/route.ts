@@ -34,7 +34,7 @@ export async function POST(req: NextRequest) {
     if (!userId || !email) {
       if (!data.token) {
         return unauthorized(
-          "Acesso nao autorizado. Inicie sessao ou use o link de reset enviado por e-mail.",
+          "Acesso não autorizado. Inicie sessão ou use o link de reset enviado por e-mail.",
         );
       }
 

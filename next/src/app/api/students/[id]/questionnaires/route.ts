@@ -146,7 +146,7 @@ export async function POST(
     });
 
     if (!student) {
-      return err("Aluno nao encontrado", 404);
+      return err("Aluno não encontrado", 404);
     }
 
     const questionnaireData: Prisma.QuestionnaireUncheckedCreateInput | Response =
@@ -173,7 +173,7 @@ export async function POST(
             });
 
             if (duplicate) {
-              return conflict("O KIDMED ja foi submetido neste periodo letivo");
+              return conflict("O KIDMED já foi submetido neste período letivo");
             }
 
             const result = evaluateKidmed(data.payload);
