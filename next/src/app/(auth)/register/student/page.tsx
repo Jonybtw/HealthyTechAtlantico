@@ -11,6 +11,12 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
+/**
+ * Rota: /register/student
+ *
+ * Registo público de aluno. O formulário cliente recolhe dados da conta,
+ * número de processo e consentimento RGPD antes de chamar a API de registo.
+ */
 export default function StudentRegisterPage() {
   return (
     <ClientOnly>

@@ -1,5 +1,8 @@
 "use client";
 
+// Componente cliente de /dashboard: apresenta o resumo preparado no servidor e
+// adapta cartões/atalhos ao perfil do utilizador autenticado.
+
 import Link from "next/link";
 import {
   Activity,

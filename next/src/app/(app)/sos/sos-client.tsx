@@ -1,5 +1,8 @@
 "use client";
 
+// Componente cliente de /sos: permite criar alertas, consultar listas e marcar
+// pedidos como resolvidos conforme o perfil autenticado.
+
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import Link from "next/link";

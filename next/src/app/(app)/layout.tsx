@@ -9,6 +9,8 @@ export default async function AppLayout({
 }: {
   children: React.ReactNode;
 }) {
+  // Este layout envolve todas as páginas autenticadas.
+  // Garante sessão válida antes de renderizar o AppShell e os providers globais.
   const session = await auth();
 
   if (!session?.user?.id || !session.user.email || !session.user.role) {

@@ -1,5 +1,8 @@
 "use client";
 
+// Componente cliente da página /login: gere o formulário de autenticação,
+// chama o NextAuth e apresenta feedback sem recarregar a página.
+
 import { useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { signIn } from "next-auth/react";

@@ -31,6 +31,13 @@ interface Props {
   params: Promise<{ id: string }>;
 }
 
+/**
+ * Rota: /alunos/[id]
+ *
+ * Detalhe de aluno. Carrega o aluno, dados recentes, encarregados e dispensas
+ * antes de renderizar o componente cliente. É uma página sensível porque reúne
+ * dados pessoais, avaliações e relações familiares.
+ */
 export default async function StudentDetailPage({ params }: Props) {
   const { id } = await params;
   const user = await requireAuth();
@@ -67,7 +74,7 @@ export default async function StudentDetailPage({ params }: Props) {
     }
   }
 
-  // Serialize dates for client
+  // O componente cliente não recebe objetos Date/Decimal diretamente.
   const serialized = {
     ...student,
     birthDate: student.birthDate?.toISOString() ?? null,

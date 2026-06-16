@@ -1,5 +1,8 @@
 "use client";
 
+// Componente cliente de /perfil: gere atualização de consentimentos e alteração
+// de palavra-passe da conta atualmente autenticada.
+
 import { useState } from "react";
 import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";

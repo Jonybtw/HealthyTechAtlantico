@@ -1,5 +1,8 @@
 "use client";
 
+// Componente cliente de /testes: regista resultados de aptidão física,
+// consulta últimos testes e suporta importação em massa quando disponível.
+
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { toast } from "sonner";

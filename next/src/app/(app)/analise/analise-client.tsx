@@ -1,5 +1,8 @@
 "use client";
 
+// Componente cliente de /analise: carrega alunos, métricas e relatórios por
+// turma para comparar indicadores de saúde e aptidão física.
+
 import { useEffect, useMemo, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { toast } from "sonner";

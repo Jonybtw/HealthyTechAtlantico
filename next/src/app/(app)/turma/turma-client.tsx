@@ -1,5 +1,8 @@
 "use client";
 
+// Componente cliente de /turma: gere seleção de turma, importação de classes,
+// criação rápida de alunos e exportação de relatório CSV.
+
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";

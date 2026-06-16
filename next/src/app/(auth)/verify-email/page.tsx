@@ -39,6 +39,12 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
+/**
+ * Rota: /verify-email
+ *
+ * Página pública de apoio à confirmação de email. Quando recebe token na query
+ * string, encaminha para a API que valida o token e atualiza a base de dados.
+ */
 export default async function VerifyEmailPage({ searchParams }: Props) {
   const t = await getTranslations("verifyEmail");
   const resolvedSearchParams = await searchParams;

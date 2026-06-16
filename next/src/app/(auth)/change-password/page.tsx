@@ -11,6 +11,13 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
+/**
+ * Rota: /change-password
+ *
+ * Página de alteração de palavra-passe. É usada tanto no fluxo público como no
+ * fluxo obrigatório, quando o utilizador precisa trocar a palavra-passe antes
+ * de entrar na aplicação.
+ */
 export default function ChangePasswordPage() {
   return (
     <ClientOnly>

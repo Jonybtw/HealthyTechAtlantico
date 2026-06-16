@@ -1,5 +1,8 @@
 "use client";
 
+// Componente cliente de /acompanhamento/[id]: mostra questionários e alertas
+// SOS para apoio de administração/psicologia no acompanhamento individual.
+
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import {

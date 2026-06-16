@@ -1,5 +1,8 @@
 "use client";
 
+// Componente cliente de /auditoria: consulta e filtra eventos de auditoria para
+// suporte administrativo e rastreabilidade de ações.
+
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { toast } from "sonner";

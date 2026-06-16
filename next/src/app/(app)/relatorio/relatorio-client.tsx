@@ -1,5 +1,8 @@
 "use client";
 
+// Componente cliente de /relatorio: prepara dados do aluno, gera PDF no browser
+// e envia relatórios por email quando o perfil tem permissão.
+
 import { useCallback, useEffect, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { toast } from "sonner";

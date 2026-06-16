@@ -11,6 +11,13 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
+/**
+ * Rota: /register
+ *
+ * Página pública de escolha de registo. Encaminha o utilizador para o fluxo de
+ * aluno ou de encarregado de educação, mantendo estes processos separados para
+ * simplificar validações e mensagens.
+ */
 export default async function RegisterLandingPage() {
   const t = await getTranslations("registerLanding");
 

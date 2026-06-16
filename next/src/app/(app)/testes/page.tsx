@@ -11,6 +11,12 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
+/**
+ * Rota: /testes
+ *
+ * Página de testes físicos. Permite selecionar aluno, consultar resultados
+ * recentes e gravar novos testes definidos em src/lib/fitness-tests.ts.
+ */
 export default async function TestesPage() {
   await requireAnyRole(["ADMIN", "PROFESSOR"]);
   return <TestesClient />;

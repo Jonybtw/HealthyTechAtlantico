@@ -1,5 +1,8 @@
 "use client";
 
+// Componente cliente de /guardioes: permite associar, listar e remover
+// encarregados de educação ligados a alunos.
+
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";

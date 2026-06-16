@@ -1,5 +1,8 @@
 "use client";
 
+// Componente cliente de /change-password: valida campos, chama a API de troca
+// de palavra-passe e trata o fluxo forçado quando necessário.
+
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";

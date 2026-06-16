@@ -10,6 +10,10 @@ import {
 } from "@/lib/password-policy";
 import { QUESTIONNAIRE_TYPES } from "@/lib/questionnaires";
 
+// Schemas Zod partilhados por formulários e API routes.
+// Sempre que uma rota recebe dados externos, deve validar esses dados aqui ou
+// através de um schema equivalente criado neste ficheiro.
+
 const emailSchema = z.string().trim().toLowerCase().email("E-mail inválido");
 
 const nameSchema = z.string().trim().min(2, "Nome obrigatório").max(100);
@@ -30,6 +34,7 @@ function applyPasswordPolicy(
   }
 }
 
+// Garante que cada perfil usa o tipo de email permitido pela instituição.
 function validateRoleEmailRule(
   data: { email: string; role: string },
   ctx: z.RefinementCtx,
@@ -43,6 +48,7 @@ function validateRoleEmailRule(
   }
 }
 
+// Registos públicos exigem consentimento RGPD e cumprem as regras de email.
 function validateRegisterRule(
   data: { email: string; role: string; consentRgpd: boolean },
   ctx: z.RefinementCtx,
@@ -458,6 +464,7 @@ function queryNumberSchema(schema: z.ZodNumber) {
   );
 }
 
+// Helpers para normalizar parâmetros vindos da query string antes da validação.
 function queryTextSchema(schema: z.ZodString) {
   return z.preprocess(
     (value) => (typeof value === "string" ? value.trim() : value),

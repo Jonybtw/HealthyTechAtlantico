@@ -11,6 +11,12 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
+/**
+ * Rota: /biometria
+ *
+ * Página de registo e consulta de medições biométricas. Apenas admin e
+ * professor podem aceder, porque aqui são gravados dados físicos dos alunos.
+ */
 export default async function BiometriaPage() {
   await requireAnyRole(["ADMIN", "PROFESSOR"]);
   return <BiometriaClient />;

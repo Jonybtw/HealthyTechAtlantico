@@ -11,6 +11,12 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
+/**
+ * Rota: /turma
+ *
+ * Página de gestão e consulta de turmas. Suporta importação de turmas, criação
+ * de alunos em contexto de turma e exportação de relatórios por classe.
+ */
 export default async function TurmaPage() {
   await requireAnyRole(["ADMIN", "PROFESSOR", "PSICOLOGO"]);
   return <TurmaClient />;

@@ -1,5 +1,8 @@
 "use client";
 
+// Componente cliente de /register/guardian: recolhe dados do encarregado e o
+// número de processo do aluno para pedir associação após verificação de email.
+
 import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";

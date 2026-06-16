@@ -1,5 +1,8 @@
 "use client";
 
+// Página de erro das rotas autenticadas.
+// Mostra uma mensagem segura ao utilizador e mantém detalhes técnicos nos logs.
+
 import { useEffect } from "react";
 import { useTranslations } from "next-intl";
 import { AlertTriangle } from "lucide-react";

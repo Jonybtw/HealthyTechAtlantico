@@ -1,5 +1,8 @@
 "use client";
 
+// Componente cliente de /admin: gere contas internas de staff e ações de
+// segurança como criação, remoção e redefinição de palavra-passe.
+
 import { useMemo, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { zodResolver } from "@hookform/resolvers/zod";

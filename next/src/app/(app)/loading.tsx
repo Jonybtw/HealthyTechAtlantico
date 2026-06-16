@@ -1,5 +1,8 @@
 "use client";
 
+// Estado de carregamento partilhado pelas páginas autenticadas.
+// Deve ser visualmente leve e não deve fazer pedidos de dados.
+
 import { useTranslations } from "next-intl";
 
 export default function Loading() {
@@ -12,14 +15,14 @@ export default function Loading() {
       aria-label={label}
       className="fixed inset-0 z-[25] overflow-hidden animate-fade-in"
     >
-      {/* Backdrop */}
+      {/* Fundo translúcido para manter contexto visual durante a navegação. */}
       <div className="absolute inset-0 bg-background/88 backdrop-blur-[2px] dark:bg-navy-950/88" />
-      {/* Radial gold glow */}
+      {/* Brilho subtil da marca. */}
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_50%_35%_at_50%_50%,rgba(217,166,28,0.10),transparent)]" />
 
       <div className="relative z-10 flex h-full w-full items-center justify-center">
         <div className="flex animate-fade-in-up flex-col items-center gap-5">
-          {/* Spinning arc ring */}
+          {/* Indicador principal de carregamento. */}
           <div className="relative flex items-center justify-center">
             <div className="absolute size-14 rounded-full bg-gold-400/10 blur-2xl" />
             <svg
@@ -34,7 +37,7 @@ export default function Loading() {
                 animationTimingFunction: "linear",
               }}
             >
-              {/* Track ring */}
+              {/* Anel de fundo. */}
               <circle
                 cx="28"
                 cy="28"
@@ -42,7 +45,7 @@ export default function Loading() {
                 strokeWidth="3"
                 className="stroke-navy-200 dark:stroke-white/15"
               />
-              {/* Gold arc */}
+              {/* Arco animado. */}
               <circle
                 cx="28"
                 cy="28"
@@ -55,7 +58,7 @@ export default function Loading() {
             </svg>
           </div>
 
-          {/* Staggered pulse dots */}
+          {/* Pontos de pulso para reforçar estado ativo. */}
           <div className="flex items-center gap-1.5">
             {([0, 0.18, 0.36] as const).map((delay, i) => (
               <div
@@ -66,7 +69,7 @@ export default function Loading() {
             ))}
           </div>
 
-          {/* Label */}
+          {/* Texto acessível e traduzido. */}
           <p className="text-[11px] font-medium tracking-wide text-muted-foreground/60">
             {label}
           </p>

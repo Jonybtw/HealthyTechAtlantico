@@ -12,6 +12,13 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
+/**
+ * Rota: /dashboard
+ *
+ * Painel inicial da área autenticada. Obtém o utilizador atual, prepara textos
+ * localizados e carrega um resumo adaptado ao perfil antes de entregar tudo ao
+ * componente cliente.
+ */
 export default async function DashboardPage() {
   const user = await requireAuth();
   const [locale, messages] = await Promise.all([getLocale(), getMessages()]);

@@ -11,6 +11,13 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
+/**
+ * Rota: /questionarios
+ *
+ * Página de resposta a questionários. Está limitada ao perfil ALUNO e usa as
+ * definições de src/lib/questionnaires.ts para decidir perguntas, histórico,
+ * consentimento KIDMED e apresentação dos resultados.
+ */
 export default async function QuestionariosPage() {
   await requireAnyRole(["ALUNO"]);
   return <QuestionariosClient />;

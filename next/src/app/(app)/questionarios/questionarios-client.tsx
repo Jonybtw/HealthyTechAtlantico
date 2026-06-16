@@ -1,5 +1,8 @@
 "use client";
 
+// Componente cliente de /questionarios: apresenta instrumentos disponíveis,
+// gere respostas do aluno, histórico e submissão para a API de questionários.
+
 import Link from "next/link";
 import {
   useCallback,
