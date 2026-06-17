@@ -560,7 +560,7 @@ function BiometriaContent({
           <div className="mb-5 rounded-[12px] border border-border/70 bg-background/55 p-4">
             <div className="grid gap-4 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
               <div className="min-w-0">
-                <p className="text-tiny font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+                <p className="label-micro text-muted-foreground">
                   {t("selectionLabel")}
                 </p>
                 <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
@@ -617,7 +617,7 @@ function BiometriaContent({
 
             {/* Notes */}
             <div className="grid gap-1.5">
-              <p className="text-tiny font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+              <p className="label-micro text-muted-foreground">
                 {t("notesTitle")}
               </p>
               <textarea
@@ -634,7 +634,7 @@ function BiometriaContent({
             <div className="rounded-[12px] border border-border/70 bg-background/55 p-4">
               <div className="grid gap-4 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
                 <div className="min-w-0">
-                  <p className="text-tiny font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+                  <p className="label-micro text-muted-foreground">
                     {t("classificationTitle")}
                   </p>
                   {classification ? (
@@ -678,7 +678,7 @@ function BiometriaContent({
           <BioPanel index={5} reducedEffects={reducedEffects} className="p-5">
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">
-                <p className="text-tiny font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+                <p className="label-micro text-muted-foreground">
                   {t("selectedStudentLabel")}
                 </p>
                 <h2 className="mt-1 font-display text-[1.4rem] font-black tracking-[-0.05em] text-foreground truncate">
@@ -705,13 +705,13 @@ function BiometriaContent({
           <BioPanel index={6} reducedEffects={reducedEffects} className="p-5">
             <div className="flex items-start justify-between gap-3">
               <div>
-                <p className="text-tiny font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+                <p className="label-micro text-muted-foreground">
                   {t("currentReadTitle")}
                 </p>
                 <p className="mt-0.5 text-xs text-muted-foreground">{t("currentReadDescription")}</p>
               </div>
               {liveStatusLabel ? (
-                <span className="inline-flex items-center rounded-full border border-gold-400/20 bg-gold-400/10 px-2.5 py-1 text-tiny font-semibold uppercase tracking-[0.16em] text-gold-700 dark:text-gold-200">
+                <span className="inline-flex items-center rounded-full border border-gold-400/20 bg-gold-400/10 px-2.5 py-1 label-micro text-gold-700 dark:text-gold-200">
                   {liveStatusLabel}
                 </span>
               ) : null}
@@ -749,7 +749,7 @@ function BiometriaContent({
           <BioPanel index={7} reducedEffects={reducedEffects} className="p-5">
             <div className="flex items-start justify-between gap-3">
               <div>
-                <p className="text-tiny font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+                <p className="label-micro text-muted-foreground">
                   {t("latestRecordTitle")}
                 </p>
                 {latestRecord ? (
@@ -787,7 +787,7 @@ function BiometriaContent({
         <BioPanel index={8} reducedEffects={reducedEffects} className="p-5 sm:p-6">
           <div className="mb-4 flex items-start justify-between gap-3">
             <div>
-              <p className="text-tiny font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+              <p className="label-micro text-muted-foreground">
                 {t("historyTitle")}
               </p>
               <h3 className="mt-1 text-lg font-bold tracking-tight text-foreground">
@@ -795,7 +795,7 @@ function BiometriaContent({
               </h3>
             </div>
             {history.length > 0 && (
-              <span className="inline-flex rounded-full border border-white/22 bg-white/74 px-2.5 py-1 text-tiny font-semibold uppercase tracking-[0.16em] text-navy-800 shadow-sm dark:border-white/10 dark:bg-white/8 dark:text-navy-100">
+              <span className="inline-flex rounded-full border border-white/22 bg-white/74 px-2.5 py-1 label-micro text-navy-800 shadow-sm dark:border-white/10 dark:bg-white/8 dark:text-navy-100">
                 {history.length}
               </span>
             )}
@@ -864,7 +864,7 @@ function BiometriaContent({
         {/* History List */}
         <BioPanel index={9} reducedEffects={reducedEffects} className="p-5 sm:p-6">
           <div className="mb-4">
-            <p className="text-tiny font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+            <p className="label-micro text-muted-foreground">
               {t("historyDescription")}
             </p>
             <h3 className="mt-1 text-lg font-bold tracking-tight text-foreground">
@@ -999,7 +999,7 @@ function KpiPanel({
 function MetaRow({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex items-center justify-between gap-3 rounded-[12px] border border-border/70 bg-background/65 px-3.5 py-2.5 shadow-sm">
-      <span className="text-tiny font-semibold uppercase tracking-[0.18em] text-muted-foreground">{label}</span>
+      <span className="label-micro text-muted-foreground">{label}</span>
       <span className="text-right text-sm font-semibold text-foreground">{value}</span>
     </div>
   );
@@ -1062,7 +1062,7 @@ function HistoryRow({
         <p className="mt-0.5 truncate text-xs text-muted-foreground">{details}</p>
       </div>
       <div className="flex flex-wrap items-center gap-1.5 sm:flex-col sm:items-end">
-        <p className="text-tiny font-semibold uppercase tracking-[0.16em] text-muted-foreground">{dateLabel}</p>
+        <p className="label-micro text-muted-foreground">{dateLabel}</p>
         <div className="flex flex-wrap gap-1">
           <ZoneBadge zone={record.imcZone} size="sm" />
           {record.waistZone ? <ZoneBadge zone={record.waistZone} size="sm" /> : null}

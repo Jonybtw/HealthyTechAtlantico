@@ -98,7 +98,7 @@ export function KpiCard({
   return (
     <Card
       className={cn(
-        "group relative overflow-hidden rounded-[16px] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_8px_24px_rgba(9,21,35,0.12)] dark:hover:shadow-[0_10px_28px_rgba(0,0,0,0.34)]",
+        "group relative overflow-hidden rounded-[16px] transition-all duration-300 hover:-translate-y-px hover:shadow-[0_8px_24px_rgba(9,21,35,0.12)] dark:hover:shadow-[0_10px_28px_rgba(0,0,0,0.34)]",
         heroCard
           ? "border border-white/10 bg-navy-950 text-white shadow-[0_4px_18px_rgba(0,0,0,0.22)]"
           : "border border-border bg-card/88 text-foreground shadow-[0_4px_12px_rgba(9,21,35,0.08)] backdrop-blur-sm dark:border-white/10 dark:bg-navy-950/68 dark:text-white dark:shadow-[0_4px_18px_rgba(0,0,0,0.22)]",
@@ -118,7 +118,7 @@ export function KpiCard({
           </h3>
           <div
             className={cn(
-              "shrink-0 rounded-[14px] p-2 transition-transform duration-300 group-hover:scale-105",
+              "shrink-0 rounded-xl p-2 transition-transform duration-300 group-hover:scale-105",
               styles.iconBg,
             )}
           >
@@ -130,7 +130,7 @@ export function KpiCard({
           aria-live="polite"
           aria-atomic="true"
           className={cn(
-            "text-5xl font-extrabold tabular-nums tracking-tight",
+            "font-display text-5xl font-extrabold tabular-nums tracking-tight",
             heroCard ? "text-white" : "text-foreground",
             accent === "red" && !heroCard && "text-danger-600 dark:text-danger-400",
           )}

@@ -289,7 +289,7 @@ export default function DispensasClient() {
       <div className="grid gap-5 xl:grid-cols-[340px_minmax(0,1fr)] xl:items-start">
         {/* Left: picker + form */}
         <BioPanel index={3} reducedEffects={reducedEffects} className="p-5">
-          <p className="text-tiny font-semibold uppercase tracking-[0.16em] text-muted-foreground">{t("studentPickerLabel")}</p>
+          <p className="label-micro text-muted-foreground">{t("studentPickerLabel")}</p>
           <div className="mt-2">
             <StudentPicker students={students} value={studentId} onChange={handleStudentChange} loading={loadingStudents} />
           </div>
@@ -313,7 +313,7 @@ export default function DispensasClient() {
 
               {showForm ? (
                 <div className="mt-4 rounded-[12px] border border-border/70 bg-background/65 p-4">
-                  <p className="text-tiny font-semibold uppercase tracking-[0.18em] text-muted-foreground">{t("formTitle")}</p>
+                  <p className="label-micro text-muted-foreground">{t("formTitle")}</p>
                   <form onSubmit={handleCreate} className="mt-3 grid gap-4">
                     <Input label={t("reason")} placeholder={t("reasonPlaceholder")} value={form.reason} onChange={(e) => setForm((c) => ({ ...c, reason: e.target.value }))} required />
                     <div className="grid gap-4 sm:grid-cols-2">
@@ -344,7 +344,7 @@ export default function DispensasClient() {
         <BioPanel index={4} reducedEffects={reducedEffects} className="p-5">
           <div className="flex items-center justify-between gap-3">
             <div>
-              <p className="text-tiny font-semibold uppercase tracking-[0.18em] text-muted-foreground">{t("historyPanelTitle")}</p>
+              <p className="label-micro text-muted-foreground">{t("historyPanelTitle")}</p>
               <h3 className="mt-0.5 text-lg font-bold tracking-tight text-foreground">{t("historyTitle")}</h3>
             </div>
             <Button size="sm" variant="ghost" icon={<RefreshCw className="size-4" />} onClick={() => void refetchDispensas()}>{common("refresh")}</Button>

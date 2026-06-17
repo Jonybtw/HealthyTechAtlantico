@@ -42,13 +42,13 @@ export function PageSection({
     <section className={cn("relative overflow-hidden", toneClasses[tone], className)}>
       {tone !== "utility" && (
         <>
-          <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-gold-400/40 to-transparent" />
-          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_80%_0%,rgba(244,211,94,0.06),transparent_44%)] dark:bg-[radial-gradient(circle_at_80%_0%,rgba(244,211,94,0.11),transparent_44%)]" />
+          <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-gold-400/25 to-transparent" />
+          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_80%_0%,rgba(244,211,94,0.04),transparent_44%)] dark:bg-[radial-gradient(circle_at_80%_0%,rgba(244,211,94,0.08),transparent_44%)]" />
         </>
       )}
       <div className="relative">
         {eyebrow || title || description || actions || icon ? (
-          <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+          <div className="mb-4 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
             <div className="flex max-w-3xl flex-col gap-4 sm:flex-row sm:items-start">
               {icon && (
                 <div className="flex size-10 shrink-0 items-center justify-center rounded-[14px] border border-border/70 bg-background/55 text-gold-600 shadow-sm dark:border-white/10 dark:bg-white/5 dark:text-gold-400">

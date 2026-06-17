@@ -45,6 +45,11 @@ import type {
   ZafYearStat,
 } from "@/lib/dashboard";
 import { getQuestionnaireTypeLabelKey } from "@/lib/questionnaires";
+import {
+  DASHBOARD_FALLBACK_MESSAGES,
+  DASHBOARD_FALLBACK_NAV,
+  DASHBOARD_FALLBACK_QUESTIONNAIRES,
+} from "@/lib/dashboard-fallback";
 import { cn } from "@/lib/utils";
 
 interface Props {
@@ -65,221 +70,9 @@ const FALLBACK_MESSAGES: {
   nav: Record<string, string>;
   questionarios: Record<string, string>;
 } = {
-  dashboard: {
-    totalStudentsTitle: "Total Students",
-    totalStudentsFooter: "+12 this month",
-    biometricsLoggedTitle: "Biometrics Logged",
-    biometricsLoggedFooter: "This academic year",
-    activeAlertsTitle: "Active Alerts",
-    activeAlertsFooter: "1 Critical priority",
-    pendingAssessmentsTitle: "Pending Assessments",
-    pendingAssessmentsFooter: "5 overdue",
-    title: "Painel",
-    dashboardStatus: "Painel",
-    overview: "Vista geral",
-    welcomeBackOverview:
-      "Bem-vindo de volta, {name}. Aqui tens a tua visao geral de hoje.",
-    platformOverview:
-      "Centro de comando institucional para cobertura, segurança e qualidade dos dados.",
-    teacherOverview:
-      "Espaço de trabalho para registos de turma, dispensas e sinais SOS.",
-    psychologistOverview:
-      "Triagem de acompanhamento, instrumentos recentes e casos sinalizados.",
-    parentOverview: "Resumo familiar dos alunos associados e relatórios partilhados.",
-    activitySummary: "Últimos registos, próximos passos e atalhos do teu percurso.",
-    unlinkedTitle: "Perfil não associado",
-    unlinkedDescription:
-      "A tua conta ainda não está associada a um perfil de aluno. Contacta a escola para concluírem a ligação.",
-    students: "Alunos",
-    classes: "Turmas",
-    sessions: "Sessões",
-    pendingSos: "SOS pendentes",
-    totalRegistered: "Total registados",
-    activeClasses: "Turmas ativas",
-    evaluationsDone: "Sessões registadas",
-    alertsPending: "SOS em aberto",
-    questionnairesAvailable: "Questionários",
-    questionnaireQueue: "Submissões para leitura",
-    studentsInFollowUp: "Em acompanhamento",
-    studentsInFollowUpDesc: "Alunos com sinais recentes",
-    linkedStudents: "Alunos associados",
-    linkedStudentsDesc: "Alunos ligados à tua conta",
-    reportsAvailable: "Relatórios",
-    reportsAvailableDesc: "Documentos disponíveis",
-    familyQuestionnairesDesc: "Questionários submetidos",
-    teacherStudentsDesc: "Alunos no ano letivo atual",
-    teacherSessionsDesc: "Sessões que registaste",
-    activeExemptions: "Dispensas ativas",
-    activeExemptionsDesc: "Dispensas em vigor",
-    teacherSosDesc: "Alertas encaminhados para ti",
-    missingBiometrics: "Biometrias em falta",
-    missingBiometricsDesc: "Alunos sem medição no ano atual",
-    missingTests: "Testes em falta",
-    missingTestsDesc: "Alunos sem prova física no ano atual",
-    missingQuestionnaires: "Questionários em falta",
-    missingQuestionnairesDesc: "Alunos sem submissão no ano atual",
-    unlinkedStudents: "Alunos sem conta",
-    unlinkedStudentsDesc: "Perfis ainda sem utilizador associado",
-    guardianLinks: "Ligações familiares",
-    guardianLinksDesc: "Associações aluno-encarregado",
-    auditLast7Days: "Auditoria recente",
-    auditLast7DaysDesc: "Eventos registados nos últimos 7 dias",
-    reportsLast30Days: "Relatórios recentes",
-    reportsLast30DaysDesc: "Relatórios gerados nos últimos 30 dias",
-    commandCenter: "Comando",
-    commandCenterTitle: "Prioridades institucionais",
-    commandCenterDescription:
-      "O que precisa de decisão, revisão ou encaminhamento neste momento.",
-    teacherDesk: "Aula e registos",
-    teacherDeskTitle: "Fila de trabalho da turma",
-    teacherDeskDescription:
-      "Alunos e registos que ajudam a fechar a cobertura do período.",
-    clinicalDesk: "Acompanhamento",
-    clinicalDeskTitle: "Fila de intervenção",
-    clinicalDeskDescription: "Casos SOS por resolver, ordenados pelos mais antigos.",
-    familyDesk: "Família",
-    familyDeskTitle: "Acompanhamento por aluno",
-    familyDeskDescription: "Leitura simples dos últimos sinais partilhados pela escola.",
-    studentDesk: "Percurso",
-    studentDeskTitle: "O teu estado atual",
-    studentDeskDescription: "Datas e atalhos principais para continuares o teu registo.",
-    quickActions: "Ações rápidas",
-    quickActionsDescription: "Atalhos diretos para as tarefas mais prováveis.",
-    recentActivity: "Atividade recente",
-    viewAll: "Ver tudo",
-    systemStatus: "Estado do sistema",
-    allSystemsOperational: "Todos os sistemas operacionais",
-    draftsSyncing: "{count} rascunhos a sincronizar",
-    lastSync: "Ultima sincronizacao",
-    allCaughtUp: "Tudo em dia",
-    bmiFitnessTrends: "Tendencias de IMC e condicao fisica",
-    currentAcademicYear: "Ano letivo atual",
-    avgBmi: "IMC medio",
-    fitnessScore: "Score fisico",
-    zafDistributionTitle: "Distribuicao ZAF",
-    coverageAverageLabel: "Media da turma",
-    dataQualityTitle: "Cobertura e qualidade",
-    dataQualityDescription: "Lacunas do ano letivo atual que merecem seguimento.",
-    zafTitle: "Zona saudável e evolução",
-    zafDescription: "Cobertura biométrica e distribuição ZAF nos anos recentes.",
-    recentReportsTitle: "Relatórios recentes",
-    recentReportsDescription: "Últimos documentos disponibilizados pela escola.",
-    recentQuestionnairesTitle: "Instrumentos recentes",
-    recentQuestionnairesDescription: "Submissões mais recentes para leitura clínica.",
-    noPendingCasesTitle: "Sem casos pendentes",
-    noPendingCasesDescription: "A fila SOS está limpa neste momento.",
-    noRecentQuestionnairesTitle: "Sem questionários recentes",
-    noRecentQuestionnairesDescription:
-      "As novas submissões aparecem aqui quando forem recebidas.",
-    noLinkedStudentsDashboardTitle: "Sem alunos associados",
-    noLinkedStudentsDashboardDescription:
-      "Quando a escola concluir a associação, os dados surgem aqui.",
-    noReportsDashboardTitle: "Sem relatórios recentes",
-    noReportsDashboardDescription:
-      "Os relatórios disponibilizados pela escola aparecem nesta área.",
-    classPending: "Turma por confirmar",
-    alertOpenedOn: "Aberto em {date}",
-    generatedOn: "Gerado em {date}",
-    studentRecord: "Registo do aluno",
-    lastBiometric: "Última biometria",
-    lastTests: "Últimos testes",
-    lastQuestionnaire: "Último questionário",
-    lastReport: "Último relatório",
-    activeStudentSos: "SOS ativo",
-    activeStudentExemption: "Dispensa ativa",
-    noStudentSignal: "Sem sinal ativo",
-    lastMeasurement: "Data da última medição",
-    lastTestDate: "Data do último teste físico",
-    studentQuestionnairesDesc: "Instrumentos já submetidos",
-    needsBiometrics: "Registar biometria",
-    needsTests: "Registar testes",
-    reviewItem: "Rever",
-    openItem: "Abrir",
-    latestAcademicYear: "Último ano letivo",
-    coverageLabel: "Cobertura registada",
-    studentsWithBiometrics: "Com biometria",
-    healthyStudentsLabel: "Em Z. Saudável",
-    improvementStudentsLabel: "Em Z. Melhoria",
-    zsaf: "Z. Saudável",
-    zmf: "Z. Melhoria",
-    noBioData: "Sem dados biométricos",
-    annualSeriesPendingTitle: "Ainda não existe série histórica comparável.",
-    annualSeriesPendingDescription:
-      "A evolução anual aparece quando houver mais do que um ano letivo com biometria registada.",
-    studentsUnit: "alunos",
-    actionSosTitle: "SOS",
-    actionSosDesc: "Rever alertas ativos",
-    actionStudentsTitle: "Alunos",
-    actionStudentsDesc: "Gerir perfis e ligações",
-    actionClassTitle: "Turma",
-    actionClassDesc: "Ver trabalho da turma",
-    actionBiometricsTitle: "Biometria",
-    actionBiometricsDesc: "Registar medições",
-    actionTestsTitle: "Testes",
-    actionTestsDesc: "Registar provas",
-    actionReportsTitle: "Relatórios",
-    actionReportsDesc: "Consultar ou gerar documentos",
-    actionQuestionnairesTitle: "Questionários",
-    actionQuestionnairesDesc: "Responder instrumentos",
-    actionProtocolsTitle: "Protocolos",
-    actionProtocolsDesc: "Consultar orientações",
-    actionAdminTitle: "Admin",
-    actionAdminDesc: "Gerir utilizadores",
-    actionAuditTitle: "Auditoria",
-    actionAuditDesc: "Rever atividade",
-    actionProfileTitle: "Perfil",
-    actionProfileDesc: "Preferências e conta",
-    actionLogBiometricsTitle: "Registar biometria",
-    actionLogBiometricsDesc: "Registar dados do aluno",
-    actionRaiseSosTitle: "Abrir SOS",
-    actionRaiseSosDesc: "Alerta de emergencia",
-    actionNewAssessmentTitle: "Nova avaliacao",
-    actionNewAssessmentDesc: "Atribuir questionario",
-    actionGenerateReportTitle: "Gerar relatorio",
-    actionGenerateReportDesc: "Exportar relatorio PDF",
-    actionEnrollStudentTitle: "Inscrever aluno",
-    actionEnrollStudentDesc: "Adicionar novo aluno",
-    actionBulkImportTitle: "Importacao em lote",
-    actionBulkImportDesc: "Upload CSV",
-    studentHealthProgress: "My Health Progress",
-    studentGrowthSubtitle: "Tracking your growth over time",
-    student6Months: "6 Months",
-    student1Year: "1 Year",
-    studentWeightLabel: "Weight (kg)",
-    studentHeightLabel: "Height (cm)",
-    studentPendingTasks: "Pending Tasks",
-    studentNoPendingTasks: "No pending tasks",
-    studentNoPendingDesc: "All questionnaires for this school year have been submitted.",
-    studentStart: "Start",
-    studentDueSoon: "Due Soon",
-    studentPending: "Pending",
-    studentYourPosition: "Your Position",
-    studentComparedWHO: "Position relative to the healthy zone",
-    studentPercentile: "Percentile",
-    studentCurrentHealth: "Current Health Status",
-    studentBMI: "BMI",
-    studentHeight: "Height",
-    studentWeight: "Weight",
-    studentZScore: "Z-Score (BMI)",
-    studentFitnessScore: "Fitness Score",
-    studentNoBiometrics: "No biometric data recorded",
-    studentNoBiometricsDesc: "Once your teacher records your measurements, data will appear here.",
-    studentNoTests: "No tests recorded",
-    studentLastUpdated: "Last updated",
-    studentHealthy: "Healthy",
-    studentAtRisk: "At Risk",
-    studentNormal: "Normal",
-    studentGood: "Good",
-    studentSosActive: "Active SOS alert",
-  },
-  nav: {
-    perfil: "Perfil",
-  },
-  questionarios: {
-    autoconceito: "Autoconceito",
-    autoestima: "Autoestima",
-    kidmed: "KIDMED",
-  },
+  dashboard: DASHBOARD_FALLBACK_MESSAGES,
+  nav: DASHBOARD_FALLBACK_NAV,
+  questionarios: DASHBOARD_FALLBACK_QUESTIONNAIRES,
 };
 
 const ICONS: Record<DashboardCardData["icon"], LucideIcon> = {
@@ -548,35 +341,33 @@ function PsychologistDashboard({
           layout="list"
         >
           {summary.openAlerts.length > 0 ? (
-            <div className="grid gap-3">
+            <div className="grid gap-2">
               {summary.openAlerts.map((alert) => (
                 <Link
                   key={alert.id}
                   href={`/acompanhamento/${alert.studentId}`}
                   className="group"
                 >
-                  <Card className="transition-all hover:-translate-y-0.5 hover:border-danger-400/45 hover:shadow-card-hover">
-                    <CardContent className="flex items-center gap-4 p-5">
-                      <div className="flex size-11 shrink-0 items-center justify-center rounded-[12px] bg-danger-500/10 text-danger-600 dark:text-danger-400">
-                        <AlertTriangle className="size-5" />
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <CardTitle className="truncate text-base">
-                          {alert.studentName}
-                        </CardTitle>
-                        <CardDescription className="mt-1">
-                          {alert.className ?? t("classPending")}
-                        </CardDescription>
-                      </div>
-                      <div className="flex shrink-0 items-center gap-3">
-                        <Badge variant="danger" className="hidden sm:inline-flex">{t("pendingSos")}</Badge>
-                        <span className="hidden text-xs text-muted-foreground lg:inline">
-                          {formatCompactDate(alert.createdAt, locale)}
-                        </span>
-                        <ArrowRight className="size-4 text-muted-foreground transition-transform group-hover:translate-x-1" />
-                      </div>
-                    </CardContent>
-                  </Card>
+                  <div className="flex items-center gap-4 rounded-xl border-l-2 border-danger-500 bg-danger-500/5 py-3 pl-4 pr-4 transition-all hover:bg-danger-500/8 dark:bg-danger-500/8 dark:hover:bg-danger-500/12">
+                    <div className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-danger-500/10 text-danger-600 dark:text-danger-400">
+                      <AlertTriangle className="size-4" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-sm font-semibold text-foreground">
+                        {alert.studentName}
+                      </p>
+                      <p className="mt-0.5 text-xs text-muted-foreground">
+                        {alert.className ?? t("classPending")}
+                      </p>
+                    </div>
+                    <div className="flex shrink-0 items-center gap-3">
+                      <Badge variant="danger" className="hidden sm:inline-flex">{t("pendingSos")}</Badge>
+                      <span className="hidden text-xs text-muted-foreground lg:inline">
+                        {formatCompactDate(alert.createdAt, locale)}
+                      </span>
+                      <ArrowRight className="size-4 text-muted-foreground/50 transition-transform group-hover:translate-x-1" />
+                    </div>
+                  </div>
                 </Link>
               ))}
             </div>
@@ -600,33 +391,31 @@ function PsychologistDashboard({
         layout="list"
       >
         {summary.recentQuestionnaires.length > 0 ? (
-          <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+          <div className="grid gap-2 md:grid-cols-2 xl:grid-cols-3">
             {summary.recentQuestionnaires.map((questionnaire) => (
-              <Card key={questionnaire.id}>
-                <CardContent className="flex items-center gap-4 p-5">
-                  <div className="flex size-11 shrink-0 items-center justify-center rounded-[12px] bg-gold-500/10 text-gold-700 dark:text-gold-300">
-                    <ClipboardList className="size-5" />
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <CardTitle className="truncate text-base">
-                      {questionnaire.studentName}
-                    </CardTitle>
-                    <CardDescription className="mt-1">
-                      {questionnaires(
-                        getQuestionnaireTypeLabelKey(
-                          questionnaire.type as
-                            | "AUTOCONCEITO"
-                            | "AUTOESTIMA"
-                            | "KIDMED",
-                        ),
-                      )}
-                    </CardDescription>
-                  </div>
-                  <Badge variant="gold" className="shrink-0">
-                    {formatCompactDate(questionnaire.submittedAt, locale)}
-                  </Badge>
-                </CardContent>
-              </Card>
+              <div key={questionnaire.id} className="flex items-center gap-3 rounded-xl border border-border/60 bg-card/70 px-4 py-3 backdrop-blur-sm dark:border-white/8 dark:bg-navy-950/50">
+                <div className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-gold-500/10 text-gold-700 dark:text-gold-300">
+                  <ClipboardList className="size-4" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-sm font-semibold text-foreground">
+                    {questionnaire.studentName}
+                  </p>
+                  <p className="mt-0.5 truncate text-xs text-muted-foreground">
+                    {questionnaires(
+                      getQuestionnaireTypeLabelKey(
+                        questionnaire.type as
+                          | "AUTOCONCEITO"
+                          | "AUTOESTIMA"
+                          | "KIDMED",
+                      ),
+                    )}
+                  </p>
+                </div>
+                <Badge variant="gold" className="shrink-0">
+                  {formatCompactDate(questionnaire.submittedAt, locale)}
+                </Badge>
+              </div>
             ))}
           </div>
         ) : (
@@ -749,18 +538,84 @@ function MetricGrid({
 }) {
   if (cards.length === 0) return null;
 
+  const [hero, ...rest] = cards;
+  if (!hero) return null;
+
   return (
-    <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-      {cards.map((card) => (
-        <KpiCard
-          key={card.id}
-          accent={card.accent}
-          footer={card.footer ?? t(card.descriptionKey)}
-          icon={ICONS[card.icon]}
-          title={t(card.titleKey)}
-          value={card.value}
+    <div className="grid gap-4 lg:grid-cols-[1.35fr_1fr]">
+      <FeaturedKpi card={hero} t={t} />
+      <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
+        {rest.map((card) => (
+          <li key={card.id}>
+            <KpiCard
+              accent={card.accent}
+              footer={card.footer ?? t(card.descriptionKey)}
+              icon={ICONS[card.icon]}
+              title={t(card.titleKey)}
+              value={card.value}
+            />
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+function FeaturedKpi({
+  card,
+  t,
+}: {
+  card: DashboardCardData;
+  t: (key: string, values?: Record<string, string | number>) => string;
+}) {
+  const Icon = ICONS[card.icon];
+
+  return (
+    <div className="relative isolate overflow-hidden rounded-[20px] border border-white/10 bg-gradient-to-br from-navy-950 via-navy-900 to-navy-700 p-6 text-white shadow-[0_18px_40px_-18px_rgba(9,21,35,0.45)] sm:p-8">
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_88%_0%,rgba(232,199,102,0.32),transparent_55%)]"
+      />
+      <div
+        aria-hidden
+        className="pointer-events-none absolute -bottom-20 -right-16 h-72 w-72 rounded-full bg-gold-400/20 blur-3xl"
+      />
+      <svg
+        aria-hidden
+        viewBox="0 0 200 80"
+        className="pointer-events-none absolute inset-x-0 bottom-0 h-20 w-full text-gold-300/15"
+        preserveAspectRatio="none"
+      >
+        <path
+          d="M0 40 Q 25 10 50 40 T 100 40 T 150 40 T 200 40 V 80 H 0 Z"
+          fill="currentColor"
         />
-      ))}
+      </svg>
+
+      <div className="relative flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
+        <div className="space-y-2">
+          <p className="text-xs font-medium text-gold-200/80">
+            {t("dashboardStatus")}
+          </p>
+          <h3 className="font-display text-2xl font-semibold tracking-tight text-white sm:text-3xl">
+            {t(card.titleKey)}
+          </h3>
+          <p className="text-sm text-white/70">{t(card.descriptionKey)}</p>
+        </div>
+        <div className="flex items-center gap-5">
+          <div className="flex size-12 items-center justify-center rounded-2xl bg-white/8 text-gold-300 ring-1 ring-inset ring-white/10 backdrop-blur-sm">
+            <Icon className="size-6" />
+          </div>
+          <p className="font-display text-6xl font-bold leading-none tracking-tight text-white sm:text-7xl">
+            {card.value}
+          </p>
+        </div>
+      </div>
+      {card.footer ? (
+        <p className="relative mt-6 inline-flex items-center gap-2 rounded-full bg-white/8 px-3 py-1.5 text-xs font-semibold text-white/80 ring-1 ring-inset ring-white/10">
+          {card.footer}
+        </p>
+      ) : null}
     </div>
   );
 }
@@ -870,40 +725,45 @@ function WorkQueueItem({
 }) {
   return (
     <Link href={item.href} className="group">
-      <Card className="transition-all hover:-translate-y-0.5 hover:border-gold-300/45 hover:shadow-card-hover">
-        <CardContent className="flex items-center gap-4 p-5">
-          <div
-            className={cn(
-              "flex size-11 shrink-0 items-center justify-center rounded-[12px]",
-              item.tone === "danger"
-                ? "bg-danger-500/10 text-danger-600 dark:text-danger-400"
-                : item.tone === "warning"
-                  ? "bg-gold-500/10 text-gold-700 dark:text-gold-300"
-                  : "bg-navy-500/10 text-navy-700 dark:text-navy-200",
-            )}
-          >
-            {item.tone === "danger" ? (
-              <AlertTriangle className="size-5" />
-            ) : item.tone === "warning" ? (
-              <Activity className="size-5" />
-            ) : (
-              <ClipboardList className="size-5" />
-            )}
+      <div
+        className={cn(
+          "flex items-center gap-4 rounded-r-xl border-l-2 py-3 pl-4 pr-4 transition-all hover:bg-muted/30 dark:hover:bg-white/[0.03]",
+          item.tone === "danger"
+            ? "border-danger-500"
+            : item.tone === "warning"
+              ? "border-gold-400"
+              : "border-navy-400/50",
+        )}
+      >
+        <div
+          className={cn(
+            "flex size-9 shrink-0 items-center justify-center rounded-xl",
+            item.tone === "danger"
+              ? "bg-danger-500/10 text-danger-600 dark:text-danger-400"
+              : item.tone === "warning"
+                ? "bg-gold-500/10 text-gold-700 dark:text-gold-300"
+                : "bg-navy-500/10 text-navy-700 dark:text-navy-200",
+          )}
+        >
+          {item.tone === "danger" ? (
+            <AlertTriangle className="size-4" />
+          ) : item.tone === "warning" ? (
+            <Activity className="size-4" />
+          ) : (
+            <ClipboardList className="size-4" />
+          )}
+        </div>
+        <div className="min-w-0 flex-1">
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="truncate text-sm font-semibold text-foreground">{item.title}</span>
+            <ToneBadge tone={item.tone} />
           </div>
-          <div className="min-w-0 flex-1">
-            <div className="flex flex-wrap items-center gap-2">
-              <CardTitle className="truncate text-base">{item.title}</CardTitle>
-              <ToneBadge tone={item.tone} />
-            </div>
-            {item.meta ? (
-              <CardDescription className="mt-1">{item.meta}</CardDescription>
-            ) : null}
-          </div>
-          <div className="flex shrink-0 items-center gap-3 text-sm text-muted-foreground">
-            <ArrowRight className="size-4 transition-transform group-hover:translate-x-1" />
-          </div>
-        </CardContent>
-      </Card>
+          {item.meta ? (
+            <p className="mt-0.5 text-xs text-muted-foreground">{item.meta}</p>
+          ) : null}
+        </div>
+        <ArrowRight className="size-4 shrink-0 text-muted-foreground/50 transition-transform group-hover:translate-x-1" />
+      </div>
     </Link>
   );
 }
@@ -984,7 +844,7 @@ function ZafPanel({
         <div className={cn("grid gap-4", !compact && "lg:grid-cols-[0.95fr_1.05fr]")}>
           <Card>
             <CardHeader>
-              <CardDescription className="text-xs uppercase tracking-[0.16em]">
+              <CardDescription className="text-xs text-muted-foreground">
                 {t("latestAcademicYear")}
               </CardDescription>
               <CardTitle className="text-2xl">{latestYear.year}</CardTitle>
@@ -1042,12 +902,20 @@ function StudentFamilyCard({
   student: Extract<DashboardSummary, { variant: "parent" }>["linkedStudents"][number];
   t: (key: string, values?: Record<string, string | number>) => string;
 }) {
+  const initials = student.name
+    .split(" ")
+    .filter(Boolean)
+    .map((n) => n[0])
+    .join("")
+    .slice(0, 2)
+    .toUpperCase();
+
   return (
     <Card className="h-full overflow-hidden">
       <CardContent className="flex h-full min-w-0 flex-col p-5">
         <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
-          <div className="flex size-11 shrink-0 items-center justify-center rounded-[12px] bg-navy-500/10 text-navy-700 dark:text-navy-200">
-            <Users className="size-5" />
+          <div className="flex size-11 shrink-0 items-center justify-center rounded-full bg-navy-900/10 text-sm font-bold text-navy-800 ring-2 ring-navy-400/20 dark:bg-white/10 dark:text-white dark:ring-white/15">
+            {initials}
           </div>
           <div className="min-w-0 flex-1">
             <CardTitle className="truncate text-base">{student.name}</CardTitle>
@@ -1098,21 +966,19 @@ function RecentReports({
       layout="list"
     >
       {reports.length > 0 ? (
-        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+        <div className="grid gap-2 md:grid-cols-2 xl:grid-cols-3">
           {reports.map((report) => (
-            <Card key={report.id}>
-              <CardContent className="flex items-center gap-4 p-5">
-                <div className="flex size-11 shrink-0 items-center justify-center rounded-[12px] bg-navy-500/10 text-navy-700 dark:text-navy-200">
-                  <FileText className="size-5" />
-                </div>
-                <div className="min-w-0 flex-1">
-                  <CardTitle className="truncate text-base">{report.title}</CardTitle>
-                  <CardDescription className="mt-1 truncate">
-                    {report.studentName} · {formatCompactDate(report.createdAt, locale)}
-                  </CardDescription>
-                </div>
-              </CardContent>
-            </Card>
+            <div key={report.id} className="flex items-center gap-3 rounded-xl border border-border/60 bg-card/70 px-4 py-3 backdrop-blur-sm dark:border-white/8 dark:bg-navy-950/50">
+              <div className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-navy-500/10 text-navy-700 dark:text-navy-200">
+                <FileText className="size-4" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-sm font-semibold text-foreground">{report.title}</p>
+                <p className="mt-0.5 truncate text-xs text-muted-foreground">
+                  {report.studentName} · {formatCompactDate(report.createdAt, locale)}
+                </p>
+              </div>
+            </div>
           ))}
         </div>
       ) : (
@@ -1136,17 +1002,15 @@ function MiniStat({
   value: string;
 }) {
   return (
-    <div className="flex min-w-0 items-center gap-3 rounded-[12px] border border-border/70 bg-background/60 p-3">
+    <div className="flex min-w-0 items-center gap-3 rounded-[14px] border border-border/70 bg-background/60 px-3.5 py-3 transition-colors hover:border-gold-300/50 hover:bg-background/80">
       {Icon && (
-        <span className="flex size-8 shrink-0 items-center justify-center rounded-[6px] bg-navy-500/10 text-navy-700 dark:text-navy-300">
+        <span className="flex size-9 shrink-0 items-center justify-center rounded-[10px] bg-gold-500/10 text-gold-700 dark:text-gold-300">
           <Icon className="size-4" />
         </span>
       )}
       <div className="min-w-0 flex-1">
-        <p className="break-words text-[10px] font-semibold uppercase leading-tight tracking-[0.14em] text-muted-foreground">
-          {label}
-        </p>
-        <p className="mt-1 truncate text-sm font-semibold text-foreground">{value}</p>
+        <p className="text-xs font-medium text-muted-foreground">{label}</p>
+        <p className="mt-0.5 truncate text-sm font-semibold text-foreground">{value}</p>
       </div>
     </div>
   );

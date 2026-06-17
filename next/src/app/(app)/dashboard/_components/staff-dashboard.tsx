@@ -855,7 +855,7 @@ function ZafDistributionPanel({
             {latestYear?.year ?? t("noBioData")}
           </p>
         </div>
-        <span className="inline-flex items-center rounded-full border border-border bg-background/60 px-2 py-0.5 text-[9px] font-bold uppercase tracking-[0.16em] text-success-700 dark:bg-white/6 dark:text-success-300">
+        <span className="inline-flex items-center rounded-full border border-border bg-background/60 px-2 py-0.5 text-[10px] font-semibold text-success-700 dark:bg-white/6 dark:text-success-300">
           live
         </span>
       </div>

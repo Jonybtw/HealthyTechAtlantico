@@ -25,7 +25,7 @@ export function PageHeader({
     <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
       <div className="flex min-w-0 max-w-4xl flex-col gap-2 sm:flex-row sm:items-start sm:gap-3">
         {icon ? (
-          <div className="flex size-10 shrink-0 items-center justify-center rounded-[12px] bg-gold-500/10 text-gold-600 dark:bg-gold-400/10 dark:text-gold-400">
+          <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-gold-500/10 text-gold-600 dark:bg-gold-400/10 dark:text-gold-400">
             {icon}
           </div>
         ) : null}

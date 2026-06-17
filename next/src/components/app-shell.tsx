@@ -186,13 +186,17 @@ export function AppShell({ user, children }: AppShellProps) {
   const targetLocale = locale === "pt" ? "EN" : "PT";
 
   const sidebarNav = (onNav?: () => void) => (
-    <div className="space-y-5">
+    <div className="space-y-6">
       {SECTION_ORDER.map((section) =>
         groupedItems[section].length > 0 ? (
           <div key={section} className="space-y-1.5">
-            <p className="px-2.5 pb-1 text-micro font-semibold uppercase tracking-[0.22em] text-muted-foreground/70 dark:text-navy-200/48">
-              {getSectionLabel(section)}
-            </p>
+            <div className="flex items-center gap-2 px-2.5 pb-2">
+              <span className="h-px flex-1 bg-gradient-to-r from-gold-400/40 via-gold-400/15 to-transparent" />
+              <p className="text-[11px] font-medium tracking-tight text-gold-700 dark:text-gold-300">
+                {getSectionLabel(section)}
+              </p>
+              <span className="h-px flex-1 bg-gradient-to-l from-gold-400/40 via-gold-400/15 to-transparent" />
+            </div>
             {groupedItems[section].map((item) => (
               <NavLink
                 key={item.href}

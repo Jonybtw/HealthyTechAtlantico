@@ -597,7 +597,7 @@ export function AlunosClient({
               />
 
               <div className="space-y-2">
-                <p className="text-tiny font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+                <p className="label-micro text-muted-foreground">
                   {t("colSex")}
                 </p>
                 <PillSelect

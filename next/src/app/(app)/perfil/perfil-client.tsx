@@ -157,7 +157,7 @@ export default function PerfilPage() {
               </AvatarFallback>
             </Avatar>
             <div className="min-w-0 flex-1">
-              <p className="text-tiny font-semibold uppercase tracking-[0.18em] text-muted-foreground">{t("activeAccount")}</p>
+              <p className="label-micro text-muted-foreground">{t("activeAccount")}</p>
               <h2 className="mt-0.5 truncate text-xl font-black tracking-[-0.04em] text-foreground">
                 {user?.name ?? user?.email ?? "—"}
               </h2>
@@ -174,7 +174,7 @@ export default function PerfilPage() {
           <div className="mt-4 flex items-center justify-between gap-3 rounded-[12px] border border-border/70 bg-background/65 px-4 py-3 shadow-sm">
             <div className="flex items-center gap-2">
               <BadgeCheck className="size-4 text-muted-foreground" />
-              <span className="text-tiny font-semibold uppercase tracking-[0.16em] text-muted-foreground">{t("roleLabel")}</span>
+              <span className="label-micro text-muted-foreground">{t("roleLabel")}</span>
             </div>
             <span className={cn("inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-semibold border-current/20", roleStyle.bg, roleStyle.text)}>
               <span className={cn("size-1.5 rounded-full", roleStyle.dot)} />
@@ -242,7 +242,7 @@ export default function PerfilPage() {
               <Lock className="size-4" />
             </span>
             <div className="min-w-0">
-              <p className="text-tiny font-semibold uppercase tracking-[0.18em] text-muted-foreground">{t("securityTitle")}</p>
+              <p className="label-micro text-muted-foreground">{t("securityTitle")}</p>
               <h2 className="mt-0.5 text-lg font-bold tracking-tight text-foreground">{t("changePassword")}</h2>
               <p className="mt-1 text-sm leading-relaxed text-muted-foreground">{t("passwordDescription")}</p>
             </div>

@@ -600,7 +600,7 @@ export function StudentDetailClient({ student }: Props) {
                   <div className="rounded-[12px] border border-border bg-surface-utility p-4">
                     <div className="mb-3 flex items-center gap-2">
                       <TrendingUp className="size-4 text-gold-500" />
-                      <p className="text-tiny font-semibold uppercase tracking-[0.2em] text-muted-foreground">
+                      <p className="label-micro text-muted-foreground">
                         {getTrendTitle(selectedTrend)}
                       </p>
                     </div>
@@ -663,7 +663,7 @@ export function StudentDetailClient({ student }: Props) {
                             {getTestLabel(test.testId)}
                           </p>
                       </div>
-                      <time className="mt-2 inline-flex w-fit items-center gap-1.5 rounded-full border border-white/40 bg-white/78 px-2.5 py-1 text-tiny font-semibold uppercase tracking-[0.16em] text-navy-700 shadow-[inset_0_1px_0_rgba(255,255,255,0.8)] dark:border-white/12 dark:bg-white/9 dark:text-navy-100 dark:shadow-none">
+                      <time className="mt-2 inline-flex w-fit items-center gap-1.5 rounded-full border border-white/40 bg-white/78 px-2.5 py-1 label-micro text-navy-700 shadow-[inset_0_1px_0_rgba(255,255,255,0.8)] dark:border-white/12 dark:bg-white/9 dark:text-navy-100 dark:shadow-none">
                           <CalendarDays className="size-3.5" />
                           {formatDate(test.recordedAt)}
                       </time>
@@ -709,7 +709,7 @@ export function StudentDetailClient({ student }: Props) {
                           {q(getQuestionnaireTypeLabelKey(questionnaire.type))}
                         </p>
                       </div>
-                      <time className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-white/40 bg-white/78 px-2.5 py-1 text-tiny font-semibold uppercase tracking-[0.16em] text-navy-700 shadow-[inset_0_1px_0_rgba(255,255,255,0.8)] dark:border-white/12 dark:bg-white/9 dark:text-navy-100 dark:shadow-none">
+                      <time className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-white/40 bg-white/78 px-2.5 py-1 label-micro text-navy-700 shadow-[inset_0_1px_0_rgba(255,255,255,0.8)] dark:border-white/12 dark:bg-white/9 dark:text-navy-100 dark:shadow-none">
                         <CalendarDays className="size-3.5" />
                         {formatDate(questionnaire.submittedAt)}
                       </time>
@@ -945,7 +945,7 @@ function StatTile({
             {icon}
           </span>
         ) : null}
-        <span className="text-tiny font-semibold uppercase tracking-[0.2em] text-muted-foreground">
+        <span className="label-micro text-muted-foreground">
           {label}
         </span>
       </div>

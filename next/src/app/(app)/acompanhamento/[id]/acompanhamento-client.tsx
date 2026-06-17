@@ -287,7 +287,7 @@ export function AcompanhamentoClient({
         >
           <div className="grid gap-3 sm:grid-cols-2">
             <div className="rounded-[12px] border border-border bg-surface-utility p-4">
-              <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
+              <p className="label-micro text-muted-foreground">
                 {t("studentLabel")}
               </p>
               <div className="mt-3 flex items-center gap-3">
@@ -308,12 +308,12 @@ export function AcompanhamentoClient({
             </div>
 
             <div className="rounded-[12px] border border-border bg-surface-utility p-4">
-              <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
+              <p className="label-micro text-muted-foreground">
                 {t("contextSummary")}
               </p>
               <div className="mt-3 grid gap-3 sm:grid-cols-2">
                 <div>
-                  <p className="text-tiny uppercase tracking-[0.18em] text-muted-foreground">
+                  <p className="label-micro text-muted-foreground">
                     {t("ageLabel")}
                   </p>
                   <p className="mt-1 text-sm font-semibold text-foreground">
@@ -321,7 +321,7 @@ export function AcompanhamentoClient({
                   </p>
                 </div>
                 <div>
-                  <p className="text-tiny uppercase tracking-[0.18em] text-muted-foreground">
+                  <p className="label-micro text-muted-foreground">
                     {t("lastQuestionnaire")}
                   </p>
                   <p className="mt-1 text-sm font-semibold text-foreground">
@@ -341,7 +341,7 @@ export function AcompanhamentoClient({
         >
           <div className="grid gap-3 sm:grid-cols-2">
             <div className="rounded-[12px] border border-danger-300/50 bg-danger-50/50 p-4 dark:border-danger-900/30 dark:bg-danger-950/20">
-              <p className="text-xs uppercase tracking-[0.18em] text-danger-700 dark:text-danger-300">
+              <p className="label-micro text-danger-700 dark:text-danger-300">
                 {t("pendingSos")}
               </p>
               <p className="mt-2 text-3xl font-extrabold tracking-tight text-danger-700 dark:text-danger-300">
@@ -352,7 +352,7 @@ export function AcompanhamentoClient({
               </p>
             </div>
             <div className="rounded-[12px] border border-gold-300/50 bg-gold-50/50 p-4 dark:border-gold-900/30 dark:bg-gold-950/20">
-              <p className="text-xs uppercase tracking-[0.18em] text-gold-700 dark:text-gold-300">
+              <p className="label-micro text-gold-700 dark:text-gold-300">
                 {t("questionnairesAvailable")}
               </p>
               <p className="mt-2 text-3xl font-extrabold tracking-tight text-gold-700 dark:text-gold-300">
@@ -439,7 +439,7 @@ export function AcompanhamentoClient({
 
                   <div className="mt-4 grid gap-3 sm:grid-cols-2">
                     <div className="rounded-[8px] border border-border bg-surface-utility p-3">
-                      <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
+                      <p className="label-micro text-muted-foreground">
                         {t("psychLabel")}
                       </p>
                       <p className="mt-1 font-medium text-foreground">
@@ -450,7 +450,7 @@ export function AcompanhamentoClient({
                       </p>
                     </div>
                     <div className="rounded-[8px] border border-border bg-surface-utility p-3">
-                      <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
+                      <p className="label-micro text-muted-foreground">
                         {t("teacherLabel")}
                       </p>
                       <p className="mt-1 font-medium text-foreground">
@@ -547,7 +547,7 @@ export function AcompanhamentoClient({
                             key={item.key}
                             className="rounded-[8px] border border-border bg-surface-utility p-3"
                           >
-                            <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
+                            <p className="label-micro text-muted-foreground">
                               {item.label}
                             </p>
                             <p className="mt-1 text-sm font-medium text-foreground">

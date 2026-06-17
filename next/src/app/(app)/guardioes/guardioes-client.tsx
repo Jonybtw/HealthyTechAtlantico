@@ -289,7 +289,7 @@ export default function GuardioesPage() {
         {/* Left: student picker + guardians list */}
         <div className="grid gap-5">
           <BioPanel index={3} reducedEffects={reducedEffects} className="p-5">
-            <p className="text-tiny font-semibold uppercase tracking-[0.16em] text-muted-foreground">{t("selectStudent")}</p>
+            <p className="label-micro text-muted-foreground">{t("selectStudent")}</p>
             <div className="mt-2">
               <StudentPicker students={students} value={selectedStudentId} onChange={setSelectedStudentId} placeholder={t("selectStudent")} loading={loadingStudents} />
             </div>
@@ -298,7 +298,7 @@ export default function GuardioesPage() {
           <BioPanel index={4} reducedEffects={reducedEffects} className="p-5">
             <div className="flex items-center justify-between gap-3">
               <div>
-                <p className="text-tiny font-semibold uppercase tracking-[0.18em] text-muted-foreground">{t("registosTitle")}</p>
+                 <p className="label-micro text-muted-foreground">{t("registosTitle")}</p>
                 <h3 className="mt-0.5 text-lg font-bold tracking-tight text-foreground">{t("listTitle")}</h3>
               </div>
               {selectedStudentId && (
@@ -359,7 +359,7 @@ export default function GuardioesPage() {
         <aside className="xl:sticky xl:top-24">
           {showAddForm && selectedStudentId ? (
             <BioPanel index={5} reducedEffects={reducedEffects} className="p-5">
-              <p className="text-tiny font-semibold uppercase tracking-[0.18em] text-muted-foreground">{t("addBtn")}</p>
+              <p className="label-micro text-muted-foreground">{t("addBtn")}</p>
               <h3 className="mt-0.5 text-lg font-bold tracking-tight text-foreground">{t("addTitle")}</h3>
               <form onSubmit={handleAdd} className="mt-4 grid gap-4">
                 <Input label={t("emailLabel")} type="email" value={guardianEmail} onChange={(e) => setGuardianEmail(e.target.value)} placeholder="encarregado@exemplo.pt" required />

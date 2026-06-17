@@ -6,7 +6,7 @@ export default async function AppNotFound() {
   const t = await getTranslations("notFound");
   return (
     <div className="flex min-h-[60vh] flex-col items-center justify-center gap-4 px-6 text-center">
-      <p className="text-tiny font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+      <p className="label-micro text-muted-foreground">
         {t("eyebrow")}
       </p>
       <h1 className="font-display text-3xl font-bold tracking-tight text-navy-950 dark:text-white">

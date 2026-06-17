@@ -375,7 +375,7 @@ function PendingTasksPanel({
             {t("studentPendingTasks")}
           </h3>
           {pending.length > 0 && (
-            <span className="rounded-full bg-danger-500/10 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-danger-700 dark:text-danger-300">
+            <span className="rounded-full bg-danger-500/10 px-2.5 py-1 text-[10px] font-semibold text-danger-700 dark:text-danger-300">
               {pending.length} {t("studentPending")}
             </span>
           )}

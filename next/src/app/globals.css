@@ -206,7 +206,8 @@ body {
 
 input:focus-visible,
 textarea:focus-visible {
-  outline: none;
+  outline: 3px solid rgba(232, 199, 102, 0.9);
+  outline-offset: 2px;
 }
 
 html.font-size-small {
@@ -454,15 +455,29 @@ html[data-theme="dark"] .surface-utility {
 }
 
 .section-kicker {
-  @apply text-[10px] font-semibold uppercase tracking-[0.2em] text-muted-foreground;
+  @apply inline-flex items-center gap-2 text-[11px] font-semibold leading-tight tracking-[-0.005em] text-muted-foreground;
+}
+
+.section-kicker::before {
+  content: "";
+  display: inline-block;
+  width: 12px;
+  height: 1px;
+  background: rgb(184 140 25 / 0.7);
+}
+
+/* Replaces the `text-tiny uppercase tracking-[0.18em]` pattern used across all pages.
+   Sentence-case at 11px — readable without screaming. */
+.label-micro {
+  @apply text-[11px] font-semibold text-muted-foreground;
 }
 
 .section-title {
-  @apply font-display text-[13px] font-semibold tracking-[-0.03em] text-foreground sm:text-sm;
+  @apply font-display text-lg font-semibold tracking-[-0.022em] text-foreground sm:text-xl;
 }
 
 .section-copy {
-  @apply text-[12px] leading-relaxed text-muted-foreground sm:text-[13px];
+  @apply text-sm leading-relaxed text-muted-foreground;
 }
 
 .text-gradient {

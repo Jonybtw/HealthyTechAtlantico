@@ -674,7 +674,7 @@ export default function AnaliseClient() {
             <div className="space-y-4">
               <div className="grid gap-4 lg:grid-cols-[220px_minmax(0,360px)] lg:items-end">
                 <div className="space-y-2">
-                  <p className="text-tiny font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+                  <p className="label-micro text-muted-foreground">
                     {t("readingMode")}
                   </p>
                   <AnalysisControlGroup
@@ -685,7 +685,7 @@ export default function AnaliseClient() {
                 </div>
 
                 <div className="space-y-2">
-                  <p className="text-tiny font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+                  <p className="label-micro text-muted-foreground">
                     {isClassMode
                       ? t("classSelectionLabel")
                       : t("studentSelectionLabel")}
@@ -742,7 +742,7 @@ export default function AnaliseClient() {
           <BioPanel index={1} reducedEffects={reducedEffects} className="overflow-hidden p-5">
             <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
               <div>
-                <p className="text-tiny font-semibold uppercase tracking-[0.18em] text-muted-foreground">{isClassMode ? t("classSnapshotTitle") : t("studentSnapshotTitle")}</p>
+                <p className="label-micro text-muted-foreground">{isClassMode ? t("classSnapshotTitle") : t("studentSnapshotTitle")}</p>
                 <h3 className="mt-0.5 text-lg font-bold tracking-tight text-foreground">{isClassMode ? (currentClass?.name ?? t("distributionCurrent")) : lens === "tests" ? t("chartTests") : (activeBioSeries?.title ?? t("chartBmi"))}</h3>
               </div>
               {!isClassMode && <AnalysisControlGroup options={lensOptions} value={lens} onChange={setLens} align="end" />}
@@ -1091,7 +1091,7 @@ function AnalysisSummaryTile({
 }) {
   return (
     <div className="rounded-[12px] border border-border/70 bg-background/70 p-4">
-      <p className="text-tiny font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+      <p className="label-micro text-muted-foreground">
         {label}
       </p>
       <p className="mt-2 text-xl font-semibold tracking-[-0.03em] text-foreground">
@@ -1126,7 +1126,7 @@ function AnalysisMetricTile({
     <div className="rounded-[12px] border border-border/70 bg-background/72 p-4">
       <div className="flex items-center gap-2">
         <span className={`size-2.5 rounded-full ${dotClassName}`} />
-        <p className="text-tiny font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+        <p className="label-micro text-muted-foreground">
           {label}
         </p>
       </div>
@@ -1166,7 +1166,7 @@ function ClassDistributionCard({
     <div className="rounded-[12px] border border-border/70 bg-background/72 p-5">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <p className="text-tiny font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+          <p className="label-micro text-muted-foreground">
             {title}
           </p>
           <h3 className="mt-1 text-lg font-semibold tracking-[-0.03em] text-foreground">

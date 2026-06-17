@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { JetBrains_Mono, Plus_Jakarta_Sans } from "next/font/google";
+import { JetBrains_Mono, Manrope, Plus_Jakarta_Sans } from "next/font/google";
 import { NextIntlClientProvider } from "next-intl";
 import { getLocale, getMessages } from "next-intl/server";
 import { cookies } from "next/headers";
@@ -14,9 +14,10 @@ const sans = Plus_Jakarta_Sans({
   display: "swap",
 });
 
-const display = Plus_Jakarta_Sans({
+const displayFont = Manrope({
   subsets: ["latin"],
   variable: "--font-display",
+  weight: ["400", "500", "600", "700", "800"],
   display: "swap",
 });
 
@@ -71,7 +72,7 @@ export default async function RootLayout({
       className="scroll-smooth"
     >
       <body
-        className={`${sans.variable} ${display.variable} ${mono.variable} bg-background text-foreground antialiased`}
+        className={`${sans.variable} ${displayFont.variable} ${mono.variable} bg-background text-foreground antialiased`}
       >
         <NextIntlClientProvider messages={messages}>
           <QueryProvider>{children}</QueryProvider>
