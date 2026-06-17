@@ -68,7 +68,7 @@ describe("sendReportMail365", () => {
     process.env.M365_TENANT_ID = "tenant-1";
     process.env.M365_CLIENT_ID = "client-1";
     process.env.M365_CLIENT_SECRET = "secret-1";
-    process.env.M365_SHARED_MAILBOX = "Healthytec@colegioatlantico.pt";
+    process.env.M365_SHARED_MAILBOX = "HealthyTech@colegioatlantico.pt";
 
     const fetchMock = vi.mocked(fetch);
     fetchMock
@@ -90,7 +90,7 @@ describe("sendReportMail365", () => {
 
     expect(fetchMock).toHaveBeenNthCalledWith(
       2,
-      "https://graph.microsoft.com/v1.0/users/Healthytec%40colegioatlantico.pt/sendMail",
+      "https://graph.microsoft.com/v1.0/users/HealthyTech%40colegioatlantico.pt/sendMail",
       expect.objectContaining({
         method: "POST",
         headers: {

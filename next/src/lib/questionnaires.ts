@@ -5,6 +5,10 @@ export const QUESTIONNAIRE_TYPES = [
   "KIDMED",
 ] as const;
 
+// Este ficheiro descreve os instrumentos de questionário suportados.
+// A UI, as validações e as APIs usam estas definições para manter perguntas,
+// versões, consentimentos e pré-visualizações alinhados.
+
 export type QuestionnaireTypeValue = (typeof QUESTIONNAIRE_TYPES)[number];
 
 export const KIDMED_INSTRUMENT_VERSION = "KIDMED_2019" as const;
@@ -389,6 +393,8 @@ export const QUESTIONNAIRE_INSTRUMENTS: Record<
   },
 };
 
+// Metadados usados para apresentar respostas guardadas sem duplicar labels,
+// unidades ou limites visuais em vários componentes.
 export const QUESTIONNAIRE_FIELD_META: Record<
   string,
   { labelKey: string; unitKey?: string; scaleMax?: number }
@@ -604,6 +610,8 @@ export function classifyKidmedScore(score: number): KidmedClassification {
   return "VERY_LOW";
 }
 
+// O KIDMED atribui pontos positivos ou negativos consoante a pergunta.
+// O resultado final nunca fica abaixo de zero.
 export function computeKidmedScore(answers: KidmedAnswers) {
   const score = KIDMED_QUESTIONS.reduce((total, question) => {
     if (!answers[question.key]) {

@@ -8,6 +8,10 @@ import { AUDIT_ACTIONS } from "@/lib/audit-actions";
 import { prisma } from "@/lib/prisma";
 import { getRolePermissions, type Permission } from "@/lib/rbac";
 
+// Este ficheiro concentra a configuração do NextAuth.
+// Aqui são definidos o login por credenciais, os dados guardados no JWT e a
+// forma como a sessão chega ao frontend.
+
 class InvalidCredentialsError extends CredentialsSignin {
   code = "invalid_credentials";
 }
@@ -86,6 +90,8 @@ type SessionToken = JWT & {
   permissions?: Permission[];
 };
 
+// O NextAuth envia mensagens com formatos ligeiramente diferentes nos eventos.
+// Esta função tenta descobrir o utilizador responsável para registar auditoria.
 function getAuditActorId(message: unknown): string | null {
   if (
     typeof message === "object" &&
@@ -135,6 +141,8 @@ function getAuditActorId(message: unknown): string | null {
   return null;
 }
 
+// Erros de ligação à base de dados devem originar uma mensagem diferente de
+// "credenciais inválidas", para facilitar suporte técnico.
 function isDatabaseUnavailableError(error: unknown): boolean {
   if (typeof error !== "object" || error === null) {
     return false;
@@ -151,6 +159,8 @@ function isDatabaseUnavailableError(error: unknown): boolean {
   );
 }
 
+// Guarda no token os dados mínimos necessários para identificar o utilizador e
+// calcular permissões sem consultar a base de dados em cada pedido.
 export function applyUserToToken(
   token: SessionToken,
   user: Pick<AuthUser, "id" | "name" | "role" | "consentRgpd" | "consentShare">,
@@ -166,6 +176,7 @@ export function applyUserToToken(
   };
 }
 
+// Permite atualizar dados simples da sessão depois de alterações no perfil.
 function applySessionUpdateToToken(
   token: SessionToken,
   session: SessionUpdate,

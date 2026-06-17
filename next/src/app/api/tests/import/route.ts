@@ -151,7 +151,7 @@ export async function POST(req: Request) {
         studentByNameCache,
       });
       if (!student) {
-        issues.push({ line, message: "Aluno nao encontrado" });
+        issues.push({ line, message: "Aluno não encontrado" });
         continue;
       }
       if (student === "AMBIGUOUS") {

@@ -2,7 +2,7 @@ import { sendMail } from "@/lib/mailer";
 
 const MICROSOFT_TOKEN_URL_BASE = "https://login.microsoftonline.com";
 const MICROSOFT_GRAPH_URL_BASE = "https://graph.microsoft.com/v1.0";
-const DEFAULT_REPORT_FROM = "Healthytec@colegioatlantico.pt";
+const DEFAULT_REPORT_FROM = "HealthyTech@colegioatlantico.pt";
 
 type GraphEmailAddress = {
   address: string;
@@ -19,7 +19,7 @@ function getRequiredEnv(name: string) {
   const value = process.env[name]?.trim();
 
   if (!value) {
-    throw new Error(`${name} nao configurado`);
+    throw new Error(`${name} não configurado`);
   }
 
   return value;
@@ -76,7 +76,7 @@ async function getMicrosoftGraphAccessToken() {
   const payload = (await response.json()) as { access_token?: string };
 
   if (!payload.access_token) {
-    throw new Error("A app Microsoft 365 nao devolveu access_token");
+    throw new Error("A app Microsoft 365 não devolveu access_token");
   }
 
   return payload.access_token;
@@ -93,7 +93,7 @@ export async function sendReportMail365(opts: {
   if (!hasMicrosoftGraphConfig()) {
     if (!allowsSmtpFallback()) {
       throw new Error(
-        "Microsoft Graph nao configurado para a caixa partilhada Healthytec@colegioatlantico.pt",
+        "Microsoft Graph não configurado para a caixa partilhada HealthyTech@colegioatlantico.pt",
       );
     }
 

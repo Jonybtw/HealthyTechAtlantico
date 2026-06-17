@@ -1,5 +1,8 @@
 "use client";
 
+// Componente cliente de /sos: permite criar alertas, consultar listas e marcar
+// pedidos como resolvidos conforme o perfil autenticado.
+
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import Link from "next/link";
@@ -255,7 +258,7 @@ export default function SosClient() {
                 <Send className="size-4" />
               </span>
               <div className="min-w-0">
-                <p className="text-tiny font-semibold uppercase tracking-[0.18em] text-muted-foreground">Pedido de apoio</p>
+                <p className="text-tiny font-semibold uppercase tracking-[0.18em] text-muted-foreground">{t("supportRequestEyebrow")}</p>
                 <p className="text-sm font-semibold leading-snug text-foreground">{t("contactTitle")}</p>
               </div>
             </div>
@@ -433,7 +436,7 @@ export default function SosClient() {
                 </div>
               </div>
               <p className="mt-2 flex min-w-0 items-center gap-1.5 text-xs leading-snug text-danger-700/80 dark:text-danger-300/80">
-                <Clock3 className="size-3.5" />Alerta aberto em {formatDate(oldestPending.createdAt)}
+                <Clock3 className="size-3.5" />{t("alertOpenedAt", { time: formatDate(oldestPending.createdAt) })}
               </p>
             </div>
             <div className="grid min-w-0 gap-2 sm:grid-cols-2">

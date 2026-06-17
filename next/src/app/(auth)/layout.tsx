@@ -93,6 +93,8 @@ export default function AuthLayout({
 }: {
   children: React.ReactNode;
 }) {
+  // Layout partilhado pelas páginas públicas de autenticação.
+  // Mantém a experiência visual comum a login, registos e troca de palavra-passe.
   const t = useTranslations("authLayout");
   const { theme, locale, toggleTheme, toggleLocale } = usePreferences();
   const reducedEffects = useReducedEffects();

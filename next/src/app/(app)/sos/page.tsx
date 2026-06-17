@@ -11,6 +11,12 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
+/**
+ * Rota: /sos
+ *
+ * Página de alertas SOS. Alunos podem criar pedidos de acompanhamento; staff
+ * autorizado pode consultar e resolver alertas conforme permissões.
+ */
 export default async function SosPage() {
   await requireAnyRole(["ADMIN", "PROFESSOR", "ALUNO", "PSICOLOGO"]);
   return <SosClient />;

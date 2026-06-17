@@ -1,5 +1,8 @@
 "use client";
 
+// Componente cliente de /register/student: recolhe dados do aluno, número de
+// processo, consentimento RGPD e submete o pedido de criação de conta.
+
 import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";

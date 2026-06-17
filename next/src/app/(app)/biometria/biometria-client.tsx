@@ -1,5 +1,8 @@
 "use client";
 
+// Componente cliente de /biometria: seleciona aluno, calcula campos derivados
+// e grava medições biométricas através da API do aluno.
+
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { toast } from "sonner";

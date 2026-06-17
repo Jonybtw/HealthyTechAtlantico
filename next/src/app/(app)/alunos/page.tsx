@@ -17,10 +17,17 @@ interface Props {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }
 
+/**
+ * Rota: /alunos
+ *
+ * Lista e gestão de alunos. Esta página valida se o utilizador pode listar
+ * alunos, lê filtros da query string e passa o estado inicial para o componente
+ * cliente, onde ficam pesquisa, paginação, criação e importação CSV.
+ */
 export default async function AlunosPage({ searchParams }: Props) {
   const user = await requireAuth();
 
-  // Allow either staff roles or any role (e.g. Psicologo) that has explicit permission
+  // Permite staff ou qualquer perfil que tenha permissão explícita para listar.
   if (!isStaffRole(user.role) && !canRole(user.role, PERMISSIONS.LIST_STUDENTS)) {
     redirect("/dashboard");
   }

@@ -111,18 +111,18 @@ export async function POST(req: Request) {
         "createdat",
       ]);
 
-      const displayStudent = studentName || studentId || "Missing";
+      const displayStudent = studentName || studentId || "Em falta";
       const displayDate = recordedAtRaw || "-";
 
       if (!studentId && !studentName) {
         previewRows.push({
           row: rowNum,
-          student: "Missing",
+          student: "Em falta",
           testId: testIdRaw || "-",
           value: valueText || "-",
           date: displayDate,
           status: "error",
-          errorMessage: "Indique studentId ou studentName",
+          errorMessage: "Indique o ID ou o nome do aluno",
         });
         continue;
       }
@@ -132,7 +132,7 @@ export async function POST(req: Request) {
         previewRows.push({
           row: rowNum,
           student: displayStudent,
-          testId: testIdRaw || "Missing",
+          testId: testIdRaw || "Em falta",
           value: valueText || "-",
           date: displayDate,
           status: "error",
@@ -146,7 +146,7 @@ export async function POST(req: Request) {
           row: rowNum,
           student: displayStudent,
           testId: testMeta.label,
-          value: "Missing",
+          value: "Em falta",
           date: displayDate,
           status: "error",
           errorMessage: "Valor do teste em falta",

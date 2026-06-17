@@ -68,7 +68,7 @@ export async function POST(req: NextRequest) {
       });
 
       if (existingLinkedStudent && existingLinkedStudent.id !== student.id) {
-        return conflict("Esta conta ja esta associada a outro aluno.");
+        return conflict("Esta conta já está associada a outro aluno.");
       }
     }
 

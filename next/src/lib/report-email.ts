@@ -29,7 +29,7 @@ export function buildReportHtml(params: {
       <p><strong>Peso:</strong> ${params.latestBiometric.weightKg} kg</p>
       <p><strong>IMC:</strong> ${params.latestBiometric.imc} (${escapeHtml(params.latestBiometric.imcZone)})</p>
     `
-    : "<p>Sem dados biometricos recentes.</p>";
+    : "<p>Sem dados biométricos recentes.</p>";
 
   const testsBlock = params.latestTests.length
     ? `<ul>${params.latestTests
@@ -38,17 +38,17 @@ export function buildReportHtml(params: {
             `<li><strong>${escapeHtml(test.testId)}</strong>: ${escapeHtml(test.valueText)} ${escapeHtml(test.unit)} (${escapeHtml(test.zone)})</li>`,
         )
         .join("")}</ul>`
-    : "<p>Sem testes fisicos recentes.</p>";
+    : "<p>Sem testes físicos recentes.</p>";
 
   return `
     <div style="font-family: Arial, sans-serif; color: #14304c; line-height: 1.5;">
       <h2>${escapeHtml(params.title)}</h2>
-      <p>Ola${params.guardianName ? ` ${escapeHtml(params.guardianName)}` : ""},</p>
+      <p>Olá${params.guardianName ? ` ${escapeHtml(params.guardianName)}` : ""},</p>
       <p>Segue o resumo mais recente do aluno <strong>${escapeHtml(params.studentName)}</strong>.</p>
       <p><strong>Turma:</strong> ${escapeHtml(params.className ?? "Sem turma")}<br /><strong>Ano letivo:</strong> ${escapeHtml(params.schoolYear ?? "N/D")}</p>
       <h3>Biometria</h3>
       ${biometricBlock}
-      <h3>Testes fisicos</h3>
+      <h3>Testes físicos</h3>
       ${testsBlock}
     </div>
   `;

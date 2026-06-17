@@ -11,6 +11,13 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
+/**
+ * Rota: /perfil
+ *
+ * Página de conta do utilizador autenticado. O componente cliente trata a
+ * atualização de consentimentos e a alteração de palavra-passe através das
+ * APIs do utilizador atual.
+ */
 export default async function PerfilPage() {
   await requireAuth();
   return <PerfilClient />;

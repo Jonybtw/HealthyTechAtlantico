@@ -33,6 +33,7 @@ interface BulkImportModalProps {
 
 const TEMPLATE_HEADERS = ["name", "sex", "birthDate", "className", "schoolYear", "processNumber"];
 const TEMPLATE_EXAMPLE = ["Ana Costa", "F", "2010-05-14", "8A", "2025/2026", "123456"];
+const REQUIRED_COLUMNS = ["Nome", "Data nasc.", "Género", "Turma", "Ano letivo"];
 
 function downloadTemplate() {
   const csv = [TEMPLATE_HEADERS.join(","), TEMPLATE_EXAMPLE.join(",")].join("\n");
@@ -329,7 +330,7 @@ function UploadStep({
       </label>
 
       <div className="flex flex-wrap gap-2">
-        {["Name", "DOB", "Gender", "Class", "School Year"].map((col) => (
+        {REQUIRED_COLUMNS.map((col) => (
           <span
             key={col}
             className="rounded-full border border-border/70 bg-surface-secondary px-3 py-1 text-xs font-semibold text-muted-foreground"
@@ -454,8 +455,8 @@ function PreviewStep({
 }
 
 function CellValue({ value, error }: { value: string; error?: boolean }) {
-  if (!value || value === "-" || value === "Missing") {
-    return <span className="italic text-danger-500 dark:text-danger-400">Missing</span>;
+  if (!value || value === "-" || value === "Missing" || value === "Em falta") {
+    return <span className="italic text-danger-500 dark:text-danger-400">Em falta</span>;
   }
   if (error) {
     return <span className="italic text-danger-500 dark:text-danger-400">{value}</span>;

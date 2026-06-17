@@ -5,6 +5,13 @@ import { canRole, PERMISSIONS } from "@/lib/rbac";
 import { getClassOptions, getClassReport } from "@/lib/class-report";
 import TurmaClient from "./turma-client";
 
+/**
+ * Rota: /turma
+ *
+ * Página de gestão e consulta de turmas. Suporta importação de turmas, criação
+ * de alunos em contexto de turma e exportação de relatórios por classe.
+ */
+
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("turma");
 

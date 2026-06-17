@@ -50,6 +50,12 @@ export const viewport: Viewport = {
   initialScale: 1,
 };
 
+/**
+ * Layout raiz da aplicação.
+ *
+ * Define fontes, idioma, tema inicial por cookie, provider de traduções,
+ * provider de queries e sistema global de notificações.
+ */
 export default async function RootLayout({
   children,
 }: Readonly<{

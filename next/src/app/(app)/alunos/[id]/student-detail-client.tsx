@@ -1,5 +1,8 @@
 "use client";
 
+// Componente cliente de /alunos/[id]: apresenta e edita dados do aluno,
+// histórico recente, encarregados e dispensas recebidos do servidor.
+
 import { useState, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations, useLocale } from "next-intl";

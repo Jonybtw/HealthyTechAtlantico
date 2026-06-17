@@ -48,7 +48,7 @@ export async function POST(req: NextRequest) {
       include: { academicYear: { select: { label: true } } },
     });
     if (!schoolClass) {
-      return notFound("Turma nao encontrada");
+      return notFound("Turma não encontrada");
     }
 
     const students = await prisma.student.findMany({
@@ -77,7 +77,7 @@ export async function POST(req: NextRequest) {
     });
 
     if (students.length === 0) {
-      return badRequest("A turma selecionada nao tem alunos.");
+      return badRequest("A turma selecionada não tem alunos.");
     }
 
     let sent = 0;

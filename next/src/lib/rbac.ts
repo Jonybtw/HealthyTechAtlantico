@@ -1,6 +1,8 @@
 import type { Role } from "@prisma/client";
 
-// ── Permission Keys ──────────────────────────────────────────────────────────
+// Lista única de permissões usadas pela aplicação.
+// As páginas e APIs devem validar ações através destas permissões, em vez de
+// comparar perfis manualmente em vários sítios.
 
 export const PERMISSIONS = {
   CREATE_STUDENT: "create_student",
@@ -27,7 +29,9 @@ export const PERMISSIONS = {
 
 export type Permission = (typeof PERMISSIONS)[keyof typeof PERMISSIONS];
 
-// ── Role → Permission Map ────────────────────────────────────────────────────
+// Mapa central de permissões por perfil.
+// Quando for necessário abrir ou fechar acesso a uma funcionalidade, este deve
+// ser o primeiro ficheiro a consultar.
 
 const ALL_PERMISSIONS = new Set<Permission>(
   Object.values(PERMISSIONS) as Permission[],
@@ -80,7 +84,7 @@ const ROLE_PERMISSIONS: Record<Role, Set<Permission>> = {
   ]),
 };
 
-// ── Public API ───────────────────────────────────────────────────────────────
+// Funções públicas usadas por páginas, APIs e testes.
 
 export function canRole(role: Role, permission: Permission): boolean {
   return ROLE_PERMISSIONS[role]?.has(permission) ?? false;

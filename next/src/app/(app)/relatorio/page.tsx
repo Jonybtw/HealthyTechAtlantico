@@ -11,6 +11,12 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
+/**
+ * Rota: /relatorio
+ *
+ * Página de relatórios individuais. Reúne dados de aluno, biometria e testes
+ * para gerar PDF e, quando o perfil permite, enviar por email institucional.
+ */
 export default async function RelatorioPage() {
   await requireAnyRole(["ADMIN", "PROFESSOR", "ALUNO", "PAIS"]);
   return <RelatorioClient />;

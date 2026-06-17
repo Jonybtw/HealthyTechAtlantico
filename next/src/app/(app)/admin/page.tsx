@@ -11,6 +11,12 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
+/**
+ * Rota: /admin
+ *
+ * Administração de contas internas. Permite gerir professores, psicólogos e
+ * operações de segurança, como forçar redefinição de palavra-passe.
+ */
 export default async function AdminPage() {
   await requireAnyRole(["ADMIN"]);
   return <AdminClient />;

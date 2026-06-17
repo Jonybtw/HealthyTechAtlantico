@@ -1,5 +1,8 @@
 "use client";
 
+// Componente cliente de /dispensas: gere o formulário e a lista de dispensas
+// médicas ou limitações temporárias de cada aluno.
+
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { toast } from "sonner";

@@ -1,5 +1,8 @@
 "use client";
 
+// Componente cliente de /turma: gere seleção de turma, importação de classes,
+// criação rápida de alunos e exportação de relatório CSV.
+
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
@@ -671,7 +674,7 @@ export default function TurmaPage(props: {
                 </h3>
               </div>
 
-              <div className="grid min-w-0 gap-3 sm:grid-cols-2 lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1.35fr)_minmax(0,1fr)] xl:grid-cols-[minmax(0,0.75fr)_minmax(0,1.45fr)_minmax(0,0.95fr)_minmax(0,0.95fr)_minmax(0,0.8fr)] xl:items-end">
+              <div className="grid min-w-0 gap-3 sm:grid-cols-2 lg:grid-cols-[minmax(130px,0.85fr)_minmax(220px,1.35fr)_minmax(240px,1.2fr)] 2xl:grid-cols-[minmax(140px,0.75fr)_minmax(220px,1.45fr)_minmax(250px,1.25fr)_minmax(170px,0.95fr)_minmax(140px,0.8fr)] lg:items-end">
                 <Input
                   label={t("colProcessNumber")}
                   value={quickStudentForm.processNumber}

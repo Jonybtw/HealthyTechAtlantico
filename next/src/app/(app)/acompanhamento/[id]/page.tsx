@@ -17,6 +17,12 @@ interface Props {
   params: Promise<{ id: string }>;
 }
 
+/**
+ * Rota: /acompanhamento/[id]
+ *
+ * Acompanhamento individual sensível. Reservado a administração e psicologia,
+ * porque junta sinais de bem-estar, questionários e alertas SOS de um aluno.
+ */
 export default async function AcompanhamentoPage({ params }: Props) {
   await requireAnyRole(["ADMIN", "PSICOLOGO"]);
 

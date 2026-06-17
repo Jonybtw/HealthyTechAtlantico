@@ -11,6 +11,12 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
+/**
+ * Rota: /dispensas
+ *
+ * Página de dispensas médicas ou limitações temporárias. Está limitada a admin
+ * e professor por poder conter informação clínica ou sensível.
+ */
 export default async function DispensasPage() {
   await requireAnyRole(["ADMIN", "PROFESSOR"]);
   return <DispensasClient />;

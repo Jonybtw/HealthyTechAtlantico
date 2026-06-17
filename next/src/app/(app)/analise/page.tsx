@@ -11,6 +11,12 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
+/**
+ * Rota: /analise
+ *
+ * Área de análise para admin e professor. Cruza alunos, biometria, testes e
+ * relatórios por turma para apoiar leitura agregada dos indicadores.
+ */
 export default async function AnalisePage() {
   await requireAnyRole(["ADMIN", "PROFESSOR"]);
   return <AnaliseClient />;

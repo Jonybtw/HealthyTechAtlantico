@@ -39,7 +39,7 @@ const TEST_ICONS: Record<string, LucideIcon> = {
   testSentaAlcanca: Ruler,
 };
 
-// Category grouping for test cards
+// Agrupa os cartões de testes por tipo de aptidão física.
 const TEST_CATEGORIES: Record<
   string,
   {
@@ -145,6 +145,12 @@ const ICON_BG_CLASSES: Record<string, string> = {
     "from-violet-100 to-violet-50 text-violet-600 group-hover:from-violet-200 group-hover:to-violet-100 dark:from-violet-900/40 dark:to-violet-900/20 dark:text-violet-300",
 };
 
+/**
+ * Rota: /protocolos
+ *
+ * Página informativa com protocolos e tabelas de referência. Não grava dados;
+ * organiza conteúdo de src/lib/protocols.ts para alunos, encarregados e staff.
+ */
 export default async function ProtocolosPage() {
   await requireAnyRole(["ADMIN", "PROFESSOR", "ALUNO", "PAIS"]);
   const t = await getTranslations("protocolos");

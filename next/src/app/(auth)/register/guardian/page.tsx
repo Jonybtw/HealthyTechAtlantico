@@ -11,6 +11,13 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
+/**
+ * Rota: /register/guardian
+ *
+ * Registo público de encarregado de educação. A associação ao aluno é feita a
+ * partir do número de processo, por isso este fluxo deve continuar separado do
+ * registo de aluno.
+ */
 export default function GuardianRegisterPage() {
   return (
     <ClientOnly>

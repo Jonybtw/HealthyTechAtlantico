@@ -11,6 +11,12 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
+/**
+ * Rota: /login
+ *
+ * Página pública de autenticação. Renderiza o formulário cliente responsável
+ * por iniciar sessão com NextAuth e apresentar feedback de erro ao utilizador.
+ */
 export default function LoginPage() {
   return (
     <ClientOnly>

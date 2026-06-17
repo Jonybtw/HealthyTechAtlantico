@@ -89,7 +89,7 @@ export async function POST(req: Request) {
         if (!name) {
           previewRows.push({
             row: rowNum,
-            name: "Missing",
+            name: "Em falta",
             dob: displayDob,
             sex: displaySex,
             className: displayClass,
@@ -105,7 +105,7 @@ export async function POST(req: Request) {
             row: rowNum,
             name,
             dob: displayDob,
-            sex: rawSex || "Missing",
+            sex: rawSex || "Em falta",
             className: displayClass,
             status: "error",
             errorMessage: "Sexo inválido (use M/F)",

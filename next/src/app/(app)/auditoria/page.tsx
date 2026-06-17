@@ -11,6 +11,12 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
+/**
+ * Rota: /auditoria
+ *
+ * Consulta dos registos de auditoria. Apenas administradores devem aceder,
+ * porque a página revela ações realizadas por utilizadores da plataforma.
+ */
 export default async function AuditoriaPage() {
   await requireAnyRole(["ADMIN"]);
   return <AuditoriaClient />;
