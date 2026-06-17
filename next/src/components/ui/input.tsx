@@ -131,11 +131,11 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
               <button
                 type="button"
                 tabIndex={-1}
-                aria-label={
-                  visible
-                    ? (hidePasswordLabel ?? "Hide password")
-                    : (showPasswordLabel ?? "Show password")
-                }
+                  aria-label={
+                    visible
+                    ? (hidePasswordLabel ?? "Ocultar palavra-passe")
+                    : (showPasswordLabel ?? "Mostrar palavra-passe")
+                  }
                 onClick={() => setVisible((v) => !v)}
                 className="absolute inset-y-0 right-2 flex items-center px-3 text-muted-foreground transition-colors hover:text-foreground group-focus-within:text-foreground"
               >
@@ -214,11 +214,11 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
             <button
               type="button"
               tabIndex={-1}
-              aria-label={
-                visible
-                  ? (hidePasswordLabel ?? "Hide password")
-                  : (showPasswordLabel ?? "Show password")
-              }
+                aria-label={
+                  visible
+                  ? (hidePasswordLabel ?? "Ocultar palavra-passe")
+                  : (showPasswordLabel ?? "Mostrar palavra-passe")
+                }
               onClick={() => setVisible((v) => !v)}
               className="absolute inset-y-0 right-2 flex items-center px-3 text-muted-foreground transition-colors hover:text-foreground group-focus-within:text-foreground"
             >

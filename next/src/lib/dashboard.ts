@@ -271,16 +271,18 @@ async function buildAdminActivityFeed(): Promise<DashboardWorkItem[]> {
   const items: DashboardWorkItem[] = [
     ...alerts.map((a) => ({
       id: `sos-${a.id}`,
-      title: `SOS Alert raised for ${a.student.name}`,
-      meta: a.student.className ? `Unresolved \u2022 ${a.student.className}` : "Unresolved",
+      title: `Alerta SOS criado para ${a.student.name}`,
+      meta: a.student.className
+        ? `Por resolver \u2022 ${a.student.className}`
+        : "Por resolver",
       href: "/sos",
       tone: "danger" as const,
       createdAt: a.createdAt,
     })),
     ...sessions.map((s) => ({
       id: `session-${s.id}`,
-      title: `Biometrics recorded for ${s.student.name}`,
-      meta: [s.student.className, s.createdBy?.name ? `By ${s.createdBy.name}` : null]
+      title: `Biometria registada para ${s.student.name}`,
+      meta: [s.student.className, s.createdBy?.name ? `Por ${s.createdBy.name}` : null]
         .filter(Boolean)
         .join(" \u2022 "),
       href: `/alunos/${s.student.id}`,
@@ -289,7 +291,7 @@ async function buildAdminActivityFeed(): Promise<DashboardWorkItem[]> {
     })),
     ...questionnaires.map((q) => ({
       id: `q-${q.id}`,
-      title: `${q.type} questionnaire completed`,
+      title: `Questionário ${q.type} concluído`,
       meta: q.student.className
         ? `${q.student.name} \u2022 ${q.student.className}`
         : q.student.name,
@@ -299,7 +301,7 @@ async function buildAdminActivityFeed(): Promise<DashboardWorkItem[]> {
     })),
     ...reports.map((r) => ({
       id: `report-${r.id}`,
-      title: `Report generated for ${r.student.name}`,
+      title: `Relatório gerado para ${r.student.name}`,
       meta: null,
       href: "/relatorio",
       tone: "success" as const,
@@ -307,7 +309,7 @@ async function buildAdminActivityFeed(): Promise<DashboardWorkItem[]> {
     })),
     ...newStudents.map((s) => ({
       id: `student-${s.id}`,
-      title: `New student enrolled: ${s.name}`,
+      title: `Novo aluno inscrito: ${s.name}`,
       meta: s.className ?? null,
       href: `/alunos/${s.id}`,
       tone: "default" as const,
@@ -364,15 +366,17 @@ async function buildTeacherActivityFeed(
   const items: DashboardWorkItem[] = [
     ...alerts.map((a) => ({
       id: `sos-${a.id}`,
-      title: `SOS Alert raised for ${a.student.name}`,
-      meta: a.student.className ? `Unresolved \u2022 ${a.student.className}` : "Unresolved",
+      title: `Alerta SOS criado para ${a.student.name}`,
+      meta: a.student.className
+        ? `Por resolver \u2022 ${a.student.className}`
+        : "Por resolver",
       href: "/sos",
       tone: "danger" as const,
       createdAt: a.createdAt,
     })),
     ...sessions.map((s) => ({
       id: `session-${s.id}`,
-      title: `Biometrics recorded for ${s.student.name}`,
+      title: `Biometria registada para ${s.student.name}`,
       meta: s.student.className ?? null,
       href: `/alunos/${s.student.id}`,
       tone: "warning" as const,
@@ -380,7 +384,7 @@ async function buildTeacherActivityFeed(
     })),
     ...questionnaires.map((q) => ({
       id: `q-${q.id}`,
-      title: `${q.type} questionnaire completed`,
+      title: `Questionário ${q.type} concluído`,
       meta: q.student.className
         ? `${q.student.name} \u2022 ${q.student.className}`
         : q.student.name,
@@ -960,7 +964,7 @@ export async function getDashboardSummaryForUser(user: {
       quickActions: buildQuickActions(["sos", "protocols", "profile"]),
       workItems: recentAlerts.map((alert) => ({
         id: alert.id,
-        title: `SOS Alert — ${alert.student.name}`,
+        title: `Alerta SOS - ${alert.student.name}`,
         meta: alert.student.className ?? null,
         href: `/acompanhamento/${alert.student.id}`,
         tone: "danger" as const,
@@ -1190,7 +1194,7 @@ export async function getDashboardSummaryForUser(user: {
           id: "teacher-students",
           titleKey: "totalStudentsTitle",
           descriptionKey: "totalStudentsFooter",
-          footer: `${readiness.length} this year`,
+          footer: `${readiness.length} este ano`,
           value: readiness.length,
           icon: "users",
           accent: "blue",
@@ -1199,7 +1203,7 @@ export async function getDashboardSummaryForUser(user: {
           id: "teacher-sessions",
           titleKey: "biometricsLoggedTitle",
           descriptionKey: "biometricsLoggedFooter",
-          footer: "This academic year",
+          footer: "Este ano letivo",
           value: sessionsByTeacher,
           icon: "activity",
           accent: "green",
@@ -1208,7 +1212,7 @@ export async function getDashboardSummaryForUser(user: {
           id: "teacher-sos",
           titleKey: "activeAlertsTitle",
           descriptionKey: "activeAlertsFooter",
-          footer: `${openSosForTeacher} open alerts`,
+          footer: `${openSosForTeacher} alertas abertos`,
           value: openSosForTeacher,
           icon: "alert",
           accent: "gold",
@@ -1217,7 +1221,7 @@ export async function getDashboardSummaryForUser(user: {
           id: "teacher-exemptions",
           titleKey: "pendingAssessmentsTitle",
           descriptionKey: "pendingAssessmentsFooter",
-          footer: `${missingBiometrics.length} overdue`,
+          footer: `${missingBiometrics.length} em atraso`,
           value: missingBiometrics.length,
           icon: "clipboard",
           accent: "red",
@@ -1311,7 +1315,7 @@ export async function getDashboardSummaryForUser(user: {
         id: "students",
         titleKey: "totalStudentsTitle",
         descriptionKey: "totalStudentsFooter",
-        footer: `+${newStudentsThisMonth} this month`,
+        footer: `+${newStudentsThisMonth} este mês`,
         value: totalStudents,
         icon: "users",
         accent: "blue",
@@ -1320,7 +1324,7 @@ export async function getDashboardSummaryForUser(user: {
         id: "biometrics",
         titleKey: "biometricsLoggedTitle",
         descriptionKey: "biometricsLoggedFooter",
-        footer: "This academic year",
+        footer: "Este ano letivo",
         value: totalBiometrics,
         icon: "activity",
         accent: "green",
@@ -1329,7 +1333,7 @@ export async function getDashboardSummaryForUser(user: {
         id: "active-alerts",
         titleKey: "activeAlertsTitle",
         descriptionKey: "activeAlertsFooter",
-        footer: `${criticalSos} Critical priority`,
+        footer: `${criticalSos} prioridade crítica`,
         value: pendingSos,
         icon: "alert",
         accent: "gold",
@@ -1338,7 +1342,7 @@ export async function getDashboardSummaryForUser(user: {
         id: "pending-assessments",
         titleKey: "pendingAssessmentsTitle",
         descriptionKey: "pendingAssessmentsFooter",
-        footer: `${missingBiometrics.length} overdue`,
+        footer: `${missingBiometrics.length} em atraso`,
         value: missingBiometrics.length,
         icon: "clipboard",
         accent: "red",

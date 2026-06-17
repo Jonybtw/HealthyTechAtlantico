@@ -28,7 +28,7 @@ function prettifyEmailIdentity(email: string): string {
     .toLowerCase();
 
   if (normalized === "psicologo") {
-    return "Psicologo";
+    return "Psicólogo";
   }
 
   if (normalized === "professor") {

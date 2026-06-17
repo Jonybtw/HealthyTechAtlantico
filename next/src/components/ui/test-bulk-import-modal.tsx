@@ -41,6 +41,7 @@ const TEMPLATE_HEADERS = [
 ];
 const TEMPLATE_EXAMPLE = ["Ana Costa", "vai", "42", "8A", "2025/2026", "2025-05-13"];
 const VALID_TEST_IDS = "vai, cooper, milha, velocidade, agilidade, abd, bracos, senta";
+const REQUIRED_COLUMNS = ["Aluno", "ID do teste", "Valor", "Turma", "Data"];
 
 function downloadTemplate() {
   const comment = `# testId must be one of: ${VALID_TEST_IDS}`;
@@ -353,7 +354,7 @@ function UploadStep({
       </label>
 
       <div className="flex flex-wrap gap-2">
-        {["Student", "Test ID", "Value", "Class", "Date"].map((col) => (
+        {REQUIRED_COLUMNS.map((col) => (
           <span
             key={col}
             className="rounded-full border border-border/70 bg-surface-secondary px-3 py-1 text-xs font-semibold text-muted-foreground"
@@ -364,7 +365,7 @@ function UploadStep({
       </div>
 
       <p className="text-xs text-muted-foreground">
-        Test IDs: <span className="font-mono">{VALID_TEST_IDS}</span>
+        IDs dos testes: <span className="font-mono">{VALID_TEST_IDS}</span>
       </p>
     </div>
   );
@@ -500,8 +501,8 @@ function PreviewStep({
 }
 
 function CellValue({ value, error }: { value: string; error?: boolean }) {
-  if (!value || value === "-" || value === "Missing") {
-    return <span className="italic text-danger-500 dark:text-danger-400">Missing</span>;
+  if (!value || value === "-" || value === "Missing" || value === "Em falta") {
+    return <span className="italic text-danger-500 dark:text-danger-400">Em falta</span>;
   }
   if (error) {
     return <span className="italic text-danger-500 dark:text-danger-400">{value}</span>;

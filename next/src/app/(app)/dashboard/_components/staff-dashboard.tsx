@@ -192,15 +192,30 @@ function getHealthyPct(year: Pick<ZafYearStat, "withBio" | "zsaf"> | null) {
   return Math.round((year.zsaf / year.withBio) * 100);
 }
 
-function formatTimeAgo(date: Date): string {
+function formatTimeAgo(date: Date, locale: string): string {
   const seconds = Math.floor((Date.now() - date.getTime()) / 1000);
-  if (seconds < 60) return `${seconds}s ago`;
+  const isEnglish = locale.toLowerCase().startsWith("en");
+
+  if (seconds < 60) {
+    return isEnglish ? `${seconds}s ago` : `há ${seconds}s`;
+  }
+
   const minutes = Math.floor(seconds / 60);
-  if (minutes < 60) return `${minutes} min ago`;
+  if (minutes < 60) {
+    return isEnglish ? `${minutes} min ago` : `há ${minutes} min`;
+  }
+
   const hours = Math.floor(minutes / 60);
-  if (hours < 24) return `${hours} hr ago`;
+  if (hours < 24) {
+    return isEnglish ? `${hours} hr ago` : `há ${hours} h`;
+  }
+
   const days = Math.floor(hours / 24);
-  return `${days} day${days > 1 ? "s" : ""} ago`;
+  if (isEnglish) {
+    return `${days} day${days > 1 ? "s" : ""} ago`;
+  }
+
+  return `há ${days} dia${days > 1 ? "s" : ""}`;
 }
 
 function isRecent(date: Date, hours = 24): boolean {
@@ -907,9 +922,11 @@ function ZafDistributionPanel({
 }
 
 function SystemStatusPanel({
+  locale,
   reducedEffects,
   t,
 }: {
+  locale: string;
   reducedEffects: boolean;
   summary: TeacherSummary;
   t: Translate;
@@ -965,7 +982,7 @@ function SystemStatusPanel({
           <>
             <span className="text-muted-foreground/55">•</span>
             <span>
-              {t("lastSync")} {formatTimeAgo(lastSyncAt)}
+              {t("lastSync")} {formatTimeAgo(lastSyncAt, locale)}
             </span>
           </>
         )}
@@ -976,10 +993,12 @@ function SystemStatusPanel({
 
 function RecentActivityPanel({
   items,
+  locale,
   reducedEffects,
   t,
 }: {
   items: DashboardWorkItem[];
+  locale: string;
   reducedEffects: boolean;
   t: Translate;
 }) {
@@ -1038,7 +1057,7 @@ function RecentActivityPanel({
                     </span>
                     <span className="flex shrink-0 flex-col items-end gap-1">
                       <span className="whitespace-nowrap text-[10px] text-muted-foreground">
-                        {formatTimeAgo(item.createdAt)}
+                        {formatTimeAgo(item.createdAt, locale)}
                       </span>
                       {tone.dot && isRecent(item.createdAt) ? (
                         <span className={cn("size-2 rounded-full", tone.dot)} />
@@ -1173,6 +1192,7 @@ export function StaffDashboardContent({
             t={t}
           />
           <SystemStatusPanel
+            locale={locale}
             reducedEffects={reducedEffects}
             summary={summary}
             t={t}
@@ -1183,6 +1203,7 @@ export function StaffDashboardContent({
       <div className="grid min-w-0 gap-5 xl:grid-cols-[minmax(0,1.25fr)_minmax(340px,0.75fr)]">
         <RecentActivityPanel
           items={summary.workItems}
+          locale={locale}
           reducedEffects={reducedEffects}
           t={t}
         />
