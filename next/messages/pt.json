@@ -105,7 +105,8 @@
     "noPermission": "Sem permissão para aceder a esta página.",
     "connectionError": "Erro de ligação.",
     "studentListLoadError": "Erro a carregar alunos.",
-    "refresh": "Atualizar"
+    "refresh": "Atualizar",
+    "syncStatus": "Estado de sincronização"
   },
   "notFound": {
     "eyebrow": "Erro 404",
@@ -1712,6 +1713,8 @@
   },
   "authLayout": {
     "department": "Colégio Atlântico",
+    "toggleThemeLabel": "Alternar tema",
+    "toggleLanguageLabel": "Alternar idioma",
     "highlightSecurity": "Protocolos de avaliação",
     "highlightMonitoring": "Monitorização da aptidão física",
     "highlightExperience": "Relatórios pedagógicos",

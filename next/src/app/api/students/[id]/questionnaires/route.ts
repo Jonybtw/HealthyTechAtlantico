@@ -25,6 +25,10 @@ import {
   listQuestionnairesQuerySchema,
   questionnaireSchema,
 } from "@/lib/validations";
+import {
+  decryptQuestionnairePayload,
+  encryptQuestionnairePayload,
+} from "@/lib/questionnaire-payload-codec";
 
 function enrichEmotionalPayload(payload: Extract<
   z.infer<typeof questionnaireSchema>,
@@ -101,7 +105,14 @@ export async function GET(
       ...(limit ? { take: limit } : {}),
     });
 
-    return ok(questionnaires);
+    const decoded = questionnaires.map(
+      ({ payloadEncrypted, payload, ...questionnaire }) => ({
+        ...questionnaire,
+        payload: decryptQuestionnairePayload(payloadEncrypted, payload),
+      }),
+    );
+
+    return ok(decoded);
   } catch (error) {
     if (error instanceof z.ZodError) {
       return validationError(error.issues);
@@ -136,6 +147,7 @@ export async function POST(
 
     const body = await req.json();
     const data = questionnaireSchema.parse(body);
+    let payloadForClient: unknown = data.payload;
 
     const student = await prisma.student.findUnique({
       where: { id },
@@ -186,18 +198,19 @@ export async function POST(
               periodKey: period.periodKey,
               score: result.score,
               classification: result.classification,
-              payload: data.payload,
+              payloadEncrypted: encryptQuestionnairePayload(data.payload),
               deferredCount: 0,
             };
           })()
         : await (async (): Promise<Prisma.QuestionnaireUncheckedCreateInput> => {
             if (data.type === "EMOCIONAL") {
               const payload = enrichEmotionalPayload(data.payload);
+              payloadForClient = payload;
 
               return {
                 studentId: id,
                 type: data.type,
-                payload,
+                payloadEncrypted: encryptQuestionnairePayload(payload),
                 score: payload.who5Score,
                 deferredCount: data.deferredCount,
               };
@@ -206,7 +219,7 @@ export async function POST(
             return {
               studentId: id,
               type: data.type,
-              payload: data.payload,
+              payloadEncrypted: encryptQuestionnairePayload(data.payload),
               deferredCount: data.deferredCount,
             };
           })();
@@ -225,7 +238,11 @@ export async function POST(
       targetId: id,
     }).catch(console.error);
 
-    return created(questionnaire);
+    // Nunca devolvemos payload cifrado ao cliente.
+    // Mantemos o formato esperado pelo frontend (`payload` como objeto).
+    const { payloadEncrypted: _payloadEncrypted, ...safeQuestionnaire } =
+      questionnaire;
+    return created({ ...safeQuestionnaire, payload: payloadForClient });
   } catch (error: unknown) {
     if (error instanceof z.ZodError) {
       return validationError(error.issues);

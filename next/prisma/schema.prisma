@@ -184,7 +184,10 @@ model Questionnaire {
   periodKey     String?           @map("period_key")
   score         Int?
   classification QuestionnaireClassification?
-  payload       Json
+  // Legacy (pré-encriptação). Mantido para compatibilidade/migração.
+  payload       Json?
+  // Payload cifrado at-rest (AES-256-GCM) via `src/lib/encryption.ts`
+  payloadEncrypted String?        @map("payload_encrypted")
   deferredCount Int               @default(0) @map("deferred_count")
   submittedAt   DateTime          @default(now()) @map("submitted_at")
 

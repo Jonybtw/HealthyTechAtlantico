@@ -45,3 +45,8 @@ temp_restore.*
 /exemptions-*.png
 /login-*.png
 /turma-*.png
+
+# Local generated listings
+/PROJECT_TREE.txt
+/PROJECT_FILELIST.txt
+/file_tree.txt

@@ -71,3 +71,7 @@ globalThis.__eventSourceMockInstances ??= [];
 vi.stubGlobal("ResizeObserver", ResizeObserverMock);
 vi.stubGlobal("EventSource", EventSourceMock);
 vi.stubGlobal("scrollTo", vi.fn());
+
+// Test-only defaults for security-critical env vars.
+// Keep deterministic to make snapshot/unit tests stable.
+process.env.ENCRYPTION_KEY ??= "0123456789abcdef0123456789abcdef";

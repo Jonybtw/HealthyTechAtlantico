@@ -1,24 +1,30 @@
 import crypto from "crypto";
 
 const ALGORITHM = "aes-256-gcm";
-// Em produção, esta chave DEVE vir de variáveis de ambiente e ter 32 bytes.
-const RAW_SECRET_KEY = process.env.ENCRYPTION_KEY;
+let cachedKey: Buffer | null = null;
 
-if (!RAW_SECRET_KEY) {
-  // Fail-closed: nunca aceitamos uma chave por omissão em produção.
-  // Em desenvolvimento/testes, o valor é carregado por `.env` (ver `README.md`).
-  throw new Error(
-    "[Segurança] A variável de ambiente ENCRYPTION_KEY é obrigatória e deve ter exatamente 32 bytes.",
-  );
+function getSecretKey() {
+  if (cachedKey) return cachedKey;
+
+  // Em produção, esta chave DEVE vir de variáveis de ambiente e ter 32 bytes.
+  const rawSecretKey = process.env.ENCRYPTION_KEY;
+  if (!rawSecretKey) {
+    // Fail-closed: nunca aceitamos uma chave por omissão em produção.
+    // Em desenvolvimento/testes, o valor é carregado por `.env` (ver `README.md`).
+    throw new Error(
+      "[Segurança] A variável de ambiente ENCRYPTION_KEY é obrigatória e deve ter exatamente 32 bytes.",
+    );
+  }
+
+  if (Buffer.from(rawSecretKey).length !== 32) {
+    throw new Error(
+      "[Segurança] A ENCRYPTION_KEY deve ter exatamente 32 bytes de comprimento.",
+    );
+  }
+
+  cachedKey = Buffer.from(rawSecretKey);
+  return cachedKey;
 }
-
-if (Buffer.from(RAW_SECRET_KEY).length !== 32) {
-  throw new Error(
-    "[Segurança] A ENCRYPTION_KEY deve ter exatamente 32 bytes de comprimento.",
-  );
-}
-
-const SECRET_KEY = Buffer.from(RAW_SECRET_KEY);
 
 /**
  * Cifra um payload JSON ou uma string utilizando AES-256-GCM
@@ -28,7 +34,7 @@ const SECRET_KEY = Buffer.from(RAW_SECRET_KEY);
 export function encryptData(data: string | object): string {
   const text = typeof data === "object" ? JSON.stringify(data) : data;
   const iv = crypto.randomBytes(12);
-  const cipher = crypto.createCipheriv(ALGORITHM, SECRET_KEY, iv);
+  const cipher = crypto.createCipheriv(ALGORITHM, getSecretKey(), iv);
 
   let encrypted = cipher.update(text, "utf8", "base64");
   encrypted += cipher.final("base64");
@@ -56,7 +62,7 @@ export function decryptData(encryptedData: string): string {
     const iv = Buffer.from(ivStr, "base64");
     const authTag = Buffer.from(authTagStr, "base64");
 
-    const decipher = crypto.createDecipheriv(ALGORITHM, SECRET_KEY, iv);
+    const decipher = crypto.createDecipheriv(ALGORITHM, getSecretKey(), iv);
     decipher.setAuthTag(authTag);
 
     let decrypted = decipher.update(encryptedStr, "base64", "utf8");

@@ -33,58 +33,75 @@ import { StudentIdentity } from "@/components/ui/student-identity";
 import { useUser } from "@/components/user-context";
 import { useClasses } from "@/hooks/use-queries";
 import { readApiResponse } from "@/lib/api-client";
+import type { ClassOption, ClassReportRow } from "@/lib/class-report";
 
-interface StudentRow {
-  id: string;
-  name: string;
-  sex: string;
-  className: string | null;
-  processNumber: string | null;
-  latestBiometric: { imc: number | string; imcZone: string } | null;
-  testCount: number;
-}
-
-function sectionAnimation(index: number, re: boolean) {
-  if (re) return {};
+function sectionAnimation(index: number, reducedEffects: boolean) {
+  if (reducedEffects) return {};
   return { animationDelay: `${index * 70}ms` };
 }
 
-function BioPanel({ children, className, index, reducedEffects }: { children: React.ReactNode; className?: string; index: number; reducedEffects: boolean }) {
+function BioPanel({
+  children,
+  className,
+  index,
+  reducedEffects,
+}: {
+  children: React.ReactNode;
+  className?: string;
+  index: number;
+  reducedEffects: boolean;
+}) {
   return (
-    <section style={sectionAnimation(index, reducedEffects)} className={cn("relative overflow-hidden rounded-[12px] border border-border bg-card/88 shadow-[0_4px_12px_rgba(9,21,35,0.08)] backdrop-blur-sm dark:border-white/10 dark:bg-navy-950/68 dark:shadow-[0_4px_18px_rgba(0,0,0,0.22)]", !reducedEffects && "animate-fade-in-up opacity-0", className)}>
+    <section
+      style={sectionAnimation(index, reducedEffects)}
+      className={cn(
+        "relative overflow-hidden rounded-[12px] border border-border bg-card/88 shadow-[0_4px_12px_rgba(9,21,35,0.08)] backdrop-blur-sm dark:border-white/10 dark:bg-navy-950/68 dark:shadow-[0_4px_18px_rgba(0,0,0,0.22)]",
+        !reducedEffects && "animate-fade-in-up opacity-0",
+        className,
+      )}
+    >
       <div className="relative">{children}</div>
     </section>
   );
 }
 
 function isHealthyZone(zone: string | null | undefined) {
-  if (!zone) {
-    return false;
-  }
-
+  if (!zone) return false;
   const normalized = zone
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "")
     .toLowerCase();
-
-  return normalized.includes("saudavel") || normalized.includes("healthy") || normalized.includes("zsaf");
+  return (
+    normalized.includes("saudavel") ||
+    normalized.includes("healthy") ||
+    normalized.includes("zsaf")
+  );
 }
 
-export default function TurmaPage() {
+export default function TurmaPage(props: {
+  initialClasses: ClassOption[];
+  initialClassId?: string;
+  initialReport: ClassReportRow[];
+}) {
   const router = useRouter();
   const t = useTranslations("turma");
   const common = useTranslations("common");
   const { role } = useUser();
   const canViewClassReports = role === "ADMIN" || role === "PROFESSOR";
+  const initialClasses = props.initialClasses ?? [];
   const {
-    data: classes = [],
+    data: classes = initialClasses,
     isLoading: loadingClasses,
     error: classesError,
     refetch: refetchClasses,
-  } = useClasses({ enabled: canViewClassReports });
+  } = useClasses({
+    enabled: canViewClassReports && initialClasses.length === 0,
+  });
 
-  const [classId, setClassId] = useState("");
-  const [students, setStudents] = useState<StudentRow[]>([]);
+  const [classId, setClassId] = useState(props.initialClassId ?? "");
+  const [students, setStudents] = useState<ClassReportRow[]>(
+    props.initialReport ?? [],
+  );
   const [loading, setLoading] = useState(false);
   const [isImportingCsv, setIsImportingCsv] = useState(false);
   const [isCreatingStudent, setIsCreatingStudent] = useState(false);
@@ -117,7 +134,13 @@ export default function TurmaPage() {
   }, [canViewClassReports, loadingClasses, classes]);
 
   useEffect(() => {
+    // Skip the initial fetch when the server already provided data
+    // for the selected class — the next classId change will trigger
+    // a fresh fetch.
     if (!canViewClassReports || !classId) {
+      return;
+    }
+    if (classId === props.initialClassId && students.length > 0 && !loading) {
       return;
     }
 
@@ -129,7 +152,7 @@ export default function TurmaPage() {
         `/api/classes/report?classId=${encodeURIComponent(classId)}`,
         { signal: controller.signal },
       );
-      const body = await readApiResponse<StudentRow[]>(response);
+      const body = await readApiResponse<ClassReportRow[]>(response);
 
       if (controller.signal.aborted) {
         return;
@@ -161,7 +184,7 @@ export default function TurmaPage() {
     return () => {
       controller.abort();
     };
-  }, [canViewClassReports, classId, t]);
+  }, [canViewClassReports, classId, props.initialClassId, students.length, loading, t]);
 
   useEffect(() => {
     setQuickStudentForm({
@@ -280,7 +303,7 @@ export default function TurmaPage() {
       const response = await fetch(
         `/api/classes/report?classId=${encodeURIComponent(selectedClass.id)}`,
       );
-      const body = await readApiResponse<StudentRow[]>(response);
+      const body = await readApiResponse<ClassReportRow[]>(response);
       setStudents(body);
     } catch {
       setStudents([]);
@@ -390,7 +413,7 @@ export default function TurmaPage() {
   }, [students]);
   const hasAttentionStudents = attentionStudents.length > 0;
 
-  const columns = useMemo<Column<StudentRow>[]>(() => {
+  const columns = useMemo<Column<ClassReportRow>[]>(() => {
     return [
       {
         key: "name",

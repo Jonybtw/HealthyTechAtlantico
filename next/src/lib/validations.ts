@@ -475,7 +475,7 @@ function queryIsoDateSchema() {
 
 export const listStudentsQuerySchema = z.object({
   page: queryNumberSchema(z.number().min(1)).default(1),
-  limit: queryNumberSchema(z.number().min(1).max(2000)).default(50),
+  limit: queryNumberSchema(z.number().min(1).max(500)).default(50),
   search: queryTextSchema(z.string().max(100)).default(""),
   school_year: queryTextSchema(z.string().max(50)).default(""),
   class_name: queryTextSchema(z.string().max(50)).default(""),

@@ -1,34 +1,66 @@
-# Redesign Request: Alunos (Student List) Page
+Redesign the “Alunos” (Students Directory) page as a premium, calm, highly legible directory for school staff, aligned with the **Clinical Sanctuary** dark-mode design system.
 
-## Goal
-Redesign the "Alunos" (Students Directory) page into a premium, high-fidelity experience using the **Clinical Sanctuary** design system.
+**DESIGN SYSTEM (REQUIRED):**
+- Platform: Web (Desktop-first, responsive down to mobile)
+- Mode: DARK MODE ONLY (do not use white/cream page backgrounds)
+- Theme: “Clinical Sanctuary” — premium, high-contrast, calm, secure, glassmorphism
+- Background (Base): Deep Obsidian / Navy Black `#07111c` with extremely subtle mesh/radial gradients
+- Surfaces:
+  - Primary Surface: `rgba(15, 23, 42, 0.80)` + `backdrop-blur` (glass cards)
+  - Utility Surface: `rgba(30, 41, 59, 0.50)` (inputs/inner cards)
+- Primary Action: Navy gradient `linear-gradient(135deg, #1E3A8A, #10243a)`
+- Accent / Priority: Gold/Amber `#d8ad34` / `#e8c766` (CTA glow, priority metrics)
+- Success: `#10B981`
+- Destructive / SOS: `#EF4444`
+- Typography:
+  - Body: Inter (or Public Sans)
+  - Headings: Manrope (premium tracking)
+  - Eyebrow headers: uppercase, tracking-widest, microtext (required on every page)
+- Components:
+  - Cards: rounded-[20px] to rounded-[24px], 1px translucent borders, soft shadows
+  - Buttons: pill-shaped, subtle lift on hover, strong focus rings
+  - Tables: comfortable row height, subtle separators, no generic striped look
 
-## Context (From Next.js Code)
-- **Top Actions**: Bulk Import ("Importar CSV") and Create New ("Novo aluno").
-- **Create Form (Hidden by Default)**: Inline form to create a new student featuring:
-  - Text input for "Nome"
-  - Sex pill select (Masculino / Feminino)
-  - Date input for "Data de Nascimento"
-  - Submit button.
-- **Data Table**:
-  - Displays a list of students.
-  - Columns: Name (includes dynamic colored Avatar with initials), Sex (M/F), Birth Date (e.g. 15/05/2012), Class (e.g. "8ºA").
-  - Includes a global search bar to filter by name.
-  - Bottom summary showing total results (e.g. "75 resultados") and pagination controls.
+**Page Structure:**
+1. **App Shell (Contextual Layout):**
+   - Left sidebar placeholder (dark glass panel) + top bar.
+   - Top eyebrow breadcrumb: `GESTÃO · ALUNOS` (uppercase, tracking-widest).
+   - User area on top right (avatar placeholder).
 
-## Design Requirements
-This is a premium, clinical educational platform. The design must be breathtaking and deeply align with our tokens:
-1. **Background**: Use the ambient `bg-[#f4faff]` with subtle blurred radial gradients (`#F59E0B` and `#1E3A8A` at 5-10% opacity) if needed for depth.
-2. **Typography**: Use bold, high-contrast headings (`text-primary` #040a12). Use editorial tracking for eyebrows (e.g., `tracking-widest uppercase text-[11px]`).
-3. **Data Grid (Table)**:
-   - Do not use generic, boring striped tables.
-   - Use clean, spaced rows with subtle horizontal borders (`border-navy-900/10`).
-   - Give the table a luxurious container (e.g., `bg-white/70`, `backdrop-blur-xl`, `border border-white`, `rounded-[24px]`, `shadow-sm`).
-   - Use beautiful colored swatches for the Avatars.
-4. **Header & Actions**: 
-   - A bold standard page header (similar to the dashboard's `text-4xl font-extrabold`).
-   - Premium button styles: Default buttons should use gradients or subtle translucent backgrounds with hover effects to float up (`hover:-translate-y-0.5`). 
-5. **Create Form**: 
-   - Ensure the inline form looks like a beautiful card when expanded.
+2. **Page Header:**
+   - Big title: “Alunos”.
+   - Short muted description: “Diretório de estudantes, importação e gestão rápida.”
+   - Primary actions aligned right:
+     - Primary CTA: “Novo aluno” (gold accent glow)
+     - Secondary CTA: “Importar CSV” (utility surface, subtle border)
 
-Please provide a fully functional HTML/Tailwind mockup of this `/alunos` page layout. Make sure to generate the complete page structure, including the sidebar placeholder to accurately depict contextual layout (Sidebar on left, main content on right).
+3. **Search + Filters Toolbar:**
+   - Search input with icon, placeholder “Pesquisar por nome…”
+   - Optional filters (school year / class) as compact selects
+   - Result counter microtext: “75 resultados”
+
+4. **Create Form (Progressive Disclosure):**
+   - Collapsible card (accordion) shown when clicking “Novo aluno”
+   - Fields:
+     - “Nome” (text)
+     - “Sexo” (pill segmented control: Masculino / Feminino)
+     - “Data de Nascimento” (date)
+   - Validation states: helper text + error styles, accessible focus rings
+
+5. **Students Data Grid (Premium Table):**
+   - Glass container card with blur and translucent border
+   - Columns: Avatar+Nome, Sexo, Data de nascimento, Turma
+   - Rows are keyboard-focusable and clickable (hover highlight + subtle chevron affordance)
+   - Avatar: elegant color swatch + initials
+   - States:
+     - Loading: skeleton rows
+     - Empty: icon + text + CTA to create first student
+     - Error: subtle banner with “Tentar novamente”
+
+6. **Pagination Footer:**
+   - Prev/next buttons + page indicator (“Página 2 de 8”)
+   - Optional “rows per page” selector (keep limits reasonable)
+
+**Output Requirement:**
+- Generate a complete, functional **HTML + Tailwind** mockup of the `/alunos` page, including sidebar placeholder + top bar.
+- Keep everything in dark mode with glassmorphism surfaces; do not introduce light backgrounds.

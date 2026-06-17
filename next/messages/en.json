@@ -105,7 +105,8 @@
     "noPermission": "You don't have permission to access this page.",
     "connectionError": "Connection error.",
     "studentListLoadError": "Error loading students.",
-    "refresh": "Refresh"
+    "refresh": "Refresh",
+    "syncStatus": "Sync status"
   },
   "notFound": {
     "eyebrow": "404 error",
@@ -1712,6 +1713,8 @@
   },
   "authLayout": {
     "department": "Colégio Atlântico",
+    "toggleThemeLabel": "Toggle theme",
+    "toggleLanguageLabel": "Toggle language",
     "highlightSecurity": "Assessment protocols",
     "highlightMonitoring": "Physical fitness monitoring",
     "highlightExperience": "Pedagogical reports",

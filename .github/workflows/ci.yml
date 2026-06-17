@@ -18,6 +18,7 @@ jobs:
       NEXTAUTH_SECRET: "ci-placeholder-secret-32-chars-xx"
       NEXTAUTH_URL: "http://127.0.0.1:3000"
       AUTH_SECRET: "ci-placeholder-secret-32-chars-xx"
+      ENCRYPTION_KEY: "0123456789abcdef0123456789abcdef"
       NEXT_TELEMETRY_DISABLED: "1"
 
     steps:

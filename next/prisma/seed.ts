@@ -18,6 +18,7 @@ import {
   getSchoolPeriodInfo,
   type KidmedAnswers,
 } from "../src/lib/questionnaires";
+import { encryptQuestionnairePayload } from "../src/lib/questionnaire-payload-codec";
 
 const pool = new pg.Pool({
   connectionString: process.env.DATABASE_URL!,
@@ -1233,7 +1234,9 @@ async function main() {
           type: QuestionnaireType.AUTOESTIMA,
           schoolYear: blueprint.schoolYear,
           periodKey: `INITIAL:${blueprint.schoolYear}`,
-          payload: getInitialPayload(blueprint.profile),
+          payloadEncrypted: encryptQuestionnairePayload(
+            getInitialPayload(blueprint.profile),
+          ),
           deferredCount: blueprint.questionnaires === "minimal" ? 1 : 0,
           submittedAt: initialDate,
         },
@@ -1253,7 +1256,9 @@ async function main() {
             type: QuestionnaireType.AUTOCONCEITO,
             schoolYear: period.schoolYear,
             periodKey: period.periodKey,
-            payload: getRoutinePayload(blueprint.profile, variant),
+            payloadEncrypted: encryptQuestionnairePayload(
+              getRoutinePayload(blueprint.profile, variant),
+            ),
             deferredCount:
               variant === 0 && blueprint.profile === "improvementHigh" ? 1 : 0,
             submittedAt: questionnaireDate,
@@ -1281,7 +1286,9 @@ async function main() {
           periodKey: period.periodKey,
           score: result.score,
           classification: result.classification,
-          payload: answers as Prisma.InputJsonValue,
+          payloadEncrypted: encryptQuestionnairePayload(
+            answers as Prisma.InputJsonValue,
+          ),
           submittedAt: kidmedDate,
         },
       });

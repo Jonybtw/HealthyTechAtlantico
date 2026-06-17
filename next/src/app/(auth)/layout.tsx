@@ -9,6 +9,7 @@ import { AnimatePresence, motion } from "motion/react";
 import { BrandLogo } from "@/components/brand-logo";
 import { Button } from "@/components/ui/button";
 import { usePreferences } from "@/hooks/use-preferences";
+import { useReducedEffects } from "@/hooks/use-reduced-effects";
 import { cn } from "@/lib/utils";
 
 const HIGHLIGHTS = [
@@ -30,10 +31,28 @@ const IMAGE_CONFIG = [
 
 function LoginHeroCarousel({
   index,
+  reducedEffects,
 }: {
   index: number;
+  reducedEffects: boolean;
 }) {
   const active = IMAGE_CONFIG[index % IMAGE_CONFIG.length];
+
+  if (reducedEffects) {
+    return (
+      <div className="absolute inset-0 h-full w-full">
+        <Image
+          src={active.src}
+          alt="Ambiente do Colégio Atlântico"
+          fill
+          sizes="60vw"
+          className="object-cover"
+          style={{ objectPosition: active.objectPosition }}
+          priority
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="absolute inset-0 h-full w-full">
@@ -76,21 +95,23 @@ export default function AuthLayout({
 }) {
   const t = useTranslations("authLayout");
   const { theme, locale, toggleTheme, toggleLocale } = usePreferences();
+  const reducedEffects = useReducedEffects();
   const [slideIndex, setSlideIndex] = useState(0);
 
   useEffect(() => {
+    if (reducedEffects) return;
     const id = window.setInterval(() => {
       setSlideIndex((prev) => (prev + 1) % IMAGE_CONFIG.length);
     }, SLIDE_INTERVAL_MS);
     return () => window.clearInterval(id);
-  }, []);
+  }, [reducedEffects]);
 
   return (
     <div className="min-h-screen lg:grid lg:grid-cols-[1fr_480px]">
 
       {/* ── Left: cinematic image panel (desktop only) ── */}
       <div className="relative hidden overflow-hidden lg:flex lg:flex-col">
-        <LoginHeroCarousel index={slideIndex} />
+        <LoginHeroCarousel index={slideIndex} reducedEffects={reducedEffects} />
 
         {/* Dark gradient overlay */}
         <div className="absolute inset-0 z-10 bg-[linear-gradient(150deg,rgba(9,21,35,0.65),rgba(9,21,35,0.35)_50%,rgba(9,21,35,0.72))]" />
@@ -188,7 +209,7 @@ export default function AuthLayout({
               variant="ghost"
               size="icon"
               className="size-9 rounded-full text-muted-foreground hover:bg-muted hover:text-foreground"
-              aria-label="Toggle theme"
+              aria-label={t("toggleThemeLabel")}
               title={
                 theme === "light"
                   ? "Mudar para modo escuro"
@@ -206,7 +227,7 @@ export default function AuthLayout({
               variant="ghost"
               size="icon"
               className="size-9 rounded-full text-xs font-semibold uppercase tracking-widest text-muted-foreground hover:bg-muted hover:text-foreground"
-              aria-label="Toggle language"
+              aria-label={t("toggleLanguageLabel")}
             >
               {locale}
             </Button>

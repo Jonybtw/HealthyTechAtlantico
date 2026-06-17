@@ -3,7 +3,6 @@ import { type NextRequest, NextResponse } from "next/server";
 const SECURITY_HEADERS: Record<string, string> = {
   "X-Frame-Options": "DENY",
   "X-Content-Type-Options": "nosniff",
-  "X-XSS-Protection": "1; mode=block",
   "X-Permitted-Cross-Domain-Policies": "none",
   "Referrer-Policy": "strict-origin-when-cross-origin",
   "Permissions-Policy": "camera=(), microphone=(), geolocation=()",
@@ -25,6 +24,7 @@ const SECURITY_HEADERS: Record<string, string> = {
 interface RateLimitEntry {
   count: number;
   windowStart: number;
+  windowMs: number;
 }
 
 const store = new Map<string, RateLimitEntry>();
@@ -58,15 +58,25 @@ function rateLimit(
   const now = Date.now();
   const entry = store.get(key);
 
-  if (!entry || now - entry.windowStart > windowMs) {
-    store.set(key, { count: 1, windowStart: now });
+  // Fast path: reset counter if no entry or the window has passed.
+  if (!entry || now - entry.windowStart > entry.windowMs) {
+    store.set(key, { count: 1, windowStart: now, windowMs });
     return { allowed: true, retryAfterSec: 0 };
+  }
+
+  // Opportunistic cleanup to avoid unbounded growth in serverless/edge environments.
+  if (store.size > 5000) {
+    for (const [k, e] of store.entries()) {
+      if (now - e.windowStart > e.windowMs) {
+        store.delete(k);
+      }
+    }
   }
 
   if (entry.count >= limit) {
     return {
       allowed: false,
-      retryAfterSec: Math.ceil((entry.windowStart + windowMs - now) / 1000),
+      retryAfterSec: Math.ceil((entry.windowStart + entry.windowMs - now) / 1000),
     };
   }
 
@@ -74,21 +84,7 @@ function rateLimit(
   return { allowed: true, retryAfterSec: 0 };
 }
 
-if (typeof setInterval !== "undefined") {
-  setInterval(
-    () => {
-      const now = Date.now();
-      for (const [key, entry] of store.entries()) {
-        if (now - entry.windowStart > 15 * 60 * 1000) {
-          store.delete(key);
-        }
-      }
-    },
-    5 * 60 * 1000,
-  );
-}
-
-export function proxy(request: NextRequest) {
+export default function proxy(request: NextRequest) {
   const ip =
     request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
     request.headers.get("x-real-ip") ||
