@@ -40,7 +40,7 @@ describe("sendReportMail365", () => {
         subject: "Relatorio",
         html: "<p>Teste</p>",
       }),
-    ).rejects.toThrow("Microsoft Graph nao configurado");
+    ).rejects.toThrow("Microsoft Graph não configurado para a caixa partilhada HealthyTech@colegioatlantico.pt");
 
     expect(sendMailMock).not.toHaveBeenCalled();
   });

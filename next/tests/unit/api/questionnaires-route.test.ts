@@ -255,7 +255,7 @@ describe("student questionnaires route", () => {
     expect(response.status).toBe(409);
     expect(questionnaireCreateMock).not.toHaveBeenCalled();
     await expect(response.json()).resolves.toEqual({
-      error: "O KIDMED ja foi submetido neste periodo letivo",
+      error: "O KIDMED já foi submetido neste período letivo",
     });
   });
 
