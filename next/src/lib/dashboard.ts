@@ -15,6 +15,8 @@ export interface DashboardCardData {
   titleKey: string;
   descriptionKey: string;
   footer?: string;
+  footerKey?: string;
+  footerValues?: Record<string, string | number>;
   value: number;
   icon:
     | "users"
@@ -43,10 +45,20 @@ export interface DashboardActionData {
 export interface DashboardWorkItem {
   id: string;
   title: string;
+  titleKey?: string;
+  titleValues?: Record<string, string | number>;
   meta: string | null;
+  metaKey?: string;
+  metaValues?: Record<string, string | number>;
   href: string;
   tone: "default" | "success" | "warning" | "danger" | "info";
   createdAt: Date;
+}
+
+function messageValues(
+  values: Record<string, string | number>,
+): Record<string, string | number> {
+  return values;
 }
 
 export interface DashboardTrendPoint {
@@ -272,9 +284,15 @@ async function buildAdminActivityFeed(): Promise<DashboardWorkItem[]> {
     ...alerts.map((a) => ({
       id: `sos-${a.id}`,
       title: `Alerta SOS criado para ${a.student.name}`,
+      titleKey: "workSosCreated",
+      titleValues: { name: a.student.name },
       meta: a.student.className
         ? `Por resolver \u2022 ${a.student.className}`
         : "Por resolver",
+      metaKey: a.student.className ? "workUnresolvedClass" : "workUnresolved",
+      metaValues: a.student.className
+        ? messageValues({ className: a.student.className })
+        : undefined,
       href: "/sos",
       tone: "danger" as const,
       createdAt: a.createdAt,
@@ -282,9 +300,27 @@ async function buildAdminActivityFeed(): Promise<DashboardWorkItem[]> {
     ...sessions.map((s) => ({
       id: `session-${s.id}`,
       title: `Biometria registada para ${s.student.name}`,
+      titleKey: "workBiometricsRecorded",
+      titleValues: { name: s.student.name },
       meta: [s.student.className, s.createdBy?.name ? `Por ${s.createdBy.name}` : null]
         .filter(Boolean)
         .join(" \u2022 "),
+      metaKey:
+        s.student.className && s.createdBy?.name
+          ? "workClassByUser"
+          : s.student.className
+            ? "workClassOnly"
+            : s.createdBy?.name
+              ? "workByUser"
+              : undefined,
+      metaValues:
+        s.student.className && s.createdBy?.name
+          ? messageValues({ className: s.student.className, name: s.createdBy.name })
+          : s.student.className
+            ? messageValues({ className: s.student.className })
+            : s.createdBy?.name
+              ? messageValues({ name: s.createdBy.name })
+              : undefined,
       href: `/alunos/${s.student.id}`,
       tone: "warning" as const,
       createdAt: s.createdAt,
@@ -292,9 +328,15 @@ async function buildAdminActivityFeed(): Promise<DashboardWorkItem[]> {
     ...questionnaires.map((q) => ({
       id: `q-${q.id}`,
       title: `Questionário ${q.type} concluído`,
+      titleKey: "workQuestionnaireCompleted",
+      titleValues: { type: q.type },
       meta: q.student.className
         ? `${q.student.name} \u2022 ${q.student.className}`
         : q.student.name,
+      metaKey: q.student.className ? "workStudentClass" : "workStudentOnly",
+      metaValues: q.student.className
+        ? messageValues({ name: q.student.name, className: q.student.className })
+        : messageValues({ name: q.student.name }),
       href: `/questionarios`,
       tone: "info" as const,
       createdAt: q.submittedAt,
@@ -302,6 +344,8 @@ async function buildAdminActivityFeed(): Promise<DashboardWorkItem[]> {
     ...reports.map((r) => ({
       id: `report-${r.id}`,
       title: `Relatório gerado para ${r.student.name}`,
+      titleKey: "workReportGenerated",
+      titleValues: { name: r.student.name },
       meta: null,
       href: "/relatorio",
       tone: "success" as const,
@@ -310,7 +354,13 @@ async function buildAdminActivityFeed(): Promise<DashboardWorkItem[]> {
     ...newStudents.map((s) => ({
       id: `student-${s.id}`,
       title: `Novo aluno inscrito: ${s.name}`,
+      titleKey: "workNewStudent",
+      titleValues: { name: s.name },
       meta: s.className ?? null,
+      metaKey: s.className ? "workClassOnly" : undefined,
+      metaValues: s.className
+        ? messageValues({ className: s.className })
+        : undefined,
       href: `/alunos/${s.id}`,
       tone: "default" as const,
       createdAt: s.createdAt,
@@ -367,9 +417,15 @@ async function buildTeacherActivityFeed(
     ...alerts.map((a) => ({
       id: `sos-${a.id}`,
       title: `Alerta SOS criado para ${a.student.name}`,
+      titleKey: "workSosCreated",
+      titleValues: { name: a.student.name },
       meta: a.student.className
         ? `Por resolver \u2022 ${a.student.className}`
         : "Por resolver",
+      metaKey: a.student.className ? "workUnresolvedClass" : "workUnresolved",
+      metaValues: a.student.className
+        ? messageValues({ className: a.student.className })
+        : undefined,
       href: "/sos",
       tone: "danger" as const,
       createdAt: a.createdAt,
@@ -377,7 +433,13 @@ async function buildTeacherActivityFeed(
     ...sessions.map((s) => ({
       id: `session-${s.id}`,
       title: `Biometria registada para ${s.student.name}`,
+      titleKey: "workBiometricsRecorded",
+      titleValues: { name: s.student.name },
       meta: s.student.className ?? null,
+      metaKey: s.student.className ? "workClassOnly" : undefined,
+      metaValues: s.student.className
+        ? messageValues({ className: s.student.className })
+        : undefined,
       href: `/alunos/${s.student.id}`,
       tone: "warning" as const,
       createdAt: s.createdAt,
@@ -385,9 +447,15 @@ async function buildTeacherActivityFeed(
     ...questionnaires.map((q) => ({
       id: `q-${q.id}`,
       title: `Questionário ${q.type} concluído`,
+      titleKey: "workQuestionnaireCompleted",
+      titleValues: { type: q.type },
       meta: q.student.className
         ? `${q.student.name} \u2022 ${q.student.className}`
         : q.student.name,
+      metaKey: q.student.className ? "workStudentClass" : "workStudentOnly",
+      metaValues: q.student.className
+        ? messageValues({ name: q.student.name, className: q.student.className })
+        : messageValues({ name: q.student.name }),
       href: `/questionarios`,
       tone: "info" as const,
       createdAt: q.submittedAt,
@@ -1195,6 +1263,8 @@ export async function getDashboardSummaryForUser(user: {
           titleKey: "totalStudentsTitle",
           descriptionKey: "totalStudentsFooter",
           footer: `${readiness.length} este ano`,
+          footerKey: "footerCountThisYear",
+          footerValues: { count: readiness.length },
           value: readiness.length,
           icon: "users",
           accent: "blue",
@@ -1204,6 +1274,7 @@ export async function getDashboardSummaryForUser(user: {
           titleKey: "biometricsLoggedTitle",
           descriptionKey: "biometricsLoggedFooter",
           footer: "Este ano letivo",
+          footerKey: "biometricsLoggedFooter",
           value: sessionsByTeacher,
           icon: "activity",
           accent: "green",
@@ -1213,6 +1284,8 @@ export async function getDashboardSummaryForUser(user: {
           titleKey: "activeAlertsTitle",
           descriptionKey: "activeAlertsFooter",
           footer: `${openSosForTeacher} alertas abertos`,
+          footerKey: "footerOpenAlerts",
+          footerValues: { count: openSosForTeacher },
           value: openSosForTeacher,
           icon: "alert",
           accent: "gold",
@@ -1222,6 +1295,8 @@ export async function getDashboardSummaryForUser(user: {
           titleKey: "pendingAssessmentsTitle",
           descriptionKey: "pendingAssessmentsFooter",
           footer: `${missingBiometrics.length} em atraso`,
+          footerKey: "footerOverdue",
+          footerValues: { count: missingBiometrics.length },
           value: missingBiometrics.length,
           icon: "clipboard",
           accent: "red",
@@ -1316,6 +1391,8 @@ export async function getDashboardSummaryForUser(user: {
         titleKey: "totalStudentsTitle",
         descriptionKey: "totalStudentsFooter",
         footer: `+${newStudentsThisMonth} este mês`,
+        footerKey: "footerNewThisMonth",
+        footerValues: { count: newStudentsThisMonth },
         value: totalStudents,
         icon: "users",
         accent: "blue",
@@ -1325,6 +1402,7 @@ export async function getDashboardSummaryForUser(user: {
         titleKey: "biometricsLoggedTitle",
         descriptionKey: "biometricsLoggedFooter",
         footer: "Este ano letivo",
+        footerKey: "biometricsLoggedFooter",
         value: totalBiometrics,
         icon: "activity",
         accent: "green",
@@ -1334,6 +1412,8 @@ export async function getDashboardSummaryForUser(user: {
         titleKey: "activeAlertsTitle",
         descriptionKey: "activeAlertsFooter",
         footer: `${criticalSos} prioridade crítica`,
+        footerKey: "footerCriticalPriority",
+        footerValues: { count: criticalSos },
         value: pendingSos,
         icon: "alert",
         accent: "gold",
@@ -1343,6 +1423,8 @@ export async function getDashboardSummaryForUser(user: {
         titleKey: "pendingAssessmentsTitle",
         descriptionKey: "pendingAssessmentsFooter",
         footer: `${missingBiometrics.length} em atraso`,
+        footerKey: "footerOverdue",
+        footerValues: { count: missingBiometrics.length },
         value: missingBiometrics.length,
         icon: "clipboard",
         accent: "red",

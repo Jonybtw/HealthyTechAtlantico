@@ -549,7 +549,7 @@ function MetricGrid({
           <li key={card.id}>
             <KpiCard
               accent={card.accent}
-              footer={card.footer ?? t(card.descriptionKey)}
+              footer={getCardFooter(card, t)}
               icon={ICONS[card.icon]}
               title={t(card.titleKey)}
               value={card.value}
@@ -611,13 +611,22 @@ function FeaturedKpi({
           </p>
         </div>
       </div>
-      {card.footer ? (
+      {getCardFooter(card, t) ? (
         <p className="relative mt-6 inline-flex items-center gap-2 rounded-full bg-white/8 px-3 py-1.5 text-xs font-semibold text-white/80 ring-1 ring-inset ring-white/10">
-          {card.footer}
+          {getCardFooter(card, t)}
         </p>
       ) : null}
     </div>
   );
+}
+
+function getCardFooter(
+  card: DashboardCardData,
+  t: (key: string, values?: Record<string, string | number>) => string,
+) {
+  return card.footerKey
+    ? t(card.footerKey, card.footerValues)
+    : card.footer ?? t(card.descriptionKey);
 }
 
 function QuickActions({
@@ -704,7 +713,7 @@ function WorkQueue({
       {items.length > 0 ? (
         <div className="grid gap-3">
           {items.map((item) => (
-            <WorkQueueItem key={item.id} item={item} />
+            <WorkQueueItem key={item.id} item={item} t={t} />
           ))}
         </div>
       ) : (
@@ -720,9 +729,16 @@ function WorkQueue({
 
 function WorkQueueItem({
   item,
+  t,
 }: {
   item: DashboardWorkItem;
+  t: (key: string, values?: Record<string, string | number>) => string;
 }) {
+  const title = item.titleKey
+    ? t(item.titleKey, item.titleValues)
+    : item.title;
+  const meta = item.metaKey ? t(item.metaKey, item.metaValues) : item.meta;
+
   return (
     <Link href={item.href} className="group">
       <div
@@ -755,11 +771,11 @@ function WorkQueueItem({
         </div>
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
-            <span className="truncate text-sm font-semibold text-foreground">{item.title}</span>
-            <ToneBadge tone={item.tone} />
+            <span className="truncate text-sm font-semibold text-foreground">{title}</span>
+            <ToneBadge tone={item.tone} t={t} />
           </div>
-          {item.meta ? (
-            <p className="mt-0.5 text-xs text-muted-foreground">{item.meta}</p>
+          {meta ? (
+            <p className="mt-0.5 text-xs text-muted-foreground">{meta}</p>
           ) : null}
         </div>
         <ArrowRight className="size-4 shrink-0 text-muted-foreground/50 transition-transform group-hover:translate-x-1" />
@@ -768,12 +784,18 @@ function WorkQueueItem({
   );
 }
 
-function ToneBadge({ tone }: { tone: DashboardWorkItem["tone"] }) {
+function ToneBadge({
+  tone,
+  t,
+}: {
+  tone: DashboardWorkItem["tone"];
+  t: (key: string, values?: Record<string, string | number>) => string;
+}) {
   if (tone === "danger") return <Badge variant="danger">SOS</Badge>;
-  if (tone === "warning") return <Badge variant="warning">Fila</Badge>;
+  if (tone === "warning") return <Badge variant="warning">{t("toneQueue")}</Badge>;
   if (tone === "success") return <Badge variant="success">OK</Badge>;
   if (tone === "info") return <Badge variant="info">Info</Badge>;
-  return <Badge variant="default">Estado</Badge>;
+  return <Badge variant="default">{t("toneState")}</Badge>;
 }
 
 function DataQuality({

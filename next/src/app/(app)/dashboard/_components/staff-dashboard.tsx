@@ -553,7 +553,9 @@ function ProfessorKpiCard({
           )}
         >
           <FooterIcon className="size-3 shrink-0" />
-          {card.footer ?? t(card.descriptionKey)}
+          {card.footerKey
+            ? t(card.footerKey, card.footerValues)
+            : card.footer ?? t(card.descriptionKey)}
         </span>
       </div>
     </DashboardPanel>
