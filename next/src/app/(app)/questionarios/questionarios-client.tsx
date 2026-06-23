@@ -952,10 +952,9 @@ export default function QuestionariosPage() {
                     <KidmedResultSummary
                       t={t}
                       result={kidmedResult}
-                      currentPeriodLabel={formatKidmedPeriodLabel(
-                        t,
-                        kidmedResult,
-                      )}
+                      currentPeriodLabel={
+                        formatKidmedPeriodLabel(t, kidmedResult) ?? t("kidmed")
+                      }
                     />
                   ) : null
                 }
@@ -1537,10 +1536,9 @@ export default function QuestionariosPage() {
                       <KidmedResultSummary
                         t={t}
                         result={kidmedResult}
-                        currentPeriodLabel={formatKidmedPeriodLabel(
-                          t,
-                          kidmedResult,
-                        )}
+                        currentPeriodLabel={
+                          formatKidmedPeriodLabel(t, kidmedResult) ?? t("kidmed")
+                        }
                       />
                     ) : null
                   }
@@ -1660,7 +1658,7 @@ export default function QuestionariosPage() {
                           ),
                         );
                       else if (badge.key === "period")
-                        value = formatKidmedPeriodLabel(t, item);
+                        value = formatKidmedPeriodLabel(t, item) ?? t("notAvailable");
                       else if (
                         badge.key === "score" &&
                         typeof badge.value === "number"

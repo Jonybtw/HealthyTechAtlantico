@@ -290,8 +290,6 @@ async function resolveStudent({
   return value;
 }
 
-}
-
 function parseValueNum(testId: string, valueText: string): number | null {
   if (testId === "milha") {
     return null;
