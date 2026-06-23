@@ -633,11 +633,40 @@ export function evaluateKidmed(answers: KidmedAnswers): KidmedResult {
   };
 }
 
+export function formatKidmedPeriodLabel(
+  t: (key: string) => string,
+  questionnaire: Pick<QuestionnairePresentationRecord, "periodKey" | "schoolYear">,
+): string | null {
+  const period = questionnaire.periodKey?.split(":")[1];
+  if (
+    (period === "P1" || period === "P2" || period === "P3") &&
+    questionnaire.schoolYear
+  ) {
+    return `${t(getKidmedPeriodLabelKey(period as SchoolPeriod))} - ${questionnaire.schoolYear}`;
+  }
+  return questionnaire.schoolYear ?? questionnaire.periodKey ?? null;
+}
+
+export function formatQuestionnaireFieldValue(
+  t: (key: string) => string,
+  value: unknown,
+  meta: { unitKey?: string; scaleMax?: number },
+  fallback = "-",
+): string {
+  if (typeof value === "boolean") return value ? t("yes") : t("no");
+  if (typeof value === "number") {
+    if (meta.scaleMax) return `${value}/${meta.scaleMax}`;
+    if (meta.unitKey) return `${value} ${t(meta.unitKey)}`;
+    return String(value);
+  }
+  if (typeof value === "string" && value.length > 0) return value;
+  return fallback;
+}
+
 export function getSchoolPeriodInfo(
   dateInput: Date | string = new Date(),
 ): SchoolPeriodInfo {
-  const date =
-    dateInput instanceof Date ? new Date(dateInput) : new Date(dateInput);
+  const date = new Date(dateInput);
   const month = date.getMonth();
   const year = date.getFullYear();
   const schoolYearStart = month >= 8 ? year : year - 1;

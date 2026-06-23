@@ -1,8 +1,5 @@
 "use client";
 
-// Componente cliente de /questionarios: apresenta instrumentos disponíveis,
-// gere respostas do aluno, histórico e submissão para a API de questionários.
-
 import Link from "next/link";
 import {
   useCallback,
@@ -40,6 +37,8 @@ import { useUser } from "@/components/user-context";
 import { readApiResponse } from "@/lib/api-client";
 import { cn } from "@/lib/utils";
 import {
+  formatKidmedPeriodLabel,
+  formatQuestionnaireFieldValue,
   getKidmedClassificationFeedbackKey,
   getKidmedClassificationLabelKey,
   getKidmedPeriodLabelKey,
@@ -165,35 +164,6 @@ function formatStudentAge(birthDate: string | null | undefined) {
       today.getDate() >= birth.getDate());
   if (!hasBirthdayPassed) age -= 1;
   return age >= 0 ? age : null;
-}
-
-function formatBadgeValue(
-  t: (key: string, values?: Record<string, string | number>) => string,
-  value: unknown,
-  meta: { unitKey?: string; scaleMax?: number },
-) {
-  if (typeof value === "boolean") return value ? t("yes") : t("no");
-  if (typeof value === "number") {
-    if (meta.scaleMax) return `${value}/${meta.scaleMax}`;
-    if (meta.unitKey) return `${value} ${t(meta.unitKey)}`;
-    return String(value);
-  }
-  if (typeof value === "string" && value.length > 0) return value;
-  return "-";
-}
-
-function formatKidmedPeriodLabel(
-  t: (key: string, values?: Record<string, string | number>) => string,
-  questionnaire: Pick<QuestionnaireRecord, "periodKey" | "schoolYear">,
-) {
-  const period = questionnaire.periodKey?.split(":")[1];
-  if (
-    (period === "P1" || period === "P2" || period === "P3") &&
-    questionnaire.schoolYear
-  ) {
-    return `${t(getKidmedPeriodLabelKey(period))} - ${questionnaire.schoolYear}`;
-  }
-  return questionnaire.periodKey ?? questionnaire.schoolYear ?? "-";
 }
 
 function getInstrumentEstimatedTime(type: QuestionnaireTypeValue) {
@@ -1697,7 +1667,7 @@ export default function QuestionariosPage() {
                       )
                         value = `${badge.value}/12`;
                       else
-                        value = formatBadgeValue(
+                        value = formatQuestionnaireFieldValue(
                           t,
                           badge.value,
                           QUESTIONNAIRE_FIELD_META[badge.key] ?? badge,

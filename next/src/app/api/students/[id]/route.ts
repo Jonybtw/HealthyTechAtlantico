@@ -90,13 +90,6 @@ export async function PUT(
     const body = await req.json();
     const data = updateStudentSchema.parse(body);
 
-    const existingStudent = await prisma.student.findUnique({
-      where: { id },
-    });
-    if (!existingStudent) {
-      return notFound("Aluno não encontrado");
-    }
-
     const shouldLogStudentUpdate =
       data.name !== undefined ||
       data.sex !== undefined ||
@@ -169,15 +162,20 @@ export async function DELETE(
     }
 
     const { id } = await params;
-    const existing = await prisma.student.findUnique({
-      where: { id },
-      select: { id: true },
-    });
-    if (!existing) {
-      return notFound("Aluno não encontrado");
-    }
 
-    await prisma.student.delete({ where: { id } });
+    try {
+      await prisma.student.delete({ where: { id } });
+    } catch (deleteError: unknown) {
+      if (
+        typeof deleteError === "object" &&
+        deleteError !== null &&
+        "code" in deleteError &&
+        deleteError.code === "P2025"
+      ) {
+        return notFound("Aluno não encontrado");
+      }
+      throw deleteError;
+    }
 
     await auditLog({
       userId: session.user.id,

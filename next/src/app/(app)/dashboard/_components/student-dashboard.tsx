@@ -53,26 +53,26 @@ const QUESTIONNAIRE_META: Record<
     icon: LucideIcon;
     bg: string;
     color: string;
-    descKey: string;
+    descFallback: string;
   }
 > = {
   KIDMED: {
     icon: ClipboardList,
     bg: "bg-gold-500/10",
     color: "text-gold-700 dark:text-gold-300",
-    descKey: "kidmedDesc",
+    descFallback: "Mediterranean diet quality assessment",
   },
   AUTOCONCEITO: {
     icon: Brain,
     bg: "bg-navy-100 dark:bg-white/8",
     color: "text-navy-700 dark:text-navy-200",
-    descKey: "autoconceitoDesc",
+    descFallback: "Self-concept and well-being evaluation",
   },
   AUTOESTIMA: {
     icon: Heart,
     bg: "bg-success-500/10",
     color: "text-success-700 dark:text-success-300",
-    descKey: "autoestimaDesc",
+    descFallback: "Self-esteem and resilience assessment",
   },
 };
 
@@ -428,8 +428,8 @@ function PendingTasksPanel({
                         </span>
                       </div>
                       <p className="mt-1 text-xs text-muted-foreground">
-                        {meta ? questionnaires(meta.descKey) : null} &bull;{" "}
-                        {t("studentQuestionCount", { count: item.questionCount })}
+                        {meta?.descFallback} &bull; {item.questionCount}{" "}
+                        questions
                       </p>
                       <div className="mt-3 flex items-center gap-3">
                         <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-muted">
@@ -568,14 +568,12 @@ function BellCurvePosition({
         </svg>
 
         <div className="mt-2 flex justify-between border-t border-border/40 pt-2">
-          <span className="text-[10px] text-muted-foreground">
-            {t("studentLowWeight")}
-          </span>
+          <span className="text-[10px] text-muted-foreground">Baixo peso</span>
           <span className="text-[10px] font-semibold text-gold-700 dark:text-gold-300">
-            {t("studentHealthyZone")}
+            Zona Saud\u00e1vel
           </span>
           <span className="text-[10px] text-muted-foreground">
-            {t("studentHighWeight")}
+            Peso elevado
           </span>
         </div>
       </CardContent>

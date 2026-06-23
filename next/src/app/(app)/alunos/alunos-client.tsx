@@ -1,8 +1,5 @@
 "use client";
 
-// Componente cliente de /alunos: controla pesquisa, paginação, criação manual
-// e importação CSV de alunos através das APIs de estudantes.
-
 import { useActionState, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";

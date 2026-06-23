@@ -1,8 +1,5 @@
 "use client";
 
-// Componente cliente de /sos: permite criar alertas, consultar listas e marcar
-// pedidos como resolvidos conforme o perfil autenticado.
-
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import Link from "next/link";
@@ -31,6 +28,8 @@ import { StudentIdentity } from "@/components/ui/student-identity";
 import { useUser } from "@/components/user-context";
 import { readApiResponse } from "@/lib/api-client";
 import { cn } from "@/lib/utils";
+import { DashboardPanel, sectionAnimation } from "@/components/ui/dashboard-panel";
+import { useAnimatedNumber } from "@/hooks/use-animated-number";
 import { useReducedEffects } from "@/hooks/use-reduced-effects";
 import { useSosAlertsStream } from "@/hooks/use-queries";
 
@@ -59,32 +58,6 @@ function getStudentMeta(s: SosAlert["student"]) {
   return [s.className, s.schoolYear].filter(Boolean).join(" · ");
 }
 
-function sectionAnimation(index: number, reducedEffects: boolean) {
-  if (reducedEffects) return {};
-  return { animationDelay: `${index * 70}ms` };
-}
-
-function useAnimatedNumber(target: number, disabled: boolean) {
-  const [display, setDisplay] = useState(target);
-  const previous = useRef(target);
-  useEffect(() => {
-    if (disabled) { previous.current = target; return; }
-    if (previous.current === target) return;
-    let frame = 0;
-    const start = performance.now();
-    const from = previous.current;
-    const tick = (now: number) => {
-      const progress = Math.min((now - start) / 620, 1);
-      const eased = 1 - Math.pow(1 - progress, 3);
-      setDisplay(Math.round(from + (target - from) * eased));
-      if (progress < 1) frame = requestAnimationFrame(tick);
-    };
-    previous.current = target;
-    frame = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(frame);
-  }, [disabled, target]);
-  return disabled ? target : display;
-}
 
 // ─── Main Component ───────────────────────────────────────────────────────────
 
@@ -196,7 +169,6 @@ export default function SosClient() {
 
   const oldestPending = pendingAlerts[0] ?? null;
   const priorityAlerts = pendingAlerts.slice(1, 4);
-  const hasOpenStudentAlert = studentAlerts.some((a) => !a.resolved);
   const activeStudentAlert = studentAlerts.find((a) => !a.resolved);
 
   const animatedTotal = useAnimatedNumber(alerts.length, reducedEffects);
@@ -204,7 +176,7 @@ export default function SosClient() {
   const animatedResolved = useAnimatedNumber(resolvedAlerts.length, reducedEffects);
 
   const triggerSos = useCallback(async () => {
-    if (hasOpenStudentAlert) { toast.error(t("alreadyOpen")); return; }
+    if (activeStudentAlert) { toast.error(t("alreadyOpen")); return; }
     setTriggeringSos(true);
     try {
       const result = await fetch("/api/me/sos", {
@@ -220,7 +192,7 @@ export default function SosClient() {
     } finally {
       setTriggeringSos(false);
     }
-  }, [hasOpenStudentAlert, psych, psychEmail, t, teacher, teacherEmail]);
+  }, [activeStudentAlert, psych, psychEmail, t, teacher, teacherEmail]);
 
   const columns = useMemo<Column<SosAlert>[]>(() => [
     { key: "student", header: t("studentLabel"), render: (a) => <StudentIdentity student={a.student} subtitle={getStudentMeta(a.student)} />, className: "min-w-[170px]" },
@@ -252,7 +224,7 @@ export default function SosClient() {
     return (
       <PageScaffold className="gap-5" headerProps={{ title: t("title"), description: t("descriptionStudent") }}>
         <div className="grid min-w-0 gap-5 xl:grid-cols-[minmax(0,1fr)_minmax(300px,360px)]">
-          <SosPanel index={0} reducedEffects={reducedEffects} className="p-5 sm:p-6">
+          <DashboardPanel index={0} reducedEffects={reducedEffects} className="p-5 sm:p-6">
             <div className="mb-4 flex min-w-0 items-center gap-2.5">
               <span className="flex size-9 items-center justify-center rounded-[12px] border border-border/60 bg-danger-500/10 text-danger-600 dark:text-danger-400 shadow-sm">
                 <Send className="size-4" />
@@ -279,13 +251,13 @@ export default function SosClient() {
                   label={t("psych")}
                   value={psych}
                   onChange={(e) => setPsych(e.target.value)}
-                  disabled={studentLoading || triggeringSos || hasOpenStudentAlert}
+                  disabled={studentLoading || triggeringSos || !!activeStudentAlert}
                 />
                 <Input
                   label={t("teacher")}
                   value={teacher}
                   onChange={(e) => setTeacher(e.target.value)}
-                  disabled={studentLoading || triggeringSos || hasOpenStudentAlert}
+                  disabled={studentLoading || triggeringSos || !!activeStudentAlert}
                 />
               </div>
               <div className="grid gap-3 sm:grid-cols-2">
@@ -295,7 +267,7 @@ export default function SosClient() {
                   hint={t("emailOptional")}
                   value={psychEmail}
                   onChange={(e) => setPsychEmail(e.target.value)}
-                  disabled={studentLoading || triggeringSos || hasOpenStudentAlert}
+                  disabled={studentLoading || triggeringSos || !!activeStudentAlert}
                 />
                 <Input
                   type="email"
@@ -303,7 +275,7 @@ export default function SosClient() {
                   hint={t("emailOptional")}
                   value={teacherEmail}
                   onChange={(e) => setTeacherEmail(e.target.value)}
-                  disabled={studentLoading || triggeringSos || hasOpenStudentAlert}
+                  disabled={studentLoading || triggeringSos || !!activeStudentAlert}
                 />
               </div>
               <div className="flex items-center justify-end pt-1">
@@ -312,17 +284,17 @@ export default function SosClient() {
                   size="lg"
                   onClick={() => void triggerSos()}
                   loading={triggeringSos}
-                  disabled={studentLoading || hasOpenStudentAlert}
+                  disabled={studentLoading || !!activeStudentAlert}
                   icon={<Send className="size-4" />}
                   className="w-full justify-center sm:w-auto"
                 >
-                  {hasOpenStudentAlert ? t("alreadyOpenButton") : t("trigger")}
+                  {!!activeStudentAlert ? t("alreadyOpenButton") : t("trigger")}
                 </Button>
               </div>
             </div>
-          </SosPanel>
+          </DashboardPanel>
 
-          <SosPanel index={1} reducedEffects={reducedEffects} className="p-5">
+          <DashboardPanel index={1} reducedEffects={reducedEffects} className="p-5">
             <p className="text-tiny font-semibold uppercase tracking-[0.18em] text-muted-foreground">{t("historyTitle")}</p>
             <p className="mt-1 text-sm text-muted-foreground">{t("historyDescription")}</p>
             <div className="mt-4 grid gap-2.5">
@@ -336,7 +308,7 @@ export default function SosClient() {
                 studentAlerts.map((alert) => <StudentAlertRow key={alert.id} alert={alert} formatDate={formatDate} t={t} />)
               )}
             </div>
-          </SosPanel>
+          </DashboardPanel>
         </div>
       </PageScaffold>
     );
@@ -365,11 +337,11 @@ export default function SosClient() {
   if (loadError && alerts.length === 0) {
     return (
       <PageScaffold className="gap-5" headerProps={{ title: t("staffTitle"), description: t("staffDescription") }}>
-        <SosPanel index={0} reducedEffects={reducedEffects} className="p-5">
+        <DashboardPanel index={0} reducedEffects={reducedEffects} className="p-5">
           <EmptyState icon={XCircle} title={t("loadError")} description={loadError}
             action={<Button variant="outline" onClick={() => setStreamNonce((n) => n + 1)} icon={<RefreshCw className="size-4" />}>{t("refresh")}</Button>}
           />
-        </SosPanel>
+        </DashboardPanel>
       </PageScaffold>
     );
   }
@@ -416,7 +388,7 @@ export default function SosClient() {
       </div>
 
       {/* Priority Focus */}
-      <SosPanel index={3} reducedEffects={reducedEffects} className="p-5 sm:p-6">
+      <DashboardPanel index={3} reducedEffects={reducedEffects} className="p-5 sm:p-6">
         {oldestPending ? (
           <div className="grid min-w-0 gap-5 2xl:grid-cols-[minmax(0,1fr)_minmax(320px,420px)_auto] 2xl:items-center">
             <div className="min-w-0">
@@ -463,11 +435,11 @@ export default function SosClient() {
             </div>
           </div>
         )}
-      </SosPanel>
+      </DashboardPanel>
 
       {/* Alert table */}
       <div className="grid min-w-0 gap-5">
-        <SosPanel index={4} reducedEffects={reducedEffects} className="p-5 sm:p-6">
+        <DashboardPanel index={4} reducedEffects={reducedEffects} className="p-5 sm:p-6">
           <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <p className="text-tiny font-semibold uppercase tracking-[0.18em] text-muted-foreground">{t("queueEyebrow")}</p>
@@ -504,12 +476,12 @@ export default function SosClient() {
             scrollAreaClassName="rounded-b-[24px]"
             tableClassName="min-w-[1040px] xl:min-w-full [&_td]:px-3 [&_th]:px-3"
           />
-        </SosPanel>
+        </DashboardPanel>
 
         <div className="grid items-start gap-5 lg:grid-cols-[minmax(0,1fr)_360px]">
           {/* Priority queue */}
           {priorityAlerts.length > 0 && (
-            <SosPanel index={5} reducedEffects={reducedEffects} className="p-5">
+            <DashboardPanel index={5} reducedEffects={reducedEffects} className="p-5">
               <div className="mb-3 flex items-center justify-between gap-2">
                 <div>
                   <p className="text-tiny font-semibold uppercase tracking-[0.18em] text-muted-foreground">{t("priorityEyebrow")}</p>
@@ -522,11 +494,11 @@ export default function SosClient() {
               <div className="grid gap-2.5">
                 {priorityAlerts.map((alert) => <QueueAlertRow key={alert.id} alert={alert} role={role} onResolve={() => void resolveAlert(alert.id)} resolving={resolvingIds.has(alert.id)} formatDate={formatDate} t={t} />)}
               </div>
-            </SosPanel>
+            </DashboardPanel>
           )}
 
           {/* Stats panel */}
-          <SosPanel index={6} reducedEffects={reducedEffects} className="p-5">
+          <DashboardPanel index={6} reducedEffects={reducedEffects} className="p-5">
             <p className="text-tiny font-semibold uppercase tracking-[0.18em] text-muted-foreground">{t("statsPanelEyebrow")}</p>
             <h3 className="mt-1 text-base font-bold tracking-tight text-foreground">{t("statsPanelTitle")}</h3>
             <div className="mt-3 grid gap-2">
@@ -537,29 +509,10 @@ export default function SosClient() {
                 <MetaRow label={t("lastUpdatedLabel")} value={formatDate(lastUpdatedAt)} />
               )}
             </div>
-          </SosPanel>
+          </DashboardPanel>
         </div>
       </div>
     </PageScaffold>
-  );
-}
-
-// ─── Sub-components ───────────────────────────────────────────────────────────
-
-function SosPanel({ children, className, index, reducedEffects }: {
-  children: React.ReactNode; className?: string; index: number; reducedEffects: boolean;
-}) {
-  return (
-    <section
-      style={sectionAnimation(index, reducedEffects)}
-      className={cn(
-        "relative overflow-hidden rounded-[12px] border border-border bg-card/88 shadow-[0_4px_12px_rgba(9,21,35,0.08)] backdrop-blur-sm dark:border-white/10 dark:bg-navy-950/68 dark:shadow-[0_4px_18px_rgba(0,0,0,0.22)]",
-        !reducedEffects && "animate-fade-in-up opacity-0",
-        className,
-      )}
-    >
-      <div className="relative">{children}</div>
-    </section>
   );
 }
 
@@ -568,7 +521,7 @@ function KpiPanel({ index, reducedEffects, icon, iconClass, label, value, footer
   label: string; value: string; footer?: React.ReactNode; footerIcon?: React.ReactNode;
 }) {
   return (
-    <SosPanel index={index} reducedEffects={reducedEffects} className="group h-full min-h-[120px] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_8px_24px_rgba(9,21,35,0.12)] dark:hover:shadow-[0_10px_28px_rgba(0,0,0,0.34)]">
+    <DashboardPanel index={index} reducedEffects={reducedEffects} className="group h-full min-h-[120px] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_8px_24px_rgba(9,21,35,0.12)] dark:hover:shadow-[0_10px_28px_rgba(0,0,0,0.34)]">
       <div className="flex h-full min-h-[120px] flex-col p-4">
         <div className="mb-3 flex min-w-0 items-start justify-between gap-3">
           <p className="min-w-0 text-sm font-semibold leading-snug text-muted-foreground">{label}</p>
@@ -581,7 +534,7 @@ function KpiPanel({ index, reducedEffects, icon, iconClass, label, value, footer
           {footerIcon}<span className="min-w-0">{footer}</span>
         </span>
       </div>
-    </SosPanel>
+    </DashboardPanel>
   );
 }
 

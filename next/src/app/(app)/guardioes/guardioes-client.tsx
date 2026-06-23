@@ -1,8 +1,5 @@
 "use client";
 
-// Componente cliente de /guardioes: permite associar, listar e remover
-// encarregados de educação ligados a alunos.
-
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
@@ -27,7 +24,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useUser } from "@/components/user-context";
 import { readApiResponse } from "@/lib/api-client";
 import { useReducedEffects } from "@/hooks/use-reduced-effects";
-import { cn } from "@/lib/utils";
+import { DashboardPanel, sectionAnimation } from "@/components/ui/dashboard-panel";
 
 interface Student {
   id: string;
@@ -39,19 +36,6 @@ interface Guardian {
   id: string;
   relationship: string;
   guardian: { name: string | null; email: string };
-}
-
-function sectionAnimation(index: number, re: boolean) {
-  if (re) return {};
-  return { animationDelay: `${index * 70}ms` };
-}
-
-function BioPanel({ children, className, index, reducedEffects }: { children: React.ReactNode; className?: string; index: number; reducedEffects: boolean }) {
-  return (
-    <section style={sectionAnimation(index, reducedEffects)} className={cn("relative overflow-hidden rounded-[12px] border border-border bg-card/88 shadow-[0_4px_12px_rgba(9,21,35,0.08)] backdrop-blur-sm dark:border-white/10 dark:bg-navy-950/68 dark:shadow-[0_4px_18px_rgba(0,0,0,0.22)]", !reducedEffects && "animate-fade-in-up opacity-0", className)}>
-      <div className="relative">{children}</div>
-    </section>
-  );
 }
 
 export default function GuardioesPage() {
@@ -261,44 +245,44 @@ export default function GuardioesPage() {
     >
       {/* KPI Row */}
       <div className="grid grid-cols-3 gap-4">
-        <BioPanel index={0} reducedEffects={reducedEffects} className="p-4">
+        <DashboardPanel index={0} reducedEffects={reducedEffects} className="p-4">
           <div className="flex items-start justify-between gap-2">
             <p className="text-sm font-semibold text-muted-foreground">{t("kpiStudentsLabel")}</p>
             <span className="flex size-9 shrink-0 items-center justify-center rounded-[12px] bg-navy-100 text-navy-700 dark:bg-white/8 dark:text-navy-100"><Users className="size-[18px]" /></span>
           </div>
           <p className="mt-2 text-4xl font-extrabold tracking-tight text-foreground">{students.length}</p>
           <p className="mt-1 text-xs font-semibold text-muted-foreground">{t("kpiStudentsLoaded")}</p>
-        </BioPanel>
-        <BioPanel index={1} reducedEffects={reducedEffects} className="p-4">
+        </DashboardPanel>
+        <DashboardPanel index={1} reducedEffects={reducedEffects} className="p-4">
           <div className="flex items-start justify-between gap-2">
             <p className="text-sm font-semibold text-muted-foreground">{t("kpiGuardiansLabel")}</p>
             <span className="flex size-9 shrink-0 items-center justify-center rounded-[12px] bg-gold-100 text-gold-700 dark:bg-gold-300/12 dark:text-gold-200"><UserCheck className="size-[18px]" /></span>
           </div>
           <p className="mt-2 text-4xl font-extrabold tracking-tight text-foreground">{selectedStudentId ? guardians.length : "—"}</p>
           <p className="mt-1 text-xs font-semibold text-muted-foreground truncate">{selectedStudent ? selectedStudent.name : t("selectStudent")}</p>
-        </BioPanel>
-        <BioPanel index={2} reducedEffects={reducedEffects} className="p-4">
+        </DashboardPanel>
+        <DashboardPanel index={2} reducedEffects={reducedEffects} className="p-4">
           <div className="flex items-start justify-between gap-2">
             <p className="text-sm font-semibold text-muted-foreground">{t("kpiVerifiedLabel")}</p>
             <span className="flex size-9 shrink-0 items-center justify-center rounded-[12px] bg-emerald-100 text-emerald-700 dark:bg-emerald-300/12 dark:text-emerald-200"><Mail className="size-[18px]" /></span>
           </div>
           <p className="mt-2 text-4xl font-extrabold tracking-tight text-foreground">{selectedStudentId ? verifiedGuardians : "—"}</p>
           <p className="mt-1 text-xs font-semibold text-muted-foreground">{t("kpiVerifiedSub")}</p>
-        </BioPanel>
+        </DashboardPanel>
       </div>
 
       {/* Main Grid */}
       <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_360px] xl:items-start">
         {/* Left: student picker + guardians list */}
         <div className="grid gap-5">
-          <BioPanel index={3} reducedEffects={reducedEffects} className="p-5">
+          <DashboardPanel index={3} reducedEffects={reducedEffects} className="p-5">
             <p className="label-micro text-muted-foreground">{t("selectStudent")}</p>
             <div className="mt-2">
               <StudentPicker students={students} value={selectedStudentId} onChange={setSelectedStudentId} placeholder={t("selectStudent")} loading={loadingStudents} />
             </div>
-          </BioPanel>
+          </DashboardPanel>
 
-          <BioPanel index={4} reducedEffects={reducedEffects} className="p-5">
+          <DashboardPanel index={4} reducedEffects={reducedEffects} className="p-5">
             <div className="flex items-center justify-between gap-3">
               <div>
                  <p className="label-micro text-muted-foreground">{t("registosTitle")}</p>
@@ -355,13 +339,13 @@ export default function GuardioesPage() {
                 </div>
               )}
             </div>
-          </BioPanel>
+          </DashboardPanel>
         </div>
 
         {/* Right: add form */}
         <aside className="xl:sticky xl:top-24">
           {showAddForm && selectedStudentId ? (
-            <BioPanel index={5} reducedEffects={reducedEffects} className="p-5">
+            <DashboardPanel index={5} reducedEffects={reducedEffects} className="p-5">
               <p className="label-micro text-muted-foreground">{t("addBtn")}</p>
               <h3 className="mt-0.5 text-lg font-bold tracking-tight text-foreground">{t("addTitle")}</h3>
               <form onSubmit={handleAdd} className="mt-4 grid gap-4">
@@ -375,9 +359,9 @@ export default function GuardioesPage() {
                   <Button type="submit" variant="primary" loading={submitting}>{t("addBtn")}</Button>
                 </div>
               </form>
-            </BioPanel>
+            </DashboardPanel>
           ) : selectedStudentId ? (
-            <BioPanel index={5} reducedEffects={reducedEffects} className="p-5 text-center">
+            <DashboardPanel index={5} reducedEffects={reducedEffects} className="p-5 text-center">
               <div className="flex flex-col items-center gap-4 py-4">
                 <span className="flex size-12 items-center justify-center rounded-full border border-border/60 bg-background/65"><UserPlus className="size-5 text-muted-foreground" /></span>
                 <div>
@@ -386,14 +370,14 @@ export default function GuardioesPage() {
                 </div>
                 <Button variant="primary" className="w-full" onClick={() => setShowAddForm(true)}>{t("addBtn")}</Button>
               </div>
-            </BioPanel>
+            </DashboardPanel>
           ) : (
-            <BioPanel index={5} reducedEffects={reducedEffects} className="p-5">
+            <DashboardPanel index={5} reducedEffects={reducedEffects} className="p-5">
               <div className="rounded-[12px] border border-dashed border-border/60 bg-background/40 px-4 py-8 text-center">
                 <Users className="mx-auto size-6 text-muted-foreground/40" />
                 <p className="mt-2.5 text-sm text-muted-foreground">Seleciona um aluno para gerir encarregados.</p>
               </div>
-            </BioPanel>
+            </DashboardPanel>
           )}
         </aside>
       </div>

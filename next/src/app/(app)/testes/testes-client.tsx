@@ -1,8 +1,5 @@
 "use client";
 
-// Componente cliente de /testes: regista resultados de aptidão física,
-// consulta últimos testes e suporta importação em massa quando disponível.
-
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { toast } from "sonner";
@@ -38,6 +35,8 @@ import { readApiResponse } from "@/lib/api-client";
 import { classifyTest } from "@/lib/fitness-tests";
 import { calcAgeFromBirthDate, classifyBmi } from "@/lib/zaf";
 import { cn } from "@/lib/utils";
+import { DashboardPanel, sectionAnimation } from "@/components/ui/dashboard-panel";
+import { useAnimatedNumber } from "@/hooks/use-animated-number";
 import { useReducedEffects } from "@/hooks/use-reduced-effects";
 import { TestBulkImportModal } from "@/components/ui/test-bulk-import-modal";
 
@@ -177,38 +176,6 @@ function isHealthyZone(zone: string | null | undefined) {
   return n.includes("saudavel") || n.includes("healthy") || n.includes("zsaf");
 }
 
-function sectionAnimation(index: number, reducedEffects: boolean) {
-  if (reducedEffects) return {};
-  return { animationDelay: `${index * 70}ms` };
-}
-
-function useAnimatedNumber(target: number, disabled: boolean) {
-  const [display, setDisplay] = useState(target);
-  const previous = useRef(target);
-
-  useEffect(() => {
-    if (disabled) { previous.current = target; return; }
-    if (previous.current === target) return;
-
-    let frame = 0;
-    const start = performance.now();
-    const from = previous.current;
-    const duration = 620;
-
-    const tick = (now: number) => {
-      const progress = Math.min((now - start) / duration, 1);
-      const eased = 1 - Math.pow(1 - progress, 3);
-      setDisplay(Math.round(from + (target - from) * eased));
-      if (progress < 1) frame = requestAnimationFrame(tick);
-    };
-
-    previous.current = target;
-    frame = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(frame);
-  }, [disabled, target]);
-
-  return disabled ? target : display;
-}
 
 // ─── Main Component ───────────────────────────────────────────────────────────
 
@@ -562,7 +529,7 @@ function TestesContent({
       {/* ── Row 2: Form + Sidebar ── */}
       <div className="grid grid-cols-1 items-start gap-5 xl:grid-cols-[minmax(0,1.3fr)_340px]">
         {/* Form */}
-        <BioPanel index={4} reducedEffects={reducedEffects} className="p-5 sm:p-6">
+        <DashboardPanel index={4} reducedEffects={reducedEffects} className="p-5 sm:p-6">
           <form onSubmit={handleSubmit} className="grid gap-4">
             {/* Student picker */}
             <div className="rounded-[8px] border border-border/70 bg-background/55 p-4">
@@ -681,12 +648,12 @@ function TestesContent({
               </div>
             </div>
           </form>
-        </BioPanel>
+        </DashboardPanel>
 
         {/* Sidebar */}
         <aside className="grid gap-4 xl:sticky xl:top-24">
           {/* Student info */}
-          <BioPanel index={5} reducedEffects={reducedEffects} className="p-5">
+          <DashboardPanel index={5} reducedEffects={reducedEffects} className="p-5">
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">
                 <p className="text-tiny font-semibold uppercase tracking-[0.18em] text-muted-foreground">{t("activeBatteryTitle")}</p>
@@ -713,10 +680,10 @@ function TestesContent({
             ) : (
               <p className="mt-3 text-sm leading-relaxed text-muted-foreground">{t("noStudentHint")}</p>
             )}
-          </BioPanel>
+          </DashboardPanel>
 
           {/* Session metrics */}
-          <BioPanel index={6} reducedEffects={reducedEffects} className="p-5">
+          <DashboardPanel index={6} reducedEffects={reducedEffects} className="p-5">
             <p className="text-tiny font-semibold uppercase tracking-[0.18em] text-muted-foreground">{t("sessionMetricsTitle")}</p>
             <div className="mt-3 grid gap-2">
               <SessionMetric label={t("filledTestsLabel")} value={`${completedTestsCount}/${TOTAL_TESTS}`} />
@@ -753,10 +720,10 @@ function TestesContent({
                 <div className="mt-2"><ZoneBadge zone={lastSubmission.zone} /></div>
               </div>
             ) : null}
-          </BioPanel>
+          </DashboardPanel>
 
           {/* Family coverage */}
-          <BioPanel index={7} reducedEffects={reducedEffects} className="p-5">
+          <DashboardPanel index={7} reducedEffects={reducedEffects} className="p-5">
             <p className="text-tiny font-semibold uppercase tracking-[0.18em] text-muted-foreground">{t("coverageTitle")}</p>
             <h3 className="mt-1 text-base font-bold tracking-tight text-foreground">{t("familiesTitle")}</h3>
             <div className="mt-3 grid gap-2.5">
@@ -764,12 +731,12 @@ function TestesContent({
                 <FamilyProgressRow key={family.id} title={family.title} filled={family.filled} total={family.total} percentage={family.percentage} />
               ))}
             </div>
-          </BioPanel>
+          </DashboardPanel>
         </aside>
       </div>
 
       {/* ── Row 3: Recent Results ── */}
-      <BioPanel index={8} reducedEffects={reducedEffects} className="p-5 sm:p-6">
+      <DashboardPanel index={8} reducedEffects={reducedEffects} className="p-5 sm:p-6">
         <div className="mb-4 flex items-start justify-between gap-3">
           <div>
             <p className="text-tiny font-semibold uppercase tracking-[0.18em] text-muted-foreground">{t("lastBatteryPanelTitle")}</p>
@@ -797,7 +764,7 @@ function TestesContent({
         ) : (
           <InlineFocusEmpty icon={Timer}>{t("noRecentResultsHint")}</InlineFocusEmpty>
         )}
-      </BioPanel>
+      </DashboardPanel>
     </div>
   );
 }
@@ -823,33 +790,6 @@ function TestesLoadingState() {
   );
 }
 
-// ─── Panel Components ─────────────────────────────────────────────────────────
-
-function BioPanel({
-  children,
-  className,
-  index,
-  reducedEffects,
-}: {
-  children: React.ReactNode;
-  className?: string;
-  index: number;
-  reducedEffects: boolean;
-}) {
-  return (
-    <section
-      style={sectionAnimation(index, reducedEffects)}
-      className={cn(
-        "relative overflow-hidden rounded-[12px] border border-border bg-card/88 shadow-[0_4px_12px_rgba(9,21,35,0.08)] backdrop-blur-sm dark:border-white/10 dark:bg-navy-950/68 dark:shadow-[0_4px_18px_rgba(0,0,0,0.22)]",
-        !reducedEffects && "animate-fade-in-up opacity-0",
-        className,
-      )}
-    >
-      <div className="relative">{children}</div>
-    </section>
-  );
-}
-
 function KpiPanel({
   index,
   reducedEffects,
@@ -872,7 +812,7 @@ function KpiPanel({
   footerProgress?: boolean;
 }) {
   return (
-    <BioPanel
+    <DashboardPanel
       index={index}
       reducedEffects={reducedEffects}
       className="group h-full min-h-[120px] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_8px_24px_rgba(9,21,35,0.12)] dark:hover:shadow-[0_10px_28px_rgba(0,0,0,0.34)]"
@@ -894,7 +834,7 @@ function KpiPanel({
           </span>
         )}
       </div>
-    </BioPanel>
+    </DashboardPanel>
   );
 }
 

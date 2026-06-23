@@ -35,6 +35,20 @@ export function validateCsvUpload(file: File): string | null {
   return null;
 }
 
+export function pickField(
+  row: string[],
+  headerIndex: Map<string, number>,
+  aliases: string[],
+): string {
+  for (const alias of aliases) {
+    const index = headerIndex.get(normalizeCsvHeader(alias));
+    if (index !== undefined) {
+      return (row[index] ?? "").trim();
+    }
+  }
+  return "";
+}
+
 export function normalizeCsvHeader(value: string): string {
   return value
     .trim()

@@ -34,6 +34,7 @@ import {
   useDispensas,
   useStudents,
 } from "@/hooks/use-queries";
+import { DashboardPanel, sectionAnimation } from "@/components/ui/dashboard-panel";
 import { useReducedEffects } from "@/hooks/use-reduced-effects";
 import { cn } from "@/lib/utils";
 
@@ -57,29 +58,17 @@ const INITIAL_FORM = {
   endDate: "",
 };
 
-function sectionAnimation(index: number, re: boolean) {
-  if (re) return {};
-  return { animationDelay: `${index * 70}ms` };
-}
-
-function BioPanel({ children, className, index, reducedEffects }: { children: React.ReactNode; className?: string; index: number; reducedEffects: boolean }) {
-  return (
-    <section style={sectionAnimation(index, reducedEffects)} className={cn("relative overflow-hidden rounded-[12px] border border-border bg-card/88 shadow-[0_4px_12px_rgba(9,21,35,0.08)] backdrop-blur-sm dark:border-white/10 dark:bg-navy-950/68 dark:shadow-[0_4px_18px_rgba(0,0,0,0.22)]", !reducedEffects && "animate-fade-in-up opacity-0", className)}>
-      <div className="relative">{children}</div>
-    </section>
-  );
-}
 
 function KpiCard({ index, re, icon, iconClass, label, value, sub }: { index: number; re: boolean; icon: React.ReactNode; iconClass: string; label: string; value: string | number; sub: string }) {
   return (
-    <BioPanel index={index} reducedEffects={re} className="p-4">
+    <DashboardPanel index={index} reducedEffects={re} className="p-4">
       <div className="flex items-start justify-between gap-2">
         <p className="text-sm font-semibold text-muted-foreground">{label}</p>
         <span className={cn("flex size-9 shrink-0 items-center justify-center rounded-[12px]", iconClass)}>{icon}</span>
       </div>
       <p className="mt-2 text-4xl font-extrabold tracking-tight text-foreground">{value}</p>
       <p className="mt-1 truncate text-xs font-semibold text-muted-foreground">{sub}</p>
-    </BioPanel>
+    </DashboardPanel>
   );
 }
 
@@ -291,7 +280,7 @@ export default function DispensasClient() {
       {/* Main Grid */}
       <div className="grid gap-5 xl:grid-cols-[340px_minmax(0,1fr)] xl:items-start">
         {/* Left: picker + form */}
-        <BioPanel index={3} reducedEffects={reducedEffects} className="p-5">
+        <DashboardPanel index={3} reducedEffects={reducedEffects} className="p-5">
           <p className="label-micro text-muted-foreground">{t("studentPickerLabel")}</p>
           <div className="mt-2">
             <StudentPicker students={students} value={studentId} onChange={handleStudentChange} loading={loadingStudents} />
@@ -341,10 +330,10 @@ export default function DispensasClient() {
               <EmptyState icon={Users} title={t("studentsEmptyTitle")} description={t("studentsEmptyDescription")} />
             </div>
           )}
-        </BioPanel>
+        </DashboardPanel>
 
         {/* Right: history */}
-        <BioPanel index={4} reducedEffects={reducedEffects} className="p-5">
+        <DashboardPanel index={4} reducedEffects={reducedEffects} className="p-5">
           <div className="flex items-center justify-between gap-3">
             <div>
               <p className="label-micro text-muted-foreground">{t("historyPanelTitle")}</p>
@@ -392,7 +381,7 @@ export default function DispensasClient() {
               </div>
             )}
           </div>
-        </BioPanel>
+        </DashboardPanel>
       </div>
 
       <ConfirmModal open={!!deleteId} title={t("deleteTitle")} message={t("deleteDesc")} variant="danger" onConfirm={handleDelete} onCancel={() => setDeleteId(null)} />

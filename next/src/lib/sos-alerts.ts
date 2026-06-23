@@ -1,5 +1,24 @@
 import { prisma } from "@/lib/prisma";
 
+export const sosAlertInclude = {
+  student: {
+    select: {
+      id: true,
+      name: true,
+      className: true,
+      schoolYear: true,
+    },
+  },
+  resolvedBy: {
+    select: {
+      id: true,
+      name: true,
+      email: true,
+      role: true,
+    },
+  },
+} as const;
+
 type ResolvedByLike = {
   id: string;
   name: string | null;

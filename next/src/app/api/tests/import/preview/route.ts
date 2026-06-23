@@ -11,6 +11,7 @@ import {
   MAX_CSV_ROWS,
   normalizeCsvHeader,
   parseCsv,
+  pickField,
   validateCsvUpload,
 } from "@/lib/csv";
 import { TEST_OPTIONS } from "@/lib/fitness-tests";
@@ -292,18 +293,6 @@ async function resolveStudent({
   return value;
 }
 
-function pickField(
-  row: string[],
-  headerIndex: Map<string, number>,
-  aliases: string[],
-): string {
-  for (const alias of aliases) {
-    const index = headerIndex.get(normalizeCsvHeader(alias));
-    if (index === undefined) continue;
-    return (row[index] ?? "").trim();
-  }
-  return "";
-}
 
 function parseValueNum(testId: string, valueText: string): number | null {
   if (testId === "milha") return null;

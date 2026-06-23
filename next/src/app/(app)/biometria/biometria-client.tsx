@@ -1,8 +1,5 @@
 "use client";
 
-// Componente cliente de /biometria: seleciona aluno, calcula campos derivados
-// e grava medições biométricas através da API do aluno.
-
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { toast } from "sonner";
@@ -44,6 +41,8 @@ import { useUser } from "@/components/user-context";
 import { calcAgeFromBirthDate, classifyBmi, classifyWaist } from "@/lib/zaf";
 import { readApiResponse } from "@/lib/api-client";
 import { cn } from "@/lib/utils";
+import { DashboardPanel, sectionAnimation } from "@/components/ui/dashboard-panel";
+import { useAnimatedNumber } from "@/hooks/use-animated-number";
 import { useReducedEffects } from "@/hooks/use-reduced-effects";
 import { useSyncStatus } from "@/hooks/use-sync-status";
 
@@ -130,38 +129,6 @@ function formatDelta(value: number) {
   return `${prefix}${Math.abs(value).toFixed(1)}`;
 }
 
-function sectionAnimation(index: number, reducedEffects: boolean) {
-  if (reducedEffects) return {};
-  return { animationDelay: `${index * 70}ms` };
-}
-
-function useAnimatedNumber(target: number, disabled: boolean) {
-  const [display, setDisplay] = useState(target);
-  const previous = useRef(target);
-
-  useEffect(() => {
-    if (disabled) { previous.current = target; return; }
-    if (previous.current === target) return;
-
-    let frame = 0;
-    const start = performance.now();
-    const from = previous.current;
-    const duration = 620;
-
-    const tick = (now: number) => {
-      const progress = Math.min((now - start) / duration, 1);
-      const eased = 1 - Math.pow(1 - progress, 3);
-      setDisplay(Math.round(from + (target - from) * eased));
-      if (progress < 1) frame = requestAnimationFrame(tick);
-    };
-
-    previous.current = target;
-    frame = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(frame);
-  }, [disabled, target]);
-
-  return disabled ? target : display;
-}
 
 export default function BiometriaPage() {
   const t = useTranslations("biometria");
@@ -202,7 +169,6 @@ export default function BiometriaPage() {
   );
 
   const completedMeasurements = useMemo(() => Object.values(form).filter(Boolean).length, [form]);
-  const completionPercentage = Math.round((completedMeasurements / 4) * 100);
   const requiredMeasurementsComplete = Boolean(form.heightM && form.weightKg);
   const latestRecord = history[0] ?? null;
   const recentHistory = history.slice(0, 6);
@@ -398,7 +364,6 @@ export default function BiometriaPage() {
           bmiDelta={bmiDelta}
           classification={classification}
           completedMeasurements={completedMeasurements}
-          completionPercentage={completionPercentage}
           form={form}
           formatDate={formatDate}
           formatDateTime={formatDateTime}
@@ -429,7 +394,6 @@ interface BiometriaContentProps {
   bmiDelta: number | null;
   classification: Classification | null;
   completedMeasurements: number;
-  completionPercentage: number;
   form: typeof EMPTY_FORM;
   formatDate: (v: string) => string;
   formatDateTime: (v: string) => string;
@@ -456,7 +420,6 @@ function BiometriaContent({
   bmiDelta,
   classification,
   completedMeasurements,
-  completionPercentage,
   form,
   formatDate,
   formatDateTime,
@@ -521,7 +484,7 @@ function BiometriaContent({
             <div className="mt-2 h-1.5 w-full rounded-full bg-muted">
               <div
                 className="h-full rounded-full bg-gradient-to-r from-navy-800 to-gold-400 transition-all duration-500"
-                style={{ width: `${completionPercentage}%` }}
+                style={{ width: `${Math.round((completedMeasurements / 4) * 100)}%` }}
               />
             </div>
           }
@@ -558,7 +521,7 @@ function BiometriaContent({
       {/* Main Grid: Form + Sidebar */}
       <div className="grid grid-cols-1 items-start gap-5 lg:grid-cols-[minmax(0,1.2fr)_360px]">
         {/* Form Panel */}
-        <BioPanel index={4} reducedEffects={reducedEffects} className="p-5 sm:p-6">
+        <DashboardPanel index={4} reducedEffects={reducedEffects} className="p-5 sm:p-6">
           {/* Student Picker */}
           <div className="mb-5 rounded-[12px] border border-border/70 bg-background/55 p-4">
             <div className="grid gap-4 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
@@ -673,12 +636,12 @@ function BiometriaContent({
               </div>
             </div>
           </form>
-        </BioPanel>
+        </DashboardPanel>
 
         {/* Sidebar */}
         <aside className="lg:sticky lg:top-24 grid gap-4">
           {/* Student info */}
-          <BioPanel index={5} reducedEffects={reducedEffects} className="p-5">
+          <DashboardPanel index={5} reducedEffects={reducedEffects} className="p-5">
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">
                 <p className="label-micro text-muted-foreground">
@@ -702,10 +665,10 @@ function BiometriaContent({
             ) : (
               <p className="mt-3 text-sm leading-relaxed text-muted-foreground">{t("studentContextEmpty")}</p>
             )}
-          </BioPanel>
+          </DashboardPanel>
 
           {/* Live classification */}
-          <BioPanel index={6} reducedEffects={reducedEffects} className="p-5">
+          <DashboardPanel index={6} reducedEffects={reducedEffects} className="p-5">
             <div className="flex items-start justify-between gap-3">
               <div>
                 <p className="label-micro text-muted-foreground">
@@ -746,10 +709,10 @@ function BiometriaContent({
             ) : (
               <InlineFocusEmpty icon={Activity}>{t("enterValuesHint")}</InlineFocusEmpty>
             )}
-          </BioPanel>
+          </DashboardPanel>
 
           {/* Last record */}
-          <BioPanel index={7} reducedEffects={reducedEffects} className="p-5">
+          <DashboardPanel index={7} reducedEffects={reducedEffects} className="p-5">
             <div className="flex items-start justify-between gap-3">
               <div>
                 <p className="label-micro text-muted-foreground">
@@ -780,14 +743,14 @@ function BiometriaContent({
                 {selectedStudent ? t("latestRecordEmpty") : t("studentContextEmpty")}
               </InlineFocusEmpty>
             )}
-          </BioPanel>
+          </DashboardPanel>
         </aside>
       </div>
 
       {/* Bottom Row: Chart + History */}
       <div className="grid gap-5 lg:grid-cols-[minmax(0,1.3fr)_minmax(280px,1fr)]">
         {/* BMI Trend Chart */}
-        <BioPanel index={8} reducedEffects={reducedEffects} className="p-5 sm:p-6">
+        <DashboardPanel index={8} reducedEffects={reducedEffects} className="p-5 sm:p-6">
           <div className="mb-4 flex items-start justify-between gap-3">
             <div>
               <p className="label-micro text-muted-foreground">
@@ -862,10 +825,10 @@ function BiometriaContent({
               </div>
             )}
           </ChartFrame>
-        </BioPanel>
+        </DashboardPanel>
 
         {/* History List */}
-        <BioPanel index={9} reducedEffects={reducedEffects} className="p-5 sm:p-6">
+        <DashboardPanel index={9} reducedEffects={reducedEffects} className="p-5 sm:p-6">
           <div className="mb-4">
             <p className="label-micro text-muted-foreground">
               {t("historyDescription")}
@@ -898,7 +861,7 @@ function BiometriaContent({
           ) : (
             <InlineFocusEmpty icon={HistoryIcon}>{t("historyEmptySelected")}</InlineFocusEmpty>
           )}
-        </BioPanel>
+        </DashboardPanel>
       </div>
     </div>
   );
@@ -926,31 +889,6 @@ function BiometriaLoadingState() {
   );
 }
 
-function BioPanel({
-  children,
-  className,
-  index,
-  reducedEffects,
-}: {
-  children: React.ReactNode;
-  className?: string;
-  index: number;
-  reducedEffects: boolean;
-}) {
-  return (
-    <section
-      style={sectionAnimation(index, reducedEffects)}
-      className={cn(
-        "relative overflow-hidden rounded-[12px] border border-border bg-card/88 shadow-[0_4px_12px_rgba(9,21,35,0.08)] backdrop-blur-sm dark:border-white/10 dark:bg-navy-950/68 dark:shadow-[0_4px_18px_rgba(0,0,0,0.22)]",
-        !reducedEffects && "animate-fade-in-up opacity-0",
-        className,
-      )}
-    >
-      <div className="relative">{children}</div>
-    </section>
-  );
-}
-
 function KpiPanel({
   index,
   reducedEffects,
@@ -973,7 +911,7 @@ function KpiPanel({
   footerProgress?: boolean;
 }) {
   return (
-    <BioPanel
+    <DashboardPanel
       index={index}
       reducedEffects={reducedEffects}
       className="group h-full min-h-[120px] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_8px_24px_rgba(9,21,35,0.12)] dark:hover:shadow-[0_10px_28px_rgba(0,0,0,0.34)]"
@@ -995,7 +933,7 @@ function KpiPanel({
           </span>
         )}
       </div>
-    </BioPanel>
+    </DashboardPanel>
   );
 }
 

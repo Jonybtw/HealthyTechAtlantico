@@ -1,8 +1,5 @@
 "use client";
 
-// Componente cliente de /alunos/[id]: apresenta e edita dados do aluno,
-// histórico recente, encarregados e dispensas recebidos do servidor.
-
 import { useState, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations, useLocale } from "next-intl";
@@ -66,13 +63,15 @@ import {
 import { FieldShell } from "@/components/ui/field-shell";
 import { Switch } from "@/components/ui/switch";
 import { PageScaffold } from "@/components/ui/page-scaffold";
+import { DashboardPanel, sectionAnimation } from "@/components/ui/dashboard-panel";
 import { useReducedEffects } from "@/hooks/use-reduced-effects";
 import { cn } from "@/lib/utils";
 import { calcAgeFromBirthDate } from "@/lib/zaf";
 import { readApiResponse } from "@/lib/api-client";
 import {
+  formatKidmedPeriodLabel,
+  formatQuestionnaireFieldValue,
   getKidmedClassificationLabelKey,
-  getKidmedPeriodLabelKey,
   getQuestionnairePreviewItems,
   getQuestionnaireTypeLabelKey,
   QUESTIONNAIRE_FIELD_META,
@@ -81,18 +80,6 @@ import {
 } from "@/lib/questionnaires";
 import { getInitials } from "@/components/ui/student-picker";
 
-function sectionAnimation(index: number, re: boolean) {
-  if (re) return {};
-  return { animationDelay: `${index * 70}ms` };
-}
-
-function BioPanel({ children, className, index, reducedEffects }: { children: React.ReactNode; className?: string; index: number; reducedEffects: boolean }) {
-  return (
-    <section style={sectionAnimation(index, reducedEffects)} className={cn("relative overflow-hidden rounded-[12px] border border-border bg-card/88 shadow-[0_4px_12px_rgba(9,21,35,0.08)] backdrop-blur-sm dark:border-white/10 dark:bg-navy-950/68 dark:shadow-[0_4px_18px_rgba(0,0,0,0.22)]", !reducedEffects && "animate-fade-in-up opacity-0", className)}>
-      <div className="relative">{children}</div>
-    </section>
-  );
-}
 
 type BiometricTrendMetric = "heightM" | "weightKg" | "imc" | "waistCm" | "fatPct";
 type SelectedTrend =
@@ -191,32 +178,6 @@ export function StudentDetailClient({ student }: Props) {
       className: student.className ?? "",
     },
   });
-
-  function getQuestionnairePeriodLabel(
-    questionnaire: Props["student"]["questionnaires"][number],
-  ) {
-    const period = questionnaire.periodKey?.split(":")[1];
-    if (
-      (period === "P1" || period === "P2" || period === "P3") &&
-      questionnaire.schoolYear
-    ) {
-      return `${q(getKidmedPeriodLabelKey(period))} - ${questionnaire.schoolYear}`;
-    }
-    return questionnaire.schoolYear ?? questionnaire.periodKey ?? null;
-  }
-
-  function formatQuestionnaireValue(
-    value: unknown,
-    meta: { unitKey?: string; scaleMax?: number },
-  ) {
-    if (typeof value === "boolean") return value ? q("yes") : q("no");
-    if (typeof value === "number") {
-      if (meta.scaleMax) return `${value}/${meta.scaleMax}`;
-      if (meta.unitKey) return `${value} ${q(meta.unitKey)}`;
-    }
-    if (typeof value === "string" && value.length > 0) return value;
-    return common("noData");
-  }
 
   function formatDate(value: string) {
     return new Date(value).toLocaleDateString(locale);
@@ -407,7 +368,7 @@ export function StudentDetailClient({ student }: Props) {
         }
       >
         {editing ? (
-          <BioPanel index={0} reducedEffects={reducedEffects} className="p-5">
+          <DashboardPanel index={0} reducedEffects={reducedEffects} className="p-5">
             <p className="mb-4 text-sm font-bold text-foreground">{t("editTitle")}</p>
             <Form {...editForm}>
               <form
@@ -519,11 +480,11 @@ export function StudentDetailClient({ student }: Props) {
                 </Button>
               </form>
             </Form>
-          </BioPanel>
+          </DashboardPanel>
         ) : null}
 
         <div className="grid gap-4 xl:grid-cols-2">
-          <BioPanel index={1} reducedEffects={reducedEffects} className="p-5">
+          <DashboardPanel index={1} reducedEffects={reducedEffects} className="p-5">
             <div className="mb-4 flex items-center gap-2">
               <Ruler className="size-4 text-gold-600" />
               <p className="text-sm font-bold tracking-tight text-foreground">{t("recentBiometrics")}</p>
@@ -623,9 +584,9 @@ export function StudentDetailClient({ student }: Props) {
             ) : (
               <Empty message={t("noRecords")} />
             )}
-          </BioPanel>
+          </DashboardPanel>
 
-          <BioPanel index={2} reducedEffects={reducedEffects} className="p-5">
+          <DashboardPanel index={2} reducedEffects={reducedEffects} className="p-5">
             <div className="mb-4 flex items-center gap-2">
               <Timer className="size-4 text-gold-600" />
               <p className="text-sm font-bold tracking-tight text-foreground">{t("recentTests")}</p>
@@ -687,9 +648,9 @@ export function StudentDetailClient({ student }: Props) {
             ) : (
               <Empty message={t("noRecords")} />
             )}
-          </BioPanel>
+          </DashboardPanel>
 
-          <BioPanel index={3} reducedEffects={reducedEffects} className="p-5">
+          <DashboardPanel index={3} reducedEffects={reducedEffects} className="p-5">
             <div className="mb-4 flex items-center gap-2">
               <ClipboardList className="size-4 text-gold-600" />
               <p className="text-sm font-bold tracking-tight text-foreground">{t("questionnaires")}</p>
@@ -748,7 +709,7 @@ export function StudentDetailClient({ student }: Props) {
                         }
 
                         if (item.key === "period") {
-                          const label = getQuestionnairePeriodLabel(questionnaire);
+                          const label = formatKidmedPeriodLabel(q, questionnaire);
                           return label ? (
                             <Badge
                               key={item.key}
@@ -770,7 +731,7 @@ export function StudentDetailClient({ student }: Props) {
                             className="border-white/40 bg-white/82 font-semibold normal-case tracking-tight text-navy-900 shadow-[inset_0_1px_0_rgba(255,255,255,0.8)] dark:border-white/12 dark:bg-white/8 dark:text-navy-100 dark:shadow-none"
                           >
                             {q(item.labelKey)}: {" "}
-                            {formatQuestionnaireValue(item.value, meta)}
+                            {formatQuestionnaireFieldValue(q, item.value, meta, common("noData"))}
                           </Badge>
                         );
                       })}
@@ -781,9 +742,9 @@ export function StudentDetailClient({ student }: Props) {
             ) : (
               <Empty message={t("noRecords")} />
             )}
-          </BioPanel>
+          </DashboardPanel>
 
-          <BioPanel index={4} reducedEffects={reducedEffects} className="p-5">
+          <DashboardPanel index={4} reducedEffects={reducedEffects} className="p-5">
             <div className="mb-1 flex items-center gap-2">
               <ShieldCheck className="size-4 text-gold-600" />
               <p className="text-sm font-bold tracking-tight text-foreground">{t("kidmedConsentTitle")}</p>
@@ -837,9 +798,9 @@ export function StudentDetailClient({ student }: Props) {
                 </div>
               </div>
             </div>
-          </BioPanel>
+          </DashboardPanel>
 
-          <BioPanel index={5} reducedEffects={reducedEffects} className="p-5">
+          <DashboardPanel index={5} reducedEffects={reducedEffects} className="p-5">
             <div className="mb-4 flex items-center gap-2">
               <ShieldOff className="size-4 text-gold-600" />
               <p className="text-sm font-bold tracking-tight text-foreground">{t("exemptions")}</p>
@@ -870,9 +831,9 @@ export function StudentDetailClient({ student }: Props) {
             ) : (
               <Empty message={t("noRecords")} />
             )}
-          </BioPanel>
+          </DashboardPanel>
 
-          <BioPanel index={6} reducedEffects={reducedEffects} className="p-5">
+          <DashboardPanel index={6} reducedEffects={reducedEffects} className="p-5">
             <div className="mb-4 flex items-center gap-2">
               <Users className="size-4 text-gold-600" />
               <p className="text-sm font-bold tracking-tight text-foreground">{t("guardians")}</p>
@@ -906,7 +867,7 @@ export function StudentDetailClient({ student }: Props) {
             ) : (
               <Empty message={t("noRecords")} />
             )}
-          </BioPanel>
+          </DashboardPanel>
         </div>
       </PageScaffold>
 
