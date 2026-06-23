@@ -63,7 +63,7 @@ import {
 import { FieldShell } from "@/components/ui/field-shell";
 import { Switch } from "@/components/ui/switch";
 import { PageScaffold } from "@/components/ui/page-scaffold";
-import { DashboardPanel, sectionAnimation } from "@/components/ui/dashboard-panel";
+import { DashboardPanel } from "@/components/ui/dashboard-panel";
 import { useReducedEffects } from "@/hooks/use-reduced-effects";
 import { cn } from "@/lib/utils";
 import { calcAgeFromBirthDate } from "@/lib/zaf";

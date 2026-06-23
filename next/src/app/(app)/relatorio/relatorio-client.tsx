@@ -37,7 +37,7 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { FieldShell } from "@/components/ui/field-shell";
 import { PageScaffold } from "@/components/ui/page-scaffold";
 import { Skeleton } from "@/components/ui/skeleton";
-import { DashboardPanel, sectionAnimation } from "@/components/ui/dashboard-panel";
+import { DashboardPanel } from "@/components/ui/dashboard-panel";
 import { useReducedEffects } from "@/hooks/use-reduced-effects";
 import { cn } from "@/lib/utils";
 import { StudentIdentity } from "@/components/ui/student-identity";

@@ -21,9 +21,8 @@ import {
 } from "lucide-react";
 import { PageScaffold } from "@/components/ui/page-scaffold";
 import { ClassPicker } from "@/components/ui/class-picker";
-import { DashboardPanel, sectionAnimation } from "@/components/ui/dashboard-panel";
+import { DashboardPanel } from "@/components/ui/dashboard-panel";
 import { useReducedEffects } from "@/hooks/use-reduced-effects";
-import { cn } from "@/lib/utils";
 import { DataTable, type Column } from "@/components/ui/data-table";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";

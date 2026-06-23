@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { toast } from "sonner";
 import {
@@ -35,7 +35,7 @@ import { readApiResponse } from "@/lib/api-client";
 import { classifyTest } from "@/lib/fitness-tests";
 import { calcAgeFromBirthDate, classifyBmi } from "@/lib/zaf";
 import { cn } from "@/lib/utils";
-import { DashboardPanel, sectionAnimation } from "@/components/ui/dashboard-panel";
+import { DashboardPanel } from "@/components/ui/dashboard-panel";
 import { useAnimatedNumber } from "@/hooks/use-animated-number";
 import { useReducedEffects } from "@/hooks/use-reduced-effects";
 import { TestBulkImportModal } from "@/components/ui/test-bulk-import-modal";

@@ -35,7 +35,7 @@ import { ClassPicker } from "@/components/ui/class-picker";
 import { EmptyState } from "@/components/ui/empty-state";
 import { PageScaffold } from "@/components/ui/page-scaffold";
 import { StudentPicker } from "@/components/ui/student-picker";
-import { DashboardPanel, sectionAnimation } from "@/components/ui/dashboard-panel";
+import { DashboardPanel } from "@/components/ui/dashboard-panel";
 import { useReducedEffects } from "@/hooks/use-reduced-effects";
 import { useUser } from "@/components/user-context";
 import { useClasses } from "@/hooks/use-queries";

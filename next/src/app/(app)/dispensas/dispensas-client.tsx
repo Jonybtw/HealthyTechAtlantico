@@ -34,7 +34,7 @@ import {
   useDispensas,
   useStudents,
 } from "@/hooks/use-queries";
-import { DashboardPanel, sectionAnimation } from "@/components/ui/dashboard-panel";
+import { DashboardPanel } from "@/components/ui/dashboard-panel";
 import { useReducedEffects } from "@/hooks/use-reduced-effects";
 import { cn } from "@/lib/utils";
 

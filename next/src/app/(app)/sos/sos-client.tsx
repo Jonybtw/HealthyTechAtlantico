@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import Link from "next/link";
 import { toast } from "sonner";
@@ -28,7 +28,7 @@ import { StudentIdentity } from "@/components/ui/student-identity";
 import { useUser } from "@/components/user-context";
 import { readApiResponse } from "@/lib/api-client";
 import { cn } from "@/lib/utils";
-import { DashboardPanel, sectionAnimation } from "@/components/ui/dashboard-panel";
+import { DashboardPanel } from "@/components/ui/dashboard-panel";
 import { useAnimatedNumber } from "@/hooks/use-animated-number";
 import { useReducedEffects } from "@/hooks/use-reduced-effects";
 import { useSosAlertsStream } from "@/hooks/use-queries";

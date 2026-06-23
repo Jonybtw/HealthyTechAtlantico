@@ -24,7 +24,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useUser } from "@/components/user-context";
 import { readApiResponse } from "@/lib/api-client";
 import { useReducedEffects } from "@/hooks/use-reduced-effects";
-import { DashboardPanel, sectionAnimation } from "@/components/ui/dashboard-panel";
+import { DashboardPanel } from "@/components/ui/dashboard-panel";
 
 interface Student {
   id: string;
