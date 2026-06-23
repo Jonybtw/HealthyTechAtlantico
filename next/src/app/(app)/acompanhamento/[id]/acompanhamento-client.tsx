@@ -1,8 +1,5 @@
 "use client";
 
-// Componente cliente de /acompanhamento/[id]: mostra questionários e alertas
-// SOS para apoio de administração/psicologia no acompanhamento individual.
-
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import {
@@ -23,8 +20,9 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { StaggerItem, StaggerList } from "@/components/ui/motion";
 import { readApiResponse } from "@/lib/api-client";
 import {
+  formatKidmedPeriodLabel,
+  formatQuestionnaireFieldValue,
   getKidmedClassificationLabelKey,
-  getKidmedPeriodLabelKey,
   getQuestionnairePreviewItems,
   getQuestionnaireTypeLabelKey,
   type KidmedClassification,
@@ -184,47 +182,6 @@ export function AcompanhamentoClient({
     return q(getQuestionnaireTypeLabelKey(type));
   }
 
-  function getQuestionnairePeriodLabel(questionnaire: QuestionnaireRecord) {
-    const period = questionnaire.periodKey?.split(":")[1];
-
-    if (
-      (period === "P1" || period === "P2" || period === "P3") &&
-      questionnaire.schoolYear
-    ) {
-      return `${q(getKidmedPeriodLabelKey(period))} - ${questionnaire.schoolYear}`;
-    }
-
-    return questionnaire.schoolYear ?? questionnaire.periodKey ?? null;
-  }
-
-  function formatPayloadValue(
-    key: string,
-    value: unknown,
-    meta: { unitKey?: string; scaleMax?: number },
-  ) {
-    if (typeof value === "boolean") {
-      return value ? q("yes") : q("no");
-    }
-
-    if (typeof value === "number") {
-      if (meta.scaleMax) {
-        return `${value}/${meta.scaleMax}`;
-      }
-
-      if (meta.unitKey) {
-        return `${value} ${q(meta.unitKey)}`;
-      }
-
-      return String(value);
-    }
-
-    if (typeof value === "string") {
-      return value;
-    }
-
-    return t("notAvailable");
-  }
-
   function getQuestionnaireHighlights(questionnaire: QuestionnaireRecord) {
     return getQuestionnairePreviewItems(questionnaire).map((item) => {
       if (item.key === "classification" && typeof item.value === "string") {
@@ -242,7 +199,7 @@ export function AcompanhamentoClient({
           key: item.key,
           label: q(item.labelKey),
           value:
-            getQuestionnairePeriodLabel(questionnaire) ?? t("notAvailable"),
+            formatKidmedPeriodLabel(q, questionnaire) ?? t("notAvailable"),
         };
       }
 
@@ -257,7 +214,7 @@ export function AcompanhamentoClient({
       return {
         key: item.key,
         label: q(item.labelKey),
-        value: formatPayloadValue(item.key, item.value, item),
+        value: formatQuestionnaireFieldValue(q, item.value, item, t("notAvailable")),
       };
     });
   }
@@ -531,7 +488,7 @@ export function AcompanhamentoClient({
                       </div>
                       {questionnaire.type === "KIDMED" ? (
                         <span className="rounded-full border border-border bg-surface-utility px-2.5 py-1 text-xs font-semibold text-muted-foreground">
-                          {getQuestionnairePeriodLabel(questionnaire) ??
+                          {formatKidmedPeriodLabel(q, questionnaire) ??
                             q("kidmed")}
                         </span>
                       ) : (

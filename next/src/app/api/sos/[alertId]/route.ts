@@ -12,26 +12,7 @@ import { auditLog } from "@/lib/audit";
 import { AUDIT_ACTIONS } from "@/lib/audit-actions";
 import { prisma } from "@/lib/prisma";
 import { canRole, PERMISSIONS } from "@/lib/rbac";
-import { normalizeSosAlerts } from "@/lib/sos-alerts";
-
-const sosAlertInclude = {
-  student: {
-    select: {
-      id: true,
-      name: true,
-      className: true,
-      schoolYear: true,
-    },
-  },
-  resolvedBy: {
-    select: {
-      id: true,
-      name: true,
-      email: true,
-      role: true,
-    },
-  },
-} as const;
+import { normalizeSosAlerts, sosAlertInclude } from "@/lib/sos-alerts";
 
 // PATCH /api/sos/[alertId]
 export async function PATCH(

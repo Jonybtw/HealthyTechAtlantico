@@ -302,6 +302,8 @@ const TEST_TABLE: Record<Sex, Record<AgeKey, TestThresholds>> = {
 
 // ── Classification ───────────────────────────────────────────────────────────
 
+const TEST_OPTIONS_MAP = new Map(TEST_OPTIONS.map((t) => [t.id, t]));
+
 export function classifyTest(
   testId: string,
   value: string | number,
@@ -314,7 +316,7 @@ export function classifyTest(
   const testData = TEST_TABLE[sex]?.[ageKey]?.[testId];
   if (!testData) return null;
 
-  const testOpt = TEST_OPTIONS.find((t) => t.id === testId);
+  const testOpt = TEST_OPTIONS_MAP.get(testId);
   if (!testOpt) return null;
 
   if (testOpt.better === "high") {

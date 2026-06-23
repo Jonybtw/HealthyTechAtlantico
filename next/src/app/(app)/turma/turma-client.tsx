@@ -21,6 +21,7 @@ import {
 } from "lucide-react";
 import { PageScaffold } from "@/components/ui/page-scaffold";
 import { ClassPicker } from "@/components/ui/class-picker";
+import { DashboardPanel, sectionAnimation } from "@/components/ui/dashboard-panel";
 import { useReducedEffects } from "@/hooks/use-reduced-effects";
 import { cn } from "@/lib/utils";
 import { DataTable, type Column } from "@/components/ui/data-table";
@@ -38,35 +39,6 @@ import { useClasses } from "@/hooks/use-queries";
 import { readApiResponse } from "@/lib/api-client";
 import type { ClassOption, ClassReportRow } from "@/lib/class-report";
 
-function sectionAnimation(index: number, reducedEffects: boolean) {
-  if (reducedEffects) return {};
-  return { animationDelay: `${index * 70}ms` };
-}
-
-function BioPanel({
-  children,
-  className,
-  index,
-  reducedEffects,
-}: {
-  children: React.ReactNode;
-  className?: string;
-  index: number;
-  reducedEffects: boolean;
-}) {
-  return (
-    <section
-      style={sectionAnimation(index, reducedEffects)}
-      className={cn(
-        "relative overflow-hidden rounded-[12px] border border-border bg-card/88 shadow-[0_4px_12px_rgba(9,21,35,0.08)] backdrop-blur-sm dark:border-white/10 dark:bg-navy-950/68 dark:shadow-[0_4px_18px_rgba(0,0,0,0.22)]",
-        !reducedEffects && "animate-fade-in-up opacity-0",
-        className,
-      )}
-    >
-      <div className="relative">{children}</div>
-    </section>
-  );
-}
 
 function isHealthyZone(zone: string | null | undefined) {
   if (!zone) return false;
@@ -539,7 +511,7 @@ export default function TurmaPage(props: {
         </div>
       }
     >
-      <BioPanel index={0} reducedEffects={reducedEffects} className="p-5">
+      <DashboardPanel index={0} reducedEffects={reducedEffects} className="p-5">
         {loadingClasses ? (
           <Skeleton className="h-28 rounded-[12px]" />
         ) : classesError ? (
@@ -618,7 +590,7 @@ export default function TurmaPage(props: {
             description={t("noClassesDescription")}
           />
         )}
-      </BioPanel>
+      </DashboardPanel>
 
       {!classId ? null : loading ? (
         <div className="space-y-5">
@@ -635,7 +607,7 @@ export default function TurmaPage(props: {
               : "grid gap-5"
           }
         >
-          <BioPanel index={1} reducedEffects={reducedEffects} className="p-5">
+          <DashboardPanel index={1} reducedEffects={reducedEffects} className="p-5">
             {!hasAttentionStudents && (
               <div className="mb-4 flex items-center justify-between gap-3">
                 <p className="text-tiny font-semibold uppercase tracking-[0.18em] text-muted-foreground">{t("rosterToolbarTitle")}</p>
@@ -756,10 +728,10 @@ export default function TurmaPage(props: {
               toolbarSummary={`${students.length} ${t("studentsUnit")}`}
               searchPlaceholder={t("searchStudents")}
             />
-          </BioPanel>
+          </DashboardPanel>
 
           {hasAttentionStudents ? (
-            <BioPanel index={2} reducedEffects={reducedEffects} className="p-5">
+            <DashboardPanel index={2} reducedEffects={reducedEffects} className="p-5">
               <div className="mb-4 flex items-center justify-between gap-3">
                 <p className="text-sm font-bold tracking-tight text-foreground">{t("attentionQueueTitle")}</p>
                 <Button type="button" size="sm" variant="ghost" icon={<ChartIcon className="size-4" />} onClick={() => router.push("/analise")}>{t("openAnalysis")}</Button>
@@ -800,7 +772,7 @@ export default function TurmaPage(props: {
                   );
                 })}
               </div>
-            </BioPanel>
+            </DashboardPanel>
           ) : null}
         </div>
       )}

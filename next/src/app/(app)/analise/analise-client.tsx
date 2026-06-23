@@ -1,8 +1,5 @@
 "use client";
 
-// Componente cliente de /analise: carrega alunos, métricas e relatórios por
-// turma para comparar indicadores de saúde e aptidão física.
-
 import { useEffect, useMemo, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { toast } from "sonner";
@@ -38,6 +35,7 @@ import { ClassPicker } from "@/components/ui/class-picker";
 import { EmptyState } from "@/components/ui/empty-state";
 import { PageScaffold } from "@/components/ui/page-scaffold";
 import { StudentPicker } from "@/components/ui/student-picker";
+import { DashboardPanel, sectionAnimation } from "@/components/ui/dashboard-panel";
 import { useReducedEffects } from "@/hooks/use-reduced-effects";
 import { useUser } from "@/components/user-context";
 import { useClasses } from "@/hooks/use-queries";
@@ -109,18 +107,6 @@ type BioSeriesMeta = {
   unit?: string;
 };
 
-function sectionAnimation(index: number, re: boolean) {
-  if (re) return {};
-  return { animationDelay: `${index * 70}ms` };
-}
-
-function BioPanel({ children, className, index, reducedEffects }: { children: React.ReactNode; className?: string; index: number; reducedEffects: boolean }) {
-  return (
-    <section style={sectionAnimation(index, reducedEffects)} className={cn("relative overflow-hidden rounded-[12px] border border-border bg-card/88 shadow-[0_4px_12px_rgba(9,21,35,0.08)] backdrop-blur-sm dark:border-white/10 dark:bg-navy-950/68 dark:shadow-[0_4px_18px_rgba(0,0,0,0.22)]", !reducedEffects && "animate-fade-in-up opacity-0", className)}>
-      <div className="relative">{children}</div>
-    </section>
-  );
-}
 
 const TEST_ORDER = [
   "vai",
@@ -444,34 +430,12 @@ export default function AnaliseClient() {
   const currentStudent = students.find((student) => student.id === studentId);
   const currentClass = classes.find((item) => item.id === classId);
   const isClassMode = mode === "class";
-  const activeBioSeries: BioSeriesMeta | null =
-    lens === "height"
-      ? {
-          title: t("chartHeight"),
-          description: t("chartHeightDescription"),
-          dataKey: "height",
-          stroke: "#0f9f6e",
-          gradientId: "analysis-height",
-          unit: "cm",
-        }
-      : lens === "weight"
-        ? {
-            title: t("chartWeight"),
-            description: t("chartWeightDescription"),
-            dataKey: "weight",
-            stroke: "#2563eb",
-            gradientId: "analysis-weight",
-            unit: "kg",
-          }
-        : lens === "bmi"
-          ? {
-              title: t("chartBmi"),
-              description: t("chartBmiDescription"),
-              dataKey: "imc",
-              stroke: "#d4a11e",
-              gradientId: "analysis-bmi",
-            }
-          : null;
+  const BIO_SERIES_CONFIG: Partial<Record<StudentLens, BioSeriesMeta>> = {
+    height: { title: t("chartHeight"), description: t("chartHeightDescription"), dataKey: "height", stroke: "#0f9f6e", gradientId: "analysis-height", unit: "cm" },
+    weight: { title: t("chartWeight"), description: t("chartWeightDescription"), dataKey: "weight", stroke: "#2563eb", gradientId: "analysis-weight", unit: "kg" },
+    bmi:    { title: t("chartBmi"),    description: t("chartBmiDescription"),    dataKey: "imc",    stroke: "#d4a11e", gradientId: "analysis-bmi" },
+  };
+  const activeBioSeries = BIO_SERIES_CONFIG[lens] ?? null;
 
   const modeOptions = [
     {
@@ -673,7 +637,7 @@ export default function AnaliseClient() {
     >
       <div className="grid items-start gap-5 xl:grid-cols-[minmax(0,1.08fr)_360px]">
         <div className="space-y-5">
-          <BioPanel index={0} reducedEffects={reducedEffects} className="p-5">
+          <DashboardPanel index={0} reducedEffects={reducedEffects} className="p-5">
             <div className="space-y-4">
               <div className="grid gap-4 lg:grid-cols-[220px_minmax(0,360px)] lg:items-end">
                 <div className="space-y-2">
@@ -740,9 +704,9 @@ export default function AnaliseClient() {
                 )}
               </div>
             </div>
-          </BioPanel>
+          </DashboardPanel>
 
-          <BioPanel index={1} reducedEffects={reducedEffects} className="overflow-hidden p-5">
+          <DashboardPanel index={1} reducedEffects={reducedEffects} className="overflow-hidden p-5">
             <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
               <div>
                 <p className="label-micro text-muted-foreground">{isClassMode ? t("classSnapshotTitle") : t("studentSnapshotTitle")}</p>
@@ -946,10 +910,10 @@ export default function AnaliseClient() {
                 description={t("emptyStudentDataDescription")}
               />
             )}
-          </BioPanel>
+          </DashboardPanel>
         </div>
 
-        <BioPanel index={2} reducedEffects={reducedEffects} className="p-5 xl:sticky xl:top-24">
+        <DashboardPanel index={2} reducedEffects={reducedEffects} className="p-5 xl:sticky xl:top-24">
           {isClassMode ? (
             classes.length === 0 ? (
               <EmptyState
@@ -1077,7 +1041,7 @@ export default function AnaliseClient() {
               )}
             </div>
           )}
-        </BioPanel>
+        </DashboardPanel>
       </div>
     </PageScaffold>
   );

@@ -1,8 +1,5 @@
 "use client";
 
-// Componente cliente de /relatorio: prepara dados do aluno, gera PDF no browser
-// e envia relatórios por email quando o perfil tem permissão.
-
 import { useCallback, useEffect, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { toast } from "sonner";
@@ -40,6 +37,7 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { FieldShell } from "@/components/ui/field-shell";
 import { PageScaffold } from "@/components/ui/page-scaffold";
 import { Skeleton } from "@/components/ui/skeleton";
+import { DashboardPanel, sectionAnimation } from "@/components/ui/dashboard-panel";
 import { useReducedEffects } from "@/hooks/use-reduced-effects";
 import { cn } from "@/lib/utils";
 import { StudentIdentity } from "@/components/ui/student-identity";
@@ -137,19 +135,6 @@ const TEST_LABEL_KEYS: Record<string, string> = {
   senta: "testSentaAlcanca",
   senta_alcanca: "testSentaAlcanca",
 };
-
-function sectionAnimation(index: number, re: boolean) {
-  if (re) return {};
-  return { animationDelay: `${index * 70}ms` };
-}
-
-function BioPanel({ children, className, index, reducedEffects }: { children: React.ReactNode; className?: string; index: number; reducedEffects: boolean }) {
-  return (
-    <section style={sectionAnimation(index, reducedEffects)} className={cn("relative overflow-hidden rounded-[12px] border border-border bg-card/88 shadow-[0_4px_12px_rgba(9,21,35,0.08)] backdrop-blur-sm dark:border-white/10 dark:bg-navy-950/68 dark:shadow-[0_4px_18px_rgba(0,0,0,0.22)]", !reducedEffects && "animate-fade-in-up opacity-0", className)}>
-      <div className="relative">{children}</div>
-    </section>
-  );
-}
 
 const reportSurfaceClassName =
   "rounded-[12px] border border-border/70 bg-card/88 shadow-card backdrop-blur-sm dark:border-white/10 dark:bg-white/[0.06]";
@@ -1083,7 +1068,7 @@ export default function RelatorioClient() {
     >
       <div className="grid items-start gap-5 lg:grid-cols-[minmax(0,1fr)_300px] xl:grid-cols-[minmax(0,1fr)_340px] 2xl:grid-cols-[minmax(0,1fr)_360px]">
         <div className="space-y-5">
-          <BioPanel index={0} reducedEffects={reducedEffects} className="p-5">
+          <DashboardPanel index={0} reducedEffects={reducedEffects} className="p-5">
             <div className="grid items-start gap-5 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
               <div className={cn(reportSurfaceClassName, "p-4 sm:p-5")}>
                 <div className="flex min-w-0 items-start gap-3">
@@ -1187,9 +1172,9 @@ export default function RelatorioClient() {
                 )}
               </div>
             </div>
-          </BioPanel>
+          </DashboardPanel>
           <div className="grid items-start gap-5 lg:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)]">
-            <BioPanel index={1} reducedEffects={reducedEffects} className="p-5">
+            <DashboardPanel index={1} reducedEffects={reducedEffects} className="p-5">
               <div className="mb-4 flex min-w-0 flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
                 <div className="min-w-0">
                   <p className="text-tiny font-semibold uppercase tracking-[0.16em] text-muted-foreground">
@@ -1365,9 +1350,9 @@ export default function RelatorioClient() {
                   }
                 />
               )}
-            </BioPanel>
+            </DashboardPanel>
 
-            <BioPanel index={2} reducedEffects={reducedEffects} className="p-5">
+            <DashboardPanel index={2} reducedEffects={reducedEffects} className="p-5">
               <div className="mb-4">
                 <p className="text-tiny font-semibold uppercase tracking-[0.18em] text-muted-foreground">{t("testsSection")}</p>
                 <h3 className="mt-0.5 text-lg font-bold tracking-tight text-foreground">{t("latestTestsTitle")}</h3>
@@ -1405,11 +1390,11 @@ export default function RelatorioClient() {
                   }
                 />
               )}
-            </BioPanel>
+            </DashboardPanel>
           </div>
         </div>
 
-        <BioPanel index={3} reducedEffects={reducedEffects} className="order-first p-5 lg:order-none lg:sticky lg:top-24">
+        <DashboardPanel index={3} reducedEffects={reducedEffects} className="order-first p-5 lg:order-none lg:sticky lg:top-24">
           <div className="space-y-4">
             <div>
               <p className="text-tiny font-semibold uppercase tracking-[0.16em] text-muted-foreground">
@@ -1511,7 +1496,7 @@ export default function RelatorioClient() {
               </div>
             ) : null}
           </div>
-        </BioPanel>
+        </DashboardPanel>
       </div>
     </PageScaffold>
   );

@@ -13,6 +13,7 @@ import {
   MAX_CSV_ROWS,
   normalizeCsvHeader,
   parseCsv,
+  pickField,
   validateCsvUpload,
 } from "@/lib/csv";
 import { prisma } from "@/lib/prisma";
@@ -186,17 +187,3 @@ export async function POST(req: Request) {
   }
 }
 
-function pickField(
-  row: string[],
-  headerIndex: Map<string, number>,
-  aliases: string[],
-): string {
-  for (const alias of aliases) {
-    const index = headerIndex.get(normalizeCsvHeader(alias));
-    if (index === undefined) {
-      continue;
-    }
-    return (row[index] ?? "").trim();
-  }
-  return "";
-}

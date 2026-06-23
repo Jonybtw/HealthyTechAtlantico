@@ -52,21 +52,11 @@ export async function GET(
 
     const latestOnly = req.nextUrl.searchParams.get("latest") === "true";
 
-    const tests = await prisma.test.findMany({
+    const result = await prisma.test.findMany({
       where: { studentId: id },
       orderBy: { recordedAt: "desc" },
+      ...(latestOnly && { distinct: ["testId"] }),
     });
-
-    const result = latestOnly
-      ? Object.values(
-          tests.reduce<Record<string, (typeof tests)[number]>>((acc, test) => {
-            if (!acc[test.testId]) {
-              acc[test.testId] = test;
-            }
-            return acc;
-          }, {}),
-        )
-      : tests;
 
     return ok(result);
   } catch (error) {

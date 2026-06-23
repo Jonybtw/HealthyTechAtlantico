@@ -13,30 +13,11 @@ import {
 import { auditLog } from "@/lib/audit";
 import { AUDIT_ACTIONS } from "@/lib/audit-actions";
 import { prisma } from "@/lib/prisma";
-import { normalizeSosAlerts } from "@/lib/sos-alerts";
+import { normalizeSosAlerts, sosAlertInclude } from "@/lib/sos-alerts";
 import { sendMail } from "@/lib/mailer";
 import { escapeHtml } from "@/lib/utils";
 import { sosSchema } from "@/lib/validations";
 import { getLinkedStudentByUserId } from "@/lib/student-access";
-
-const sosAlertInclude = {
-  student: {
-    select: {
-      id: true,
-      name: true,
-      className: true,
-      schoolYear: true,
-    },
-  },
-  resolvedBy: {
-    select: {
-      id: true,
-      name: true,
-      email: true,
-      role: true,
-    },
-  },
-} as const;
 
 export async function GET() {
   try {

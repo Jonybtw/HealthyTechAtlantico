@@ -137,14 +137,12 @@ export async function DELETE(
       return badRequest("dispensaId obrigatório");
     }
 
-    const exemption = await prisma.exemption.findUnique({
-      where: { id: exemptionId },
+    const { count } = await prisma.exemption.deleteMany({
+      where: { id: exemptionId, studentId: id },
     });
-    if (!exemption || exemption.studentId !== id) {
+    if (count === 0) {
       return notFound("Dispensa não encontrada");
     }
-
-    await prisma.exemption.delete({ where: { id: exemptionId } });
 
     await auditLog({
       userId: session.user.id,
