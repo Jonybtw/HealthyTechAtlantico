@@ -1520,7 +1520,16 @@
     "passwordDescription": "Update your account password with production-grade requirements.",
     "statusActive": "Active",
     "statusInactive": "Inactive",
-    "revoke": "Revoke"
+    "revoke": "Revoke",
+    "consentHistoryTitle": "Consent history",
+    "consentHistoryDescription": "Recent changes recorded for GDPR and data sharing.",
+    "consentHistoryEmpty": "No consent changes have been recorded yet.",
+    "refreshHistory": "Refresh",
+    "consentField": {
+      "consentRgpd": "GDPR consent",
+      "consentShare": "Data sharing",
+      "kidmedConsent": "KIDMED consent"
+    }
   },
   "guardioes": {
     "title": "Guardians",

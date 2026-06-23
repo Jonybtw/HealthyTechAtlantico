@@ -95,6 +95,7 @@ function NavLink({
       href={item.href}
       onClick={onClick}
       aria-current={active ? "page" : undefined}
+      data-nav-tone={isSos ? "danger" : undefined}
       className={cn(
         "group relative flex items-center gap-3 rounded-[12px] px-3 py-2.5 text-sm font-medium transition-colors duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400/40 focus-visible:ring-offset-2",
         active && isSos

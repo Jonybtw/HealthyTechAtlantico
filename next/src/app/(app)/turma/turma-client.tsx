@@ -87,6 +87,7 @@ export default function TurmaPage(props: {
     birthDate: "",
   });
   const importInputRef = useRef<HTMLInputElement | null>(null);
+  const skippedInitialReportFetchRef = useRef(false);
 
   useEffect(() => {
     if (classesError) {
@@ -109,13 +110,17 @@ export default function TurmaPage(props: {
   }, [canViewClassReports, loadingClasses, classes]);
 
   useEffect(() => {
-    // Skip the initial fetch when the server already provided data
-    // for the selected class — the next classId change will trigger
-    // a fresh fetch.
     if (!canViewClassReports || !classId) {
       return;
     }
-    if (classId === props.initialClassId && students.length > 0 && !loading) {
+
+    // Skip the initial fetch when the server already resolved this class.
+    // Later class changes still fetch fresh data from the API.
+    if (
+      classId === props.initialClassId &&
+      !skippedInitialReportFetchRef.current
+    ) {
+      skippedInitialReportFetchRef.current = true;
       return;
     }
 
@@ -159,7 +164,7 @@ export default function TurmaPage(props: {
     return () => {
       controller.abort();
     };
-  }, [canViewClassReports, classId, props.initialClassId, students.length, loading, t]);
+  }, [canViewClassReports, classId, props.initialClassId, t]);
 
   useEffect(() => {
     setQuickStudentForm({

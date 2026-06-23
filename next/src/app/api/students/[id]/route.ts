@@ -14,6 +14,7 @@ import {
 } from "@/lib/api-response";
 import { auditLog } from "@/lib/audit";
 import { AUDIT_ACTIONS } from "@/lib/audit-actions";
+import { recordConsentHistory } from "@/lib/consent-history";
 import { prisma } from "@/lib/prisma";
 import { isStaffRole, PERMISSIONS } from "@/lib/rbac";
 import { getStudentAccessContext } from "@/lib/student-access";
@@ -132,6 +133,15 @@ export async function PUT(
         userId: session.user.id,
         action: AUDIT_ACTIONS.UPDATE_CONSENT,
         targetId: student.id,
+      }).catch(console.error);
+
+      await recordConsentHistory({
+        subjectStudentId: student.id,
+        changedById: session.user.id,
+        field: "kidmedConsent",
+        previousValue: Boolean(existingStudent.kidmedConsentAt),
+        nextValue: Boolean(student.kidmedConsentAt),
+        reason: "student_detail_update",
       }).catch(console.error);
     }
 

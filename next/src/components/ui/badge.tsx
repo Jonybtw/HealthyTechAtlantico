@@ -37,6 +37,7 @@ function Badge({ className, variant, size, ...props }: BadgeProps) {
   return (
     <span
       className={cn(badgeVariants({ variant, size }), className)}
+      data-badge-variant={variant ?? "default"}
       {...props}
     />
   );

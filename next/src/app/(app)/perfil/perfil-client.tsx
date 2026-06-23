@@ -3,12 +3,13 @@
 // Componente cliente de /perfil: gere atualização de consentimentos e alteração
 // de palavra-passe da conta atualmente autenticada.
 
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import {
   BadgeCheck,
   Check,
+  Clock3,
   Key,
   Lock,
   Mail,
@@ -39,6 +40,18 @@ type UserProfile = {
   role: string;
   consentRgpd: boolean;
   consentShare: boolean;
+};
+type ConsentHistoryEntry = {
+  id: string;
+  field: "consentRgpd" | "consentShare" | "kidmedConsent";
+  previousValue: boolean | null;
+  nextValue: boolean;
+  reason: string | null;
+  createdAt: string;
+  changedBy: {
+    name: string | null;
+    email: string;
+  } | null;
 };
 
 const ROLE_STYLES: Record<string, { bg: string; text: string; dot: string }> = {
@@ -101,6 +114,8 @@ export default function PerfilPage() {
   const user = session?.user;
 
   const [updatingConsent, setUpdatingConsent] = useState<"rgpd" | "share" | null>(null);
+  const [consentHistory, setConsentHistory] = useState<ConsentHistoryEntry[]>([]);
+  const [loadingConsentHistory, setLoadingConsentHistory] = useState(false);
 
   const pwForm = useForm<PasswordValues>({
     resolver: zodResolver(changePasswordFormSchema),
@@ -122,6 +137,24 @@ export default function PerfilPage() {
     }
   };
 
+  const loadConsentHistory = useCallback(async () => {
+    setLoadingConsentHistory(true);
+
+    try {
+      const response = await fetch("/api/users/me/consent-history");
+      const body = await readApiResponse<ConsentHistoryEntry[]>(response);
+      setConsentHistory(body);
+    } catch {
+      setConsentHistory([]);
+    } finally {
+      setLoadingConsentHistory(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    void loadConsentHistory();
+  }, [loadConsentHistory]);
+
   const syncConsent = async (field: "consentRgpd" | "consentShare", value: boolean) => {
     setUpdatingConsent(field === "consentRgpd" ? "rgpd" : "share");
     try {
@@ -137,6 +170,7 @@ export default function PerfilPage() {
       } else {
         toast.success(value ? t("activate") : t("deactivate"));
       }
+      await loadConsentHistory();
     } catch (error) {
       toast.error(error instanceof Error ? error.message : common("connectionError"));
     } finally {
@@ -232,6 +266,52 @@ export default function PerfilPage() {
                 <div className="mt-3 flex gap-2">
                   <Button size="sm" variant={user?.consentShare ? "primary" : "ghost"} loading={updatingConsent === "share" && !(user?.consentShare ?? false)} disabled={updatingConsent === "share" || (user?.consentShare ?? false)} icon={<Check className="size-3.5" />} onClick={() => syncConsent("consentShare", true)}>{t("activate")}</Button>
                   <Button size="sm" variant={!user?.consentShare ? "danger" : "ghost"} loading={updatingConsent === "share" && (user?.consentShare ?? false)} disabled={updatingConsent === "share" || !(user?.consentShare ?? false)} icon={<X className="size-3.5" />} onClick={() => syncConsent("consentShare", false)}>{t("revoke")}</Button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Consent history */}
+          <div className="mt-3 rounded-[12px] border border-border/70 bg-background/65 p-4 shadow-sm">
+            <div className="flex items-start gap-3">
+              <span className="flex size-9 shrink-0 items-center justify-center rounded-[12px] bg-navy-100 text-navy-700 dark:bg-white/8 dark:text-navy-100">
+                <Clock3 className="size-4" />
+              </span>
+              <div className="min-w-0 flex-1">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <p className="text-sm font-semibold text-foreground">{t("consentHistoryTitle")}</p>
+                  <Button type="button" size="sm" variant="ghost" onClick={() => void loadConsentHistory()} disabled={loadingConsentHistory}>
+                    {t("refreshHistory")}
+                  </Button>
+                </div>
+                <p className="mt-1 text-xs leading-relaxed text-muted-foreground">{t("consentHistoryDescription")}</p>
+                <div className="mt-3 grid gap-2">
+                  {loadingConsentHistory ? (
+                    <p className="text-xs font-semibold text-muted-foreground">{common("loading")}</p>
+                  ) : consentHistory.length === 0 ? (
+                    <p className="rounded-[10px] border border-border/70 bg-card/70 px-3 py-2 text-xs text-muted-foreground">
+                      {t("consentHistoryEmpty")}
+                    </p>
+                  ) : (
+                    consentHistory.map((entry) => (
+                      <div key={entry.id} className="rounded-[10px] border border-border/70 bg-card/70 px-3 py-2">
+                        <div className="flex flex-wrap items-center justify-between gap-2">
+                          <p className="text-xs font-semibold text-foreground">
+                            {t(`consentField.${entry.field}`)}
+                          </p>
+                          <span className={cn("rounded-full border px-2 py-0.5 text-[11px] font-semibold", entry.nextValue ? "border-emerald-300/60 bg-emerald-50 text-emerald-700 dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-300" : "border-danger-300/60 bg-danger-50 text-danger-700 dark:border-danger-500/30 dark:bg-danger-500/10 dark:text-danger-300")}>
+                            {entry.nextValue ? t("statusActive") : t("statusInactive")}
+                          </span>
+                        </div>
+                        <p className="mt-1 text-[11px] text-muted-foreground">
+                          {new Intl.DateTimeFormat(undefined, {
+                            dateStyle: "short",
+                            timeStyle: "short",
+                          }).format(new Date(entry.createdAt))}
+                        </p>
+                      </div>
+                    ))
+                  )}
                 </div>
               </div>
             </div>

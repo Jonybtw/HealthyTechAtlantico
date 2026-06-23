@@ -1,5 +1,4 @@
 import type { Metadata, Viewport } from "next";
-import { JetBrains_Mono, Manrope, Plus_Jakarta_Sans } from "next/font/google";
 import { NextIntlClientProvider } from "next-intl";
 import { getLocale, getMessages } from "next-intl/server";
 import { cookies } from "next/headers";
@@ -7,25 +6,6 @@ import { Toaster } from "sonner";
 import { QueryProvider } from "@/components/query-provider";
 import { THEME_COOKIE_NAME } from "@/lib/theme-cookie";
 import "./globals.css";
-
-const sans = Plus_Jakarta_Sans({
-  subsets: ["latin"],
-  variable: "--font-sans",
-  display: "swap",
-});
-
-const displayFont = Manrope({
-  subsets: ["latin"],
-  variable: "--font-display",
-  weight: ["400", "500", "600", "700", "800"],
-  display: "swap",
-});
-
-const mono = JetBrains_Mono({
-  subsets: ["latin"],
-  variable: "--font-mono",
-  display: "swap",
-});
 
 export const metadata: Metadata = {
   title: {
@@ -77,9 +57,7 @@ export default async function RootLayout({
       suppressHydrationWarning
       className="scroll-smooth"
     >
-      <body
-        className={`${sans.variable} ${displayFont.variable} ${mono.variable} bg-background text-foreground antialiased`}
-      >
+      <body className="bg-background text-foreground antialiased">
         <NextIntlClientProvider messages={messages}>
           <QueryProvider>{children}</QueryProvider>
           <Toaster

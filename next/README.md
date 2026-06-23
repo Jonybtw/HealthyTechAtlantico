@@ -84,6 +84,22 @@ npm test
 npm run typecheck
 ```
 
+Antes de uma entrega final, recomenda-se validar também lint e build:
+
+```bash
+npm run lint
+npm run build
+```
+
+Em Windows, se o PowerShell bloquear `npm.ps1` ou `npx.ps1`, usar:
+
+```bash
+npm.cmd test
+npm.cmd run typecheck
+npm.cmd run lint
+npm.cmd run build
+```
+
 ## Scripts Úteis
 
 | Comando | Função |
@@ -129,4 +145,13 @@ Confirma sempre:
 - ausência de dados sensíveis nas respostas da API;
 - traduções atualizadas;
 - testes relevantes executados;
+- lint e build de produção executados;
+- migrations validadas no ambiente final;
 - documentação atualizada quando houver mudança de comportamento.
+
+## Funcionalidades Recentes
+
+- Histórico de consentimentos em `consent_history`.
+- Endpoint `/api/users/me/consent-history`.
+- Preferências de acessibilidade com contraste alto e tamanho de texto.
+- Build independente de Google Fonts, usando fontes locais/sistema.

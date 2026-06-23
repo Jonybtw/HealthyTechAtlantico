@@ -1520,7 +1520,16 @@
     "passwordDescription": "Atualiza a palavra-passe da tua conta com requisitos de produção.",
     "statusActive": "Ativo",
     "statusInactive": "Inativo",
-    "revoke": "Revogar"
+    "revoke": "Revogar",
+    "consentHistoryTitle": "Histórico de consentimentos",
+    "consentHistoryDescription": "Últimas alterações registadas para RGPD e partilha de dados.",
+    "consentHistoryEmpty": "Ainda não existem alterações de consentimento registadas.",
+    "refreshHistory": "Atualizar",
+    "consentField": {
+      "consentRgpd": "Consentimento RGPD",
+      "consentShare": "Partilha de dados",
+      "kidmedConsent": "Consentimento KIDMED"
+    }
   },
   "guardioes": {
     "title": "Encarregados de Educação",

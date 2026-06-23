@@ -35,6 +35,7 @@ export function ZoneBadge({ zone, size = "md" }: ZoneBadgeProps) {
           ? "border-success-500/25 bg-success-100/80 text-success-700 dark:border-success-500/20 dark:bg-success-500/10 dark:text-success-300"
           : "border-danger-500/25 bg-danger-100/80 text-danger-700 dark:border-danger-500/20 dark:bg-danger-500/10 dark:text-danger-300"
       }`}
+      data-zone-tone={isPositive ? "positive" : "attention"}
     >
       <span
         className={`size-1.5 rounded-full ${isPositive ? "bg-success-500" : "bg-danger-500"}`}

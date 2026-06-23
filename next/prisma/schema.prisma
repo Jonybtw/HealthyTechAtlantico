@@ -58,6 +58,8 @@ model User {
   createdReports   Report[]
   createdExemptions Exemption[]
   auditLogs        AuditLog[]
+  consentHistorySubject ConsentHistory[] @relation("ConsentSubjectUser")
+  consentHistoryChanges ConsentHistory[] @relation("ConsentChangedBy")
 
   @@map("users")
 }
@@ -92,6 +94,7 @@ model Student {
   exemptions      Exemption[]
   guardians      StudentGuardian[]
   sessions       EvaluationSession[]
+  consentHistory ConsentHistory[]
 
   @@index([linkedUserId])
   @@index([createdById])
@@ -303,6 +306,29 @@ model AuditLog {
   @@index([userId, createdAt(sort: Desc)])
   @@index([action])
   @@map("audit_log")
+}
+
+// Historico detalhado de alteracoes de consentimento RGPD/partilha.
+model ConsentHistory {
+  id               String   @id @default(cuid())
+  subjectUserId    String?  @map("subject_user_id")
+  subjectStudentId String?  @map("subject_student_id")
+  changedById      String?  @map("changed_by")
+  field            String
+  previousValue    Boolean? @map("previous_value")
+  nextValue        Boolean  @map("next_value")
+  reason           String?
+  ipAddress        String?  @map("ip_address")
+  createdAt        DateTime @default(now()) @map("created_at")
+
+  subjectUser    User?    @relation("ConsentSubjectUser", fields: [subjectUserId], references: [id], onDelete: Cascade)
+  subjectStudent Student? @relation(fields: [subjectStudentId], references: [id], onDelete: Cascade)
+  changedBy      User?    @relation("ConsentChangedBy", fields: [changedById], references: [id], onDelete: SetNull)
+
+  @@index([subjectUserId, createdAt(sort: Desc)])
+  @@index([subjectStudentId, createdAt(sort: Desc)])
+  @@index([changedById])
+  @@map("consent_history")
 }
 
 // Tokens usados em verificação de email e fluxos semelhantes.
