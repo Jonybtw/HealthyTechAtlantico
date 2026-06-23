@@ -99,6 +99,12 @@ export async function PUT(
       data.schoolYear !== undefined ||
       data.className !== undefined;
     const shouldLogConsentUpdate = data.kidmedConsentGranted !== undefined;
+    const previousConsentState = shouldLogConsentUpdate
+      ? await prisma.student.findUnique({
+          where: { id },
+          select: { kidmedConsentAt: true },
+        })
+      : null;
 
     const student = await prisma.student.update({
       where: { id },
@@ -139,7 +145,7 @@ export async function PUT(
         subjectStudentId: student.id,
         changedById: session.user.id,
         field: "kidmedConsent",
-        previousValue: Boolean(existingStudent.kidmedConsentAt),
+        previousValue: Boolean(previousConsentState?.kidmedConsentAt),
         nextValue: Boolean(student.kidmedConsentAt),
         reason: "student_detail_update",
       }).catch(console.error);
