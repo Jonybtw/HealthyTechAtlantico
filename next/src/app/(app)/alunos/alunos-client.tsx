@@ -91,7 +91,7 @@ function StatusBadge({ status, t }: { status: Status | null; t: (key: string) =>
 function StudentAvatar({ name }: { name: string }) {
   const initials = name.split(" ").map((n) => n[0]).join("").slice(0, 2).toUpperCase();
   return (
-    <div className="flex size-9 shrink-0 items-center justify-center overflow-hidden rounded-full border-2 border-gold-500/30 bg-gray-400">
+    <div className="flex size-9 shrink-0 items-center justify-center overflow-hidden rounded-full border-2 border-gold-400/60 bg-navy-800 shadow-sm dark:bg-navy-700">
       <span className="text-xs font-semibold text-white">
         {initials}
       </span>

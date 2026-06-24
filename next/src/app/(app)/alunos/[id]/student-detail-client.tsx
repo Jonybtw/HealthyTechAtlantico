@@ -278,7 +278,7 @@ export function StudentDetailClient({ student }: Props) {
           meta: studentMeta,
           actionsClassName: "w-full lg:w-auto lg:self-start",
           status: (
-            <span className="inline-flex h-10 w-10 items-center justify-center rounded-[8px] border border-white/15 bg-white/12 text-sm font-bold text-white backdrop-blur-sm">
+            <span className="inline-flex h-10 w-10 items-center justify-center rounded-[8px] border border-gold-400/60 bg-navy-800 text-sm font-bold text-white shadow-sm dark:bg-navy-700">
               {initials}
             </span>
           ),
@@ -309,7 +309,7 @@ export function StudentDetailClient({ student }: Props) {
                     size="sm"
                     onClick={() => setEditing((isEditing) => !isEditing)}
                     icon={<Pencil className="size-4" />}
-                    className="order-1 col-span-2 h-10 w-full justify-center border-white/20 bg-white/12 text-white shadow-none hover:border-white/30 hover:bg-white/18"
+                    className="order-1 col-span-2 h-10 w-full justify-center"
                   >
                     {editing ? t("cancelBtn") : t("editBtn")}
                   </Button>
@@ -347,7 +347,7 @@ export function StudentDetailClient({ student }: Props) {
                     size="sm"
                     onClick={() => setEditing((isEditing) => !isEditing)}
                     icon={<Pencil className="size-4" />}
-                    className="h-9 border-white/20 bg-white/12 text-white shadow-none hover:border-white/30 hover:bg-white/18"
+                    className="h-9"
                   >
                     {editing ? t("cancelBtn") : t("editBtn")}
                   </Button>
