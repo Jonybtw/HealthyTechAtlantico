@@ -4,12 +4,19 @@ Aplicação web para acompanhar saúde, condição física e bem-estar dos aluno
 
 Este projeto usa Next.js, React, TypeScript, Prisma, PostgreSQL, NextAuth, Zod e Tailwind CSS. A aplicação inclui gestão de alunos, turmas, biometria, testes físicos, questionários, relatórios, alertas SOS, encarregados de educação, auditoria e permissões por perfil.
 
-Para uma explicação completa da aplicação e do código, consulta a pasta `docs/` na raiz do projeto:
+A documentação encontra-se na pasta `docs/` na raiz do projeto em dois formatos:
 
+**Formato Word (documentos oficiais de entrega):**
 ```text
-docs/manual-tecnico.md        ← Guia técnico completo (stack, API, RBAC, segurança)
-docs/manual-utilizador.md     ← Guia de utilizador (perfis, funcionalidades, UI)
-docs/GDPR_DATA_PROTECTION.md  ← Política de proteção de dados
+docs/manual-tecnico.docx      ← Manual técnico com diagramas de arquitetura e ER
+docs/manual-utilizador.docx   ← Manual de utilizador com capturas de ecrã da aplicação
+```
+
+**Formato Markdown (referência rápida para developers, renderiza no GitHub):**
+```text
+docs/manual-tecnico.md        ← Guia técnico: stack, API routes, RBAC, segurança, CI/CD
+docs/manual-utilizador.md     ← Guia de utilizador: todos os perfis e funcionalidades
+docs/GDPR_DATA_PROTECTION.md  ← Política de proteção de dados (RGPD)
 ```
 
 ## Requisitos
