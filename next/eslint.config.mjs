@@ -13,6 +13,9 @@ const eslintConfig = defineConfig([
     "next-env.d.ts",
     "node_modules/**",
     "prisma/seed.ts",
+    "playwright-report/**",
+    "test-results/**",
+    ".playwright-mcp/**",
   ]),
   {
     rules: {

@@ -52,6 +52,7 @@ async function main() {
       data: {
         role: Role.ADMIN,
         ...(name ? { name } : {}),
+        ...(password ? { passwordHash: await bcrypt.hash(password, 12) } : {}),
         consentRgpd: true,
         consentShare: true,
       },
